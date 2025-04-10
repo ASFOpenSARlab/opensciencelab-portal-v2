@@ -1,0 +1,26 @@
+name: Linting and Formatting
+on: # yamllint disable-line rule:truthy
+  pull_request: {}
+  workflow_dispatch: {}
+jobs:
+  shell:
+    uses: ASFOpenSARlab/osl-utils/.github/workflows/reusable-code-quality-shell.yaml@v0.0.9
+    with:
+      osl-utils-tag: v0.0.9
+  python:
+    uses: ASFOpenSARlab/osl-utils/.github/workflows/reusable-code-quality-python.yaml@v0.0.9
+    with:
+      osl-utils-tag: v0.0.9
+  jinja2:
+    uses: ASFOpenSARlab/osl-utils/.github/workflows/reusable-code-quality-jinja2.yaml@v0.0.9
+    with:
+      osl-utils-tag: v0.0.9
+  # These yaml lints aren't working
+  # yaml:
+  #   uses: ASFOpenSARlab/osl-utils/.github/workflows/reusable-code-quality-yaml.yaml@v0.0.9
+  #   with:
+  #     osl-utils-tag: v0.0.9
+  dockerfile:
+    uses: ASFOpenSARlab/osl-utils/.github/workflows/reusable-code-quality-dockerfile.yaml@v0.0.9
+    with:
+      osl-utils-tag: v0.0.9
