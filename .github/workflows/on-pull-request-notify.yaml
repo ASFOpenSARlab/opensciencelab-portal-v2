@@ -1,0 +1,31 @@
+---
+    name: PR - Alert to Merge Requests
+    
+    on:                                                    # yamllint disable-line rule:truthy
+      pull_request:
+        types: [opened, edited, synchronize, reopened, ready_for_review, review_requested]
+        branches:
+          - main
+    
+    jobs:
+      setup:
+        uses: ASFOpenSARlab/osl-utils/.github/workflows/reusable-setup-env.yaml@v0.0.8
+        if: github.event.pull_request.draft == false
+        with:
+          tagname: ${{ github.ref_name }}
+    
+      notify-start:
+        uses: ASFOpenSARlab/osl-utils/.github/workflows/reusable-mm-notify.yaml@v0.0.8
+        if: github.event.pull_request.draft == false
+        needs:
+          - setup
+        with:
+          environment: ${{ needs.setup.outputs.environment || 'dev' }}
+          message: |
+            New Open / Updated Pull Request:
+    
+            | Pull Request | Description | Author | 
+            | -- | -- | -- | 
+            | [PR#${{ github.event.number }}](https://github.com/${{ github.repository }}/pull/${{github.event.number}}) | ${{ github.event.pull_request.title }} | ${{ github.event.pull_request.user.login }} |
+        secrets:
+          MATTERMOST_WEBHOOK_URL: ${{ secrets.MATTERMOST_WEBHOOK_URL }}
