@@ -3,12 +3,16 @@ import aws_cdk.assertions as assertions
 
 from portal_cdk.portal_cdk_stack import PortalCdkStack
 
+
 # example tests. To run these tests, uncomment this file along with the example
 # resource in portal_cdk/portal_cdk_stack.py
 def test_sqs_queue_created():
     app = core.App()
     stack = PortalCdkStack(app, "portal-cdk")
     template = assertions.Template.from_stack(stack)
+
+    template = template
+
 
 #     template.has_resource_properties("AWS::SQS::Queue", {
 #         "VisibilityTimeout": 300
