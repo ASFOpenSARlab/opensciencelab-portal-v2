@@ -20,7 +20,10 @@ jobs:
     uses: ASFOpenSARlab/osl-utils/.github/workflows/reusable-setup-env.yaml@v0.0.9
     with:
       tagname: ${{ inputs.tagname || github.ref_name }}
-  ghcr-login:
+  wait-for-cdk-image:
+    # Because the image may not ready yet, lets wait for it
+    env:
+      cdk_image_tag: ghcr.io/asfopensarlab/cdk-env:${{ needs.setup.outputs.branchtag }}
     needs:
       - setup
     runs-on: ubuntu-latest
@@ -31,16 +34,6 @@ jobs:
           registry: ghcr.io
           username: ${{ github.repository_owner }}
           password: ${{ secrets.GITHUB_TOKEN }}
-          logout: false
-  wait-for-cdk-image:
-    # Because the image may not ready yet, lets wait for it
-    env:
-      cdk_image_tag: ghcr.io/asfopensarlab/cdk-env:${{ needs.setup.outputs.branchtag }}
-    needs:
-      - setup
-      - ghcr-login
-    runs-on: ubuntu-latest
-    steps:
       - name: Verify CDK Image
         id: wait-on-image
         run: |
@@ -50,7 +43,9 @@ jobs:
   use-cdk-image:
     env:
       image-tag: ${{ needs.setup.outputs.branchtag }}
-    runs-on: ghcr.io/asfopensarlab/cdk-env:${{ needs.setup.outputs.branchtag }}
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/asfopensarlab/cdk-env:${{ needs.setup.outputs.branchtag }}
     needs:
       - setup
       - wait-for-cdk-image
