@@ -59,7 +59,9 @@ lint:
 		--rm \
 		--pull always \
 		ghcr.io/asfopensarlab/osl-utils:v0.0.9 \
-	make all
+		make all && \
+	echo "### All Linting Passed ###" || \
+	echo "⚠️⚠️⚠️ Linting was not successful ⚠️⚠️⚠️"
 
 ### CDK Environment
 .PHONY := cdk-image
