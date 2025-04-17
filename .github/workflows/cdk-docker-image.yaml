@@ -1,6 +1,10 @@
 ---
 # NOTE:
-#  This cdk-env image is intended to be used
+#  This cdk-env image is intended to be used by later Actions to
+#  do CDK work, and/or build objects for lambda. Depending on timing,
+#  the images may not be created and pushed before other steps run.
+#  Actions using this image should actively wait (Pull GHCR) for
+#  image availability.
 name: Create CDK Build Image
 on: # yamllint disable-line rule:truthy
   workflow_dispatch: {}
