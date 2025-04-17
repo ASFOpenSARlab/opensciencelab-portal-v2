@@ -2,17 +2,14 @@
 name: PR - Alert to Merge Requests
 on: # yamllint disable-line rule:truthy
   pull_request:
-    types:
-      [
-        opened,
-        edited,
-        synchronize,
-        reopened,
-        ready_for_review,
-        review_requested,
-      ]
+    types: [opened, edited, synchronize, reopened, ready_for_review, review_requested]
     branches:
       - main
+# Overcome very long line length of MM Notification message table
+env:
+  pr: "https://github.com/${{ github.repository }}/pull/${{github.event.number}}"
+  desc: "${{ github.event.pull_request.title }}"
+  author: "${{ github.event.pull_request.user.login }}"
 jobs:
   setup:
     uses: ASFOpenSARlab/osl-utils/.github/workflows/reusable-setup-env.yaml@v0.0.8
@@ -31,6 +28,6 @@ jobs:
 
         | Pull Request | Description | Author |
         | -- | -- | -- |
-        | [PR#${{ github.event.number }}](https://github.com/${{ github.repository }}/pull/${{github.event.number}}) | ${{ github.event.pull_request.title }} | ${{ github.event.pull_request.user.login }} |
+        | [PR#${{ github.event.number }}](${{ env.pr }}) | ${{ env.desc }} | ${{ env.author }} |
     secrets:
       MATTERMOST_WEBHOOK_URL: ${{ secrets.MATTERMOST_WEBHOOK_URL }}
