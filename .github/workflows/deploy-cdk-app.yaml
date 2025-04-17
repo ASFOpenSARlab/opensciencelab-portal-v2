@@ -36,6 +36,7 @@ jobs:
       cdk_image_tag: ghcr.io/asfopensarlab/cdk-env:${{ needs.setup.outputs.branchtag }}
     needs:
       - setup
+      - ghcr-login
     runs-on: ubuntu-latest
     steps:
       - name: Verify CDK Image
