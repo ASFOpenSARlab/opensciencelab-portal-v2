@@ -22,12 +22,13 @@ jobs:
     needs:
       - setup
     with:
+      # yamllint disable rule:line-length
       environment: ${{ needs.setup.outputs.environment || 'dev' }}
       message: |
         New Open / Updated Pull Request:
 
         | Pull Request | Description | Author |
         | -- | -- | -- |
-        | [PR#${{ github.event.number }}](${{ env.pr }}) | ${{ env.desc }} | ${{ env.author }} |
+        | [PR#${{ github.event.number }}](https://github.com/${{ github.repository }}/pull/${{github.event.number}}) | ${{ github.event.pull_request.title }} | ${{ github.event.pull_request.user.login }} |
     secrets:
       MATTERMOST_WEBHOOK_URL: ${{ secrets.MATTERMOST_WEBHOOK_URL }}
