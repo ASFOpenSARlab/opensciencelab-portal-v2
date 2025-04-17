@@ -23,7 +23,7 @@ jobs:
   wait-for-cdk-image:
     # Because the image may not ready yet, lets wait for it
     env:
-      cdk_image_tag: ${{ env.cdk_image }}:${{ needs.setup.outputs.branchtag }}
+      cdk_image_tag: ghcr.io/asfopensarlab/cdk-env:${{ needs.setup.outputs.branchtag }}
     needs:
       - setup
     runs-on: ubuntu-latest
@@ -37,7 +37,7 @@ jobs:
   use-cdk-image:
     env:
       image-tag: ${{ needs.setup.outputs.branchtag }}
-    runs-on: ${{ env.cdk_image }}:${{ needs.setup.outputs.branchtag }}
+    runs-on: ghcr.io/asfopensarlab/cdk-env:${{ needs.setup.outputs.branchtag }}
     needs:
       - setup
       - wait-for-cdk-image
