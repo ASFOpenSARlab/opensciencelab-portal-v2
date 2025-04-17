@@ -1,0 +1,49 @@
+---
+name: Deploy CDK
+on: # yamllint disable-line rule:truthy
+  workflow_dispatch: {}
+  push:
+    paths:
+      - "build/cdk.*"
+      - "portal-cdk/*"
+      # Or changes to this action:
+      - .github/workflows/deploy-cdk-app.yaml
+    branches:
+      - "*/*"
+      - main
+    tags:
+      - "v*.*.*"
+env:
+  cdk_image: ghcr.io/asfopensarlab/cdk-env
+jobs:
+  setup:
+    uses: ASFOpenSARlab/osl-utils/.github/workflows/reusable-setup-env.yaml@v0.0.9
+    with:
+      tagname: ${{ inputs.tagname || github.ref_name }}
+  wait-for-cdk-image:
+    # Because the image may not ready yet, lets wait for it
+    env:
+      cdk_image_tag: ${{ env.cdk_image }}:${{ needs.setup.outputs.branchtag }}
+    needs:
+      - setup
+    runs-on: ubuntu-latest
+    steps:
+      - name: Verify CDK Image
+        id: wait-on-image
+        run: |
+          echo "Attempting to pull Docker CDK image: ${{ env.cdk_image_tag }}"
+          for i in {1..5}; do docker pull ${{ env.cdk_image_tag }} && break || sleep 60; done
+          docker image inspect ${{ env.cdk_image_tag }}
+  use-cdk-image:
+    env:
+      image-tag: ${{ needs.setup.outputs.branchtag }}
+    runs-on: ${{ env.cdk_image }}:${{ needs.setup.outputs.branchtag }}
+    needs:
+      - setup
+      - wait-for-cdk-image
+    steps:
+      - name: CDK Helloworld
+        id: hello-wold
+        run: |-
+          echo "Hello from inside CDK (${{ env.image-tag }})"
+          cdk --version
