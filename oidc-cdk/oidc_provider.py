@@ -20,6 +20,7 @@ class OidcProviderStack(Stack):
         # Get github repos allowed to talk with AWS
         github_repos_file = Path(__file__).resolve().parent / "github_repos.conf"
         config = configparser.ConfigParser(allow_no_value=True)
+        config.optionxform = str
         config.read(github_repos_file)
         git_repo_list = list(config["GitHubRepos"])
 
