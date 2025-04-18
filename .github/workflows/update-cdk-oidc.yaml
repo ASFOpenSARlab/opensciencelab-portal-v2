@@ -61,6 +61,8 @@ jobs:
       - oidc-auth
       - wait-for-cdk-image
     steps:
+      - name: Checkout
+        uses: actions/checkout@v3
       - name: Update OIDC
         id: update-oidc
         run: |-
