@@ -2,8 +2,7 @@ FROM public.ecr.aws/amazonlinux/amazonlinux:2023
 
 # hadolint ignore=DL3033,SC1035
 
-RUN mkdir /cdk && mkdir /build
-WORKDIR /cdk
+RUN mkdir /build && mkdir /code
 
 ### Basic system setup
 # nodejs: For installing AWS CDK
@@ -50,4 +49,8 @@ ENV PYTHONPATH="/cdk_utils:"
 RUN yum clean all && rm -rf /var/cache/yum
 
 COPY ./build /build
+COPY ./Makefile /code/Makefile
+
+WORKDIR /code
+
 ENTRYPOINT ["/bin/bash"]
