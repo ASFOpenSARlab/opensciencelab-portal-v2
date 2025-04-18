@@ -16,7 +16,7 @@ Makefile commands:
 
     cdk-synth:              Synth CDK project
 
-    aws-whoami:             Get AWS account info    
+    aws-info:               Get AWS account info    
 
 endef
 export HELP
@@ -111,8 +111,11 @@ cdk-synth:
 	echo "Synthesizing ${PROJECT_NAME}"
 	cdk synth
 
-.PHONY := aws-whoami
-aws-whoami:
-	aws sts get-caller-identity \
+.PHONY := aws-info
+aws-info:
+	@echo -n "AWS User: "
+	@aws sts get-caller-identity \
 		--query "$${query:-Arn}" \
 		--output text
+	@echo "AWS Defauilt Region: $$AWS_DEFAULT_REGION"
+	@echo "AWS Default Profile: $$AWS_DEFAULT_PROFILE"
