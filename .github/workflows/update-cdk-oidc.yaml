@@ -36,6 +36,9 @@ jobs:
     runs-on: ubuntu-latest
     container:
       image: ${{ needs.wait-for-cdk-image.outputs.image_uri }}
+      credentials:
+        username: ${{ github.actor }}
+        password: ${{ secrets.github_token }}
     needs:
       - setup
       - wait-for-cdk-image
