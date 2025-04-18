@@ -24,7 +24,7 @@ jobs:
     # Because the image may not ready yet, lets wait for it
     needs:
       - setup
-    uses: ./reusable-image-readiness-wait.yaml
+    uses: ./.github/workflows/reusable-image-readiness-wait.yaml
     with:
       image_name: "asfopensarlab/cdk-env"
       image_tag: ${{ needs.setup.outputs.branchtag }}
