@@ -1,4 +1,5 @@
-""" Stack for OIDC Provider """
+"""Stack for OIDC Provider"""
+
 from pathlib import Path
 import configparser
 
@@ -9,8 +10,10 @@ from aws_cdk import aws_iam as iam
 
 GITHUB_RUNNER_THUMBPRINTS = ["6938fd4d98bab03faadb97b34396831e3780aea1"]
 
+
 class OidcProviderStack(Stack):
-    """ Basic Stack """
+    """Basic Stack"""
+
     def __init__(self, scope: Construct, construct_id: str, **kwargs) -> None:
         super().__init__(scope, construct_id, **kwargs)
 
@@ -18,10 +21,12 @@ class OidcProviderStack(Stack):
         github_repos_file = Path(__file__).resolve().parent / "github_repos.conf"
         config = configparser.ConfigParser(allow_no_value=True)
         config.read(github_repos_file)
-        git_repo_list = list(config['GitHubRepos'])
+        git_repo_list = list(config["GitHubRepos"])
 
         # Generic CDK enabling policy to attach to all the roles.
-        generic_cdk_policy = iam.Policy(self, "generic-cdk-policy",
+        generic_cdk_policy = iam.Policy(
+            self,
+            "generic-cdk-policy",
             statements=self._get_cdk_iam_policy(),
             policy_name=f"generic-cdk-policy-{self.region}",
             force=True,
@@ -38,28 +43,30 @@ class OidcProviderStack(Stack):
                         "actions": ["cloudformation:*"],
                         "resources": [
                             f"arn:aws:cloudformation:{self.region}:{self.account}:stack/*-oidc-provider/*",
-                        ]
+                        ],
                     },
                     {
                         "effect": "allow",
                         "actions": ["iam:*"],
                         "resources": [
                             f"arn:aws:iam::{self.account}:role/oidc_provider_stack_role"
-                        ]
-                    }
-                ]
+                        ],
+                    },
+                ],
             },
         }
 
         # GitHub OIDC Provier
-        github_provider = iam.OpenIdConnectProvider(self, "GitHubOIDC",
+        github_provider = iam.OpenIdConnectProvider(
+            self,
+            "GitHubOIDC",
             url="https://token.actions.githubusercontent.com",
             client_ids=["sts.amazonaws.com"],
-            thumbprints=GITHUB_RUNNER_THUMBPRINTS
+            thumbprints=GITHUB_RUNNER_THUMBPRINTS,
         )
 
         # Resusable Federated Principal
-        repos_with_access_stmt = [ f"repo:{repos}:*" for repos in git_repo_list ]
+        repos_with_access_stmt = [f"repo:{repos}:*" for repos in git_repo_list]
 
         federated_principal = iam.FederatedPrincipal(
             federated=github_provider.open_id_connect_provider_arn,
@@ -76,24 +83,32 @@ class OidcProviderStack(Stack):
 
         for role_name, params in cdk_deploy_roles.items():
             # Create a role for each project
-            created_role = iam.Role(self, role_name,
+            created_role = iam.Role(
+                self,
+                role_name,
                 role_name=role_name,
                 assumed_by=federated_principal,
                 description=params["description"],
-                inline_policies=self._create_policy_doc( params["name"], params["statements"] )
+                inline_policies=self._create_policy_doc(
+                    params["name"], params["statements"]
+                ),
             )
             # Attach generic_cdk_policy to this role
             generic_cdk_policy.attach_to_role(created_role)
 
     # Convert policy dict into policy statement object
     @staticmethod
-    def _format_policy( statement ) -> iam.PolicyStatement:
-        effect=iam.Effect.ALLOW if statement["effect"].upper() == "ALLOW" else iam.Effect.DENY
+    def _format_policy(statement) -> iam.PolicyStatement:
+        effect = (
+            iam.Effect.ALLOW
+            if statement["effect"].upper() == "ALLOW"
+            else iam.Effect.DENY
+        )
         return iam.PolicyStatement(
             effect=effect,
             actions=statement.get("actions"),
             resources=statement.get("resources"),
-            conditions=statement.get("conditions")
+            conditions=statement.get("conditions"),
         )
 
     def _get_cdk_iam_policy(self) -> list:
@@ -101,17 +116,19 @@ class OidcProviderStack(Stack):
             iam.PolicyStatement(
                 effect=iam.Effect.ALLOW,
                 actions=["cloudformation:*"],
-                resources=[f"arn:aws:cloudformation:{self.region}:{self.account}:stack/CDKToolkit/*"]
+                resources=[
+                    f"arn:aws:cloudformation:{self.region}:{self.account}:stack/CDKToolkit/*"
+                ],
             ),
             iam.PolicyStatement(
                 effect=iam.Effect.ALLOW,
                 actions=["s3:*"],
-                resources=[f"arn:aws:s3:::cdk-*-assets-{self.account}-{self.region}"]
+                resources=[f"arn:aws:s3:::cdk-*-assets-{self.account}-{self.region}"],
             ),
             iam.PolicyStatement(
                 effect=iam.Effect.ALLOW,
                 actions=["s3:ListAllMyBuckets"],
-                resources=["*"]
+                resources=["*"],
             ),
             # Generic privs for reading input for setting ENV Vars.
             iam.PolicyStatement(
@@ -123,33 +140,34 @@ class OidcProviderStack(Stack):
                     "secretsmanager:GetSecretValue",
                     "secretsmanager:DescribeSecret",
                     "ec2:DescribeSecurityGroups",
-                    "ec2:DescribeSubnets"
+                    "ec2:DescribeSubnets",
                 ],
-                resources=["*"]
+                resources=["*"],
             ),
             # Permissions to read account context information
             iam.PolicyStatement(
                 effect=iam.Effect.ALLOW,
-                actions=[
-                    "acm:ListCertificates",
-                    "ec2:DescribeVpcs"
-                ],
-                resources=["*"]
+                actions=["acm:ListCertificates", "ec2:DescribeVpcs"],
+                resources=["*"],
             ),
             iam.PolicyStatement(
                 effect=iam.Effect.ALLOW,
                 actions=["ssm:GetParameter"],
-                resources=[f"arn:aws:ssm:{self.region}:{self.account}:parameter/cdk-bootstrap/*"]
+                resources=[
+                    f"arn:aws:ssm:{self.region}:{self.account}:parameter/cdk-bootstrap/*"
+                ],
             ),
             iam.PolicyStatement(
                 effect=iam.Effect.ALLOW,
                 actions=["iam:PassRole", "sts:AssumeRole"],
-                resources=[f"arn:aws:iam::{self.account}:role/cdk-*"]
+                resources=[f"arn:aws:iam::{self.account}:role/cdk-*"],
             ),
             iam.PolicyStatement(
                 effect=iam.Effect.ALLOW,
                 actions=["lambda:*"],
-                resources=[f"arn:aws:lambda:{self.region}:{self.account}:function:*CustomAWSCDK*"]
+                resources=[
+                    f"arn:aws:lambda:{self.region}:{self.account}:function:*CustomAWSCDK*"
+                ],
             ),
             iam.PolicyStatement(
                 effect=iam.Effect.ALLOW,
@@ -157,12 +175,10 @@ class OidcProviderStack(Stack):
                 resources=["*"],
                 conditions={
                     "ForAnyValue:StringEquals": {
-                        "aws:CalledVia": [
-                            "cloudformation.amazonaws.com"
-                        ]
+                        "aws:CalledVia": ["cloudformation.amazonaws.com"]
                     }
-                }
-            )
+                },
+            ),
         ]
 
     # Convert a list of statements into a fully policy doc object
@@ -170,8 +186,6 @@ class OidcProviderStack(Stack):
         all_policies = []
 
         for policy in statements:
-            all_policies.append( self._format_policy( policy ) )
+            all_policies.append(self._format_policy(policy))
 
-        return {
-            name: iam.PolicyDocument( statements=all_policies )
-        }
+        return {name: iam.PolicyDocument(statements=all_policies)}
