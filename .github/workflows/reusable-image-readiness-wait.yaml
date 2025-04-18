@@ -1,0 +1,45 @@
+---
+name: Reusable - Image readiness wait
+on: # yamllint disable-line rule:truthy
+  workflow_call:
+    inputs:
+      image_name:
+        required: true
+        type: string
+      image_tag:
+        required: false
+        type: string
+        default: "latest"
+      image_repo:
+        required: false
+        type: string
+        default: "ghcr.io"
+      repo_username:
+        required: true
+        type: string
+    secrets:
+      repo_password:
+        required: true
+    outputs:
+      image_uri:
+        value: ${{ jobs.wait-for-image.outputs.image_uri }}
+jobs:
+  wait-for-image:
+    runs-on: ubuntu-latest
+    env:
+      image_tag: ${{ inputs.image_repo }}/${{ inputs.image_name }}:${{ inputs.image_tag }}
+    outputs:
+      image_uri: ${{ inputs.image_repo }}/${{ inputs.image_name }}:${{ inputs.image_tag }}
+    steps:
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ inputs.image_repo }}
+          username: ${{ inputs.repo_username }}
+          password: ${{ secrets.repo_password }}
+      - name: Verify Image
+        id: wait-on-image
+        run: |-
+          echo "Attempting to pull Docker image: ${{ env.image_tag }}"
+          for i in {1..5}; do docker pull ${{ env.image_tag }} && break || sleep 60; done
+          docker image inspect ${{ env.image_tag }}
