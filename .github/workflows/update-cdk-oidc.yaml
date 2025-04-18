@@ -1,0 +1,65 @@
+---
+name: Update CDK for OIDC
+on: # yamllint disable-line rule:truthy
+  workflow_dispatch: {}
+  push:
+    paths:
+      - "oidc-cdk/*"
+      # Or changes to this action:
+      - .github/workflows/update-cdk-oidc.yaml
+    branches:
+      - "*/*"
+      - main
+    tags:
+      - "v*.*.*"
+env:
+  cdk_image: ghcr.io/asfopensarlab/cdk-env
+jobs:
+  setup:
+    uses: ASFOpenSARlab/osl-utils/.github/workflows/reusable-setup-env.yaml@v0.0.9
+    with:
+      tagname: ${{ inputs.tagname || github.ref_name }}
+  wait-for-cdk-image:
+    # Because the image may not ready yet, lets wait for it
+    needs:
+      - setup
+    uses: ./.github/workflows/reusable-image-readiness-wait.yaml
+    with:
+      image_name: "asfopensarlab/cdk-env"
+      image_tag: ${{ needs.setup.outputs.branchtag }}
+      repo_username: ${{ github.repository_owner }}
+    secrets:
+      repo_password: ${{ secrets.GITHUB_TOKEN }}
+  use-cdk-image:
+    env:
+      image-tag: ${{ needs.setup.outputs.branchtag }}
+    runs-on: ubuntu-latest
+    container:
+      image: ${{ needs.wait-for-cdk-image.outputs.image_uri }}
+      credentials:
+        username: ${{ github.repository_owner }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+    needs:
+      - setup
+      - wait-for-cdk-image
+    environment: ${{ needs.setup.outputs.environment }}
+    # These permissions are needed to interact with GitHub's OIDC Token endpoint.
+    permissions:
+      id-token: write
+      contents: read
+      packages: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::${{vars.AWS_ACCOUNT_NUMBER}}:role/${{vars.OIDC_IAM_ROLE}}
+          aws-region: ${{vars.AWS_DEFAULT_REGION}}
+      - name: Update OIDC
+        id: update-oidc
+        run: |-
+          echo "container.image was ${{ needs.wait-for-cdk-image.outputs.image_uri }}"
+          echo "Hello from inside CDK (${{ env.image-tag }})"
+          pwd && ls
+          make deploy-oidc
