@@ -46,9 +46,9 @@ automagically populated into the dockerized build/deploy environment
 
 From the root of the cloned repo, run `make cdk-image` to build the image:
 ```shell
-bbuechle@Mac-mini opensciencelab-portal-v2 % make cdk-image
-cd /Users/bbuechle/PycharmProjects/opensciencelab-portal-v2/ && pwd && docker build --pull -t cdk-env:latest -f ./build/cdk.Dockerfile .
-/Users/bbuechle/PycharmProjects/opensciencelab-portal-v2
+user@Mac-mini opensciencelab-portal-v2 % make cdk-image
+cd /Users/user/PycharmProjects/opensciencelab-portal-v2/ && pwd && docker build --pull -t cdk-env:latest -f ./build/cdk.Dockerfile .
+/Users/user/PycharmProjects/opensciencelab-portal-v2
 [+] Building 67.3s (15/15) FINISHED                                                                                                                                               docker:desktop-linux
  => [internal] load[.yamllint.yaml](.yamllint.yaml) build definition from cdk.Dockerfile                                                                                                                                          0.0s
 [....clipped.....]                                                                                                                                0.7s
@@ -62,7 +62,7 @@ cd /Users/bbuechle/PycharmProjects/opensciencelab-portal-v2/ && pwd && docker bu
 That step can be skipped if the image is already cashed. Next start the container:
 
 ```shell
-bbuechle@Mac-mini opensciencelab-portal-v2 % make cdk-shell
+user@Mac-mini opensciencelab-portal-v2 % make cdk-shell
 [ root@a7a585db4d88:/cdk ]# 
 
 ```
