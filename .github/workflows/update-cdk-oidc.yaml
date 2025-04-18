@@ -37,8 +37,8 @@ jobs:
     container:
       image: ${{ needs.wait-for-cdk-image.outputs.image_uri }}
       credentials:
-        username: ${{ github.actor }}
-        password: ${{ secrets.github_token }}
+        username: ${{ github.repository_owner }}
+        password: ${{ secrets.GITHUB_TOKEN }}
     needs:
       - setup
       - wait-for-cdk-image
