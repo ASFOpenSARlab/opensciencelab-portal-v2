@@ -79,6 +79,7 @@ cdk-shell:
 		-v /tmp/cdkawscli/cache:/root/.aws/cli/cache/ \
 		-v ${PROJECT_DIR}/portal-cdk/:/cdk/ \
 		-v ${PROJECT_DIR}/build/:/build/ \
+		-v ${PROJECT_DIR}/:/code/ \
 		-e AWS_ACCESS_KEY_ID -e AWS_SECRET_ACCESS_KEY \
 		-e AWS_DEFAULT_PROFILE -e AWS_PROFILE \
 		-e AWS_DEFAULT_REGION -e AWS_REGION \
