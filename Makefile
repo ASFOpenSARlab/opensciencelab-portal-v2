@@ -12,9 +12,13 @@ Makefile commands:
 
     manual-cdk-bootstrap:   Bootstrap an account for CDK
 
-    cdk-deploy:             Deploy CDK project
+    synth-portal:           Synth portal CDK project
 
-    cdk-synth:              Synth CDK project
+    deploy-portal:          Deploy portal CDK project
+
+    synth-oidc:             Synth OIDC CDK project
+
+    deploy-oidc:            Deploy OIDC CDK project
 
     aws-info:               Get AWS account info    
 
@@ -75,10 +79,7 @@ cdk-shell:
 	docker run --rm -it \
 		-v ~/.aws/:/root/.aws/:ro \
 		-v /tmp/cdkawscli/cache:/root/.aws/cli/cache/ \
-		-v ${PROJECT_DIR}/portal-cdk/:/cdk/ \
-		-v ${PROJECT_DIR}/build/:/build/ \
-		-v ${PROJECT_DIR}/oidc-cdk/:/oidc/ \
-		-v ${PROJECT_DIR}/Makefile:/Makefile \
+		-v ${PROJECT_DIR}/:/code/ \
 		-e AWS_ACCESS_KEY_ID -e AWS_SECRET_ACCESS_KEY \
 		-e AWS_DEFAULT_PROFILE -e AWS_PROFILE \
 		-e AWS_DEFAULT_REGION -e AWS_REGION \
@@ -101,15 +102,25 @@ manual-cdk-bootstrap:
 		printf $(_DANGER) "Aborted" ; \
 	fi
 
-.PHONY := cdk-deploy
-cdk-deploy:
-	echo "Deploying ${PROJECT_NAME}"
-	cdk --require-approval never deploy 
+.PHONY := synth-portal
+synth-portal:
+	@echo "Synthesizing ${PROJECT_NAME}/portal-cdk"
+	cd ./portal-cdk && cdk synth
 
-.PHONY := cdk-synth
-cdk-synth:
-	echo "Synthesizing ${PROJECT_NAME}"
-	cdk synth
+.PHONY := deploy-portal
+deploy-portal:
+	@echo "Deploying ${PROJECT_NAME}/portal-cdk"
+	cd ./portal-cdk && cdk --require-approval never deploy
+
+.PHONY := synth-oidc
+synth-oidc:
+	@echo "Synthesizing ${PROJECT_NAME}/oidc-cdk"
+	cd ./oidc-cdk && cdk synth
+
+.PHONY := deploy-oidc
+deploy-oidc:
+	@echo "Deploying ${PROJECT_NAME}/oidc-cdk"
+	cd ./oidc-cdk && cdk --require-approval never deploy
 
 .PHONY := aws-info
 aws-info:
