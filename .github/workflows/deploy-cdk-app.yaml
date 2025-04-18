@@ -22,30 +22,21 @@ jobs:
       tagname: ${{ inputs.tagname || github.ref_name }}
   wait-for-cdk-image:
     # Because the image may not ready yet, lets wait for it
-    env:
-      cdk_image_tag: ghcr.io/asfopensarlab/cdk-env:${{ needs.setup.outputs.branchtag }}
     needs:
       - setup
-    runs-on: ubuntu-latest
-    steps:
-      - name: Login to GitHub Container Registry
-        uses: docker/login-action@v3
-        with:
-          registry: ghcr.io
-          username: ${{ github.repository_owner }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-      - name: Verify CDK Image
-        id: wait-on-image
-        run: |
-          echo "Attempting to pull Docker CDK image: ${{ env.cdk_image_tag }}"
-          for i in {1..5}; do docker pull ${{ env.cdk_image_tag }} && break || sleep 60; done
-          docker image inspect ${{ env.cdk_image_tag }}
+    uses: ./reusable-image-readiness-wait.yaml
+    with:
+      image_name: "asfopensarlab/cdk-env"
+      image_tag: ${{ needs.setup.outputs.branchtag }}
+      repo_username: ${{ github.repository_owner }}
+    secrets:
+      repo_password: ${{ secrets.GITHUB_TOKEN }}
   use-cdk-image:
     env:
       image-tag: ${{ needs.setup.outputs.branchtag }}
     runs-on: ubuntu-latest
     container:
-      image: ghcr.io/asfopensarlab/cdk-env:${{ needs.setup.outputs.branchtag }}
+      image: ${{ needs.wait-for-cdk-image.outputs.image_uri }}
     needs:
       - setup
       - wait-for-cdk-image
