@@ -2,25 +2,31 @@ define HELP
 
 Makefile commands:
 
-    help:            List makefile commands
+    help:                   List makefile commands
 
-    local-build:     Build image for local development
+    lint:                   Run linting commands
 
-    local-run:       Run container for local development
+    cdk-image:              Create CDK Build environment Docker image
 
-    lint:            Run linting commands
+    cdk-shell:              Enter CDK enviroment Docker Image
 
-    cdk-image:       Create CDK Build environment Docker image
+    manual-cdk-bootstrap:   Bootstrap an account for CDK
 
-    cdk-shell:       Enter CDK enviroment Docker Image
+    cdk-deploy:             Deploy CDK project
 
-    cdk-bootstrap:   Bootstrap an account for CDK
+    cdk-synth:              Synth CDK project
+
+    aws-whoami:             Get AWS account info    
 
 endef
 export HELP
 
 # work in BASH
 SHELL:=/bin/bash
+
+# Get terminal colors
+_SUCCESS := "\033[32m%s\033[0m %s\n" # Green text for "printf"
+_DANGER := "\033[31m%s\033[0m %s\n" # Red text for "printf"
 
 # Respect pathing
 export PWD=$(dir $(realpath $(firstword $(MAKEFILE_LIST))))
@@ -40,14 +46,6 @@ all: help
 .PHONY := help
 help:
 	@echo "$$HELP"
-
-.PHONY := local-build
-local-build:
-	docker build -f local-build.Dockerfile -t localhost:5000/portalv2:local-build .
-
-.PHONY := local-run
-local-run:
-	docker run -it --rm -v $$(pwd)/portal-cdk:/tmp/portal-cdk --user $$(id -u) localhost:5000/portalv2:local-build bash
 
 .PHONY := lint
 lint:
@@ -79,6 +77,8 @@ cdk-shell:
 		-v /tmp/cdkawscli/cache:/root/.aws/cli/cache/ \
 		-v ${PROJECT_DIR}/portal-cdk/:/cdk/ \
 		-v ${PROJECT_DIR}/build/:/build/ \
+		-v ${PROJECT_DIR}/oidc-cdk/:/oidc/ \
+		-v ${PROJECT_DIR}/Makefile:/Makefile \
 		-e AWS_ACCESS_KEY_ID -e AWS_SECRET_ACCESS_KEY \
 		-e AWS_DEFAULT_PROFILE -e AWS_PROFILE \
 		-e AWS_DEFAULT_REGION -e AWS_REGION \
@@ -86,11 +86,34 @@ cdk-shell:
 		-e DEPLOY_PREFIX \
 		${IMAGE_NAME}:latest
 
-.PHONY := cdk-bootstrap
-cdk-bootstrap:
+.PHONY := manual-cdk-bootstrap
+manual-cdk-bootstrap:
 	# This needs to be run once per account.
-	if [ -z "${AWS_DEFAULT_PROFILE}" ]; then echo "AWS_DEFAULT_PROFILE is not set"; fi
-	if [ -z "$$AWS_DEFAULT_ACCOUNT" ]; then echo "Could not get AWS account number" && exit 13; fi && \
-	if [ -z "$$AWS_DEFAULT_REGION" ]; then echo "Could not get AWS Region" && exit 6; fi && \
-	echo "Running: \`cdk bootstrap aws://$$AWS_DEFAULT_ACCOUNT/${AWS_DEFAULT_REGION}\`..."
-	cdk bootstrap aws://$$AWS_DEFAULT_ACCOUNT/${AWS_DEFAULT_REGION} --public-access-block-configuration false
+	if [ -z "${AWS_DEFAULT_PROFILE}" ]; then echo "AWS_DEFAULT_PROFILE is not set"; fi ; && \
+	export AWS_DEFAULT_ACCOUNT=`aws sts get-caller-identity --query 'Account' --output=text` ; && \
+	export AWS_DEFAULT_REGION="${AWS_REGION}" ; && \
+	if [ -z "$$AWS_DEFAULT_ACCOUNT" ]; then echo "⚠️  Can't infer AWS credentials from AWS_DEFAULT_ACCOUNT! ⚠️" && exit; fi && \
+	echo "Make sure we bootstrap credentials manually once per AWS account" ; && \
+	read -p "Are you sure? [y/N] " ans && ans=$${ans:-N} ; && \
+	if [ $${ans} = y ] || [ $${ans} = Y ]; then \
+		printf $(_SUCCESS) "Running: \`cdk bootstrap aws://$$AWS_DEFAULT_ACCOUNT/${AWS_DEFAULT_REGION}\`..." ; && \
+		cdk bootstrap aws://$$AWS_DEFAULT_ACCOUNT/${AWS_DEFAULT_REGION} --public-access-block-configuration false ; \
+	else \
+		printf $(_DANGER) "Aborted" ; \
+	fi
+
+.PHONY := cdk-deploy
+cdk-deploy:
+	echo "Deploying ${PROJECT_NAME}"
+	cdk --require-approval never deploy 
+
+.PHONY := cdk-synth
+cdk-synth:
+	echo "Synthesizing ${PROJECT_NAME}"
+	cdk synth
+
+.PHONY := aws-whoami
+aws-whoami:
+	aws sts get-caller-identity \
+		--query "$${query:-Arn}" \
+		--output text
