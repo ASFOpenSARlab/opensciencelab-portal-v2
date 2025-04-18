@@ -88,16 +88,15 @@ cdk-shell:
 
 .PHONY := manual-cdk-bootstrap
 manual-cdk-bootstrap:
-	# This needs to be run once per account.
-	if [ -z "${AWS_DEFAULT_PROFILE}" ]; then echo "AWS_DEFAULT_PROFILE is not set"; fi ; && \
-	export AWS_DEFAULT_ACCOUNT=`aws sts get-caller-identity --query 'Account' --output=text` ; && \
-	export AWS_DEFAULT_REGION="${AWS_REGION}" ; && \
+	export AWS_DEFAULT_ACCOUNT=`aws sts get-caller-identity --query 'Account' --output=text` && \
+	export AWS_DEFAULT_REGION="${AWS_REGION}" && \
+	if [ -z "${AWS_DEFAULT_PROFILE}" ]; then echo "AWS_DEFAULT_PROFILE is not set"; fi && \
 	if [ -z "$$AWS_DEFAULT_ACCOUNT" ]; then echo "⚠️  Can't infer AWS credentials from AWS_DEFAULT_ACCOUNT! ⚠️" && exit; fi && \
-	echo "Make sure we bootstrap credentials manually once per AWS account" ; && \
-	read -p "Are you sure? [y/N] " ans && ans=$${ans:-N} ; && \
+	echo "Make sure we bootstrap credentials manually once per AWS account" && \
+	read -p "Are you sure? [y/N] " ans && ans=$${ans:-N} && \
 	if [ $${ans} = y ] || [ $${ans} = Y ]; then \
-		printf $(_SUCCESS) "Running: \`cdk bootstrap aws://$$AWS_DEFAULT_ACCOUNT/${AWS_DEFAULT_REGION}\`..." ; && \
-		cdk bootstrap aws://$$AWS_DEFAULT_ACCOUNT/${AWS_DEFAULT_REGION} --public-access-block-configuration false ; \
+		printf $(_SUCCESS) "Running: \`cdk bootstrap aws://$$AWS_DEFAULT_ACCOUNT/$$AWS_DEFAULT_REGION\`..." && \
+		cdk bootstrap aws://$$AWS_DEFAULT_ACCOUNT/$$AWS_DEFAULT_REGION --public-access-block-configuration false ; \
 	else \
 		printf $(_DANGER) "Aborted" ; \
 	fi
