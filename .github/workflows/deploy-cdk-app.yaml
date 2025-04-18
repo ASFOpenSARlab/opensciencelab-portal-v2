@@ -44,6 +44,6 @@ jobs:
       - name: CDK Helloworld
         id: hello-wold
         run: |-
-          echo "container.image was  ${{ needs.wait-for-cdk-image.outputs.image_uri }}"
+          echo "container.image was ${{ needs.wait-for-cdk-image.outputs.image_uri }}"
           echo "Hello from inside CDK (${{ env.image-tag }})"
           cdk --version

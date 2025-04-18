@@ -22,7 +22,7 @@ on: # yamllint disable-line rule:truthy
         required: true
     outputs:
       image_uri:
-        value: ${{ jobs.wait-for-image.output.image_uri }}
+        value: ${{ jobs.wait-for-image.outputs.image_uri }}
 jobs:
   wait-for-image:
     runs-on: ubuntu-latest
