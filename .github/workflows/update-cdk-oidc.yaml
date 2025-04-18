@@ -35,7 +35,7 @@ jobs:
         uses: aws-actions/configure-aws-credentials@v1
         with:
           role-to-assume: arn:aws:iam::${{vars.AWS_ACCOUNT_NUMBER}}:role/${{vars.OIDC_IAM_ROLE}}
-          aws-region: ${{env.AWS_DEFAULT_REGION}}
+          aws-region: ${{vars.AWS_DEFAULT_REGION}}
       - name: List Buckets (to confirm login)
         run: |-
           aws s3 ls
