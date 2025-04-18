@@ -38,9 +38,9 @@ Clone the portal repo to your local work station
 
 The Makefile + Docker process will need to communicate with AWS. In actions, this is done through an
 OIDC Provider in AWS and requires no authentication. Locally however, a profile must be present in 
-`~/.aws/credentials` and the `AWS_DEFAULT_PROFILE` needs to be set accordingly, ***OR*** 
+`~/.aws/credentials` and the `AWS_DEFAULT_PROFILE` env var needs to be set accordingly, ***OR*** 
 `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` must be set. Either solution works, and will get 
-automagically populated into the dockerized build/deploy environment
+automagically populated into the dockerized build/deploy environment.
 
 ##### Start CDK Shell 
 
@@ -74,6 +74,12 @@ user@Mac-mini opensciencelab-portal-v2 % make cdk-shell
 
 [ root@a7a585db4d88:/cdk ]# make cdk-deploy
 ```
+
+##### Linting
+
+Before committing changes, the code can be easily linted by utilizing the `lint` 
+target of the Makefile. This will call the same linting routines used by the 
+GitHub actions. 
 
 #### **`Test`**
 
