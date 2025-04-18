@@ -12,6 +12,7 @@ on: # yamllint disable-line rule:truthy
     paths:
       # Run on any change inside the project dir:
       - "build/cdk.*"
+      - "Makefile"
       # Or changes to this action:
       - .github/workflows/cdk-docker-image.yaml
     branches:
