@@ -33,6 +33,7 @@ jobs:
   use-cdk-image:
     env:
       image-tag: ${{ needs.setup.outputs.branchtag }}
+      DEPLOY_PREFIX: ${{ needs.setup.outputs.deploy_prefix }}
     runs-on: ubuntu-latest
     container:
       image: ${{ needs.wait-for-cdk-image.outputs.image_uri }}
