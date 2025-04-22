@@ -30,6 +30,17 @@ While development maturity can be deployment manually via [`Docker`](./build/cdk
 & [`Makefile`](./Makefile), it may be easier and more consistent to rely on the GitHub action. 
 However, when necessary, developer deployments can be completed using the following steps:
 
+##### Deploying a Personal Stack
+
+You can deploy a new stack without conflicting with any others, with:
+
+```bash
+# Just synthing locally:
+make synth-portal -e MATURITY=cs
+# Or deploying:
+make deploy-portal -e MATURITY=cs
+```
+
 ##### Clone Repo
 
 Clone the portal repo to your local work station
