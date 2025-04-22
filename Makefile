@@ -80,7 +80,7 @@ cdk-shell:
 		-e AWS_DEFAULT_PROFILE -e AWS_PROFILE \
 		-e AWS_DEFAULT_REGION -e AWS_REGION \
 		-e AWS_DEFAULT_ACCOUNT \
-		-e MATURITY \
+		-e DEPLOY_PREFIX \
 		${IMAGE_NAME}:latest
 
 .PHONY := manual-cdk-bootstrap
@@ -100,22 +100,22 @@ manual-cdk-bootstrap:
 
 .PHONY := synth-portal
 synth-portal:
-	@echo "Synthesizing ${MATURITY}/portal-cdk"
+	@echo "Synthesizing ${DEPLOY_PREFIX}/portal-cdk"
 	cd ./portal-cdk && cdk synth
 
 .PHONY := deploy-portal
 deploy-portal:
-	@echo "Deploying ${MATURITY}/portal-cdk"
+	@echo "Deploying ${DEPLOY_PREFIX}/portal-cdk"
 	cd ./portal-cdk && cdk --require-approval never deploy
 
 .PHONY := synth-oidc
 synth-oidc:
-	@echo "Synthesizing ${MATURITY}/oidc-cdk"
+	@echo "Synthesizing ${DEPLOY_PREFIX}/oidc-cdk"
 	cd ./oidc-cdk && cdk synth
 
 .PHONY := deploy-oidc
 deploy-oidc:
-	@echo "Deploying ${MATURITY}/oidc-cdk"
+	@echo "Deploying ${DEPLOY_PREFIX}/oidc-cdk"
 	cd ./oidc-cdk && cdk --require-approval never deploy
 
 .PHONY := aws-info
