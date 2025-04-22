@@ -39,7 +39,6 @@ You can deploy a new stack without conflicting with any others, with:
 make synth-portal -e DEPLOY_PREFIX=cs
 # Or deploying:
 make deploy-portal -e DEPLOY_PREFIX=cs
-# (Will default to the 'dev' MATURITY, no need to set that too.)
 ```
 
 ##### Clone Repo
