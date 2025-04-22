@@ -8,10 +8,10 @@ from constructs import Construct
 
 class PortalCdkStack(Stack):
     def __init__(
-        self, scope: Construct, construct_id: str, maturity: str, **kwargs
+        self, scope: Construct, construct_id: str, stack_id: str, **kwargs
     ) -> None:
         super().__init__(scope, construct_id, **kwargs)
-        print(f"INSIDE THE STACK: {maturity}")
+        print(f"INSIDE THE STACK: {stack_id}")
         # The code that defines your stack goes here
 
         # example resource

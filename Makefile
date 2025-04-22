@@ -36,8 +36,6 @@ _DANGER := "\033[31m%s\033[0m %s\n" # Red text for "printf"
 export PWD=$(dir $(realpath $(firstword $(MAKEFILE_LIST))))
 PROJECT_DIR := $(if $(CI_PROJECT_DIR),$(CI_PROJECT_DIR:/=),$(PWD:/=/))
 
-MATURITY ?= dev
-
 IMAGE_NAME ?= cdk-env
 AWS_DEFAULT_PROFILE := $(AWS_DEFAULT_PROFILE)
 AWS_REGION ?= us-west-2
