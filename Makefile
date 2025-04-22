@@ -36,9 +36,7 @@ _DANGER := "\033[31m%s\033[0m %s\n" # Red text for "printf"
 export PWD=$(dir $(realpath $(firstword $(MAKEFILE_LIST))))
 PROJECT_DIR := $(if $(CI_PROJECT_DIR),$(CI_PROJECT_DIR:/=),$(PWD:/=/))
 
-# If we're doing TAG_COMMIT, use MATURITY ("prod"), otherwise use DOCKER_TAG
-DOCKER_TAG ?= local
-DEPLOY_PREFIX ?= $(if $(TAG_COMMIT),$(MATURITY),$(DOCKER_TAG))
+MATURITY ?= dev
 
 IMAGE_NAME ?= cdk-env
 AWS_DEFAULT_PROFILE := $(AWS_DEFAULT_PROFILE)
@@ -84,7 +82,7 @@ cdk-shell:
 		-e AWS_DEFAULT_PROFILE -e AWS_PROFILE \
 		-e AWS_DEFAULT_REGION -e AWS_REGION \
 		-e AWS_DEFAULT_ACCOUNT \
-		-e DEPLOY_PREFIX \
+		-e MATURITY \
 		${IMAGE_NAME}:latest
 
 .PHONY := manual-cdk-bootstrap
@@ -104,22 +102,22 @@ manual-cdk-bootstrap:
 
 .PHONY := synth-portal
 synth-portal:
-	@echo "Synthesizing ${PROJECT_NAME}/portal-cdk"
+	@echo "Synthesizing ${MATURITY}/portal-cdk"
 	cd ./portal-cdk && cdk synth
 
 .PHONY := deploy-portal
 deploy-portal:
-	@echo "Deploying ${PROJECT_NAME}/portal-cdk"
+	@echo "Deploying ${MATURITY}/portal-cdk"
 	cd ./portal-cdk && cdk --require-approval never deploy
 
 .PHONY := synth-oidc
 synth-oidc:
-	@echo "Synthesizing ${PROJECT_NAME}/oidc-cdk"
+	@echo "Synthesizing ${MATURITY}/oidc-cdk"
 	cd ./oidc-cdk && cdk synth
 
 .PHONY := deploy-oidc
 deploy-oidc:
-	@echo "Deploying ${PROJECT_NAME}/oidc-cdk"
+	@echo "Deploying ${MATURITY}/oidc-cdk"
 	cd ./oidc-cdk && cdk --require-approval never deploy
 
 .PHONY := aws-info
