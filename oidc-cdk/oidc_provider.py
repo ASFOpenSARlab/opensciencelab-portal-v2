@@ -57,7 +57,7 @@ class OidcProviderStack(Stack):
             },
             "deploy_portal_stack_role": {
                 "description": "IAM Role for Portal Deployment from GitHub Actions",
-                "name": "AllowUpdateOIDCStack",
+                "name": "AllowUpdatePortalStack",
                 "statements": [
                     {
                         "effect": "allow",
