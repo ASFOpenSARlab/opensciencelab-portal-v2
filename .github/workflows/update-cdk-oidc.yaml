@@ -38,6 +38,12 @@ jobs:
     secrets:
       repo_password: ${{ secrets.GITHUB_TOKEN }}
   use-cdk-image:
+    # Skip this step if env=dev and input.cdk_deploy_env=default
+    if: |
+      !(
+        inputs.cdk_deploy_env == 'default' &&
+        needs.setup.outputs.environment = 'dev'
+      )
     env:
       image-tag: ${{ needs.setup.outputs.branchtag }}
       # Allow cdk_deploy_env to override deploy_prefix for deploy
