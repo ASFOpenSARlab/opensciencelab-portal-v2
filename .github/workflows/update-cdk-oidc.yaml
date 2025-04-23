@@ -42,7 +42,7 @@ jobs:
     if: |
       !(
         inputs.cdk_deploy_env == 'default' &&
-        needs.setup.outputs.environment = 'dev'
+        needs.setup.outputs.environment == 'dev'
       )
     env:
       image-tag: ${{ needs.setup.outputs.branchtag }}
