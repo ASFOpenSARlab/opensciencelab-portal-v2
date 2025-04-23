@@ -50,14 +50,32 @@ class OidcProviderStack(Stack):
                         "effect": "allow",
                         "actions": ["iam:*"],
                         "resources": [
-                            f"arn:aws:iam::{self.account}:role/oidc_provider_stack_role"
+                            f"arn:aws:iam::{self.account}:role/deploy_oidc_provider_stack_role"
                         ],
+                    },
+                ],
+            },
+            "deploy_portal_stack_role": {
+                "description": "IAM Role for Portal Deployment from GitHub Actions",
+                "name": "AllowUpdateOIDCStack",
+                "statements": [
+                    {
+                        "effect": "allow",
+                        "actions": ["cloudformation:*"],
+                        "resources": [
+                            f"arn:aws:cloudformation:{self.region}:{self.account}:stack/*portal*/*",
+                        ],
+                    },
+                    {   # Allow self modify
+                        "effect": "allow",
+                        "actions": ["s3:ListBucket"],
+                        "resources": ["*"],
                     },
                 ],
             },
         }
 
-        # GitHub OIDC Provier
+        # GitHub OIDC Provider
         github_provider = iam.OpenIdConnectProvider(
             self,
             "GitHubOIDC",
