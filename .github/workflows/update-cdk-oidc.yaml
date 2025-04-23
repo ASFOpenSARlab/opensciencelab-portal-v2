@@ -1,7 +1,15 @@
 ---
 name: Update CDK for OIDC
 on: # yamllint disable-line rule:truthy
-  workflow_dispatch: {}
+  workflow_dispatch:
+    inputs:
+      cdk_deploy_env:
+        type: choice
+        description: Deploy this branch to which maturity?
+        options:
+          - 'default'
+          - 'test'
+          - 'prod'
   push:
     paths:
       - "oidc-cdk/*"
@@ -32,7 +40,13 @@ jobs:
   use-cdk-image:
     env:
       image-tag: ${{ needs.setup.outputs.branchtag }}
-      DEPLOY_PREFIX: ${{ needs.setup.outputs.deploy_prefix }}
+      # Allow cdk_deploy_env to override deploy_prefix for deploy
+      DEPLOY_PREFIX: >
+        ${{ 
+            inputs.cdk_deploy_env == 'test' && 'main' ||
+            inputs.cdk_deploy_env == 'prod' && 'prod' ||
+            needs.setup.outputs.deploy_prefix 
+        }}
     runs-on: ubuntu-latest
     container:
       image: ${{ needs.wait-for-cdk-image.outputs.image_uri }}
@@ -42,7 +56,13 @@ jobs:
     needs:
       - setup
       - wait-for-cdk-image
-    environment: ${{ needs.setup.outputs.environment }}
+    # Allow cdk_deploy_env to override environment for deploy
+    environment: >
+      ${{ 
+        inputs.cdk_deploy_env == 'test' && 'main' ||
+        inputs.cdk_deploy_env == 'prod' && 'prod' ||
+        needs.setup.outputs.environment 
+      }}
     # These permissions are needed to interact with GitHub's OIDC Token endpoint.
     permissions:
       id-token: write
