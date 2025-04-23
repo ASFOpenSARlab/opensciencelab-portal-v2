@@ -32,6 +32,7 @@ jobs:
     secrets:
       repo_password: ${{ secrets.GITHUB_TOKEN }}
   use-cdk-image:
+    environment: ${{ needs.setup.outputs.environment }}
     env:
       image-tag: ${{ needs.setup.outputs.branchtag }}
     runs-on: ubuntu-latest
