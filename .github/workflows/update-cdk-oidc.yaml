@@ -41,11 +41,12 @@ jobs:
     env:
       image-tag: ${{ needs.setup.outputs.branchtag }}
       # Allow cdk_deploy_env to override deploy_prefix for deploy
-      DEPLOY_PREFIX: ${{ 
-                       inputs.cdk_deploy_env == 'test' && 'test' ||
-                       inputs.cdk_deploy_env == 'prod' && 'prod' ||
-                       needs.setup.outputs.deploy_prefix 
-                     }}
+      DEPLOY_PREFIX: >-
+        ${{
+          inputs.cdk_deploy_env == 'test' && 'test' ||
+          inputs.cdk_deploy_env == 'prod' && 'prod' ||
+          needs.setup.outputs.deploy_prefix
+        }}
     runs-on: ubuntu-latest
     container:
       image: ${{ needs.wait-for-cdk-image.outputs.image_uri }}
@@ -56,11 +57,11 @@ jobs:
       - setup
       - wait-for-cdk-image
     # Allow cdk_deploy_env to override environment for deploy
-    environment: ${{ 
-                   inputs.cdk_deploy_env == 'test' && 'test' ||
-                   inputs.cdk_deploy_env == 'prod' && 'prod' ||
-                   needs.setup.outputs.environment 
-                 }}
+    environment: >-
+      ${{ inputs.cdk_deploy_env == 'test' && 'test' ||
+        inputs.cdk_deploy_env == 'prod' && 'prod' ||
+        needs.setup.outputs.environment
+      }}
     # These permissions are needed to interact with GitHub's OIDC Token endpoint.
     permissions:
       id-token: write
