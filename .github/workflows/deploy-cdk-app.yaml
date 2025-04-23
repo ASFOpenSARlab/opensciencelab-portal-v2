@@ -32,6 +32,7 @@ jobs:
     secrets:
       repo_password: ${{ secrets.GITHUB_TOKEN }}
   use-cdk-image:
+    environment: ${{ needs.setup.outputs.environment }}
     env:
       image-tag: ${{ needs.setup.outputs.branchtag }}
     runs-on: ubuntu-latest
@@ -40,10 +41,22 @@ jobs:
     needs:
       - setup
       - wait-for-cdk-image
+    permissions:
+      id-token: write
+      contents: read
+      packages: read
     steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::${{vars.AWS_ACCOUNT_NUMBER}}:role/deploy_portal_stack_role
+          aws-region: ${{vars.AWS_DEFAULT_REGION}}
       - name: CDK Helloworld
         id: hello-wold
         run: |-
           echo "container.image was ${{ needs.wait-for-cdk-image.outputs.image_uri }}"
           echo "Hello from inside CDK (${{ env.image-tag }})"
+          aws s3 ls
           cdk --version
