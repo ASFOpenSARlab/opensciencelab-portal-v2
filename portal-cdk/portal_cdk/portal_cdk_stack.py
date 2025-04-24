@@ -26,7 +26,7 @@ class PortalCdkStack(Stack):
         # https://docs.powertools.aws.dev/lambda/python/latest/
         ## Import it with CDK:
         # https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_lambda.LayerVersion.html#static-fromwbrlayerwbrversionwbrarnscope-id-layerversionarn
-        python_version = lambda_runtime.name.lower().replace(".", "") # pylint: disable=no-member
+        python_version = lambda_runtime.name.lower().replace(".", "")  # pylint: disable=no-member
         powertools_layer = aws_lambda.LayerVersion.from_layer_version_arn(
             self,
             "LambdaPowertoolsLayer",
