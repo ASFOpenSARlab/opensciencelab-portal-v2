@@ -4,7 +4,6 @@ on: # yamllint disable-line rule:truthy
   workflow_dispatch: {}
   push:
     paths:
-      - "build/cdk.*"
       - "portal-cdk/*"
       # Or changes to this action:
       - .github/workflows/deploy-cdk-app.yaml
