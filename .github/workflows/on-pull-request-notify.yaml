@@ -12,12 +12,12 @@ env:
   author: "${{ github.event.pull_request.user.login }}"
 jobs:
   setup:
-    uses: ASFOpenSARlab/osl-utils/.github/workflows/reusable-setup-env.yaml@v1.0.0
+    uses: ASFOpenSARlab/osl-utils/.github/workflows/reusable-setup-env.yaml@v1.0.1
     if: github.event.pull_request.draft == false
     with:
       tagname: ${{ github.ref_name }}
   notify-start:
-    uses: ASFOpenSARlab/osl-utils/.github/workflows/reusable-mm-notify.yaml@v1.0.0
+    uses: ASFOpenSARlab/osl-utils/.github/workflows/reusable-mm-notify.yaml@v1.0.1
     if: github.event.pull_request.draft == false
     needs:
       - setup
