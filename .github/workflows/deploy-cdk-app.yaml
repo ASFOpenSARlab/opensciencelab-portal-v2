@@ -16,7 +16,7 @@ on: # yamllint disable-line rule:truthy
 
 jobs:
   setup:
-    uses: ASFOpenSARlab/osl-utils/.github/workflows/reusable-setup-env.yaml@v1.0.1
+    uses: ASFOpenSARlab/osl-utils/.github/workflows/reusable-setup-env.yaml@v1.0.2
     with:
       tagname: ${{ inputs.tagname || github.ref_name }}
 
@@ -25,7 +25,7 @@ jobs:
     needs:
       - setup
     environment: ${{ needs.setup.outputs.environment }}
-    container: ghcr.io/asfopensarlab/osl-utils:v1.0.1
+    container: ghcr.io/asfopensarlab/osl-utils:v1.0.2
     # These permissions are needed to interact with GitHub's OIDC Token endpoint.
     permissions:
       id-token: write
