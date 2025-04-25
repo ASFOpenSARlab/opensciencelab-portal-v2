@@ -10,6 +10,8 @@ on: # yamllint disable-line rule:truthy
       - .github/workflows/deploy-cdk-app.yaml
     branches:
       - main
+      # Since we have different dev instances, we can automate this:
+      - "*/*"
     tags:
       - "v*.*.*"
 
