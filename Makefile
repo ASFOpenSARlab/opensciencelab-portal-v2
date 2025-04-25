@@ -6,8 +6,6 @@ Makefile commands:
 
     lint:                   Run linting commands
 
-    cdk-image:              Create CDK Build environment Docker image
-
     cdk-shell:              Enter CDK enviroment Docker Image
 
     manual-cdk-bootstrap:   Bootstrap an account for CDK
@@ -36,7 +34,7 @@ _DANGER := "\033[31m%s\033[0m %s\n" # Red text for "printf"
 export PWD=$(dir $(realpath $(firstword $(MAKEFILE_LIST))))
 PROJECT_DIR := $(if $(CI_PROJECT_DIR),$(CI_PROJECT_DIR:/=),$(PWD:/=/))
 
-IMAGE_NAME ?= cdk-env
+IMAGE_NAME ?= ghcr.io/asfopensarlab/osl-utils:main
 AWS_DEFAULT_PROFILE := $(AWS_DEFAULT_PROFILE)
 AWS_REGION ?= us-west-2
 
@@ -56,15 +54,12 @@ lint:
 		-it \
 		--rm \
 		--pull always \
-		ghcr.io/asfopensarlab/osl-utils:v0.0.9 \
+		${IMAGE_NAME} \
 		make all && \
 	echo "### All Linting Passed ###" || \
 	echo "⚠️⚠️⚠️ Linting was not successful ⚠️⚠️⚠️"
 
 ### CDK Environment
-.PHONY := cdk-image
-cdk-image:
-	cd ${PROJECT_DIR} && pwd && docker build --pull -t ${IMAGE_NAME}:latest -f ./build/cdk.Dockerfile .
 
 .PHONY := cdk-shell
 cdk-shell:
@@ -81,7 +76,7 @@ cdk-shell:
 		-e AWS_DEFAULT_REGION -e AWS_REGION \
 		-e AWS_DEFAULT_ACCOUNT \
 		-e DEPLOY_PREFIX \
-		${IMAGE_NAME}:latest
+		${IMAGE_NAME}
 
 .PHONY := manual-cdk-bootstrap
 manual-cdk-bootstrap:

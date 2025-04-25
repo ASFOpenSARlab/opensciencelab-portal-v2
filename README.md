@@ -26,9 +26,9 @@ prefix (ie `ab`) dev maturity ( and `dev` GitHub environment!) deployment.
 
 #### `Dev`/Development
 
-While development maturity can be deployment manually via [`Docker`](./build/cdk.Dockerfile) 
-& [`Makefile`](./Makefile), it may be easier and more consistent to rely on the GitHub action. 
-However, when necessary, developer deployments can be completed using the following steps:
+While development maturity can be deployment manually via [`Makefile`](./Makefile), it may be easier
+and more consistent to rely on the GitHub action. However, when necessary, developer deployments can
+be completed using the following steps:
 
 ##### Deploying a Personal Stack
 
