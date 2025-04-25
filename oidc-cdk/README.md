@@ -36,11 +36,7 @@ roles = [
 
 # Navigate to this path
 > pwd
-/Path/To/Github_repo/oidc-cdk/
-
-> make cdk-image
-[+] Building 0.1s (15/15) FINISHED
- => [internal] load build definition from cdk.Dockerfile                                                                                                                     0.0s
+/Path/To/Github_repo/oidc-cdk/                                                                                                                0.0s
 <<< Output Clipped >>>
  => => exporting layers                                                                                                                                                      0.0s
  => => writing image sha256:32b8799e3caf3f902a087e8e60a8142292264a887884f06d8bad472d6726ada0                                                                                 0.0s
