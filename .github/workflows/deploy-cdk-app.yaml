@@ -9,7 +9,6 @@ on: # yamllint disable-line rule:truthy
       # Or changes to this action:
       - .github/workflows/deploy-cdk-app.yaml
     branches:
-      - "*/*"
       - main
     tags:
       - "v*.*.*"
@@ -40,6 +39,12 @@ jobs:
           role-to-assume: arn:aws:iam::${{vars.AWS_ACCOUNT_NUMBER}}:role/deploy_portal_stack_role
           aws-region: ${{vars.AWS_DEFAULT_REGION}}
 
-      - name: CDK Helloworld
+      - name: Install Extras
+        run: |
+          python3 -m pip install \
+            -r requirements.txt \
+            -r requirements-dev.txt
+
+      - name: CDK Deploy Portal
         run: |
           make deploy-portal -e DEPLOY_PREFIX=${{ needs.setup.outputs.deploy_prefix }}
