@@ -1,3 +1,2 @@
-aws-cdk-lib==2.191.0
-constructs>=10.0.0,<11.0.0
+# FOR 'aws-cdk-lib' and 'constructs': Upgrade inside osl-utils image!
 aws_solutions_constructs.aws_lambda_dynamodb==2.84.0
