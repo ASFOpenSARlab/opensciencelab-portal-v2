@@ -23,7 +23,7 @@ env:
   cdk_image: ghcr.io/asfopensarlab/cdk-env
 jobs:
   setup:
-    uses: ASFOpenSARlab/osl-utils/.github/workflows/reusable-setup-env.yaml@v0.0.9
+    uses: ASFOpenSARlab/osl-utils/.github/workflows/reusable-setup-env.yaml@v1.0.0
     with:
       tagname: ${{ inputs.tagname || github.ref_name }}
   wait-for-cdk-image:
