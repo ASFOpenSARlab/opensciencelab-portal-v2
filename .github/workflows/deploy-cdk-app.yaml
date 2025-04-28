@@ -47,5 +47,5 @@ jobs:
             -r ./portal-cdk/requirements-dev.txt
 
       - name: CDK Deploy Portal
-        run: |
+        run: |-
           make deploy-portal -e DEPLOY_PREFIX=${{ needs.setup.outputs.deploy_prefix }}
