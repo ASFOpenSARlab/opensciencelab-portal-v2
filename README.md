@@ -90,7 +90,7 @@ user@Mac-mini opensciencelab-portal-v2 % make cdk-shell
 
 Before committing changes, the code can be easily linted by utilizing the `lint` 
 target of the Makefile. This will call the same linting routines used by the 
-GitHub actions. 
+GitHub actions.
 
 #### **`Test`**
 
@@ -101,6 +101,10 @@ should be released to **`Test`**. `Dev` and `Test` exist in the same AWS account
 
 The **`Prod`** environment is isolated in its own AWS account to reduce blast radius. `Prod` 
 should **never** be released by any mechanism other than GitHub actions.
+
+### How to Test
+
+For testing, see the [Testing README](./portal-cdk/tests/README.md).
 
 ### Automation
 
