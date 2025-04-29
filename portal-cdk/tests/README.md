@@ -10,7 +10,7 @@ Snapshot testing is just saving a synthed template, and erroring if that templat
 - [Here's a high-level guide](https://docs.aws.amazon.com/cdk/v2/guide/testing-locally-getting-started.html) in testing lambda functions locally.
 - [And a slightly more in-depth guide](https://docs.aws.amazon.com/cdk/v2/guide/testing-locally-with-sam-cli.html) on testing lambda functions locally.
 
-For example, what I was able to get to work:
+### METHOD 1, For running a single event
 
 1) Go to `portal-cdk/cdk.out/<StackName>-<DeployPrefix>.template.json`. Make note of that file, AND ALSO ctrl-f inside it for your lambda function name. Mine ended up being `testlambdadynamodbstackLambdaFunctionDA383F07`. Note that too.
 
@@ -23,6 +23,15 @@ sam local invoke testlambdadynamodbstackLambdaFunctionDA383F07 --event ./portal-
 ```
 
 NOTE: To get the `./portal-cdk/tests/events/hello-with-name.json`, I had to add `print(json.dumps({"Event": event, "Context": context}, default=str))` to the lambda and copy it out of the cloudwatch logs. When I tried to use the built-in lambda one, it'd only return 404's, but maybe I was just selecting the wrong event pattern? Since we have one that works, if we need to expand it, we can modify the existing one for now.
+
+### METHOD 2, for starting an API, and using your browser
+
+```bash
+sam local start-api -t ./portal-cdk/cdk.out/PortalCdkStack-cs.template.json
+# Then go to http://127.0.0.1:3000/hello/adsf
+```
+
+And you can use that and click around! No need to look up the variables from the first method.
 
 ## Unit Testing
 
