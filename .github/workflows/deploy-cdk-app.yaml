@@ -48,8 +48,9 @@ jobs:
 
       - name: Run Portal Testsuite
         run : |
-          cd portal-cdk && ls -halt && pwd
-          # cd portal-cdk && pytest -v
+          make bundle-deps
+          cd portal-cdk
+          pytest -v
 
       - name: CDK Deploy Portal
         run: |
