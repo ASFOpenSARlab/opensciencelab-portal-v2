@@ -17,12 +17,12 @@ For example, what I was able to get to work:
 2) With those two arguments, run in the root of the project:
 
 ```bash
-sam local invoke <FUNCTION_NAME> --event ./portal-cdk/tests/events/basic-api-gateway.json -t ./portal-cdk/cdk.out/<StackName>-<DeployPrefix>.template.json
+sam local invoke <FUNCTION_NAME> --event ./portal-cdk/tests/events/hello-with-name.json -t ./portal-cdk/cdk.out/<StackName>-<DeployPrefix>.template.json
 # For me it'd be:
-sam local invoke testlambdadynamodbstackLambdaFunctionDA383F07 --event ./portal-cdk/tests/events/basic-api-gateway.json -t ./portal-cdk/cdk.out/PortalCdkStack-cs.template.json
+sam local invoke testlambdadynamodbstackLambdaFunctionDA383F07 --event ./portal-cdk/tests/events/hello-with-name.json -t ./portal-cdk/cdk.out/PortalCdkStack-cs.template.json
 ```
 
-NOTE: To get the `./portal-cdk/tests/events/basic-api-gateway.json`, I had to add `print(json.dumps({"Event": event, "Context": context}, default=str))` to the lambda and copy it out of the cloudwatch logs. When I tried to use the built-in lambda one, it'd only return 404's, but maybe I was just selecting the wrong event pattern? Since we have one that works, if we need to expand it, we can modify the existing one for now.
+NOTE: To get the `./portal-cdk/tests/events/hello-with-name.json`, I had to add `print(json.dumps({"Event": event, "Context": context}, default=str))` to the lambda and copy it out of the cloudwatch logs. When I tried to use the built-in lambda one, it'd only return 404's, but maybe I was just selecting the wrong event pattern? Since we have one that works, if we need to expand it, we can modify the existing one for now.
 
 ## Unit Testing
 

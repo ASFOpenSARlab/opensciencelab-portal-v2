@@ -1,7 +1,7 @@
 {
   "version": "2.0",
   "routeKey": "$default",
-  "rawPath": "/hello/ATTEMPT-NUMBER-TWO",
+  "rawPath": "/hello/BasicHelloWorld",
   "rawQueryString": "",
   "headers": {
       "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8",
@@ -21,7 +21,7 @@
       "upgrade-insecure-requests": "1",
       "user-agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36",
       "x-amzn-trace-id": "Root=1-681144ad-7c8fb74f1550fafa5c9c4c9f",
-      "x-forwarded-for": "24.237.159.158",
+      "x-forwarded-for": "192.168.1.1",
       "x-forwarded-port": "443",
       "x-forwarded-proto": "https"
   },
@@ -32,9 +32,9 @@
       "domainPrefix": "yzbnkmcjc5",
       "http": {
           "method": "GET",
-          "path": "/hello/ATTEMPT-NUMBER-TWO",
+          "path": "/hello/BasicHelloWorld",
           "protocol": "HTTP/1.1",
-          "sourceIp": "24.237.159.158",
+          "sourceIp": "192.168.1.1",
           "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36"
       },
       "requestId": "JzerGhE1PHcEP0w=",
