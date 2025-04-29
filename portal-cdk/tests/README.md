@@ -11,6 +11,12 @@ Snapshot testing is just saving a synthed template, and erroring if that templat
 
 ## Unit Testing
 
+If you HAVEN'T synth/deployed yet, you'll have to generate the files for one of the lambda's:
+
+```bash
+make bundle-deps
+```
+
 To run unit testing, use:
 
 ```bash
