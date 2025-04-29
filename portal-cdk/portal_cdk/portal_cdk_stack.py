@@ -16,19 +16,18 @@ LAMBDA_RUNTIME = aws_lambda.Runtime.PYTHON_3_11
 
 class PortalCdkStack(Stack):
     def __init__(
-        self, scope: Construct, construct_id: str, deploy_prefix: str, **kwargs
+        self, scope: Construct, construct_id: str, **kwargs
     ) -> None:
         super().__init__(scope, construct_id, **kwargs)
 
         ##################
         ## Lambda Stuff ##
         ##################
-        lambda_runtime = aws_lambda.Runtime.PYTHON_3_12
         ## Get the powertools arn from:
         # https://docs.powertools.aws.dev/lambda/python/latest/
         ## Import it with CDK:
         # https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_lambda.LayerVersion.html#static-fromwbrlayerwbrversionwbrarnscope-id-layerversionarn
-        python_version = lambda_runtime.name.lower().replace(".", "")  # pylint: disable=no-member
+        python_version = LAMBDA_RUNTIME.name.lower().replace(".", "")  # pylint: disable=no-member
         powertools_layer = aws_lambda.LayerVersion.from_layer_version_arn(
             self,
             "LambdaPowertoolsLayer",
