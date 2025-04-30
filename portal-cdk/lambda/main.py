@@ -2,6 +2,7 @@
 
 import json
 from http import HTTPStatus
+import datetime
 
 from aws_lambda_powertools import Logger
 from aws_lambda_powertools.event_handler import APIGatewayHttpResolver
@@ -47,8 +48,16 @@ def portal_hub_auth():
 def portal_hub_login():
     logger.info("Log in user")
     cookie_name = "portal-username"
-    cookie_value = "gAAAAABoCrOh_jUpdaqZOTRCn8zqCDER1KBpDijw_FqL5RESrGMuWyJXTTjTCHSSsAWyNivU3j8TYEpGbFhnIlbBV_5HFD1rgXzDz4oTS4EKhKwuzFSwZcZrDWXD-n-9rkiWXilddoHGtF5mkgw2DzT_CSWsAWikM-zIQS5VYFxFA4K0Au--29hfMEZ65azfei520kOy5AXsfKj5QQtFC__zk_HiYenaZg=="
-    portal_username_cookie = Cookie(name=cookie_name, value=cookie_value)
+    cookie_value = "\"gAAAAABoEYMwkZJeiJwc3rFWmkUzhV_DmHb5aWyQt6VcPvME2MVIjlRPnl6v3oyAs-kY6yt_grfN5yCNmudqs8MWwQZKWq6MFwPUV5sQoW1deAdYQCqR4dqtxih5qk3s_x4be1q80a_VQADdULJcwVjtMb6R4WDiooIVA0xpqg7jI-i3AmbQgWAFfo-jFNFSPqG1qUmc-tXn_EmfTMqIzffgJUVgQKEtDw==\""
+    expiration_date = datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(days=7)
+    portal_username_cookie = Cookie(
+        name=cookie_name,
+        value=cookie_value,
+        path="/",
+        secure=False,
+        http_only=True,
+        expires=expiration_date
+        )
     return Response(
         status_code=HTTPStatus.OK.value,  # 200
         content_type=content_types.TEXT_HTML,
