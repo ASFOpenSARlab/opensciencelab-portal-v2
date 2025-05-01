@@ -63,14 +63,17 @@ class PortalCdkStack(Stack):
             default_integration=lambda_integration,
         )
 
-         ## lab proxy
+        ## lab proxy
         LAB_SHORT_NAME = "smce-test-opensarlab"
-        LAB_DOMAIN = "http://smce-test-1433554573.us-west-2.elb.amazonaws.com" # If https is broken due to mismatch of SSL cert, try http
-        lab_integration = apigwv2_integrations.HttpUrlIntegration(f"{LAB_SHORT_NAME}_Integration", f"{LAB_DOMAIN}/lab/{LAB_SHORT_NAME}/{{proxy}}")
+        LAB_DOMAIN = "http://smce-test-1433554573.us-west-2.elb.amazonaws.com"  # If https is broken due to mismatch of SSL cert, try http
+        lab_integration = apigwv2_integrations.HttpUrlIntegration(
+            f"{LAB_SHORT_NAME}_Integration",
+            f"{LAB_DOMAIN}/lab/{LAB_SHORT_NAME}/{{proxy}}",
+        )
         http_api.add_routes(
             path=f"/lab/{LAB_SHORT_NAME}/{{proxy+}}",
             methods=[apigwv2.HttpMethod.ANY],
-            integration=lab_integration
+            integration=lab_integration,
         )
 
         ## And a basic CloudFront Endpoint:
