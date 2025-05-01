@@ -1,4 +1,5 @@
-# Example from: https://docs.powertools.aws.dev/lambda/python/latest/tutorial/#simplifying-with-logger
+"""AWS Lambda function to handle HTTP requests and return formatted HTML responses."""
+# import json
 
 from portal_formatting import portal_template, basic_html
 
@@ -29,4 +30,5 @@ def hello():
     log_event=True,
 )
 def lambda_handler(event, context):
+    # print(json.dumps({"Event": event, "Context": context}, default=str))
     return app.resolve(event, context)
