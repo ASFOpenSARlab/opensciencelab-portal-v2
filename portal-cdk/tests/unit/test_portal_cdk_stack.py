@@ -1,4 +1,5 @@
 """Unit test for portal_cdk stack."""
+
 import pytest
 
 import aws_cdk as core
@@ -14,6 +15,7 @@ def portal_template():
     stack = PortalCdkStack(app, "portal-cdk")
     template = assertions.Template.from_stack(stack)
     return template
+
 
 # example tests. To run these tests, uncomment this file along with the example
 # resource in portal_cdk/portal_cdk_stack.py

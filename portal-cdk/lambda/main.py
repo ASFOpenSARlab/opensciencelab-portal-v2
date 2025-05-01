@@ -24,6 +24,7 @@ def hello():
     logger.info("Request from unknown received")
     return basic_html(portal_template("Hello Unknown"))
 
+
 @logger.inject_lambda_context(
     correlation_id_path=correlation_paths.API_GATEWAY_HTTP,
     log_event=True,
