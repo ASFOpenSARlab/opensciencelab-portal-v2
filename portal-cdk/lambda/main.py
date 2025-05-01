@@ -1,6 +1,7 @@
 # Example from: https://docs.powertools.aws.dev/lambda/python/latest/tutorial/#simplifying-with-logger
 
 import json
+
 # https://docs.python.org/3/library/http.html
 from http import HTTPStatus
 import datetime
@@ -35,6 +36,7 @@ def root():
     logger.info("The root of the carrot")
     return {"message": "hello there!!!!"}
 
+
 @app.get("/portal/hub/auth")
 def get_portal_hub_auth():
     # /portal/hub/auth?next_url=%2Flab%2Fsmce-test-opensarlab%2Fhub%2Fhome
@@ -46,6 +48,7 @@ def get_portal_hub_auth():
             "Location": next_url,
         },
     )
+
 
 @app.post("/portal/hub/auth")
 def post_portal_hub_auth():
@@ -61,20 +64,23 @@ def post_portal_hub_auth():
         body=data,
     )
 
+
 @app.get("/portal/hub/login")
 def portal_hub_login():
     logger.info("Log in user")
     cookie_name = "portal-username"
-    cookie_value = "\"gAAAAABoEYMwkZJeiJwc3rFWmkUzhV_DmHb5aWyQt6VcPvME2MVIjlRPnl6v3oyAs-kY6yt_grfN5yCNmudqs8MWwQZKWq6MFwPUV5sQoW1deAdYQCqR4dqtxih5qk3s_x4be1q80a_VQADdULJcwVjtMb6R4WDiooIVA0xpqg7jI-i3AmbQgWAFfo-jFNFSPqG1qUmc-tXn_EmfTMqIzffgJUVgQKEtDw==\""
-    expiration_date = datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(days=7)
+    cookie_value = '"gAAAAABoEYMwkZJeiJwc3rFWmkUzhV_DmHb5aWyQt6VcPvME2MVIjlRPnl6v3oyAs-kY6yt_grfN5yCNmudqs8MWwQZKWq6MFwPUV5sQoW1deAdYQCqR4dqtxih5qk3s_x4be1q80a_VQADdULJcwVjtMb6R4WDiooIVA0xpqg7jI-i3AmbQgWAFfo-jFNFSPqG1qUmc-tXn_EmfTMqIzffgJUVgQKEtDw=="'
+    expiration_date = datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(
+        days=7
+    )
     portal_username_cookie = Cookie(
         name=cookie_name,
         value=cookie_value,
         path="/",
         secure=False,
         http_only=True,
-        expires=expiration_date
-        )
+        expires=expiration_date,
+    )
     return Response(
         status_code=HTTPStatus.OK.value,  # 200
         content_type=content_types.TEXT_HTML,
