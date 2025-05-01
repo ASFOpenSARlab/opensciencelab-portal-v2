@@ -16,7 +16,10 @@ LAMBDA_RUNTIME = aws_lambda.Runtime.PYTHON_3_11
 
 class PortalCdkStack(Stack):
     def __init__(
-        self, scope: Construct, construct_id: str, **kwargs
+        self,
+        scope: Construct,
+        construct_id: str,
+        **kwargs,
     ) -> None:
         super().__init__(scope, construct_id, **kwargs)
 
@@ -31,8 +34,7 @@ class PortalCdkStack(Stack):
         powertools_layer = aws_lambda.LayerVersion.from_layer_version_arn(
             self,
             "LambdaPowertoolsLayer",
-            # f"arn:aws:lambda:{self.region}:017000801446:layer:AWSLambdaPowertoolsPythonV3-{python_version}-x86_64:7",
-            f"arn:aws:lambda:{self.region}:017000801446:layer:AWSLambdaPowertoolsPythonV3-python312-x86_64:7",
+            f"arn:aws:lambda:{self.region}:017000801446:layer:AWSLambdaPowertoolsPythonV3-{python_version}-x86_64:7",
         )
 
         # Provide installs from lambda/requirements.txt
