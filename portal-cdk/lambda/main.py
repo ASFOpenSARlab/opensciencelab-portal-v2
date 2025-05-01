@@ -1,4 +1,4 @@
-
+"""AWS Lambda function to handle HTTP requests and return formatted HTML responses."""
 # import json
 
 from portal_formatting import portal_template, basic_html
