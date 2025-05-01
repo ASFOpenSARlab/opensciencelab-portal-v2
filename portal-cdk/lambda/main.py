@@ -1,6 +1,7 @@
 # Example from: https://docs.powertools.aws.dev/lambda/python/latest/tutorial/#simplifying-with-logger
 
 import json
+# https://docs.python.org/3/library/http.html
 from http import HTTPStatus
 import datetime
 
@@ -29,8 +30,25 @@ def hello():
     return {"message": "hello unknown!"}
 
 
+@app.get("/")
+def root():
+    logger.info("The root of the carrot")
+    return {"message": "hello there!!!!"}
+
 @app.get("/portal/hub/auth")
-def portal_hub_auth():
+def get_portal_hub_auth():
+    # /portal/hub/auth?next_url=%2Flab%2Fsmce-test-opensarlab%2Fhub%2Fhome
+    next_url = app.current_event.query_string_parameters.get("next_url", None)
+    logger.info(f"GET auth: {next_url=}")
+    return Response(
+        status_code=HTTPStatus.FOUND.value,  # 302
+        headers={
+            "Location": next_url,
+        },
+    )
+
+@app.post("/portal/hub/auth")
+def post_portal_hub_auth():
     logger.info("Request user info")
     data = json.dumps(
         {
@@ -42,7 +60,6 @@ def portal_hub_auth():
         status_code=HTTPStatus.OK.value,  # 200
         body=data,
     )
-
 
 @app.get("/portal/hub/login")
 def portal_hub_login():
