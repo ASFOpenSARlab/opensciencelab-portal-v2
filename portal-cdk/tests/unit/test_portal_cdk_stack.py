@@ -29,8 +29,11 @@ def test_lambda_versions_match(portal_template):
                 ## TODO: Figure out how to get this as one of the two layers above:
                 # f"arn:aws:lambda:{self.region}:{self.account}:layer:AWSLambdaPowertoolsPythonV3-{python_runtime.replace('.','')}-x86_64:7",
             ],
-        }
+        },
     )
-    portal_template.has_resource_properties("AWS::Lambda::LayerVersion", {
-        "CompatibleRuntimes": [python_runtime],
-    })
+    portal_template.has_resource_properties(
+        "AWS::Lambda::LayerVersion",
+        {
+            "CompatibleRuntimes": [python_runtime],
+        },
+    )
