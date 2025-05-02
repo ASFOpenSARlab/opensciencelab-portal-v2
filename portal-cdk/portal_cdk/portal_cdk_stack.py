@@ -7,6 +7,7 @@ from aws_cdk import (
     aws_cloudfront as cloudfront,
     aws_cloudfront_origins as origins,
     aws_secretsmanager as secretsmanager,
+    SecretValue
 )
 from constructs import Construct
 
@@ -102,7 +103,7 @@ class PortalCdkStack(Stack):
             self,
             "SecretManager-SSO_Token",
             secret_name="temp-sso-token",
-            secret_string_value="Change me or you will always fail",
+            secret_string_value=SecretValue.unsafe_plain_text("Change me or you will always fail"),
             description="SSO Token required to communicate with Labs",
         )
 
