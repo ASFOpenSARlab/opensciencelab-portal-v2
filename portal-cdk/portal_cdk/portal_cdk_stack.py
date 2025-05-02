@@ -13,26 +13,39 @@ from constructs import Construct
 
 from aws_solutions_constructs.aws_lambda_dynamodb import LambdaToDynamoDB
 
+LAMBDA_RUNTIME = aws_lambda.Runtime.PYTHON_3_11
+
 
 class PortalCdkStack(Stack):
     def __init__(
-        self, scope: Construct, construct_id: str, deploy_prefix: str, **kwargs
+        self,
+        scope: Construct,
+        construct_id: str,
+        **kwargs,
     ) -> None:
         super().__init__(scope, construct_id, **kwargs)
 
         ##################
         ## Lambda Stuff ##
         ##################
-        lambda_runtime = aws_lambda.Runtime.PYTHON_3_12
         ## Get the powertools arn from:
         # https://docs.powertools.aws.dev/lambda/python/latest/
         ## Import it with CDK:
         # https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_lambda.LayerVersion.html#static-fromwbrlayerwbrversionwbrarnscope-id-layerversionarn
-        python_version = lambda_runtime.name.lower().replace(".", "")  # pylint: disable=no-member
+        python_version = LAMBDA_RUNTIME.name.lower().replace(".", "")  # pylint: disable=no-member
         powertools_layer = aws_lambda.LayerVersion.from_layer_version_arn(
             self,
             "LambdaPowertoolsLayer",
             f"arn:aws:lambda:{self.region}:017000801446:layer:AWSLambdaPowertoolsPythonV3-{python_version}-x86_64:7",
+        )
+
+        # Provide installs from lambda/requirements.txt
+        requirements_layer = aws_lambda.LayerVersion(
+            self,
+            "RequirementsLayer",
+            # /tmp/.build/lambda/ is make in the Makefile @ bundle-deps
+            code=aws_lambda.Code.from_asset("/tmp/.build/lambda/"),
+            compatible_runtimes=[LAMBDA_RUNTIME],
         )
 
         # https://constructs.dev/packages/@aws-solutions-constructs/aws-lambda-dynamodb/v/2.84.0?lang=python
@@ -42,9 +55,9 @@ class PortalCdkStack(Stack):
             lambda_function_props=aws_lambda.FunctionProps(
                 code=aws_lambda.Code.from_asset("lambda"),
                 description=f"Powertools API with Dynamo ({construct_id})",
-                runtime=aws_lambda.Runtime.PYTHON_3_11,
+                runtime=LAMBDA_RUNTIME,
                 handler="main.lambda_handler",
-                layers=[powertools_layer],
+                layers=[powertools_layer, requirements_layer],
             ),
         )
         # https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_apigatewayv2_integrations.HttpLambdaIntegration.html
@@ -94,7 +107,7 @@ class PortalCdkStack(Stack):
                 ),
                 viewer_protocol_policy=cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
                 allowed_methods=cloudfront.AllowedMethods.ALLOW_ALL,
-                cache_policy=cloudfront.CachePolicy.CACHING_OPTIMIZED,
+                cache_policy=cloudfront.CachePolicy.CACHING_DISABLED,
             ),
         )
 

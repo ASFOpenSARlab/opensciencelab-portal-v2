@@ -1,4 +1,7 @@
-# Example from: https://docs.powertools.aws.dev/lambda/python/latest/tutorial/#simplifying-with-logger
+"""AWS Lambda function to handle HTTP requests and return formatted HTML responses."""
+# import json
+
+from portal_formatting import portal_template, basic_html
 
 import json
 
@@ -34,13 +37,13 @@ app = APIGatewayHttpResolver()
 @app.get("/hello/<name>")
 def hello_name(name):
     logger.info(f"Request from {name} received")
-    return {"message": f"hello {name}!"}
+    return basic_html(portal_template(f"hello {name}!"))
 
 
 @app.get("/hello")
 def hello():
     logger.info("Request from unknown received")
-    return {"message": "hello unknown!"}
+    return basic_html(portal_template("Hello Unknown"))
 
 
 @app.get("/")
@@ -120,4 +123,5 @@ def portal_hub_login():
     log_event=True,
 )
 def lambda_handler(event, context):
+    # print(json.dumps({"Event": event, "Context": context}, default=str))
     return app.resolve(event, context)
