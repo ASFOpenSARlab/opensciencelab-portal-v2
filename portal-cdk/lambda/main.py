@@ -1,13 +1,13 @@
 """AWS Lambda function to handle HTTP requests and return formatted HTML responses."""
-# import json
-
-from portal_formatting import portal_template, basic_html
 
 import json
+import os
 
 # https://docs.python.org/3/library/http.html
 from http import HTTPStatus
 import datetime
+
+from portal_formatting import portal_template, basic_html
 
 from aws_lambda_powertools import Logger
 from aws_lambda_powertools.event_handler import APIGatewayHttpResolver
@@ -25,7 +25,8 @@ TEMP_USERNAME = "emlundell"
 def encrypt_data(data: dict) -> str:
     try:
         logger.info("INSIDE encrypt_data.....")
-        sso_token = parameters.get_secret("temp-sso-token")
+        secret_name = os.getenv("SSO_TOKEN_SECRET_NAME")
+        sso_token = parameters.get_secret(secret_name)
         logger.info(sso_token[0:10])
 
         from opensarlab.auth import encryptedjwt
