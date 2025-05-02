@@ -125,7 +125,7 @@ class PortalCdkStack(Stack):
             "SSO_TOKEN_SECRET_NAME", sso_token_secret.secret_name
         )
         # Grant lambda permssion to read secret manager
-        sso_token_secret.secret.grantRead(lambda_dynamo.lambda_function)
+        sso_token_secret.grant_read(lambda_dynamo.lambda_function)
 
         # https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.CfnOutput.html
         CfnOutput(
