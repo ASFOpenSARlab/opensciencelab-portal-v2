@@ -9,8 +9,6 @@ import json
 from http import HTTPStatus
 import datetime
 
-from opensarlab.auth import encryptedjwt
-
 from aws_lambda_powertools import Logger
 from aws_lambda_powertools.event_handler import APIGatewayHttpResolver
 from aws_lambda_powertools.event_handler import Response
@@ -25,8 +23,16 @@ TEMP_USERNAME = "emlundell"
 
 
 def encrypt_data(data: dict) -> str:
-    sso_token = parameters.get_secret("temp-sso-token")
-    encryptedjwt.encrypt(data, sso_token=sso_token)
+    try:
+        logger.info("INSIDE encrypt_data.....")
+        sso_token = parameters.get_secret("temp-sso-token")
+        logger.info(sso_token[0:10])
+
+        from opensarlab.auth import encryptedjwt
+        data = encryptedjwt.encrypt(data, sso_token=sso_token)
+    except Exception as e:
+        logger.error(f"encrypt_data error: {e}")
+        data = None
     return data
 
 
