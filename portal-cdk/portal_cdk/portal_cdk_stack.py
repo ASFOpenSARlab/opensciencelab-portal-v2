@@ -6,6 +6,7 @@ from aws_cdk import (
     aws_apigatewayv2_integrations as apigwv2_integrations,
     aws_cloudfront as cloudfront,
     aws_cloudfront_origins as origins,
+    aws_secretsmanager as secretsmanager,
 )
 from constructs import Construct
 
@@ -82,7 +83,7 @@ class PortalCdkStack(Stack):
         # https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_cloudfront.Distribution.html
         portal_cloudfront = cloudfront.Distribution(
             self,
-            "CloudFront-PaymentPortal",
+            "CloudFront-Portal",
             comment=f"To API Gateway ({construct_id})",  # No idea why this isn't just called description....
             default_behavior=cloudfront.BehaviorOptions(
                 # This can't contain a colon, but 'str.replace("https://", "")' doesn't work on tokens....
@@ -94,6 +95,15 @@ class PortalCdkStack(Stack):
                 allowed_methods=cloudfront.AllowedMethods.ALLOW_ALL,
                 cache_policy=cloudfront.CachePolicy.CACHING_OPTIMIZED,
             ),
+        )
+
+        ### Secrets Manager
+        sso_token_secret = secretsmanager.Secret(
+            self,
+            "SecretManager-SSO_Token",
+            secret_name="temp-sso-token",
+            secret_string_value="Change me or you will always fail",
+            description="SSO Token required to communicate with Labs",
         )
 
         # https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.CfnOutput.html
@@ -108,4 +118,10 @@ class PortalCdkStack(Stack):
             "URL-HELLO",
             value=f"https://{portal_cloudfront.distribution_domain_name}/hello",
             description="Add your name after (url.com/hello/asdf)",
+        )
+        CfnOutput(
+            self,
+            "SSO-TOKEN-ARN",
+            value=sso_token_secret.secret_full_arn,
+            description="ARN of SSO Token",
         )
