@@ -29,6 +29,7 @@ def encrypt_data(data: dict) -> str:
         logger.info(sso_token[0:10])
 
         from opensarlab.auth import encryptedjwt
+
         data = encryptedjwt.encrypt(data, sso_token=sso_token)
     except Exception as e:
         logger.error(f"encrypt_data error: {e}")

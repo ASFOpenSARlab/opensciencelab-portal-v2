@@ -121,10 +121,12 @@ class PortalCdkStack(Stack):
             description="SSO Token required to communicate with Labs",
         )
 
-        lambda_dynamo.lambda_function.add_environment("SSO_TOKEN_SECRET_NAME", sso_token_secret.secret_name)
+        lambda_dynamo.lambda_function.add_environment(
+            "SSO_TOKEN_SECRET_NAME", sso_token_secret.secret_name
+        )
         # Grant lambda permssion to read secret manager
         sso_token_secret.secret.grantRead(lambda_dynamo.lambda_function)
-        
+
         # https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.CfnOutput.html
         CfnOutput(
             self,
