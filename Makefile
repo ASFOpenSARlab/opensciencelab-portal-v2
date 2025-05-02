@@ -33,6 +33,7 @@ _DANGER := "\033[31m%s\033[0m %s\n" # Red text for "printf"
 # Respect pathing
 export PWD=$(dir $(realpath $(firstword $(MAKEFILE_LIST))))
 PROJECT_DIR := $(if $(CI_PROJECT_DIR),$(CI_PROJECT_DIR:/=),$(PWD:/=/))
+BUILD_DEPS ?= /tmp/.build/lambda/python
 
 IMAGE_NAME ?= ghcr.io/asfopensarlab/osl-utils:main
 AWS_DEFAULT_PROFILE := $(AWS_DEFAULT_PROFILE)
@@ -93,13 +94,36 @@ manual-cdk-bootstrap:
 		printf $(_DANGER) "Aborted" ; \
 	fi
 
+.PHONY := install-reqs
+install-reqs:
+	echo "Installing CDK Build Deps" && \
+    mkdir -p /tmp/.build/ && \
+    pip freeze > /tmp/.build/installed && \
+    ( ( cat portal-cdk/requirements.txt | \
+    	grep -v "^#" | \
+    	cut -d'=' -f1 | \
+    	xargs -I{} grep -q {} /tmp/.build/installed && \
+	  echo "All build modules exists" ) || \
+	  ( echo "Installing portal-cdk/requirements.txt" && \
+		pip install -r portal-cdk/requirements.txt ) )
+
+.PHONY := bundle-deps
+bundle-deps:
+	echo "Checking if ${BUILD_DEPS} exists..." && \
+	if [[ ! -d ${BUILD_DEPS} ]]; then \
+		mkdir -p ${BUILD_DEPS} && \
+		pip install -r portal-cdk/lambda/requirements.txt -t ${BUILD_DEPS} ; \
+	else \
+		echo "Skipping deps bundled in ${BUILD_DEPS}. Remove to rebuild."; \
+	fi
+
 .PHONY := synth-portal
-synth-portal:
+synth-portal: install-reqs bundle-deps
 	@echo "Synthesizing ${DEPLOY_PREFIX}/portal-cdk"
 	cd ./portal-cdk && cdk synth
 
 .PHONY := deploy-portal
-deploy-portal:
+deploy-portal: install-reqs bundle-deps
 	@echo "Deploying ${DEPLOY_PREFIX}/portal-cdk"
 	cd ./portal-cdk && cdk --require-approval never deploy
 
@@ -119,5 +143,5 @@ aws-info:
 	@aws sts get-caller-identity \
 		--query "$${query:-Arn}" \
 		--output text
-	@echo "AWS Defauilt Region: $$AWS_DEFAULT_REGION"
+	@echo "AWS Default Region: $$AWS_DEFAULT_REGION"
 	@echo "AWS Default Profile: $$AWS_DEFAULT_PROFILE"

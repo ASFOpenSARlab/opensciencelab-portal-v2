@@ -18,7 +18,7 @@ PortalCdkStack(
         account=os.getenv("CDK_DEFAULT_ACCOUNT"),
         region=os.getenv("CDK_DEFAULT_REGION"),
     ),
-    deploy_prefix=deploy_prefix,
+    # deploy_prefix=deploy_prefix,
 )
 
 app.synth()
