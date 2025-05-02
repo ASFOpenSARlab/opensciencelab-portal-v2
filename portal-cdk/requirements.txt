@@ -1,5 +1,2 @@
 # FOR 'aws-cdk-lib' and 'constructs': Upgrade inside osl-utils image!
 aws_solutions_constructs.aws_lambda_dynamodb==2.84.0
-
-# To interact with the SSO Token
-opensarlab-backend==1.0.4
