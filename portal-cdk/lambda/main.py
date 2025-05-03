@@ -8,9 +8,11 @@ import datetime
 from opensarlab.auth import encryptedjwt
 
 from aws_lambda_powertools import Logger
-from aws_lambda_powertools.event_handler import APIGatewayHttpResolver
-from aws_lambda_powertools.event_handler import Response
-from aws_lambda_powertools.event_handler import content_types
+from aws_lambda_powertools.event_handler import (
+    APIGatewayHttpResolver,
+    Response,
+    content_types,
+)
 from aws_lambda_powertools.logging import correlation_paths
 from aws_lambda_powertools.shared.cookies import Cookie
 from aws_lambda_powertools.utilities import parameters
