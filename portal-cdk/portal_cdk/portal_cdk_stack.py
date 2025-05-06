@@ -2,7 +2,6 @@ from aws_cdk import (
     Stack,
     aws_lambda,
     CfnOutput,
-    aws_iam as iam,
     aws_apigatewayv2 as apigwv2,
     aws_apigatewayv2_integrations as apigwv2_integrations,
     aws_cloudfront as cloudfront,
