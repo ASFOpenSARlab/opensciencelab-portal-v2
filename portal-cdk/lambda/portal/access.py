@@ -7,7 +7,7 @@ access_router = Router()
 access_route = {
     "router": access_router,
     "prefix": "/portal/access",
-    "name": "access",
+    "name": "Access",
 }
 
 

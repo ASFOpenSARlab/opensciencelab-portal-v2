@@ -7,7 +7,7 @@ profile_router = Router()
 profile_route = {
     "router": profile_router,
     "prefix": "/portal/profile",
-    "name": "profile",
+    "name": "Profile",
 }
 
 
