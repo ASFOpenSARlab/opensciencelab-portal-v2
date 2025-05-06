@@ -19,18 +19,18 @@ IMPORTS_PATH = "https://opensciencelab.asf.alaska.edu/portal/hub/static/css/"
 NAV_BAR_OPTIONS = [
     {
         "visible": True,
-        "path": "/",
+        "path": "/portal",
         "title": "Home",
     },
     {
         "visible": True,
-        "path": "/token",
-        "title": "Token",
+        "path": "/portal/profile",
+        "title": "Profile",
     },
     {
         "visible": True,
-        "path": "/admin",
-        "title": "Admin",
+        "path": "/portal/access",
+        "title": "Access",
     },
     {
         "visible": True,
