@@ -1,9 +1,13 @@
+import os
+
 from aws_cdk import (
     Stack,
     aws_lambda,
     CfnOutput,
+    aws_iam as iam,
     aws_apigatewayv2 as apigwv2,
     aws_apigatewayv2_integrations as apigwv2_integrations,
+    aws_apigatewayv2_authorizers as apigwv2_authorizers,
     aws_cloudfront as cloudfront,
     aws_cloudfront_origins as origins,
 )
@@ -58,9 +62,27 @@ class PortalCdkStack(Stack):
                 layers=[powertools_layer, requirements_layer],
             ),
         )
+        # https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_lambda.Function.html#addwbrpermissionid-permission
+        lambda_authorizer = aws_lambda.Function(self, "ApiGatewayAuthorizer",
+            runtime=LAMBDA_RUNTIME,
+            handler="main.lambda_handler",
+            code=aws_lambda.Code.from_asset("lambda-authorizer"),
+        )
+
+        ### Authorizer is for validating the request:
+        # https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_apigatewayv2_authorizers.HttpLambdaAuthorizer.html
+        default_authorizer = apigwv2_authorizers.HttpLambdaAuthorizer(
+            "LambdaAuthorizer",
+            handler=lambda_authorizer,
+            response_types=[apigwv2_authorizers.HttpLambdaResponseType.SIMPLE],
+            identity_source=["$request.header.x-origin-verify"],
+        )
+
+        ### Integration is after the request is validated:
         # https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_apigatewayv2_integrations.HttpLambdaIntegration.html
         lambda_integration = apigwv2_integrations.HttpLambdaIntegration(
-            "LambdaIntegration",
+            # Added construct_id so we can tell them apart in the console:
+            f"LambdaIntegration-{construct_id}",
             lambda_dynamo.lambda_function,
         )
 
@@ -74,16 +96,44 @@ class PortalCdkStack(Stack):
             "HttpApiPowertools",
             description=f"Http API ({construct_id})",
             default_integration=lambda_integration,
+            # https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_apigatewayv2_authorizers.HttpLambdaAuthorizer.html
+            default_authorizer=default_authorizer,
+        )
+        # https://stackoverflow.com/a/73695402/11650472
+        lambda_authorizer.add_permission(
+            "ApiGatewayInvoke",
+            # https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_iam.ServicePrincipal.html
+            principal=iam.ServicePrincipal("apigateway.amazonaws.com"),
+            action="lambda:InvokeFunction",
+            source_arn=f"arn:aws:execute-api:{self.region}:{self.account}:{http_api.http_api_id}/authorizers/*",
         )
 
         ## And a basic CloudFront Endpoint:
         # https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_cloudfront-readme.html#from-an-http-endpoint
+
+        ## Make HTTP API only respond if cloudfront hits it:
+        # https://github.com/aws-samples/apigateway-http-api-access-control/blob/main/template.yaml
+
+        # https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_cloudfront.ResponseHeadersPolicy.html
+        response_headers_policy = cloudfront.ResponseHeadersPolicy(
+            self,
+            "ResponseHeadersPolicy",
+            comment=f"({construct_id}) Key for API Gateway",
+            # https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_cloudfront.ResponseCustomHeadersBehavior.html
+            custom_headers_behavior=cloudfront.ResponseCustomHeadersBehavior(
+                custom_headers=[
+                    # https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_cloudfront.ResponseCustomHeader.html
+                    cloudfront.ResponseCustomHeader(header="x-origin-verify", value=os.getenv("CLOUDFRONT_KEY"), override=True),
+                ]
+            )
+        )
 
         # https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_cloudfront.Distribution.html
         portal_cloudfront = cloudfront.Distribution(
             self,
             "CloudFront-PaymentPortal",
             comment=f"To API Gateway ({construct_id})",  # No idea why this isn't just called description....
+            # https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_cloudfront.BehaviorOptions.html
             default_behavior=cloudfront.BehaviorOptions(
                 # This can't contain a colon, but 'str.replace("https://", "")' doesn't work on tokens....
                 # Need to craft the origin manually:
@@ -93,6 +143,7 @@ class PortalCdkStack(Stack):
                 viewer_protocol_policy=cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
                 allowed_methods=cloudfront.AllowedMethods.ALLOW_ALL,
                 cache_policy=cloudfront.CachePolicy.CACHING_DISABLED,
+                response_headers_policy=response_headers_policy,
             ),
         )
 
