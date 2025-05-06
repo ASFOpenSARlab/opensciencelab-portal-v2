@@ -24,14 +24,26 @@ logger = Logger(service="APP")
 TEMP_USERNAME = "tester1"
 
 
+def decrypt_data(data: dict | str) -> str:
+    secret_name = os.getenv("SSO_TOKEN_SECRET_NAME")
+    sso_token = parameters.get_secret(secret_name)
+
+    # TODO: Fix initial code build time
+    # The module `encryptedjwt`` uses the cryptography module which in turn uses Fernet
+    # On a cold lambda start, Fernet takes at least 1 second to do it's thing
+    # A warm lambda is nearly instant. Is there a pip wheel being build when cold?
+    data = encryptedjwt.decrypt(data, sso_token=sso_token)
+    return data
+
+
 def encrypt_data(data: dict | str) -> str:
     secret_name = os.getenv("SSO_TOKEN_SECRET_NAME")
     sso_token = parameters.get_secret(secret_name)
 
     # TODO: Fix initial code build time
     # The module `encryptedjwt`` uses the cryptography module which in turn uses Fernet
-    # On a cold lambda start, Fernet takes at least 6 seconds to do it's thing
-    # A warm lambda is instant. Is there a pip wheel being build when cold?
+    # On a cold lambda start, Fernet takes at least 1 second to do it's thing
+    # A warm lambda is nearly instant. Is there a pip wheel being build when cold?
     data = encryptedjwt.encrypt(data, sso_token=sso_token)
     return data
 

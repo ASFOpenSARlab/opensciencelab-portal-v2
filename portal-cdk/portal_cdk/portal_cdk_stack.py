@@ -58,6 +58,7 @@ class PortalCdkStack(Stack):
                 runtime=LAMBDA_RUNTIME,
                 handler="main.lambda_handler",
                 layers=[powertools_layer, requirements_layer],
+                memory_size=1024,
             ),
         )
         # https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_apigatewayv2_integrations.HttpLambdaIntegration.html
