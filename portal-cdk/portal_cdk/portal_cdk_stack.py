@@ -61,9 +61,18 @@ class PortalCdkStack(Stack):
                 memory_size=1024,
             ),
         )
+
+        ### Integration is after the request is validated:
         # https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_apigatewayv2_integrations.HttpLambdaIntegration.html
         lambda_integration = apigwv2_integrations.HttpLambdaIntegration(
-            "LambdaIntegration",
+            # Added construct_id so we can tell them apart in the console:
+            f"LambdaIntegration-{construct_id}",
+            lambda_dynamo.lambda_function,
+        )
+
+        # Integration that will have a Cognito UserPool Authorizor for Authentication
+        lambda_integration_authen = apigwv2_integrations.HttpLambdaIntegration(
+            "LambdaIntegration_authen",
             lambda_dynamo.lambda_function,
         )
 
@@ -91,6 +100,13 @@ class PortalCdkStack(Stack):
             methods=[apigwv2.HttpMethod.ANY],
             integration=lab_integration,
         )
+        portal_routes = ("access", "profile")
+        for route in portal_routes:
+            http_api.add_routes(
+                path=f"/portal/{route}",
+                methods=[apigwv2.HttpMethod.ANY],
+                integration=lambda_integration_authen,
+            )
 
         ## And a basic CloudFront Endpoint:
         # https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_cloudfront-readme.html#from-an-http-endpoint
@@ -100,6 +116,7 @@ class PortalCdkStack(Stack):
             self,
             "CloudFront-Portal",
             comment=f"To API Gateway ({construct_id})",  # No idea why this isn't just called description....
+            # https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_cloudfront.BehaviorOptions.html
             default_behavior=cloudfront.BehaviorOptions(
                 # This can't contain a colon, but 'str.replace("https://", "")' doesn't work on tokens....
                 # Need to craft the origin manually:
