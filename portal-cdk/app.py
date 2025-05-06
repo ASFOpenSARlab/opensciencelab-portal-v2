@@ -10,10 +10,6 @@ deploy_prefix = os.getenv("DEPLOY_PREFIX")
 if not deploy_prefix:
     raise ValueError("You forgot an env-var `make <target> -e DEPLOY_PREFIX=<you>`")
 
-cloudfront_key = os.getenv("CLOUDFRONT_KEY")
-if not cloudfront_key:
-    raise ValueError("You forgot an env-var `make <target> -e CLOUDFRONT_KEY=<you>`")
-
 app = cdk.App()
 PortalCdkStack(
     app,

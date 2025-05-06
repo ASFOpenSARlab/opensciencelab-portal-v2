@@ -1,5 +1,3 @@
-import os
-
 from aws_cdk import (
     Stack,
     aws_lambda,
@@ -7,7 +5,6 @@ from aws_cdk import (
     aws_iam as iam,
     aws_apigatewayv2 as apigwv2,
     aws_apigatewayv2_integrations as apigwv2_integrations,
-    aws_apigatewayv2_authorizers as apigwv2_authorizers,
     aws_cloudfront as cloudfront,
     aws_cloudfront_origins as origins,
 )
