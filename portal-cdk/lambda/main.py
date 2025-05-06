@@ -1,6 +1,6 @@
 """AWS Lambda function to handle HTTP requests and return formatted HTML responses."""
-# import json
 
+from portal import routes
 from portal_formatting import portal_template, basic_html
 
 from aws_lambda_powertools import Logger
@@ -12,17 +12,35 @@ logger = Logger(service="APP")
 # Rest is V1, HTTP is V2
 app = APIGatewayHttpResolver()
 
-
-@app.get("/hello/<name>")
-def hello_name(name):
-    logger.info(f"Request from {name} received")
-    return basic_html(portal_template(f"hello {name}!"))
+# Add portal routes
+for prefix, router in routes.items():
+    app.include_router(router, prefix=prefix)
 
 
-@app.get("/hello")
-def hello():
-    logger.info("Request from unknown received")
-    return basic_html(portal_template("Hello Unknown"))
+@app.get("/login")
+def login():
+    return basic_html(portal_template("Add login form here."))
+
+
+@app.get("/logout")
+def logout():
+    return basic_html(portal_template("You have been logged out"))
+
+
+@app.get("/register")
+def register():
+    logger.info("")
+    return basic_html(portal_template("Register a new user here"))
+
+
+@app.not_found
+def handle_not_found(error):
+    body = f"""
+    <h3>Not Found:</h3>
+    <pre>{app.current_event.request_context}</pre>
+    """
+
+    return basic_html(portal_template(body))
 
 
 @logger.inject_lambda_context(
