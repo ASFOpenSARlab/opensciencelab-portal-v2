@@ -6,6 +6,8 @@ from aws_cdk import (
     aws_apigatewayv2_integrations as apigwv2_integrations,
     aws_cloudfront as cloudfront,
     aws_cloudfront_origins as origins,
+    aws_secretsmanager as secretsmanager,
+    SecretValue,
 )
 from constructs import Construct
 
@@ -56,6 +58,7 @@ class PortalCdkStack(Stack):
                 runtime=LAMBDA_RUNTIME,
                 handler="main.lambda_handler",
                 layers=[powertools_layer, requirements_layer],
+                memory_size=1024,
             ),
         )
 
@@ -85,6 +88,18 @@ class PortalCdkStack(Stack):
             default_integration=lambda_integration,
         )
 
+        ## lab proxy
+        LAB_SHORT_NAME = "smce-test-opensarlab"
+        LAB_DOMAIN = "http://smce-test-1433554573.us-west-2.elb.amazonaws.com"  # If https is broken due to mismatch of SSL cert, try http
+        lab_integration = apigwv2_integrations.HttpUrlIntegration(
+            f"{LAB_SHORT_NAME}_Integration",
+            f"{LAB_DOMAIN}/lab/{LAB_SHORT_NAME}/{{proxy}}",
+        )
+        http_api.add_routes(
+            path=f"/lab/{LAB_SHORT_NAME}/{{proxy+}}",
+            methods=[apigwv2.HttpMethod.ANY],
+            integration=lab_integration,
+        )
         portal_routes = ("access", "profile")
         for route in portal_routes:
             http_api.add_routes(
@@ -99,7 +114,7 @@ class PortalCdkStack(Stack):
         # https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_cloudfront.Distribution.html
         portal_cloudfront = cloudfront.Distribution(
             self,
-            "CloudFront-PaymentPortal",
+            "CloudFront-Portal",
             comment=f"To API Gateway ({construct_id})",  # No idea why this isn't just called description....
             # https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_cloudfront.BehaviorOptions.html
             default_behavior=cloudfront.BehaviorOptions(
@@ -114,6 +129,22 @@ class PortalCdkStack(Stack):
             ),
         )
 
+        ### Secrets Manager
+        sso_token_secret = secretsmanager.Secret(
+            self,
+            "SecretManager-SSO_Token",
+            secret_string_value=SecretValue.unsafe_plain_text(
+                "Change me or you will always fail"
+            ),
+            description="SSO Token required to communicate with Labs",
+        )
+
+        lambda_dynamo.lambda_function.add_environment(
+            "SSO_TOKEN_SECRET_NAME", sso_token_secret.secret_name
+        )
+        # Grant lambda permssion to read secret manager
+        sso_token_secret.grant_read(lambda_dynamo.lambda_function)
+
         # https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.CfnOutput.html
         CfnOutput(
             self,
@@ -126,4 +157,10 @@ class PortalCdkStack(Stack):
             "URL-HELLO",
             value=f"https://{portal_cloudfront.distribution_domain_name}/hello",
             description="Add your name after (url.com/hello/asdf)",
+        )
+        CfnOutput(
+            self,
+            "SSO-TOKEN-ARN",
+            value=sso_token_secret.secret_full_arn,
+            description="ARN of SSO Token",
         )
