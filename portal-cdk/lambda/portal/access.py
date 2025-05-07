@@ -1,5 +1,4 @@
 from portal.format import portal_template
-from portal.responses import basic_html
 
 from aws_lambda_powertools.event_handler.api_gateway import Router
 
@@ -14,21 +13,18 @@ access_route = {
 
 # This catches "/portal/access"
 @access_router.get("")
-@basic_html()
 @portal_template(access_router)
 def access_root():
     return "List All Labs"
 
 
 @access_router.get("/add_lab")
-@basic_html()
 @portal_template(access_router)
 def add_lab():
     return "Create New Lab"
 
 
 @access_router.get("/lab/<lab>")
-@basic_html()
 @portal_template(access_router)
 def view_lab(lab):
     return f"inspect lab {lab}"

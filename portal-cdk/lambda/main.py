@@ -1,5 +1,8 @@
 """AWS Lambda function to handle HTTP requests and return formatted HTML responses."""
 
+import json
+import ast
+
 from portal import routes
 from portal.format import portal_template
 from portal.responses import basic_html
@@ -20,37 +23,34 @@ for prefix, router in routes.items():
 
 
 @app.get("/")
-@basic_html()
 @portal_template(app, title="OpenScience", name="logged-out.j2")
 def root():
     return "Welcome to OpenScienceLab"
 
 
 @app.get("/login")
-@basic_html()
 @portal_template(app, title="Please Log In", name="logged-out.j2")
 def login():
     return "Add login form here."
 
 
 @app.get("/logout")
-@basic_html()
 @portal_template(app, title="Logged Out", name="logged-out.j2")
 def logout():
     return "You have been logged out"
 
 
 @app.get("/test")
-@basic_html()
-@portal_template(app, name="logged-out.j2")
+@basic_html(code=200)
+@portal_template(app, name="logged-out.j2", response=None)
 def test():
+    # Another way to use basic_html & portal_template
     return """
     <h3>This is a test html</h3>
     """
 
 
 @app.get("/register")
-@basic_html()
 @portal_template(app, title="Register New User", name="logged-out.j2")
 def register():
     return "Register a new user here"
@@ -63,12 +63,16 @@ def static():
 
 
 @app.not_found
-@basic_html(code=404)
-@portal_template(app, title="Request Not Found", name="logged-out.j2")
+@portal_template(app, title="Request Not Found", name="logged-out.j2", response=404)
 def handle_not_found(error):
+    # Reformat context object into formatted JSON
+    context_string = f"{app.current_event.request_context}"
+    context_ojb = ast.literal_eval(context_string)
+    message = json.dumps(context_ojb, indent=4, default=str)
     body = f"""
-    <h3>Not Found:</h3>
-    <pre>{app.current_event.request_context}</pre>
+    <h3>Not Found: '{app.current_event.request_context.http.path}'<h3>
+    <hr>
+    <pre>{message}</pre>
     """
 
     return body
