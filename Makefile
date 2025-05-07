@@ -127,6 +127,11 @@ deploy-portal: install-reqs bundle-deps
 	@echo "Deploying ${DEPLOY_PREFIX}/portal-cdk"
 	cd ./portal-cdk && cdk --require-approval never deploy
 
+.PHONY := destroy-portal
+destroy-portal: install-reqs bundle-deps
+	@echo "Destroying ${DEPLOY_PREFIX}/portal-cdk"
+	cd ./portal-cdk && cdk destroy --force --all
+
 .PHONY := synth-oidc
 synth-oidc:
 	@echo "Synthesizing ${DEPLOY_PREFIX}/oidc-cdk"

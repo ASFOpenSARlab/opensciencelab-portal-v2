@@ -2,6 +2,7 @@ from aws_cdk import (
     Stack,
     aws_lambda,
     CfnOutput,
+    aws_cognito as cognito,
     aws_apigatewayv2 as apigwv2,
     aws_apigatewayv2_integrations as apigwv2_integrations,
     aws_cloudfront as cloudfront,
@@ -94,6 +95,23 @@ class PortalCdkStack(Stack):
                 viewer_protocol_policy=cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
                 allowed_methods=cloudfront.AllowedMethods.ALLOW_ALL,
                 cache_policy=cloudfront.CachePolicy.CACHING_DISABLED,
+            ),
+        )
+
+
+        # https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_cognito.UserPool.html
+        cognito.UserPool(
+            self,
+            "UserPool",
+            ### NOTE: To change these settings, you HAVE to delete and re-create the stack :(
+            # https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_cognito.StandardAttributes.html
+            standard_attributes=cognito.StandardAttributes(
+                # https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_cognito.StandardAttribute.html
+                # All users must have an email:
+                email=cognito.StandardAttribute(
+                    required=True,
+                    mutable=True,
+                ),
             ),
         )
 
