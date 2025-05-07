@@ -27,6 +27,7 @@ logger = Logger(service="APP")
 
 TEMP_USERNAME = "tester1"
 
+
 def decrypt_data(data: dict | str) -> str:
     secret_name = os.getenv("SSO_TOKEN_SECRET_NAME")
     sso_token = parameters.get_secret(secret_name)
@@ -113,6 +114,7 @@ def handle_not_found(error):
     """
 
     return body
+
 
 @app.get("/portal/hub/auth")
 def get_portal_hub_auth():
