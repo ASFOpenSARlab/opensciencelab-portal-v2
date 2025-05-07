@@ -1,4 +1,5 @@
-from portal_formatting import portal_template, basic_html
+from portal.format import portal_template
+from portal.responses import basic_html
 
 from aws_lambda_powertools.event_handler.api_gateway import Router
 
@@ -13,15 +14,21 @@ profile_route = {
 
 # This catches "/portal/profile", but "/portal/profile" is uncatchable
 @profile_router.get("")
+@basic_html()
+@portal_template(profile_router)
 def profile_root():
-    return basic_html(portal_template("Profile Base 1"))
+    return "Profile Base 1"
 
 
 @profile_router.get("/bob")
+@basic_html()
+@portal_template(profile_router)
 def profile_bob():
-    return basic_html(portal_template("Profile Bob"))
+    return "Profile Bob"
 
 
 @profile_router.get("/<user>")
+@basic_html()
+@portal_template(profile_router)
 def profile_user(user):
-    return basic_html(portal_template(f"Profile for user {user}"))
+    return f"Profile for user {user}"
