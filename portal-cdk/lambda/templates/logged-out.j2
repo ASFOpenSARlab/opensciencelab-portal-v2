@@ -1,0 +1,49 @@
+{# djlint:off H006,H016,H030,H031 #}
+<!DOCTYPE html>
+<html lang="en">
+    {% include 'head.j2' %}
+    <body>
+        {% include './noscript.j2' %}
+        <nav class="navbar navbar-default">
+            <div class="container-fluid">
+                <div class="navbar-header">
+                    <span id="jupyterhub-logo" class="pull-left">
+                        <a href="/portal">
+                            <img src="/static/img/jh_logo.png"
+                                 alt="JupyterHub"
+                                 class="jpy-logo"
+                                 title="Home" />
+                        </a>
+                    </span>
+                    <button type="button"
+                            class="navbar-toggle collapsed"
+                            data-toggle="collapse"
+                            data-target="#thenavbar"
+                            aria-expanded="false">
+                        <span class="sr-only">Toggle navigation</span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                    </button>
+                </div>
+                <div>
+                    <ul class="nav navbar-nav navbar-right">
+                        <li>
+                            <span id="login_widget">
+                                <a id="login"
+                                   role="button"
+                                   class="navbar-btn btn-sm btn btn-default"
+                                   href="/portal">
+                                    <i aria-hidden="true" class="fa">
+                                        Log in
+                                    </i>
+                                </a>
+                            </span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+        <div>{{ content }}</div>
+    </body>
+</html>
