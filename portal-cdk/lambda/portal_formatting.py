@@ -14,8 +14,6 @@ ENV = Environment(
     keep_trailing_newline=True,
 )
 
-IMPORTS_PATH = "https://opensciencelab.asf.alaska.edu/portal/hub/static/css/"
-
 NAV_BAR_OPTIONS = [
     {
         "visible": True,
@@ -63,7 +61,6 @@ def basic_html(body, code=200, content_type=content_types.TEXT_HTML):
 def portal_template(content, title="OSL Portal", username="Unknown"):
     template_input = {
         "content": content,
-        "imports_path": IMPORTS_PATH,
         "nav_bar_options": NAV_BAR_OPTIONS,
         "username": username,
         "title": title,

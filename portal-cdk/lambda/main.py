@@ -18,6 +18,7 @@ from aws_lambda_powertools.shared.cookies import Cookie
 from aws_lambda_powertools.utilities import parameters
 
 from portal import routes
+from static import get_static_object
 from portal_formatting import portal_template, basic_html
 
 logger = Logger(service="APP")
@@ -57,6 +58,11 @@ for prefix, router in routes.items():
     app.include_router(router, prefix=prefix)
 
 
+@app.get("/")
+def root():
+    return basic_html(portal_template("Welcome to OpenScienceLab"))
+
+
 @app.get("/login")
 def login():
     return basic_html(portal_template("Add login form here."))
@@ -69,8 +75,13 @@ def logout():
 
 @app.get("/register")
 def register():
-    logger.info("")
     return basic_html(portal_template("Register a new user here"))
+
+
+@app.get("/static/.+")
+def static():
+    logger.info("Path is %s", app.current_event.path)
+    return get_static_object(app.current_event)
 
 
 @app.not_found
