@@ -156,7 +156,9 @@ class PortalCdkStack(Stack):
             deletion_protection=bool(deploy_prefix == "prod"),
             # Default removal_policy is always RETAIN:
             removal_policy=(
-                RemovalPolicy.RETAIN if deploy_prefix == "prod" else RemovalPolicy.DESTROY
+                RemovalPolicy.RETAIN
+                if deploy_prefix == "prod"
+                else RemovalPolicy.DESTROY
             ),
             ## Let users create accounts:
             self_sign_up_enabled=True,
