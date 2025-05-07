@@ -2,6 +2,7 @@ from aws_cdk import (
     Stack,
     aws_lambda,
     CfnOutput,
+    RemovalPolicy,
     aws_cognito as cognito,
     aws_apigatewayv2 as apigwv2,
     aws_apigatewayv2_integrations as apigwv2_integrations,
@@ -20,6 +21,7 @@ class PortalCdkStack(Stack):
         self,
         scope: Construct,
         construct_id: str,
+        deploy_prefix: str,
         **kwargs,
     ) -> None:
         super().__init__(scope, construct_id, **kwargs)
@@ -117,10 +119,10 @@ class PortalCdkStack(Stack):
 
 
         # https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_cognito.UserPool.html
-        cognito.UserPool(
+        ### NOTE: To change these settings, you HAVE to delete and re-create the stack :(
+        user_pool = cognito.UserPool(
             self,
             "UserPool",
-            ### NOTE: To change these settings, you HAVE to delete and re-create the stack :(
             # https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_cognito.StandardAttributes.html
             standard_attributes=cognito.StandardAttributes(
                 # https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_cognito.StandardAttribute.html
@@ -130,18 +132,75 @@ class PortalCdkStack(Stack):
                     mutable=True,
                 ),
             ),
+            # https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_cognito.UserPoolEmail.html
+            email=cognito.UserPoolEmail.with_cognito(reply_to=None),
+            # https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_cognito.Mfa.html
+            mfa=cognito.Mfa.OPTIONAL,
+            ## The different ways users can get a MFA code:
+            # https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_cognito.MfaSecondFactor.html
+            mfa_second_factor=cognito.MfaSecondFactor(sms=True, otp=True, email=False),
+            deletion_protection=bool(deploy_prefix == "prod"),
+            # Default removal_policy is always RETAIN:
+            removal_policy=RemovalPolicy.RETAIN if deploy_prefix == "prod" else RemovalPolicy.DESTROY,
+            ## Let users create accounts:
+            self_sign_up_enabled=True,
+            # This is where we can customize info in verification emails/text:
+            user_verification=cognito.UserVerificationConfig(),
+            # auto_verify=cognito.AutoVerifiedAttrs(), <-- TODO: Look in to this if email verification doesn't happen.
+            # https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_cognito.SignInAliases.html
+            sign_in_aliases=cognito.SignInAliases(email=True, phone=False, preferred_username=False, username=False),
+            sign_in_case_sensitive=False,
+        )
+
+        ## User Pool Client, AKA App Client:
+        # https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_cognito.UserPoolClient.html
+        user_pool_client = cognito.UserPoolClient(
+            self,
+            "UserPoolClient",
+            user_pool=user_pool,
+            # https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_cognito.OAuthSettings.html
+            o_auth=cognito.OAuthSettings(
+                # Where to redirect after log IN:
+                callback_urls=[f"https://{portal_cloudfront.distribution_domain_name}/portal"],
+                # Where to redirect after log OUT:
+                logout_urls=[f"https://{portal_cloudfront.distribution_domain_name}/logout"],
+            ),
+        )
+
+        ## User Pool Domain:
+        # https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_cognito.UserPoolDomain.html
+        user_pool_domain = cognito.UserPoolDomain(
+            self,
+            "UserPoolDomain",
+            user_pool=user_pool,
+            # https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_cognito.UserPoolDomainProps.html
+            cognito_domain=cognito.CognitoDomainOptions(
+                domain_prefix=construct_id.lower(),
+            ),
         )
 
         # https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.CfnOutput.html
         CfnOutput(
             self,
-            "URL",
-            value=f"https://{portal_cloudfront.distribution_domain_name}",
+            "CloudFrontURL",
+            value=f"https://{portal_cloudfront.distribution_domain_name}/portal",
             description="CloudFront URL",
         )
+
         CfnOutput(
             self,
-            "URL-HELLO",
-            value=f"https://{portal_cloudfront.distribution_domain_name}/hello",
-            description="Add your name after (url.com/hello/asdf)",
+            "ApiGatewayURL",
+            value=f"https://{http_api.http_api_id}.execute-api.{self.region}.amazonaws.com/portal",
+            description="ApiGateway URL",
+        )
+
+        CfnOutput(
+            self,
+            "CognitoURL",
+            # https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_cognito.SignInUrlOptions.html
+            value=user_pool_domain.sign_in_url(
+                client=user_pool_client,
+                redirect_uri=f"https://{portal_cloudfront.distribution_domain_name}/portal",
+            ),
+            description="Endpoint for Cognito User Pool Domain",
         )
