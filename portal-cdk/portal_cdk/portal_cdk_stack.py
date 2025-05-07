@@ -68,6 +68,12 @@ class PortalCdkStack(Stack):
             lambda_dynamo.lambda_function,
         )
 
+        # Integration that will have a Cognito UserPool Authorizor for Authentication
+        lambda_integration_authen = apigwv2_integrations.HttpLambdaIntegration(
+            "LambdaIntegration_authen",
+            lambda_dynamo.lambda_function,
+        )
+
         ###########################
         ## A basic http api for now. A more complex example at:
         # https://github.com/asfadmin/ApigatewayV2/blob/main/apigateway_v2/aws_powertools_lambda_stack.py
@@ -79,6 +85,17 @@ class PortalCdkStack(Stack):
             description=f"Http API ({construct_id})",
             default_integration=lambda_integration,
         )
+
+        portal_routes = ("access", "profile")
+        for route in portal_routes:
+            http_api.add_routes(
+                path=f"/portal/{route}",
+                methods=[apigwv2.HttpMethod.ANY],
+                integration=lambda_integration_authen,
+            )
+
+        ## And a basic CloudFront Endpoint:
+        # https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_cloudfront-readme.html#from-an-http-endpoint
 
         # https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_cloudfront.Distribution.html
         portal_cloudfront = cloudfront.Distribution(
