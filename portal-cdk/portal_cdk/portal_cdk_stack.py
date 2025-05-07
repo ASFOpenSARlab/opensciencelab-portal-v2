@@ -100,7 +100,14 @@ class PortalCdkStack(Stack):
             methods=[apigwv2.HttpMethod.ANY],
             integration=lab_integration,
         )
-        portal_routes = ("access", "profile")
+
+        # Hub endpoint
+        http_api.add_routes(
+            path="/portal",
+            methods=[apigwv2.HttpMethod.ANY],
+            integration=lambda_integration_authen,
+        )
+        portal_routes = ("access", "profile", "hub")
         for route in portal_routes:
             http_api.add_routes(
                 path=f"/portal/{route}",
