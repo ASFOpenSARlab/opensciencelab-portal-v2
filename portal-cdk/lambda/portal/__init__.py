@@ -1,7 +1,6 @@
 from portal.profile import profile_route
 from portal.access import access_route
-
-from portal_formatting import portal_template, basic_html
+from portal.format import portal_template
 
 from aws_lambda_powertools.event_handler.api_gateway import Router
 
@@ -22,5 +21,6 @@ for route in (portal_route, profile_route, access_route):
 
 
 @portal_router.get("")
+@portal_template(portal_router)
 def portal_root():
-    return basic_html(portal_template("Welcome to OpenScienceLab"))
+    return "Welcome to OpenScienceLab"

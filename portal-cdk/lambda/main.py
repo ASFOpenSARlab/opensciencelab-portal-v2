@@ -1,9 +1,15 @@
 """AWS Lambda function to handle HTTP requests and return formatted HTML responses."""
 
 import json
+import ast
 import os
-from http import HTTPStatus  # https://docs.python.org/3/library/http.html
 import datetime
+from http import HTTPStatus
+
+from portal import routes
+from portal.format import portal_template
+from portal.responses import basic_html
+from static import get_static_object
 
 from opensarlab.auth import encryptedjwt
 
@@ -16,10 +22,6 @@ from aws_lambda_powertools.event_handler import (
 from aws_lambda_powertools.logging import correlation_paths
 from aws_lambda_powertools.shared.cookies import Cookie
 from aws_lambda_powertools.utilities import parameters
-
-from portal import routes
-from static import get_static_object
-from portal_formatting import portal_template, basic_html
 
 logger = Logger(service="APP")
 
@@ -59,23 +61,37 @@ for prefix, router in routes.items():
 
 
 @app.get("/")
+@portal_template(app, title="OpenScience", name="logged-out.j2")
 def root():
-    return basic_html(portal_template("Welcome to OpenScienceLab"))
+    return "Welcome to OpenScienceLab"
 
 
 @app.get("/login")
+@portal_template(app, title="Please Log In", name="logged-out.j2")
 def login():
-    return basic_html(portal_template("Add login form here."))
+    return "Add login form here."
 
 
 @app.get("/logout")
+@portal_template(app, title="Logged Out", name="logged-out.j2")
 def logout():
-    return basic_html(portal_template("You have been logged out"))
+    return "You have been logged out"
+
+
+@app.get("/test")
+@basic_html(code=200)
+@portal_template(app, name="logged-out.j2", response=None)
+def test():
+    # Another way to use basic_html & portal_template
+    return """
+    <h3>This is a test html</h3>
+    """
 
 
 @app.get("/register")
+@portal_template(app, title="Register New User", name="logged-out.j2")
 def register():
-    return basic_html(portal_template("Register a new user here"))
+    return "Register a new user here"
 
 
 @app.get("/static/.+")
@@ -85,19 +101,19 @@ def static():
 
 
 @app.not_found
+@portal_template(app, title="Request Not Found", name="logged-out.j2", response=404)
 def handle_not_found(error):
+    # Reformat context object into formatted JSON
+    context_string = f"{app.current_event.request_context}"
+    context_ojb = ast.literal_eval(context_string)
+    message = json.dumps(context_ojb, indent=4, default=str)
     body = f"""
-    <h3>Not Found:</h3>
-    <pre>{app.current_event.request_context}</pre>
+    <h3>Not Found: '{app.current_event.request_context.http.path}'<h3>
+    <hr>
+    <pre>{message}</pre>
     """
 
-    return basic_html(portal_template(body))
-
-
-@app.get("/")
-def root():
-    logger.info("The root of the carrot")
-    return {"message": "hello there!!!!"}
+    return body
 
 
 @app.get("/portal/hub/auth")
