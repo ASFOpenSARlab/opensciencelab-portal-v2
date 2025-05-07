@@ -1,4 +1,4 @@
-# from portal.responses import basic_html
+from portal.responses import wrap_response
 
 from jinja2 import Environment, FileSystemLoader, StrictUndefined, select_autoescape
 
@@ -46,9 +46,10 @@ NAV_BAR_OPTIONS = [
 
 
 def portal_template(
-    app, name="main.j2", title="OSL Portal", username="Unknown"
-):  # , basic_response_code=200):
+    app, name="main.j2", title="OSL Portal", username="Unknown", response=200
+):
     # username will eventually come from app
+    # I don't love response here
     def inner(func):
         print(f"Loading Template {name}")
 
@@ -63,10 +64,11 @@ def portal_template(
             }
 
             template = ENV.get_template(name)
-            # if basic_response_code:
-            #     # If we received basic_response_code, call
-            #     return basic_html(code=basic_response_code)(template.render(**template_input))
-            # else:
+            if response:
+                # If we received basic_response_code, return a basic_html response
+                body = template.render(**template_input)
+                return wrap_response(body=body, code=response)
+
             return template.render(**template_input)
 
         return wrapper
