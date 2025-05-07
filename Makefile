@@ -112,7 +112,7 @@ bundle-deps:
 	echo "Checking if ${BUILD_DEPS} exists..." && \
 	if [[ ! -d ${BUILD_DEPS} ]]; then \
 		mkdir -p ${BUILD_DEPS} && \
-		pip install -r portal-cdk/lambda/requirements.txt -t ${BUILD_DEPS} ; \
+		pip install -r portal-cdk/lambda/requirements.txt --platform manylinux2014_x86_64 --only-binary=:all: -t ${BUILD_DEPS} ; \
 	else \
 		echo "Skipping deps bundled in ${BUILD_DEPS}. Remove to rebuild."; \
 	fi
