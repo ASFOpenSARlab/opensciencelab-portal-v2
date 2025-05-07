@@ -132,9 +132,6 @@ class PortalCdkStack(Stack):
             ),
         )
 
-        user_pool_removal_policy = (
-            RemovalPolicy.RETAIN if deploy_prefix == "prod" else RemovalPolicy.DESTROY
-        )
         # https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_cognito.UserPool.html
         ### NOTE: To change these settings, you HAVE to delete and re-create the stack :(
         user_pool = cognito.UserPool(
@@ -158,7 +155,9 @@ class PortalCdkStack(Stack):
             mfa_second_factor=cognito.MfaSecondFactor(sms=True, otp=True, email=False),
             deletion_protection=bool(deploy_prefix == "prod"),
             # Default removal_policy is always RETAIN:
-            removal_policy=user_pool_removal_policy,
+            removal_policy=(
+                RemovalPolicy.RETAIN if deploy_prefix == "prod" else RemovalPolicy.DESTROY
+            ),
             ## Let users create accounts:
             self_sign_up_enabled=True,
             # This is where we can customize info in verification emails/text:
