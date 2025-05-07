@@ -1,9 +1,7 @@
+# The build Makefile should build this requirements.txt with the right settings.
+# https://stackoverflow.com/a/74729344 
+
 jinja2==3.1.6
 
 # To interact with the SSO Token
 opensarlab-backend==1.0.4
-
-# To overcome a versioning error with the lambda and opensarlab-backend
-# https://stackoverflow.com/a/77792618 
-bcrypt==3.2.2
-cryptography==3.4.8
