@@ -1,3 +1,6 @@
+import json
+import ast
+
 from portal.responses import wrap_response
 
 from jinja2 import Environment, FileSystemLoader, StrictUndefined, select_autoescape
@@ -74,3 +77,9 @@ def portal_template(
         return wrapper
 
     return inner
+
+
+def request_context_string(app):
+    context_string = f"{app.current_event.request_context}"
+    context_ojb = ast.literal_eval(context_string)
+    return json.dumps(context_ojb, indent=4, default=str)
