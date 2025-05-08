@@ -21,7 +21,7 @@ def get_static_object(event):
     file_type, file_name = event.path.split("/")[2:4]
     file_ext = file_name.split(".")[-1]
 
-    if file_type not in ("css", "js", "img"):
+    if file_type not in ("css", "js", "img", "fonts"):
         raise NotFoundError(f"{event.path} not found")
 
     body = read_file(os.path.join(file_type, file_name))
