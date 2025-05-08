@@ -130,9 +130,11 @@ class PortalCdkStack(Stack):
                 origin=origins.HttpOrigin(
                     f"{http_api.http_api_id}.execute-api.{self.region}.amazonaws.com"
                 ),
+                origin_request_policy=cloudfront.OriginRequestPolicy.ALL_VIEWER_EXCEPT_HOST_HEADER,
                 viewer_protocol_policy=cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
                 allowed_methods=cloudfront.AllowedMethods.ALLOW_ALL,
                 cache_policy=cloudfront.CachePolicy.CACHING_DISABLED,
+                response_headers_policy=cloudfront.ResponseHeadersPolicy.CORS_ALLOW_ALL_ORIGINS_WITH_PREFLIGHT_AND_SECURITY_HEADERS,
             ),
         )
 
@@ -161,9 +163,9 @@ class PortalCdkStack(Stack):
         )
         CfnOutput(
             self,
-            "URL-HELLO",
-            value=f"https://{portal_cloudfront.distribution_domain_name}/hello",
-            description="Add your name after (url.com/hello/asdf)",
+            "API-GATEWAY-ENDPOINT",
+            value=f"https://{http_api.api_endpoint}/hello",
+            description="API Gateway V2 Endpoint",
         )
         CfnOutput(
             self,

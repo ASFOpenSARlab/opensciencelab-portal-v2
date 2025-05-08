@@ -1,7 +1,7 @@
 from portal.profile import profile_route
 from portal.access import access_route
 from portal.hub import hub_route
-from portal.format import portal_template
+from util.format import portal_template
 
 
 from aws_lambda_powertools.event_handler.api_gateway import Router

@@ -1,7 +1,7 @@
 import json
 import ast
 
-from portal.responses import wrap_response
+from util.responses import wrap_response
 
 from jinja2 import Environment, FileSystemLoader, StrictUndefined, select_autoescape
 

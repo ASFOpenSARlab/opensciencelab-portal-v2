@@ -1,11 +1,11 @@
 """AWS Lambda function to handle HTTP requests and return formatted HTML responses."""
 
 from portal import routes
-from portal.format import (
+from util.format import (
     portal_template,
     request_context_string,
 )
-from portal.responses import basic_html
+from util.responses import basic_html
 from static import get_static_object
 
 from aws_lambda_powertools import Logger
