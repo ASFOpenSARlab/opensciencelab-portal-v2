@@ -1,4 +1,4 @@
-from portal.format import portal_template
+from util.format import portal_template
 
 from aws_lambda_powertools.event_handler.api_gateway import Router
 
