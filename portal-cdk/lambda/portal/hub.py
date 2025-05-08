@@ -2,8 +2,8 @@ import datetime
 import os
 import json
 
-from portal.responses import wrap_response, basic_json
-from portal.format import portal_template, request_context_string
+from util.responses import wrap_response, basic_json
+from util.format import portal_template, request_context_string
 
 from opensarlab.auth import encryptedjwt
 
@@ -47,17 +47,15 @@ def portal_hub_root():
 @hub_router.get("/auth")
 def get_portal_hub_auth():
     # /portal/hub/auth?next_url=%2Flab%2Fsmce-test-opensarlab%2Fhub%2Fhome
-    # FIXME: next_url param is not getting passed from CloudFront->ApiGateway
     next_url = hub_router.current_event.query_string_parameters.get("next_url", None)
     logger.info(f"GET auth: {next_url=}")
 
     ### Authenticate with Portal server cookie here
     # If not authenticated, go to /portal/hub/login so the user can authenticate within browser
 
-    # FIXME: this isn't getting passed out right... It may be Location Header is not allowed
     return wrap_response(
         body={"Redirect": next_url},
-        code=200,
+        code=302,
         content_type=content_types.APPLICATION_JSON,
         headers={"Location": next_url},
     )
