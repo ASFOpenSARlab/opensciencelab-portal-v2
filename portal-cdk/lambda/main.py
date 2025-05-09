@@ -4,8 +4,10 @@ from portal import routes
 from util.format import (
     portal_template,
     request_context_string,
+    render_template,
 )
-from util.responses import basic_html
+from util.responses import basic_html, wrap_response
+from util.auth import get_set_cookie_headers, validate_code
 from static import get_static_object
 
 from aws_lambda_powertools import Logger
@@ -57,10 +59,29 @@ def test():
 def register():
     return "Register a new user here"
 
+@app.get("/auth")
+def auth_code():
+
+    code = app.current_event.query_string_parameters.get("code")
+    if not code:
+        return wrap_response(render_template(app, content="No return Code found."), code=401)
+
+    token_payload = validate_code(code)
+    if not token_payload:
+        return wrap_response(render_template(app, content="Could not complete token exchange"), code=401)
+
+    set_cookie_headers = get_set_cookie_headers(token_payload)
+
+    return wrap_response(
+        render_template(app, content="Log in & Cookies Successful"),
+        code=200,
+        cookies=set_cookie_headers,
+    )
+
 
 @app.get("/static/.+")
 def static():
-    logger.info("Path is %s", app.current_event.path)
+    logger.debug("Path is %s", app.current_event.path)
     return get_static_object(app.current_event)
 
 

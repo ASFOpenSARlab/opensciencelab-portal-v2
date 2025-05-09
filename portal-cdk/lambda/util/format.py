@@ -47,9 +47,28 @@ NAV_BAR_OPTIONS = [
     },
 ]
 
+def render_template(
+    _app, content, name="main.j2", title="OSL Portal", username=None
+):
+    # App will be used later to generate template input
+
+    if not username:
+        username = "Unknown"
+
+    template_input = {
+        "content": content,
+        "nav_bar_options": NAV_BAR_OPTIONS,
+        "username": username,
+        "title": title,
+    }
+
+    template = ENV.get_template(name)
+
+    return template.render(**template_input)
+
 
 def portal_template(
-    app, name="main.j2", title="OSL Portal", username="Unknown", response=200
+    app, name=None, title=None, username=None, response=None
 ):
     # username will eventually come from app
     # I don't love response here
@@ -59,20 +78,18 @@ def portal_template(
         def wrapper(*args, **kwargs):
             content = func(*args, **kwargs)
 
-            template_input = {
-                "content": content,
-                "nav_bar_options": NAV_BAR_OPTIONS,
-                "username": username,
-                "title": title,
-            }
+            body = render_template(
+                app,
+                content=content,
+                title=title,
+                username=username
+            )
 
-            template = ENV.get_template(name)
             if response:
                 # If we received basic_response_code, return a basic_html response
-                body = template.render(**template_input)
                 return wrap_response(body=body, code=response)
 
-            return template.render(**template_input)
+            return body
 
         return wrapper
 
