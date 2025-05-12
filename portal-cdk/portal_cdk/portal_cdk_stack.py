@@ -2,8 +2,11 @@ from aws_cdk import (
     Stack,
     aws_lambda,
     CfnOutput,
+    RemovalPolicy,
+    aws_cognito as cognito,
     aws_apigatewayv2 as apigwv2,
     aws_apigatewayv2_integrations as apigwv2_integrations,
+    aws_apigatewayv2_authorizers as apigwv2_authorizers,
     aws_cloudfront as cloudfront,
     aws_cloudfront_origins as origins,
     aws_secretsmanager as secretsmanager,
@@ -21,6 +24,7 @@ class PortalCdkStack(Stack):
         self,
         scope: Construct,
         construct_id: str,
+        deploy_prefix: str,
         **kwargs,
     ) -> None:
         super().__init__(scope, construct_id, **kwargs)
@@ -70,12 +74,6 @@ class PortalCdkStack(Stack):
             lambda_dynamo.lambda_function,
         )
 
-        # Integration that will have a Cognito UserPool Authorizor for Authentication
-        lambda_integration_authen = apigwv2_integrations.HttpLambdaIntegration(
-            "LambdaIntegration_authen",
-            lambda_dynamo.lambda_function,
-        )
-
         ###########################
         ## A basic http api for now. A more complex example at:
         # https://github.com/asfadmin/ApigatewayV2/blob/main/apigateway_v2/aws_powertools_lambda_stack.py
@@ -95,6 +93,7 @@ class PortalCdkStack(Stack):
             f"{LAB_SHORT_NAME}_Integration",
             f"{LAB_DOMAIN}/lab/{LAB_SHORT_NAME}/{{proxy}}",
         )
+        # https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_apigatewayv2.AddRoutesOptions.html
         http_api.add_routes(
             path=f"/lab/{LAB_SHORT_NAME}/{{proxy+}}",
             methods=[apigwv2.HttpMethod.ANY],
@@ -138,6 +137,98 @@ class PortalCdkStack(Stack):
             ),
         )
 
+        # https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_cognito.UserPool.html
+        ### NOTE: To change these settings, you HAVE to delete and re-create the stack :(
+        user_pool = cognito.UserPool(
+            self,
+            "UserPool",
+            # https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_cognito.StandardAttributes.html
+            standard_attributes=cognito.StandardAttributes(
+                # https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_cognito.StandardAttribute.html
+                # All users must have an email:
+                email=cognito.StandardAttribute(
+                    required=True,
+                    mutable=True,
+                ),
+            ),
+            # https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_cognito.UserPoolEmail.html
+            email=cognito.UserPoolEmail.with_cognito(reply_to=None),
+            # https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_cognito.Mfa.html
+            mfa=cognito.Mfa.OPTIONAL,
+            ## The different ways users can get a MFA code:
+            # https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_cognito.MfaSecondFactor.html
+            mfa_second_factor=cognito.MfaSecondFactor(sms=True, otp=True, email=False),
+            deletion_protection=bool(deploy_prefix == "prod"),
+            # Default removal_policy is always RETAIN:
+            removal_policy=(
+                RemovalPolicy.RETAIN
+                if deploy_prefix == "prod"
+                else RemovalPolicy.DESTROY
+            ),
+            ## Let users create accounts:
+            self_sign_up_enabled=True,
+            # This is where we can customize info in verification emails/text:
+            user_verification=cognito.UserVerificationConfig(),
+            # auto_verify=cognito.AutoVerifiedAttrs(), <-- TODO: Look in to this if email verification doesn't happen.
+            # https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_cognito.SignInAliases.html
+            sign_in_aliases=cognito.SignInAliases(
+                email=True,
+                phone=False,
+                preferred_username=False,
+                username=False,
+            ),
+            sign_in_case_sensitive=False,
+        )
+
+        ## User Pool Client, AKA App Client:
+        # https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_cognito.UserPoolClient.html
+        user_pool_client = cognito.UserPoolClient(
+            self,
+            "UserPoolClient",
+            user_pool=user_pool,
+            # https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_cognito.OAuthSettings.html
+            o_auth=cognito.OAuthSettings(
+                # Where to redirect after log IN:
+                callback_urls=[
+                    f"https://{portal_cloudfront.distribution_domain_name}/portal",
+                ],
+                # Where to redirect after log OUT:
+                logout_urls=[
+                    f"https://{portal_cloudfront.distribution_domain_name}/logout",
+                ],
+            ),
+            # supported_identity_providers=[
+            #     cognito.UserPoolClientIdentityProvider.COGNITO
+            # ],
+        )
+
+        ## User Pool Domain:
+        # https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_cognito.UserPoolDomain.html
+        user_pool_domain = cognito.UserPoolDomain(
+            self,
+            "UserPoolDomain",
+            user_pool=user_pool,
+            # https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_cognito.UserPoolDomainProps.html
+            cognito_domain=cognito.CognitoDomainOptions(
+                domain_prefix=construct_id.lower(),
+            ),
+        )
+        # https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_apigatewayv2_authorizers.HttpUserPoolAuthorizer.html
+        portal_authorizer = apigwv2_authorizers.HttpUserPoolAuthorizer(
+            "PortalAuthorizer",
+            pool=user_pool,
+            user_pool_clients=[user_pool_client],
+        )
+        portal_routes = ("access", "profile")
+        for route in portal_routes:
+            # https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_apigatewayv2.AddRoutesOptions.html
+            http_api.add_routes(
+                path=f"/portal/{route}",
+                methods=[apigwv2.HttpMethod.ANY],
+                integration=lambda_integration,
+                authorizer=portal_authorizer,
+            )
+
         ### Secrets Manager
         sso_token_secret = secretsmanager.Secret(
             self,
@@ -157,16 +248,29 @@ class PortalCdkStack(Stack):
         # https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.CfnOutput.html
         CfnOutput(
             self,
-            "URL",
-            value=f"https://{portal_cloudfront.distribution_domain_name}",
+            "CloudFrontURL",
+            value=f"https://{portal_cloudfront.distribution_domain_name}/portal",
             description="CloudFront URL",
         )
+
         CfnOutput(
             self,
-            "API-GATEWAY-ENDPOINT",
-            value=f"https://{http_api.api_endpoint}/hello",
-            description="API Gateway V2 Endpoint",
+            "ApiGatewayURL",
+            value=f"https://{http_api.http_api_id}.execute-api.{self.region}.amazonaws.com/portal",
+            description="ApiGateway URL",
         )
+
+        CfnOutput(
+            self,
+            "CognitoURL",
+            # https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_cognito.SignInUrlOptions.html
+            value=user_pool_domain.sign_in_url(
+                client=user_pool_client,
+                redirect_uri=f"https://{portal_cloudfront.distribution_domain_name}/portal",
+            ),
+            description="Endpoint for Cognito User Pool Domain",
+        )
+        
         CfnOutput(
             self,
             "SSO-TOKEN-ARN",
