@@ -2,6 +2,7 @@ import json
 import ast
 
 from util.responses import wrap_response
+from util.auth import LOGIN_URL, LOGOUT_URL
 
 from jinja2 import Environment, FileSystemLoader, StrictUndefined, select_autoescape
 
@@ -47,19 +48,32 @@ NAV_BAR_OPTIONS = [
     },
 ]
 
-def render_template(
-    _app, content, name="main.j2", title="OSL Portal", username=None
-):
+
+def get_user_from_event(app):
+    raw_event = app.current_event.raw_event
+    if "requestContext" in raw_event:
+        if "cognito_username" in raw_event["requestContext"]:
+            return raw_event["requestContext"]["cognito_username"]
+
+    return "Unknown"
+
+
+def render_template(app, content, name=None, title="OSL Portal", username=None):
     # App will be used later to generate template input
 
+    if not name:
+        name = "main.j2"
+
     if not username:
-        username = "Unknown"
+        username = get_user_from_event(app)
 
     template_input = {
         "content": content,
         "nav_bar_options": NAV_BAR_OPTIONS,
         "username": username,
         "title": title,
+        "login_url": LOGIN_URL,
+        "logout_url": LOGOUT_URL,
     }
 
     template = ENV.get_template(name)
@@ -67,22 +81,15 @@ def render_template(
     return template.render(**template_input)
 
 
-def portal_template(
-    app, name=None, title=None, username=None, response=None
-):
+def portal_template(app, name=None, title=None, username=None, response=200):
     # username will eventually come from app
     # I don't love response here
     def inner(func):
-        print(f"Loading Template {name}")
-
         def wrapper(*args, **kwargs):
             content = func(*args, **kwargs)
 
             body = render_template(
-                app,
-                content=content,
-                title=title,
-                username=username
+                app, name=name, content=content, title=title, username=username
             )
 
             if response:
