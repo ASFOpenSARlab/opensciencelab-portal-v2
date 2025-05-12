@@ -16,70 +16,101 @@ PORTAL_USER_COOKIE = "portal-username"
 COGNITO_JWT_COOKIE = "portal-jwt"
 
 # FIXME: These values should all be passed in dynamically!
-COGNITO_CLIENT_ID = "7p0eqmc22apfu6inppmjhktb8r"
-COGNITO_REDIRECT_URL = "https://dsgujfu16uv7m.cloudfront.net/portal"
-COGNITO_PUBLIC_KEYS_URL = "https://cognito-idp.us-west-2.amazonaws.com/us-west-2_JMoh1BWzT/.well-known/jwks.json"
-COGNITO_HOST = "https://portalcdkstack-cs.auth.us-west-2.amazoncognito.com"
+AWS_DEFAULT_REGION = os.getenv("STACK_REGION")
+COGNITO_CLIENT_ID = os.getenv("COGNITO_CLIENT_ID")
+COGNITO_POOL_ID = os.getenv("COGNITO_POOL_ID")
+COGNITO_PUBLIC_KEYS_URL = (
+    f"https://cognito-idp.{AWS_DEFAULT_REGION}.amazonaws.com/"
+    + COGNITO_POOL_ID
+    + "/.well-known/jwks.json"
+)
+COGNITO_DOMAIN_ID = os.getenv("COGNITO_DOMAIN_ID")
+COGNITO_HOST = (
+    f"https://{COGNITO_DOMAIN_ID}.auth.{AWS_DEFAULT_REGION}.amazoncognito.com"
+)
+
+CLOUDFRONT_ENDPOINT = os.getenv("CLOUDFRONT_ENDPOINT")
+LOGIN_URL = (
+    COGNITO_HOST
+    + "/login?"
+    + f"client_id={COGNITO_CLIENT_ID}&"
+    + "response_type=code&"
+    + "scope=aws.cognito.signin.user.admin+email+openid+phone+profile&"
+    + f"redirect_uri=https://{CLOUDFRONT_ENDPOINT}/auth"
+)
 
 SSO_TOKEN_SECRET_NAME = os.getenv("SSO_TOKEN_SECRET_NAME")
 
 JWT_VALIDATION = None
 USER_PROFILES = {}
 
+
 def encrypt_data(data: dict | str) -> str:
     sso_token = parameters.get_secret(SSO_TOKEN_SECRET_NAME)
     return encryptedjwt.encrypt(data, sso_token=sso_token)
 
+
 def decrypt_data(data):
     sso_token = parameters.get_secret(SSO_TOKEN_SECRET_NAME)
     return encryptedjwt.decrypt(data, sso_token=sso_token)
+
 
 def get_key_validation():
     global JWT_VALIDATION
 
     if not JWT_VALIDATION:
         public_keys = {}
+        logger.info({"keys": COGNITO_PUBLIC_KEYS_URL})
         jwks = requests.get(COGNITO_PUBLIC_KEYS_URL).json()
-        for jwk in jwks['keys']:
-            kid = jwk['kid']
+        for jwk in jwks["keys"]:
+            kid = jwk["kid"]
             public_keys[kid] = RSAAlgorithm.from_jwk(json.dumps(jwk))
 
         JWT_VALIDATION = public_keys
 
     return JWT_VALIDATION
 
+
 def get_param_from_jwt(jwt_cookie, param_name="username"):
     decoded = jwt.decode(jwt_cookie, options={"verify_signature": False})
     return decoded[param_name]
 
+
 def validate_jwt(jwt_cookie):
     jwt_validation = get_key_validation()
-    alg = jwt.get_unverified_header(jwt_cookie)['alg']
-    kid = jwt.get_unverified_header(jwt_cookie)['kid']
+    alg = jwt.get_unverified_header(jwt_cookie)["alg"]
+    kid = jwt.get_unverified_header(jwt_cookie)["kid"]
     key = jwt_validation[kid]
 
     try:
         return jwt.decode(jwt_cookie, key, algorithms=[alg])
-    except jwt.exceptions.ExpiredSignatureError as expired:
+    except jwt.exceptions.ExpiredSignatureError:
         username = get_param_from_jwt(jwt_cookie, "username")
         logger.warning(f"Expired Token for user '{username}'")
 
     return False
 
-def validate_code(code):
 
+def validate_code(code, request_host):
     oauth2_token_url = f"{COGNITO_HOST}/oauth2/token"
 
     data = {
         "grant_type": "authorization_code",
         "code": code,
         "client_id": COGNITO_CLIENT_ID,
-        "redirect_uri": COGNITO_REDIRECT_URL,
+        "redirect_uri": f"https://{request_host}/auth",
     }
 
     headers = {
         "Content-Type": "application/x-www-form-urlencoded",
     }
+
+    logger.info(
+        {
+            "exchange-data": data,
+            "auth-host": oauth2_token_url,
+        }
+    )
 
     # Attempt to exchange a code for a Token
     token_data = requests.post(oauth2_token_url, data=data, headers=headers).json()
@@ -95,6 +126,7 @@ def validate_code(code):
         )
         return False
 
+
 def get_set_cookie_header(name, value):
     return {"Set-Cookie": f"{name}={value}"}
 
@@ -102,9 +134,10 @@ def get_set_cookie_header(name, value):
 def get_jwt_from_token(token, token_name):
     return token[token_name]
 
+
 def get_set_cookie_headers(token):
-    access_token_jwt = token['access_token']
-    id_token_jwt = token['id_token']
+    access_token_jwt = token["access_token"]
+    id_token_jwt = token["id_token"]
 
     logger.info({"access_token": access_token_jwt})
     logger.info({"id_token": id_token_jwt})
@@ -128,9 +161,11 @@ def get_set_cookie_headers(token):
 
     return cookie_headers
 
+
 def get_encoded_username_cookie(username):
     # Return portal-compatible username cookie
     return {PORTAL_USER_COOKIE: decrypt_data(username)}
+
 
 def get_cookies_from_event(event):
     cookies = {}
@@ -144,21 +179,25 @@ def get_cookies_from_event(event):
 
 @lambda_handler_decorator
 def process_auth(handler, event, context):
-
     # Cookies we care about:
     cookies = get_cookies_from_event(event)
 
     if cookies.get(PORTAL_USER_COOKIE):
-        event["requestContext"]["portal-username-cookie"] = cookies.get(PORTAL_USER_COOKIE)
+        event["requestContext"]["portal_username_cookie"] = cookies.get(
+            PORTAL_USER_COOKIE
+        )
 
     if cookies.get(COGNITO_JWT_COOKIE):
         jwt_cookie = cookies.get(COGNITO_JWT_COOKIE)
-        event["requestContext"]["cognito-jwt-cookie"] = jwt_cookie
-        event["requestContext"]["cognito-username"] = get_param_from_jwt(jwt_cookie, "username")
+        jwt_username = get_param_from_jwt(jwt_cookie, "username")
+        event["requestContext"]["cognito_jwt_cookie"] = jwt_cookie
+        event["requestContext"]["cognito_username"] = jwt_username
+        logger.info("JWT Username is %s", jwt_username)
 
         validated_jwt = validate_jwt(jwt_cookie)
+        logger.info({"jwt_cookie_payload": validated_jwt})
         if validated_jwt:
-            event["requestContext"]["cognito-validated"] = validated_jwt
+            event["requestContext"]["cognito_validated"] = validated_jwt
 
     # process the actual request
     return handler(event, context)
