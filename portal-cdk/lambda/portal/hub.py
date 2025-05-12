@@ -1,15 +1,13 @@
 import datetime
-import os
+
 import json
 
 from util.responses import wrap_response, basic_json
 from util.format import portal_template, request_context_string
-
-from opensarlab.auth import encryptedjwt
+from util.auth import encrypt_data
 
 from aws_lambda_powertools import Logger
 from aws_lambda_powertools.event_handler.api_gateway import Router
-from aws_lambda_powertools.utilities import parameters
 from aws_lambda_powertools.event_handler import content_types
 from aws_lambda_powertools.shared.cookies import Cookie
 
@@ -24,18 +22,6 @@ hub_route = {
 }
 
 logger = Logger(service="APP")
-
-
-def encrypt_data(data: dict | str) -> str:
-    secret_name = os.getenv("SSO_TOKEN_SECRET_NAME")
-    sso_token = parameters.get_secret(secret_name)
-
-    # TODO: Fix initial code build time
-    # The module `encryptedjwt`` uses the cryptography module which in turn uses Fernet
-    # On a cold lambda start, Fernet takes at least 1 second to do it's thing
-    # A warm lambda is nearly instant. Is there a pip wheel being build when cold?
-    data = encryptedjwt.encrypt(data, sso_token=sso_token)
-    return data
 
 
 @hub_router.get("/")
