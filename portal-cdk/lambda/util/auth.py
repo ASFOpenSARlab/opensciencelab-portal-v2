@@ -60,7 +60,7 @@ def get_key_validation():
 
     if not JWT_VALIDATION:
         public_keys = {}
-        logger.info({"keys": COGNITO_PUBLIC_KEYS_URL})
+        logger.debug({"keys": COGNITO_PUBLIC_KEYS_URL})
         jwks = requests.get(COGNITO_PUBLIC_KEYS_URL).json()
         for jwk in jwks["keys"]:
             kid = jwk["kid"]
@@ -105,7 +105,7 @@ def validate_code(code, request_host):
         "Content-Type": "application/x-www-form-urlencoded",
     }
 
-    logger.info(
+    logger.debug(
         {
             "exchange-data": data,
             "auth-host": oauth2_token_url,
@@ -139,8 +139,8 @@ def get_set_cookie_headers(token):
     access_token_jwt = token["access_token"]
     id_token_jwt = token["id_token"]
 
-    logger.info({"access_token": access_token_jwt})
-    logger.info({"id_token": id_token_jwt})
+    logger.debug({"access_token": access_token_jwt})
+    logger.debug({"id_token": id_token_jwt})
 
     access_token_decoded = validate_jwt(access_token_jwt)
 
@@ -157,7 +157,7 @@ def get_set_cookie_headers(token):
     cookie_headers.append(f"{PORTAL_USER_COOKIE}={username_cookie_value};")
     cookie_headers.append(f"{COGNITO_JWT_COOKIE}={access_token_jwt};")
 
-    logger.info({"set-cookie-headers": cookie_headers})
+    logger.debug({"set-cookie-headers": cookie_headers})
 
     return cookie_headers
 
@@ -192,10 +192,10 @@ def process_auth(handler, event, context):
         jwt_username = get_param_from_jwt(jwt_cookie, "username")
         event["requestContext"]["cognito_jwt_cookie"] = jwt_cookie
         event["requestContext"]["cognito_username"] = jwt_username
-        logger.info("JWT Username is %s", jwt_username)
+        logger.debug("JWT Username is %s", jwt_username)
 
         validated_jwt = validate_jwt(jwt_cookie)
-        logger.info({"jwt_cookie_payload": validated_jwt})
+        logger.debug({"jwt_cookie_payload": validated_jwt})
         if validated_jwt:
             event["requestContext"]["cognito_validated"] = validated_jwt
 
