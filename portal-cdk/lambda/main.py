@@ -43,6 +43,7 @@ def login():
 @app.get("/logout")
 @portal_template(app, title="Logged Out", name="logged-out.j2")
 def logout():
+    # TODO: Remove cookies here.
     return "You have been logged out"
 
 

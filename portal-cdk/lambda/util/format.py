@@ -2,7 +2,7 @@ import json
 import ast
 
 from util.responses import wrap_response
-from util.auth import LOGIN_URL
+from util.auth import LOGIN_URL, LOGOUT_URL
 
 from jinja2 import Environment, FileSystemLoader, StrictUndefined, select_autoescape
 
@@ -73,6 +73,7 @@ def render_template(app, content, name=None, title="OSL Portal", username=None):
         "username": username,
         "title": title,
         "login_url": LOGIN_URL,
+        "logout_url": LOGOUT_URL,
     }
 
     template = ENV.get_template(name)
