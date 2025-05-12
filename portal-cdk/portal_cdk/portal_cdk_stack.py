@@ -5,6 +5,7 @@ from aws_cdk import (
     RemovalPolicy,
     aws_cognito as cognito,
     aws_apigatewayv2 as apigwv2,
+    aws_dynamodb as dynamodb,
     aws_apigatewayv2_integrations as apigwv2_integrations,
     aws_apigatewayv2_authorizers as apigwv2_authorizers,
     aws_cloudfront as cloudfront,
@@ -64,6 +65,17 @@ class PortalCdkStack(Stack):
                 layers=[powertools_layer, requirements_layer],
                 memory_size=1024,
             ),
+            # https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_dynamodb.TableProps.html
+            dynamo_table_props=dynamodb.TableProps(
+                partition_key=dynamodb.Attribute(name="id", type=dynamodb.AttributeType.STRING),
+                deletion_protection=bool(deploy_prefix == "prod"),
+                # Default removal_policy is always RETAIN:
+                removal_policy=(
+                    RemovalPolicy.RETAIN
+                    if deploy_prefix == "prod"
+                    else RemovalPolicy.DESTROY
+                ),
+            ),
         )
 
         ### Integration is after the request is validated:
@@ -104,15 +116,8 @@ class PortalCdkStack(Stack):
         http_api.add_routes(
             path="/portal",
             methods=[apigwv2.HttpMethod.ANY],
-            integration=lambda_integration_authen,
+            integration=lambda_integration,
         )
-        portal_routes = ("access", "profile", "hub")
-        for route in portal_routes:
-            http_api.add_routes(
-                path=f"/portal/{route}",
-                methods=[apigwv2.HttpMethod.ANY],
-                integration=lambda_integration_authen,
-            )
 
         ## And a basic CloudFront Endpoint:
         # https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_cloudfront-readme.html#from-an-http-endpoint
