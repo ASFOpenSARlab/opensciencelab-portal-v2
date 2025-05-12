@@ -112,7 +112,7 @@ def handle_not_found(error):
 
 @logger.inject_lambda_context(
     correlation_id_path=correlation_paths.API_GATEWAY_HTTP,
-    log_event=True,
+    log_event=False,
 )
 @process_auth
 def lambda_handler(event, context):
