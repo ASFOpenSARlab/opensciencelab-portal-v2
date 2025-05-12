@@ -2,6 +2,7 @@ import json
 import ast
 
 from util.responses import wrap_response
+from util.auth import LOGIN_URL, LOGOUT_URL
 
 from jinja2 import Environment, FileSystemLoader, StrictUndefined, select_autoescape
 
@@ -48,31 +49,54 @@ NAV_BAR_OPTIONS = [
 ]
 
 
-def portal_template(
-    app, name="main.j2", title="OSL Portal", username="Unknown", response=200
-):
+def get_user_from_event(app):
+    raw_event = app.current_event.raw_event
+    if "requestContext" in raw_event:
+        if "cognito_username" in raw_event["requestContext"]:
+            return raw_event["requestContext"]["cognito_username"]
+
+    return "Unknown"
+
+
+def render_template(app, content, name=None, title="OSL Portal", username=None):
+    # App will be used later to generate template input
+
+    if not name:
+        name = "main.j2"
+
+    if not username:
+        username = get_user_from_event(app)
+
+    template_input = {
+        "content": content,
+        "nav_bar_options": NAV_BAR_OPTIONS,
+        "username": username,
+        "title": title,
+        "login_url": LOGIN_URL,
+        "logout_url": LOGOUT_URL,
+    }
+
+    template = ENV.get_template(name)
+
+    return template.render(**template_input)
+
+
+def portal_template(app, name=None, title=None, username=None, response=200):
     # username will eventually come from app
     # I don't love response here
     def inner(func):
-        print(f"Loading Template {name}")
-
         def wrapper(*args, **kwargs):
             content = func(*args, **kwargs)
 
-            template_input = {
-                "content": content,
-                "nav_bar_options": NAV_BAR_OPTIONS,
-                "username": username,
-                "title": title,
-            }
+            body = render_template(
+                app, name=name, content=content, title=title, username=username
+            )
 
-            template = ENV.get_template(name)
             if response:
                 # If we received basic_response_code, return a basic_html response
-                body = template.render(**template_input)
                 return wrap_response(body=body, code=response)
 
-            return template.render(**template_input)
+            return body
 
         return wrapper
 
