@@ -18,7 +18,9 @@ Makefile commands:
 
     deploy-oidc:            Deploy OIDC CDK project
 
-    aws-info:               Get AWS account info    
+    aws-info:               Get AWS account info
+
+    clean:					Remove .build/ & cdk.out/
 
 endef
 export HELP
@@ -131,6 +133,11 @@ deploy-portal: install-reqs bundle-deps
 destroy-portal: install-reqs bundle-deps
 	@echo "Destroying ${DEPLOY_PREFIX}/portal-cdk"
 	cd ./portal-cdk && cdk destroy --force --all
+
+.PHONY := clean
+clean:
+	rm -rf /tmp/.build/ && \
+	rm -rf ./portal-cdk/cdk.out/
 
 .PHONY := synth-oidc
 synth-oidc:

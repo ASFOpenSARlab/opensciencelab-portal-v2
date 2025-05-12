@@ -100,6 +100,20 @@ class PortalCdkStack(Stack):
             integration=lab_integration,
         )
 
+        # Hub endpoint
+        http_api.add_routes(
+            path="/portal",
+            methods=[apigwv2.HttpMethod.ANY],
+            integration=lambda_integration_authen,
+        )
+        portal_routes = ("access", "profile", "hub")
+        for route in portal_routes:
+            http_api.add_routes(
+                path=f"/portal/{route}",
+                methods=[apigwv2.HttpMethod.ANY],
+                integration=lambda_integration_authen,
+            )
+
         ## And a basic CloudFront Endpoint:
         # https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_cloudfront-readme.html#from-an-http-endpoint
 
@@ -115,9 +129,11 @@ class PortalCdkStack(Stack):
                 origin=origins.HttpOrigin(
                     f"{http_api.http_api_id}.execute-api.{self.region}.amazonaws.com"
                 ),
+                origin_request_policy=cloudfront.OriginRequestPolicy.ALL_VIEWER_EXCEPT_HOST_HEADER,
                 viewer_protocol_policy=cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
                 allowed_methods=cloudfront.AllowedMethods.ALLOW_ALL,
                 cache_policy=cloudfront.CachePolicy.CACHING_DISABLED,
+                response_headers_policy=cloudfront.ResponseHeadersPolicy.CORS_ALLOW_ALL_ORIGINS_WITH_PREFLIGHT_AND_SECURITY_HEADERS,
             ),
         )
 
@@ -254,6 +270,7 @@ class PortalCdkStack(Stack):
             ),
             description="Endpoint for Cognito User Pool Domain",
         )
+        
         CfnOutput(
             self,
             "SSO-TOKEN-ARN",

@@ -1,7 +1,8 @@
 from portal.profile import profile_route
 from portal.access import access_route
+from portal.hub import hub_route
+from util.format import portal_template
 
-from portal_formatting import portal_template, basic_html
 
 from aws_lambda_powertools.event_handler.api_gateway import Router
 
@@ -16,11 +17,14 @@ routes = {}
 route_names = {}
 
 # Import Nested routes, eg /portal/profile
-for route in (portal_route, profile_route, access_route):
+for route in (portal_route, profile_route, access_route, hub_route):
     routes[route["prefix"]] = route["router"]
-    route_names[route["name"]] = route["prefix"]
+
+    if "name" in route:
+        route_names[route["name"]] = route["prefix"]
 
 
 @portal_router.get("")
+@portal_template(portal_router)
 def portal_root():
-    return basic_html(portal_template("Welcome to OpenScienceLab"))
+    return "Welcome to OpenScienceLab"
