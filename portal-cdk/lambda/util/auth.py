@@ -39,6 +39,13 @@ LOGIN_URL = (
     + f"redirect_uri=https://{CLOUDFRONT_ENDPOINT}/auth"
 )
 
+LOGOUT_URL = (
+    COGNITO_HOST
+    + "/logout?"
+    + f"client_id={COGNITO_CLIENT_ID}&"
+    + f"logout_uri=https://{CLOUDFRONT_ENDPOINT}/logout"
+)
+
 SSO_TOKEN_SECRET_NAME = os.getenv("SSO_TOKEN_SECRET_NAME")
 
 JWT_VALIDATION = None
