@@ -146,10 +146,10 @@ class PortalCdkStack(Stack):
             # https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_cognito.ICustomAttribute.html
             custom_attributes={
                 "country": cognito.StringAttribute(mutable=False),
-                "nasa_affiliated": cognito.BooleanAttribute(mutable=False),
-                "us_gov_research_affiliated": cognito.BooleanAttribute(mutable=False),
-                "isro_affiliated": cognito.BooleanAttribute(mutable=False),
-                "university_affiliated": cognito.BooleanAttribute(mutable=False),
+                "nasa_aff": cognito.BooleanAttribute(mutable=False),
+                "us_gov_research_aff": cognito.BooleanAttribute(mutable=False),
+                "isro_aff": cognito.BooleanAttribute(mutable=False),
+                "university_aff": cognito.BooleanAttribute(mutable=False),
             },
             # https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_cognito.UserPoolEmail.html
             email=cognito.UserPoolEmail.with_cognito(reply_to=None),
