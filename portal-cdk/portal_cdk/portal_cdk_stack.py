@@ -144,7 +144,7 @@ class PortalCdkStack(Stack):
                 ),
             ),
             # https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_cognito.ICustomAttribute.html
-            customAttributes={
+            custom_attributes={
                 "country": cognito.StringAttribute(mutable=False),
                 "nasa_affiliated": cognito.BooleanAttribute(mutable=False),
                 "us_gov_research_affiliated": cognito.BooleanAttribute(mutable=False),
