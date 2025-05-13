@@ -143,14 +143,14 @@ class PortalCdkStack(Stack):
                     mutable=True,
                 ),
             ),
-            # https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_cognito.ICustomAttribute.html
-            custom_attributes={
-                "country": cognito.StringAttribute(mutable=False),
-                "nasa_aff": cognito.BooleanAttribute(mutable=False),
-                "us_gov_research_aff": cognito.BooleanAttribute(mutable=False),
-                "isro_aff": cognito.BooleanAttribute(mutable=False),
-                "university_aff": cognito.BooleanAttribute(mutable=False),
-            },
+            # # https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_cognito.ICustomAttribute.html
+            # custom_attributes={
+            #     "country": cognito.StringAttribute(mutable=False),
+            #     "nasa_aff": cognito.BooleanAttribute(mutable=False),
+            #     "us_gov_research_aff": cognito.BooleanAttribute(mutable=False),
+            #     "isro_aff": cognito.BooleanAttribute(mutable=False),
+            #     "university_aff": cognito.BooleanAttribute(mutable=False),
+            # },
             # https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_cognito.UserPoolEmail.html
             email=cognito.UserPoolEmail.with_cognito(reply_to=None),
             # https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_cognito.Mfa.html
