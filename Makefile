@@ -6,7 +6,7 @@ Makefile commands:
 
     lint:                   Run linting commands
 
-    cdk-shell:              Enter CDK enviroment Docker Image
+    cdk-shell:              Enter CDK environment Docker Image
 
     manual-cdk-bootstrap:   Bootstrap an account for CDK
 
@@ -53,12 +53,16 @@ lint:
 	echo "Starting Docker Shell..."
 	echo ""
 	docker run \
+	    $$ARCH_OVERRIDE \
 		-v "$$(pwd):/code" \
 		-it \
 		--rm \
 		--pull always \
 		${IMAGE_NAME} \
-		make all && \
+		make all || \
+		(  echo -e "" && echo  'If docker run fails with "no matching manifest", ' \
+		  'try setting ARCH_OVERRIDE: `export ARCH_OVERRIDE=--platform linux/amd64`.' && \
+		  echo -e "" && exit -1 ) && \
 	echo "### All Linting Passed ###" || \
 	echo "⚠️⚠️⚠️ Linting was not successful ⚠️⚠️⚠️"
 
@@ -71,6 +75,7 @@ cdk-shell:
 		if [ -z "$$AWS_DEFAULT_ACCOUNT" ]; then echo "⚠️  Can't infer AWS credentials! ⚠️"; fi && \
 	mkdir -p /tmp/cdkawscli/cache && \
 	docker run --rm -it \
+		$$ARCH_OVERRIDE \
 		-v ~/.aws/:/root/.aws/:ro \
 		-v /tmp/cdkawscli/cache:/root/.aws/cli/cache/ \
 		-v ${PROJECT_DIR}/:/code/ \
@@ -79,7 +84,10 @@ cdk-shell:
 		-e AWS_DEFAULT_REGION -e AWS_REGION \
 		-e AWS_DEFAULT_ACCOUNT \
 		-e DEPLOY_PREFIX \
-		${IMAGE_NAME}
+		${IMAGE_NAME} || \
+		(  echo -e "" && echo  'If docker run fails with "no matching manifest", ' \
+		  'try setting ARCH_OVERRIDE: `export ARCH_OVERRIDE=--platform linux/amd64`.' && \
+		  echo -e "" )
 
 .PHONY := manual-cdk-bootstrap
 manual-cdk-bootstrap:
