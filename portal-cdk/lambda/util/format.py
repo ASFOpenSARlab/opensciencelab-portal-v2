@@ -2,9 +2,13 @@ import json
 import ast
 
 from util.responses import wrap_response
-from util.auth import LOGIN_URL, LOGOUT_URL
+from util.auth import LOGIN_URL, LOGOUT_URL, get_user_from_event
 
 from jinja2 import Environment, FileSystemLoader, StrictUndefined, select_autoescape
+
+from aws_lambda_powertools import Logger
+
+logger = Logger(service="APP")
 
 ENV = Environment(
     loader=FileSystemLoader("./templates/"),
@@ -49,17 +53,12 @@ NAV_BAR_OPTIONS = [
 ]
 
 
-def get_user_from_event(app):
-    raw_event = app.current_event.raw_event
-    if "requestContext" in raw_event:
-        if "cognito_username" in raw_event["requestContext"]:
-            return raw_event["requestContext"]["cognito_username"]
-
-    return "Unknown"
-
-
 def render_template(app, content, name=None, title="OSL Portal", username=None):
     # App will be used later to generate template input
+
+    # Check for a logged-out return path
+    return_path = app.current_event.query_string_parameters.get("return", None)
+    logger.debug("return param is %s", return_path)
 
     if not name:
         name = "main.j2"
@@ -74,6 +73,7 @@ def render_template(app, content, name=None, title="OSL Portal", username=None):
         "title": title,
         "login_url": LOGIN_URL,
         "logout_url": LOGOUT_URL,
+        "return_path": f"&state={return_path}" if return_path else "",
     }
 
     template = ENV.get_template(name)
