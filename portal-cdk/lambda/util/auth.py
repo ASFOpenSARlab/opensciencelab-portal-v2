@@ -1,5 +1,6 @@
 import json
 import os
+import traceback
 
 import requests
 import jwt
@@ -186,25 +187,31 @@ def get_cookies_from_event(event):
 
 @lambda_handler_decorator
 def process_auth(handler, event, context):
-    # Cookies we care about:
-    cookies = get_cookies_from_event(event)
+    try:
+        print(json.dumps({"AuthEvent": event, "AuthContext": context}, default=str))
+        # Cookies we care about:
+        cookies = get_cookies_from_event(event)
 
-    if cookies.get(PORTAL_USER_COOKIE):
-        event["requestContext"]["portal_username_cookie"] = cookies.get(
-            PORTAL_USER_COOKIE
-        )
+        if cookies.get(PORTAL_USER_COOKIE):
+            event["requestContext"]["portal_username_cookie"] = cookies.get(
+                PORTAL_USER_COOKIE
+            )
 
-    if cookies.get(COGNITO_JWT_COOKIE):
-        jwt_cookie = cookies.get(COGNITO_JWT_COOKIE)
-        jwt_username = get_param_from_jwt(jwt_cookie, "username")
-        event["requestContext"]["cognito_jwt_cookie"] = jwt_cookie
-        event["requestContext"]["cognito_username"] = jwt_username
-        logger.debug("JWT Username is %s", jwt_username)
+        if cookies.get(COGNITO_JWT_COOKIE):
+            jwt_cookie = cookies.get(COGNITO_JWT_COOKIE)
+            jwt_username = get_param_from_jwt(jwt_cookie, "username")
+            event["requestContext"]["cognito_jwt_cookie"] = jwt_cookie
+            event["requestContext"]["cognito_username"] = jwt_username
+            logger.debug("JWT Username is %s", jwt_username)
 
-        validated_jwt = validate_jwt(jwt_cookie)
-        logger.debug({"jwt_cookie_payload": validated_jwt})
-        if validated_jwt:
-            event["requestContext"]["cognito_validated"] = validated_jwt
+            validated_jwt = validate_jwt(jwt_cookie)
+            logger.debug({"jwt_cookie_payload": validated_jwt})
+            if validated_jwt:
+                event["requestContext"]["cognito_validated"] = validated_jwt
 
-    # process the actual request
-    return handler(event, context)
+        # process the actual request
+        return handler(event, context)
+    except Exception as e:
+        logger.error(traceback.format_exc())
+        logger.error(e)
+        raise e
