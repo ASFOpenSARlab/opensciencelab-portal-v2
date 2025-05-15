@@ -29,6 +29,7 @@ app = APIGatewayHttpResolver()
 # Add portal routes
 for prefix, router in routes.items():
     app.include_router(router, prefix=prefix)
+    router.app = app
 
 
 @app.get("/")
@@ -99,12 +100,14 @@ def auth_code():
             render_template(app, content=msg), code=401
         )
 
+    state = app.current_event.query_string_parameters.get("state", "/portal")
+
     # Send the newly logged in user to the Portal
     return wrap_response(
-        render_template(app, content="Redirecting to /portal"),
+        render_template(app, content=f"Redirecting to {state}"),
         code=302,
         cookies=set_cookie_headers,
-        headers={"Location": "/portal"},
+        headers={"Location": state},
     )
 
 
