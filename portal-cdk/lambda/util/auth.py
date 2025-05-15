@@ -1,11 +1,12 @@
 import json
 import os
 
+from util.responses import wrap_response
+
 import requests
 import jwt
 from jwt.algorithms import RSAAlgorithm
 from opensarlab.auth import encryptedjwt
-
 from aws_lambda_powertools.utilities import parameters
 from aws_lambda_powertools import Logger
 from aws_lambda_powertools.middleware_factory import lambda_handler_decorator
@@ -60,6 +61,15 @@ def encrypt_data(data: dict | str) -> str:
 def decrypt_data(data):
     sso_token = parameters.get_secret(SSO_TOKEN_SECRET_NAME)
     return encryptedjwt.decrypt(data, sso_token=sso_token)
+
+
+def get_user_from_event(app):
+    raw_event = app.current_event.raw_event
+    if "requestContext" in raw_event:
+        if "cognito_username" in raw_event["requestContext"]:
+            return raw_event["requestContext"]["cognito_username"]
+
+    return None
 
 
 def get_key_validation():
@@ -208,3 +218,31 @@ def process_auth(handler, event, context):
 
     # process the actual request
     return handler(event, context)
+
+
+def require_access(access="user"):
+    def inner(func):
+        def wrapper(*args, **kwargs):
+            # app is pulled in from outer scope via a function attribute
+            app = require_access.router.app
+
+            # Check for cookie auth
+            username = get_user_from_event(app)
+
+            if not username:
+                return_path = app.current_event.request_context.http.path
+
+                return wrap_response(
+                    body="User is not logged in",
+                    code=302,
+                    headers={"Location": f"/?return={return_path}"},
+                )
+
+            logger.info("User %s has %s access", username, access)
+
+            # Run the endpoint
+            return func(*args, **kwargs)
+
+        return wrapper
+
+    return inner
