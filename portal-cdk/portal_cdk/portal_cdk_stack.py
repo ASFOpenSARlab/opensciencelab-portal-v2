@@ -17,6 +17,7 @@ from aws_solutions_constructs.aws_lambda_dynamodb import LambdaToDynamoDB
 
 LAMBDA_RUNTIME = aws_lambda.Runtime.PYTHON_3_11
 
+
 class PortalCdkStack(Stack):
     def __init__(
         self,
@@ -127,17 +128,17 @@ class PortalCdkStack(Stack):
                 response_headers_policy=cloudfront.ResponseHeadersPolicy.CORS_ALLOW_ALL_ORIGINS_WITH_PREFLIGHT_AND_SECURITY_HEADERS,
             ),
         )
-        
-        # Modify these externally from cognito using 
+
+        # Modify these externally from cognito using
         # https://docs.aws.amazon.com/cognito-user-identity-pools/latest/APIReference/API_AdminUpdateUserAttributes.html
         # https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_cognito.ICustomAttribute.html
-        custom_attributes={
-                "country": cognito.StringAttribute(mutable=True),
-                "nasa_email": cognito.StringAttribute(mutable=True),
-                "us_gov_email": cognito.StringAttribute(mutable=True),
-                "isro_email": cognito.StringAttribute(mutable=True),
-                "university_role": cognito.StringAttribute(mutable=True),
-            }
+        custom_attributes = {
+            "country": cognito.StringAttribute(mutable=True),
+            "nasa_email": cognito.StringAttribute(mutable=True),
+            "us_gov_email": cognito.StringAttribute(mutable=True),
+            "isro_email": cognito.StringAttribute(mutable=True),
+            "university_role": cognito.StringAttribute(mutable=True),
+        }
 
         # https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_cognito.UserPool.html
         ### NOTE: To change these settings, you HAVE to delete and re-create the stack :(

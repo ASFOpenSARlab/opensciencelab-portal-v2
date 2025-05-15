@@ -157,3 +157,15 @@ aws-info:
 		--output text
 	@echo "AWS Default Region: $$AWS_DEFAULT_REGION"
 	@echo "AWS Default Profile: $$AWS_DEFAULT_PROFILE"
+
+.PHONY := docker-shell
+docker-shell:
+	echo "Starting Docker Shell..."
+	echo ""
+	docker run \
+		-v "$$(pwd):/code" \
+		-it \
+		--rm \
+		--pull always \
+  ghcr.io/asfopensarlab/osl-utils:main \
+		bash
