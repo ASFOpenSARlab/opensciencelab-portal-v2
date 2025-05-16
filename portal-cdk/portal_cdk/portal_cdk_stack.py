@@ -138,6 +138,7 @@ class PortalCdkStack(Stack):
             "nasa_email_owner": cognito.StringAttribute(mutable=True),
             "us_gov_email": cognito.StringAttribute(mutable=True),
             "isro_email": cognito.StringAttribute(mutable=True),
+            "is_univ_related": cognito.BooleanAttribute(mutable=True),
             "is_univ_researcher": cognito.BooleanAttribute(mutable=True),
             "is_univ_faculty": cognito.BooleanAttribute(mutable=True),
             "is_grad_student": cognito.BooleanAttribute(mutable=True),
