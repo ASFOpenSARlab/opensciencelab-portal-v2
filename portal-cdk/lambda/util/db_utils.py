@@ -1,4 +1,5 @@
 """File of helpers for interacting with DynamoDB."""
+
 import datetime
 import os
 
@@ -14,7 +15,7 @@ def _get_dynamo():
     """
     Lazy load all DynamoDB stuff since it takes forever the first time.
     """
-    global _DYNAMO_CLIENT, _DYNAMO_DB, _DYNAMO_TABLE # pylint: disable=global-statement
+    global _DYNAMO_CLIENT, _DYNAMO_DB, _DYNAMO_TABLE  # pylint: disable=global-statement
     if not _DYNAMO_CLIENT:
         _DYNAMO_CLIENT = boto3.client("dynamodb")
     if not _DYNAMO_DB:
@@ -84,9 +85,15 @@ def update_item(username: str, updates: dict) -> dict:
         return create_item(username, updates)
     ### Otherwise craft the boto3 update item call:
     updates["last-update"] = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    # The '#var' is ID for the keys:
     expression_attribute_names = {f"#{alpha(k)}": k for k in updates.keys()}
+    # The ':var' is ID for the values:
     expression_attribute_values = {f":{alpha(k)}": v for k, v in updates.items()}
-    update_expression = "SET " + ", ".join([f"#{alpha(k)}=:{alpha(k)}" for k in updates.keys()])
+    update_expression = "SET " + ", ".join(
+        # Set the ID for #var and :var equal to each other:
+        # (It'll look up the real value in the map above.)
+        [f"#{alpha(k)}=:{alpha(k)}" for k in updates.keys()]
+    )
     table.update_item(
         Key={"id": username},
         ExpressionAttributeNames=expression_attribute_names,
