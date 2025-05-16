@@ -134,9 +134,9 @@ class PortalCdkStack(Stack):
         # https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_cognito.ICustomAttribute.html
         custom_attributes = {
             "country": cognito.StringAttribute(mutable=True),
-            "nasa_email": cognito.StringAttribute(mutable=True),
-            "us_gov_email": cognito.StringAttribute(mutable=True),
-            "isro_email": cognito.StringAttribute(mutable=True),
+            "email": cognito.StringAttribute(mutable=True),
+            "email_affiliation": cognito.StringAttribute(mutable=True),
+            "email_owner": cognito.StringAttribute(mutable=True),
             "university_role": cognito.StringAttribute(mutable=True),
         }
 
