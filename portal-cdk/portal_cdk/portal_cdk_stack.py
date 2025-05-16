@@ -138,7 +138,9 @@ class PortalCdkStack(Stack):
             "nasa_email_owner": cognito.StringAttribute(mutable=True),
             "us_gov_email": cognito.StringAttribute(mutable=True),
             "isro_email": cognito.StringAttribute(mutable=True),
-            "university_role": cognito.StringAttribute(mutable=True),
+            "is_univ_researcher": cognito.BooleanAttribute(mutable=True),
+            "is_univ_faculty": cognito.BooleanAttribute(mutable=True),
+            "is_grad_student": cognito.BooleanAttribute(mutable=True),
         }
 
         # https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_cognito.UserPool.html
