@@ -16,11 +16,11 @@ def _get_dynamo():
     """
     global _DYNAMO_CLIENT, _DYNAMO_DB, _DYNAMO_TABLE # pylint: disable=global-statement
     if not _DYNAMO_CLIENT:
-        _DYNAMO_CLIENT = boto3.client('dynamodb')
+        _DYNAMO_CLIENT = boto3.client("dynamodb")
     if not _DYNAMO_DB:
         _DYNAMO_DB = boto3.resource("dynamodb")
     if not _DYNAMO_TABLE:
-        _DYNAMO_TABLE = _DYNAMO_DB.Table(os.getenv('DYNAMO_TABLE_NAME'))
+        _DYNAMO_TABLE = _DYNAMO_DB.Table(os.getenv("DYNAMO_TABLE_NAME"))
     return _DYNAMO_CLIENT, _DYNAMO_DB, _DYNAMO_TABLE
 
 
@@ -28,7 +28,7 @@ def alpha(s: str) -> str:
     """
     Only returns the alpha parts of a string.
     """
-    return ''.join(filter(str.isalnum, s))
+    return "".join(filter(str.isalnum, s))
 
 
 def create_item(username: str, item: dict) -> dict:
@@ -38,9 +38,9 @@ def create_item(username: str, item: dict) -> dict:
     _client, _db, table = _get_dynamo()
     # Adding ID here so you don't have to remember what the key should be, and
     # it matches the parameters for the other functions in this file.
-    item['id'] = username
-    item['created-at'] = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    item['last-update'] = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    item["id"] = username
+    item["created-at"] = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    item["last-update"] = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     table.put_item(Item=item)
     return item
 
@@ -50,9 +50,9 @@ def get_item(username: str) -> dict:
     Returns an item from the DB, or False if it doesn't exist.
     """
     _client, _db, table = _get_dynamo()
-    response = table.get_item(Key={'id': username})
-    if 'Item' in response:
-        return response['Item']
+    response = table.get_item(Key={"id": username})
+    if "Item" in response:
+        return response["Item"]
     return False
 
 
@@ -63,10 +63,10 @@ def get_all_items() -> list:
     """
     _client, _db, table = _get_dynamo()
     response = table.scan()
-    items = response.get('Items', [])
-    while 'LastEvaluatedKey' in response:
-        response = table.scan(ExclusiveStartKey=response['LastEvaluatedKey'])
-        items.extend(response.get('Items', []))
+    items = response.get("Items", [])
+    while "LastEvaluatedKey" in response:
+        response = table.scan(ExclusiveStartKey=response["LastEvaluatedKey"])
+        items.extend(response.get("Items", []))
     return items
 
 
@@ -83,12 +83,12 @@ def update_item(username: str, updates: dict) -> dict:
     if not get_item(username):
         return create_item(username, updates)
     ### Otherwise craft the boto3 update item call:
-    updates['last-update'] = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    updates["last-update"] = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     expression_attribute_names = {f"#{alpha(k)}": k for k in updates.keys()}
     expression_attribute_values = {f":{alpha(k)}": v for k, v in updates.items()}
     update_expression = "SET " + ", ".join([f"#{alpha(k)}=:{alpha(k)}" for k in updates.keys()])
     table.update_item(
-        Key={'id': username},
+        Key={"id": username},
         ExpressionAttributeNames=expression_attribute_names,
         ExpressionAttributeValues=expression_attribute_values,
         UpdateExpression=update_expression,
@@ -101,7 +101,7 @@ def delete_item(username: str) -> None:
     Deletes an item from the DB.
     """
     _client, _db, table = _get_dynamo()
-    table.delete_item(Key={'id': username})
+    table.delete_item(Key={"id": username})
 
 
 def update_username(old_username: str, new_username: str) -> bool:
@@ -113,7 +113,7 @@ def update_username(old_username: str, new_username: str) -> bool:
     _client, _db, table = _get_dynamo()
     item = get_item(old_username)
     if item:
-        item['id'] = new_username
+        item["id"] = new_username
         table.put_item(Item=item)
         delete_item(old_username)
         return True

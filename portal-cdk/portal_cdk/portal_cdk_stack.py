@@ -66,7 +66,10 @@ class PortalCdkStack(Stack):
             ),
             # https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_dynamodb.TableProps.html
             dynamo_table_props=dynamodb.TableProps(
-                partition_key=dynamodb.Attribute(name="id", type=dynamodb.AttributeType.STRING),
+                partition_key=dynamodb.Attribute(
+                    name="id",
+                    type=dynamodb.AttributeType.STRING,
+                ),
                 deletion_protection=bool(deploy_prefix == "prod"),
                 # Default removal_policy is always RETAIN:
                 removal_policy=(

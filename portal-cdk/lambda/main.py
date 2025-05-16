@@ -91,14 +91,14 @@ def auth_code():
         set_cookie_headers = get_set_cookie_headers(token_payload)
     # Most likely from .auth.encrypt_data function
     except encryptedjwt.BadTokenException:
-        msg = "\n".join([
-            "Deploy Error, make sure to change the SSO Secret",
-            "(In Secrets: retrieve the value, then the edit button will appear).",
-        ])
-        logger.error(msg)
-        return wrap_response(
-            render_template(app, content=msg), code=401
+        msg = "\n".join(
+            [
+                "Deploy Error, make sure to change the SSO Secret",
+                "(In Secrets: retrieve the value, then the edit button will appear).",
+            ]
         )
+        logger.error(msg)
+        return wrap_response(render_template(app, content=msg), code=401)
 
     state = app.current_event.query_string_parameters.get("state", "/portal")
 
