@@ -3,6 +3,7 @@ import os
 import traceback
 
 from util.responses import wrap_response
+from util.db_utils import update_item
 
 import requests
 import jwt
@@ -254,7 +255,8 @@ def require_access(access="user"):
                 )
 
             logger.info("User %s has %s access", username, access)
-
+            # not THAT useful, but proof of concept:
+            update_item(username, {"last-access": access})
             # Run the endpoint
             return func(*args, **kwargs)
 
