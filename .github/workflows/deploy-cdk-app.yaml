@@ -48,7 +48,7 @@ jobs:
 
       - name: Run Portal Testsuite
         run: |
-          make bundle-deps
+          make install-reqs bundle-deps
           cd portal-cdk
           pytest -v
 
