@@ -73,15 +73,6 @@ def get_user_from_event(app):
     return None
 
 
-def get_user_from_cookies(cookies):
-    for cookie in cookies:
-        if cookie.startswith(PORTAL_USER_COOKIE):
-            # Decode the cookie value
-            username = cookie.split("=")[1]
-            return decrypt_data(username)
-    return None
-
-
 def get_key_validation():
     global JWT_VALIDATION
 
