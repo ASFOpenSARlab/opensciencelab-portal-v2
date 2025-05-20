@@ -129,21 +129,6 @@ class PortalCdkStack(Stack):
             ),
         )
 
-        # Modify these externally from cognito using
-        # https://docs.aws.amazon.com/cognito-user-identity-pools/latest/APIReference/API_AdminUpdateUserAttributes.html
-        # https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_cognito.ICustomAttribute.html
-        custom_attributes = {
-            "country": cognito.StringAttribute(mutable=True),
-            "nasa_email": cognito.StringAttribute(mutable=True),
-            "nasa_email_owner": cognito.StringAttribute(mutable=True),
-            "us_gov_email": cognito.StringAttribute(mutable=True),
-            "isro_email": cognito.StringAttribute(mutable=True),
-            "is_univ_related": cognito.BooleanAttribute(mutable=True),
-            "is_univ_researcher": cognito.BooleanAttribute(mutable=True),
-            "is_univ_faculty": cognito.BooleanAttribute(mutable=True),
-            "is_grad_student": cognito.BooleanAttribute(mutable=True),
-        }
-
         # https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_cognito.UserPool.html
         ### NOTE: To change these settings, you HAVE to delete and re-create the stack :(
         user_pool = cognito.UserPool(
@@ -159,8 +144,6 @@ class PortalCdkStack(Stack):
                     mutable=True,
                 ),
             ),
-            # https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_cognito.ICustomAttribute.html
-            custom_attributes=custom_attributes,
             # https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_cognito.UserPoolEmail.html
             email=cognito.UserPoolEmail.with_cognito(reply_to=None),
             # https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_cognito.Mfa.html
