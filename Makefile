@@ -10,6 +10,8 @@ Makefile commands:
 
     manual-cdk-bootstrap:   Bootstrap an account for CDK
 
+    test:					Run PyTest tests
+
     synth-portal:           Synth portal CDK project
 
     deploy-portal:          Deploy portal CDK project
@@ -126,6 +128,11 @@ bundle-deps:
 	else \
 		echo "Skipping deps bundled in ${BUILD_DEPS}. Remove to rebuild."; \
 	fi
+
+.PHONE := test
+test: install-reqs bundle-deps
+	@echo "Running tests for Portal (${DEPLOY_PREFIX})"
+	cd ./portal-cdk && pytest -v
 
 .PHONY := synth-portal
 synth-portal: install-reqs bundle-deps
