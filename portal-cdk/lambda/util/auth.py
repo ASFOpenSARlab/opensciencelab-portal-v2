@@ -4,6 +4,7 @@ import traceback
 
 from util.responses import wrap_response
 from util.db_utils import update_item
+from util.exceptions import BadSsoToken
 
 import requests
 import jwt
@@ -56,7 +57,16 @@ USER_PROFILES = {}
 
 
 def encrypt_data(data: dict | str) -> str:
-    sso_token = parameters.get_secret(SSO_TOKEN_SECRET_NAME)
+    try:
+        sso_token = parameters.get_secret(SSO_TOKEN_SECRET_NAME)
+    except encryptedjwt.BadTokenException as e:
+        msg = "\n".join(
+            [
+                "Deploy Error, make sure to change the SSO Secret.",
+                "(In Secrets: retrieve the value, then the edit button will appear).",
+            ]
+        )
+        raise BadSsoToken(msg, error_code=401) from e
     return encryptedjwt.encrypt(data, sso_token=sso_token)
 
 

@@ -13,6 +13,7 @@ from util.format import (
 )
 from util.responses import basic_html, wrap_response
 from util.auth import get_set_cookie_headers, validate_code, process_auth
+from util.exceptions import GenericFatalError
 from static import get_static_object
 
 from aws_lambda_powertools import Logger
@@ -25,6 +26,10 @@ logger = Logger(service="APP")
 
 # Rest is V1, HTTP is V2
 app = APIGatewayHttpResolver()
+
+##############
+### Routes ###
+##############
 
 # Add portal routes
 for prefix, router in routes.items():
@@ -66,19 +71,6 @@ def test():
 def register():
     return "Register a new user here"
 
-
-@app.exception_handler(encryptedjwt.BadTokenException)
-def handle_bad_token_exception(exception):
-    # Most likely from .auth.encrypt_data function
-    msg = "\n".join(
-        [
-            "Deploy Error, make sure to change the SSO Secret",
-            "(In Secrets: retrieve the value, then the edit button will appear).",
-        ]
-    )
-    logger.error(msg)
-    return wrap_response(render_template(app, content=msg), code=401)
-
 @app.get("/auth")
 def auth_code():
     print(json.dumps({"AuthEndpoint": app.current_event}, default=str))
@@ -116,6 +108,9 @@ def static():
     logger.debug("Path is %s", app.current_event.path)
     return get_static_object(app.current_event)
 
+######################
+### Error Handling ###
+######################
 
 @app.not_found
 @portal_template(app, title="Request Not Found", name="logged-out.j2", response=404)
@@ -128,7 +123,17 @@ def handle_not_found(error):
 
     return body
 
+# https://docs.powertools.aws.dev/lambda/python/1.25.3/core/event_handler/api_gateway/#exception-handling
+@app.exception_handler(GenericFatalError)
+def handle_bad_token_exception(exception):
+    return wrap_response(
+        render_template(app, content=exception.message),
+        code=exception.error_code,
+    )
 
+############
+### MAIN ###
+############
 @logger.inject_lambda_context(
     correlation_id_path=correlation_paths.API_GATEWAY_HTTP,
     log_event=False,
