@@ -67,6 +67,18 @@ def register():
     return "Register a new user here"
 
 
+@app.exception_handler(encryptedjwt.BadTokenException)
+def handle_bad_token_exception(exception):
+    # Most likely from .auth.encrypt_data function
+    msg = "\n".join(
+        [
+            "Deploy Error, make sure to change the SSO Secret",
+            "(In Secrets: retrieve the value, then the edit button will appear).",
+        ]
+    )
+    logger.error(msg)
+    return wrap_response(render_template(app, content=msg), code=401)
+
 @app.get("/auth")
 def auth_code():
     print(json.dumps({"AuthEndpoint": app.current_event}, default=str))
@@ -87,19 +99,7 @@ def auth_code():
             render_template(app, content="Could not complete token exchange"), code=401
         )
 
-    try:
-        set_cookie_headers = get_set_cookie_headers(token_payload)
-    # Most likely from .auth.encrypt_data function
-    except encryptedjwt.BadTokenException:
-        msg = "\n".join(
-            [
-                "Deploy Error, make sure to change the SSO Secret",
-                "(In Secrets: retrieve the value, then the edit button will appear).",
-            ]
-        )
-        logger.error(msg)
-        return wrap_response(render_template(app, content=msg), code=401)
-
+    set_cookie_headers = get_set_cookie_headers(token_payload)
     state = app.current_event.query_string_parameters.get("state", "/portal")
 
     # Send the newly logged in user to the Portal
