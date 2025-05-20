@@ -1,5 +1,6 @@
 """Unit test for portal_cdk stack."""
 
+import os
 import pytest
 
 import aws_cdk as core
@@ -12,7 +13,11 @@ from portal_cdk.portal_cdk_stack import PortalCdkStack
 @pytest.fixture(scope="session")
 def portal_template():
     app = core.App()
-    stack = PortalCdkStack(app, "portal-cdk")
+    stack = PortalCdkStack(
+        app,
+        "portal-cdk",
+        os.getenv("DEPLOY_PREFIX", "unk"),
+    )
     template = assertions.Template.from_stack(stack)
     return template
 
