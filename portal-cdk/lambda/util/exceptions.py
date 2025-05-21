@@ -1,3 +1,4 @@
+""" Custom exceptions for the API, to add automatic logging. """
 
 from aws_lambda_powertools import Logger
 
