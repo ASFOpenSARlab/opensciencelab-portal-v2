@@ -2,7 +2,7 @@ import json
 import os
 
 from util.responses import wrap_response
-from util.db_utils import update_item
+from util.dynamo_db import update_item
 from util.exceptions import BadSsoToken
 
 import requests
