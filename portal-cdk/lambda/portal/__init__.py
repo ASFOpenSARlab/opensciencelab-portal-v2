@@ -8,7 +8,7 @@ from util.auth import require_access
 from aws_lambda_powertools.event_handler.api_gateway import Router
 from aws_lambda_powertools import Logger
 
-logger = Logger(service="APP")
+logger = Logger(child=True)
 
 portal_router = Router()
 portal_route = {

@@ -21,7 +21,7 @@ hub_route = {
     "prefix": "/portal/hub",
 }
 
-logger = Logger(service="APP")
+logger = Logger(child=True)
 
 
 @hub_router.get("/")
