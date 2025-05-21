@@ -1,10 +1,9 @@
 import json
 import os
-import traceback
 
 from util.responses import wrap_response
 from util.db_utils import update_item
-from util.exceptions import BadSsoToken, GenericFatalError
+from util.exceptions import BadSsoToken
 
 import requests
 import jwt
@@ -235,7 +234,7 @@ def require_access(access="user"):
     def inner(func):
         def wrapper(*args, **kwargs):
             # app is pulled in from outer scope via a function attribute
-            app = require_access.router.app # pylint: disable=no-member
+            app = require_access.router.app  # pylint: disable=no-member
 
             # Check for cookie auth
             username = get_user_from_event(app)
