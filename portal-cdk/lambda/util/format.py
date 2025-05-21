@@ -8,7 +8,7 @@ from jinja2 import Environment, FileSystemLoader, StrictUndefined, select_autoes
 
 from aws_lambda_powertools import Logger
 
-logger = Logger(service="APP")
+logger = Logger(child=True)
 
 ENV = Environment(
     loader=FileSystemLoader("./templates/"),

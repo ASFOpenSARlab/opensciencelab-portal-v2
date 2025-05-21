@@ -21,7 +21,11 @@ from aws_lambda_powertools.event_handler import APIGatewayHttpResolver
 from aws_lambda_powertools.logging import correlation_paths
 
 
-logger = Logger(service="APP")
+should_debug = os.getenv("DEBUG", "false").lower() == "true"
+
+## Root logger, others will inherit from this:
+# https://docs.powertools.aws.dev/lambda/python/latest/core/logger/#child-loggers
+logger = Logger(log_uncaught_exceptions=should_debug)
 
 
 # Rest is V1, HTTP is V2
@@ -73,7 +77,6 @@ def register():
 
 @app.get("/auth")
 def auth_code():
-    print(json.dumps({"AuthEndpoint": app.current_event}, default=str))
     code = app.current_event.query_string_parameters.get("code")
     if not code:
         return wrap_response(
@@ -120,12 +123,11 @@ def handle_not_found(error):
     <hr>
     <pre>{request_context_string(app)}</pre>
     """
-
     return body
 
 # https://docs.powertools.aws.dev/lambda/python/1.25.3/core/event_handler/api_gateway/#exception-handling
 @app.exception_handler(GenericFatalError)
-def handle_bad_token_exception(exception):
+def handle_generic_fatal_error(exception):
     return wrap_response(
         render_template(app, content=exception.message),
         code=exception.error_code,
@@ -136,7 +138,7 @@ def handle_bad_token_exception(exception):
 ############
 @logger.inject_lambda_context(
     correlation_id_path=correlation_paths.API_GATEWAY_HTTP,
-    log_event=False,
+    log_event=should_debug,
 )
 @process_auth
 def lambda_handler(event, context):
