@@ -3,8 +3,6 @@
 import os
 import json
 
-from opensarlab.auth import encryptedjwt
-
 from portal import routes
 from util.format import (
     portal_template,
@@ -75,6 +73,7 @@ def test():
 def register():
     return "Register a new user here"
 
+
 @app.get("/auth")
 def auth_code():
     code = app.current_event.query_string_parameters.get("code")
@@ -111,9 +110,11 @@ def static():
     logger.debug("Path is %s", app.current_event.path)
     return get_static_object(app.current_event)
 
+
 ######################
 ### Error Handling ###
 ######################
+
 
 @app.not_found
 @portal_template(app, title="Request Not Found", name="logged-out.j2", response=404)
@@ -125,6 +126,7 @@ def handle_not_found(error):
     """
     return body
 
+
 # https://docs.powertools.aws.dev/lambda/python/1.25.3/core/event_handler/api_gateway/#exception-handling
 @app.exception_handler(GenericFatalError)
 def handle_generic_fatal_error(exception):
@@ -132,6 +134,7 @@ def handle_generic_fatal_error(exception):
         render_template(app, content=exception.message),
         code=exception.error_code,
     )
+
 
 ############
 ### MAIN ###
