@@ -6,7 +6,7 @@ from aws_lambda_powertools.event_handler import (
     content_types,
 )
 
-logger = Logger(service="APP")
+logger = Logger(child=True)
 
 
 def wrap_response(body, code=200, content_type=None, headers=None, cookies=None):

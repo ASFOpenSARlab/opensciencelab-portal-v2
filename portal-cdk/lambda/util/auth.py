@@ -4,7 +4,7 @@ import traceback
 
 from util.responses import wrap_response
 from util.db_utils import update_item
-from util.exceptions import BadSsoToken
+from util.exceptions import BadSsoToken, GenericFatalError
 
 import requests
 import jwt
@@ -14,7 +14,7 @@ from aws_lambda_powertools.utilities import parameters
 from aws_lambda_powertools import Logger
 from aws_lambda_powertools.middleware_factory import lambda_handler_decorator
 
-logger = Logger(service="APP")
+logger = Logger(child=True)
 
 PORTAL_USER_COOKIE = "portal-username"
 COGNITO_JWT_COOKIE = "portal-jwt"
@@ -57,8 +57,9 @@ USER_PROFILES = {}
 
 
 def encrypt_data(data: dict | str) -> str:
+    sso_token = parameters.get_secret(SSO_TOKEN_SECRET_NAME)
     try:
-        sso_token = parameters.get_secret(SSO_TOKEN_SECRET_NAME)
+        return encryptedjwt.encrypt(data, sso_token=sso_token)
     except encryptedjwt.BadTokenException as e:
         msg = "\n".join(
             [
@@ -67,7 +68,6 @@ def encrypt_data(data: dict | str) -> str:
             ]
         )
         raise BadSsoToken(msg, error_code=401) from e
-    return encryptedjwt.encrypt(data, sso_token=sso_token)
 
 
 def decrypt_data(data):
@@ -207,41 +207,35 @@ def get_cookies_from_event(event):
 
 @lambda_handler_decorator
 def process_auth(handler, event, context):
-    try:
-        print(json.dumps({"AuthEvent": event, "AuthContext": context}, default=str))
-        # Cookies we care about:
-        cookies = get_cookies_from_event(event)
+    # Cookies we care about:
+    cookies = get_cookies_from_event(event)
 
-        if cookies.get(PORTAL_USER_COOKIE):
-            event["requestContext"]["portal_username_cookie"] = cookies.get(
-                PORTAL_USER_COOKIE
-            )
+    if cookies.get(PORTAL_USER_COOKIE):
+        event["requestContext"]["portal_username_cookie"] = cookies.get(
+            PORTAL_USER_COOKIE
+        )
 
-        if cookies.get(COGNITO_JWT_COOKIE):
-            jwt_cookie = cookies.get(COGNITO_JWT_COOKIE)
-            jwt_username = get_param_from_jwt(jwt_cookie, "username")
-            event["requestContext"]["cognito_jwt_cookie"] = jwt_cookie
-            event["requestContext"]["cognito_username"] = jwt_username
-            logger.debug("JWT Username is %s", jwt_username)
+    if cookies.get(COGNITO_JWT_COOKIE):
+        jwt_cookie = cookies.get(COGNITO_JWT_COOKIE)
+        jwt_username = get_param_from_jwt(jwt_cookie, "username")
+        event["requestContext"]["cognito_jwt_cookie"] = jwt_cookie
+        event["requestContext"]["cognito_username"] = jwt_username
+        logger.debug("JWT Username is %s", jwt_username)
 
-            validated_jwt = validate_jwt(jwt_cookie)
-            logger.debug({"jwt_cookie_payload": validated_jwt})
-            if validated_jwt:
-                event["requestContext"]["cognito_validated"] = validated_jwt
+        validated_jwt = validate_jwt(jwt_cookie)
+        logger.debug({"jwt_cookie_payload": validated_jwt})
+        if validated_jwt:
+            event["requestContext"]["cognito_validated"] = validated_jwt
 
-        # process the actual request
-        return handler(event, context)
-    except Exception as e:
-        logger.error(traceback.format_exc())
-        logger.error(e)
-        raise e
+    # process the actual request
+    return handler(event, context)
 
 
 def require_access(access="user"):
     def inner(func):
         def wrapper(*args, **kwargs):
             # app is pulled in from outer scope via a function attribute
-            app = require_access.router.app
+            app = require_access.router.app # pylint: disable=no-member
 
             # Check for cookie auth
             username = get_user_from_event(app)

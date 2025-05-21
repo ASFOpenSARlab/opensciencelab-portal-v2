@@ -63,6 +63,10 @@ class PortalCdkStack(Stack):
                 handler="main.lambda_handler",
                 layers=[powertools_layer, requirements_layer],
                 memory_size=1024,
+                environment={
+                    "POWERTOOLS_SERVICE_NAME": "APP",
+                    "DEBUG": str(deploy_prefix != "prod").lower(),
+                },
             ),
             # https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_dynamodb.TableProps.html
             dynamo_table_props=dynamodb.TableProps(
