@@ -1,7 +1,6 @@
 """AWS Lambda function to handle HTTP requests and return formatted HTML responses."""
 
 import os
-import json
 
 from portal import routes
 from util.format import (
