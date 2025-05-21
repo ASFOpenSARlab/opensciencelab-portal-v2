@@ -2,6 +2,7 @@ import json
 import os
 
 from util.responses import wrap_response
+from util.session import current_session, PortalAuth
 
 import requests
 import jwt
@@ -198,23 +199,33 @@ def get_cookies_from_event(event):
 def process_auth(handler, event, context):
     # Cookies we care about:
     cookies = get_cookies_from_event(event)
+    current_session.auth = PortalAuth()
 
     if cookies.get(PORTAL_USER_COOKIE):
-        event["requestContext"]["portal_username_cookie"] = cookies.get(
-            PORTAL_USER_COOKIE
-        )
+        portal_username_cookie = cookies.get(PORTAL_USER_COOKIE)
+        event["requestContext"]["portal_username_cookie"] = portal_username_cookie
+        current_session.auth.portal_username.raw = portal_username_cookie
+    else:
+        logger.info(f"No {PORTAL_USER_COOKIE} cookie provided")
 
     if cookies.get(COGNITO_JWT_COOKIE):
         jwt_cookie = cookies.get(COGNITO_JWT_COOKIE)
         jwt_username = get_param_from_jwt(jwt_cookie, "username")
         event["requestContext"]["cognito_jwt_cookie"] = jwt_cookie
         event["requestContext"]["cognito_username"] = jwt_username
+        current_session.auth.cognito.raw = jwt_cookie
+        current_session.auth.cognito.username = jwt_username
         logger.debug("JWT Username is %s", jwt_username)
 
         validated_jwt = validate_jwt(jwt_cookie)
         logger.debug({"jwt_cookie_payload": validated_jwt})
         if validated_jwt:
             event["requestContext"]["cognito_validated"] = validated_jwt
+            current_session.auth.cognito.decoded = validated_jwt
+    else:
+        logger.info(f"No {COGNITO_JWT_COOKIE} cookie provided")
+
+    logger.info(f"After process_auth, current_session.auth is {current_session.auth}")
 
     # process the actual request
     return handler(event, context)
@@ -227,7 +238,7 @@ def require_access(access="user"):
             app = require_access.router.app
 
             # Check for cookie auth
-            username = get_user_from_event(app)
+            username = current_session.auth.cognito.username
 
             if not username:
                 return_path = app.current_event.request_context.http.path

@@ -28,6 +28,9 @@ for prefix, router in routes.items():
     app.include_router(router, prefix=prefix)
     router.app = app
 
+# Attach app into process_auth
+process_auth.app = app
+
 
 @app.get("/")
 @portal_template(app, title="OpenScience", name="logged-out.j2")

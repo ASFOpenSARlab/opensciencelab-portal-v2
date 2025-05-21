@@ -2,6 +2,7 @@ import json
 import ast
 
 from util.responses import wrap_response
+from util.session import current_session
 from util.auth import LOGIN_URL, LOGOUT_URL, get_user_from_event
 
 from jinja2 import Environment, FileSystemLoader, StrictUndefined, select_autoescape
@@ -64,7 +65,10 @@ def render_template(app, content, name=None, title="OSL Portal", username=None):
         name = "main.j2"
 
     if not username:
-        username = get_user_from_event(app)
+        username = current_session.auth.cognito.username
+
+    logger.info(f"Username is {current_session.auth.cognito.username}")
+    logger.info(f"cognito is {current_session.auth.cognito}")
 
     template_input = {
         "content": content,
