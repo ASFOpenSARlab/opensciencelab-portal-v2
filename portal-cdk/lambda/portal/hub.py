@@ -26,7 +26,7 @@ logger = Logger(child=True)
 
 @hub_router.get("/")
 @require_access()
-@portal_template(hub_router)
+@portal_template()
 def portal_hub_root():
     return "<h4>Hello</h4>"
 
