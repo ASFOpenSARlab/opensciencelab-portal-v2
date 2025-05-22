@@ -5,6 +5,7 @@ from aws_cdk import (
     RemovalPolicy,
     aws_cognito as cognito,
     aws_apigatewayv2 as apigwv2,
+    aws_dynamodb as dynamodb,
     aws_apigatewayv2_integrations as apigwv2_integrations,
     aws_cloudfront as cloudfront,
     aws_cloudfront_origins as origins,
@@ -62,7 +63,29 @@ class PortalCdkStack(Stack):
                 handler="main.lambda_handler",
                 layers=[powertools_layer, requirements_layer],
                 memory_size=1024,
+                environment={
+                    "POWERTOOLS_SERVICE_NAME": "APP",
+                    "DEBUG": str(deploy_prefix != "prod").lower(),
+                },
             ),
+            # https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_dynamodb.TableProps.html
+            dynamo_table_props=dynamodb.TableProps(
+                partition_key=dynamodb.Attribute(
+                    name="id",
+                    type=dynamodb.AttributeType.STRING,
+                ),
+                deletion_protection=bool(deploy_prefix == "prod"),
+                # Default removal_policy is always RETAIN:
+                removal_policy=(
+                    RemovalPolicy.RETAIN
+                    if deploy_prefix == "prod"
+                    else RemovalPolicy.DESTROY
+                ),
+            ),
+        )
+        # Need to do this after, since doing it inside lambda_dynamo would be a circular dependency:
+        lambda_dynamo.lambda_function.add_environment(
+            "DYNAMO_TABLE_NAME", lambda_dynamo.dynamo_table.table_name
         )
 
         ### Integration is after the request is validated:
@@ -183,10 +206,8 @@ class PortalCdkStack(Stack):
             + ("" if deploy_prefix == "prod" else "-" + deploy_prefix)
             + ".asf.alaska.edu"
         )
-        user_pool_client = cognito.UserPoolClient(
-            self,
+        user_pool_client = user_pool.add_client(
             "UserPoolClient",
-            user_pool=user_pool,
             # https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_cognito.OAuthSettings.html
             o_auth=cognito.OAuthSettings(
                 # Where to redirect after log IN:
@@ -209,10 +230,8 @@ class PortalCdkStack(Stack):
 
         ## User Pool Domain:
         # https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_cognito.UserPoolDomain.html
-        user_pool_domain = cognito.UserPoolDomain(
-            self,
+        user_pool_domain = user_pool.add_domain(
             "UserPoolDomain",
-            user_pool=user_pool,
             # https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_cognito.UserPoolDomainProps.html
             cognito_domain=cognito.CognitoDomainOptions(
                 domain_prefix=construct_id.lower(),
@@ -231,11 +250,12 @@ class PortalCdkStack(Stack):
         ### Secrets Manager
         sso_token_secret = secretsmanager.Secret(
             self,
-            "SecretManager-SSO_Token",
+            # The console removes non-alpha stuff, so this'll be 'SSOTokenCs<RANDOM-HASH>' or something:
+            f"SSO-Token-{deploy_prefix.title()}",
             secret_string_value=SecretValue.unsafe_plain_text(
                 "Change me or you will always fail"
             ),
-            description="SSO Token required to communicate with Labs",
+            description=f"({construct_id}) SSO Token required to communicate with Labs",
         )
 
         lambda_dynamo.lambda_function.add_environment("STACK_REGION", self.region)

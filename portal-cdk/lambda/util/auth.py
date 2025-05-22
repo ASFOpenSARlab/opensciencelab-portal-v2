@@ -2,6 +2,8 @@ import json
 import os
 
 from util.responses import wrap_response
+from util.dynamo_db import update_item
+from util.exceptions import BadSsoToken
 
 import requests
 import jwt
@@ -11,7 +13,7 @@ from aws_lambda_powertools.utilities import parameters
 from aws_lambda_powertools import Logger
 from aws_lambda_powertools.middleware_factory import lambda_handler_decorator
 
-logger = Logger(service="APP")
+logger = Logger(child=True)
 
 PORTAL_USER_COOKIE = "portal-username"
 COGNITO_JWT_COOKIE = "portal-jwt"
@@ -55,7 +57,16 @@ USER_PROFILES = {}
 
 def encrypt_data(data: dict | str) -> str:
     sso_token = parameters.get_secret(SSO_TOKEN_SECRET_NAME)
-    return encryptedjwt.encrypt(data, sso_token=sso_token)
+    try:
+        return encryptedjwt.encrypt(data, sso_token=sso_token)
+    except encryptedjwt.BadTokenException as e:
+        msg = "\n".join(
+            [
+                "Deploy Error, make sure to change the SSO Secret.",
+                "(In Secrets: retrieve the value, then the edit button will appear).",
+            ]
+        )
+        raise BadSsoToken(msg, error_code=401) from e
 
 
 def decrypt_data(data):
@@ -68,7 +79,6 @@ def get_user_from_event(app):
     if "requestContext" in raw_event:
         if "cognito_username" in raw_event["requestContext"]:
             return raw_event["requestContext"]["cognito_username"]
-
     return None
 
 
@@ -224,7 +234,7 @@ def require_access(access="user"):
     def inner(func):
         def wrapper(*args, **kwargs):
             # app is pulled in from outer scope via a function attribute
-            app = require_access.router.app
+            app = require_access.router.app  # pylint: disable=no-member
 
             # Check for cookie auth
             username = get_user_from_event(app)
@@ -239,7 +249,8 @@ def require_access(access="user"):
                 )
 
             logger.info("User %s has %s access", username, access)
-
+            # not THAT useful, but proof of concept:
+            update_item(username, {"last-access": access})
             # Run the endpoint
             return func(*args, **kwargs)
 
