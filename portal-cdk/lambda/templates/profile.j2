@@ -29,41 +29,125 @@ What is your current country of residence?
                             {% endfor -%}
                         </select>
                     </div>
+                    <!-- NASA Email -->
                     <div>
                         <label>
 Are you affiliated with NASA?
                         </label>
                         <select id="nasa_affiliated_email" name="nasa_affiliated_email" onchange="removeDropdownDefault(this); expandSelect(this);">
-                            <option value="default">
-{{ default_value }}
-                            </option>
+                            <option value="default">{{ default_value }}</option>
                             <option value="yes" data-id-to-show="user_or_pi_nasa_email_div">Yes</option>
                             <option value="no">No</option>
                         </select>
-                        <div id="user_or_pi_nasa_email_div">
+
+                        <!-- User Or PI NASA Email -->
+                        <div id="user_or_pi_nasa_email_div" hidden>
                             <label>
-                                Do you have a NASA email address?
+Do you have a NASA email address?
                             </label>
                             <select id="user_or_pi_nasa_email" name="user_or_pi_nasa_email" onchange="removeDropdownDefault(this); expandSelect(this);">
                                 <option value="default">{{ default_value }}</option>
-                                <option value="yes" data-id-to-show="<ID>">Yes</option>
-                                <option value="no">No</option>
+                                <option value="yes" data-id-to-show="user_nasa_email">Yes</option>
+                                <option value="no" data-id-to-show="pi_nasa_email">No</option>
                             </select>
-                        </div>
-                        
-                        {# <div>
+
+                            <!-- User NASA Email -->
+                            <div id="user_nasa_email" hidden>
                                 <label>
 What is your NASA email address?
                                 </label>
                                 <input id="user_affliated_with_nasa_research_email"
-                                       name="user_affliated_with_nasa_research_email"
-                                       type="email"
-                                       placeholder="example@nasa.gov"
-                                       {# value="{{ user_profile.user_affliated_with_nasa_research_email }}"> #}
-                        </div> #}
-                        <select id="pi_nasa_email">
+                                    name="user_affliated_with_nasa_research_email"
+                                    type="email"
+                                    placeholder="example@nasa.gov">
+                            </div>
 
+                            <!-- PI NASA Email -->
+                            <div id="pi_nasa_email" hidden>
+                                <label>
+What is the email address of the NASA project&rsquo;s PI?
+                                </label>
+                                <input id="pi_affliated_with_nasa_research_email"
+                                    name="pi_affliated_with_nasa_research_email"
+                                    type="email"
+                                    placeholder="example@nasa.gov">
+                            </div>
+                        </div>
+                    </div>
+                    <!-- US Gov Research Email -->
+                    <div>
+                        <label>
+Are you affiliated with a US government-funded research program?
+                        </label>
+                        <select id="us_gov_research_affiliated_email" name="us_gov_research_affiliated_email" onchange="removeDropdownDefault(this); expandSelect(this);">
+                            <option value="default">{{ default_value }}</option>
+                            <option value="yes" data-id-to-show="user_gov_email">Yes</option>
+                            <option value="no">No</option>
                         </select>
+
+                        <div id="user_gov_email" hidden>
+                            <label>
+What is your official US government email address? 
+                            </label>
+                            <input id="user_affliated_with_gov_research_email"
+                                name="user_affliated_with_gov_research_email"
+                                type="email"
+                                placeholder="example@example.com">
+                        </div>
+                    </div>
+
+                    <!-- ISRO Email -->
+                    <div>
+                        <label>
+Are you affiliated with ISRO?
+                        </label>
+                        <select id="is_affliated_with_isro_research" name="is_affliated_with_isro_research" onchange="removeDropdownDefault(this); expandSelect(this);">
+                            <option value="default">{{ default_value }}</option>
+                            <option value="yes" data-id-to-show="user_isro_email">Yes</option>
+                            <option value="no">No</option>
+                        </select>
+
+                        <div id="user_isro_email" hidden>
+                            <label>
+What is your ISRO email address, or the ISRO email address of the project PI?
+                            </label>
+                            <input id="user_affliated_with_isro_research_email"
+                                name="user_affliated_with_isro_research_email"
+                                type="email"
+                                placeholder="example@example.com">
+                        </div>
+                    </div>
+                    <!-- University Affiliation -->
+                    <div>
+                        <label>
+Are you affiliated with a university?
+                        </label>
+                        <select id="is_affliated_with_university" name="is_affliated_with_university" onchange="removeDropdownDefault(this); expandSelect(this);">
+                            <option value="default">{{ default_value }}</option>
+                            <option value="yes" data-id-to-show="university_affiliations">Yes</option>
+                            <option value="no">No</option>
+                        </select>
+
+                        <div id="university_affiliations" hidden>
+                            <div>
+                                <input type="checkbox" id="faculty_member_affliated_with_university" name="faculty_member_affliated_with_university">
+                                <label>
+I am a university faculty member
+                                </label>
+                            </div>
+                            <div>
+                                <input type="checkbox" id="research_member_affliated_with_university" name="research_member_affliated_with_university">
+                                <label>
+I am a university research scientist
+                                </label>
+                            </div>
+                            <div>
+                                <input type="checkbox" id="graduate_student_affliated_with_university" name="graduate_student_affliated_with_university">
+                                <label>
+I am a university graduate student
+                                </label>
+                            </div>
+                        </div>
                     </div>
                     <!-- Sumbit button -->
                     <div>
@@ -95,10 +179,10 @@ Submit Your Answers
             const elementToHide = document.getElementById(selectElement.dataset.idToHide);
             // Update visibilities
             if(elementToHide !== null){
-                elementToHide.style.display = 'none';
+                elementToHide.hidden = true;
             }
             if(elementToReveal !== null){
-                elementToReveal.style.display = 'block';
+                elementToReveal.hidden = false;
             }
             // Update data field in selectElement
             selectElement.dataset.idToHide = idToShow;
