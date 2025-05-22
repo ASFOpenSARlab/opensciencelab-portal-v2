@@ -10,6 +10,7 @@ from util.format import (
 )
 from util.responses import basic_html, wrap_response
 from util.auth import get_set_cookie_headers, validate_code, process_auth
+from util.exceptions import GenericFatalError
 from static import get_static_object
 
 from aws_lambda_powertools import Logger
@@ -17,11 +18,19 @@ from aws_lambda_powertools.event_handler import APIGatewayHttpResolver
 from aws_lambda_powertools.logging import correlation_paths
 
 
-logger = Logger(service="APP")
+should_debug = os.getenv("DEBUG", "false").lower() == "true"
+
+## Root logger, others will inherit from this:
+# https://docs.powertools.aws.dev/lambda/python/latest/core/logger/#child-loggers
+logger = Logger(log_uncaught_exceptions=should_debug)
 
 
 # Rest is V1, HTTP is V2
 app = APIGatewayHttpResolver()
+
+##############
+### Routes ###
+##############
 
 # Add portal routes
 for prefix, router in routes.items():
@@ -84,7 +93,6 @@ def auth_code():
         )
 
     set_cookie_headers = get_set_cookie_headers(token_payload)
-
     state = app.current_event.query_string_parameters.get("state", "/portal")
 
     # Send the newly logged in user to the Portal
@@ -102,6 +110,11 @@ def static():
     return get_static_object(app.current_event)
 
 
+######################
+### Error Handling ###
+######################
+
+
 @app.not_found
 @portal_template(app, title="Request Not Found", name="logged-out.j2", response=404)
 def handle_not_found(error):
@@ -110,15 +123,25 @@ def handle_not_found(error):
     <hr>
     <pre>{request_context_string(app)}</pre>
     """
-
     return body
 
 
+# https://docs.powertools.aws.dev/lambda/python/1.25.3/core/event_handler/api_gateway/#exception-handling
+@app.exception_handler(GenericFatalError)
+def handle_generic_fatal_error(exception):
+    return wrap_response(
+        render_template(app, content=exception.message),
+        code=exception.error_code,
+    )
+
+
+############
+### MAIN ###
+############
 @logger.inject_lambda_context(
     correlation_id_path=correlation_paths.API_GATEWAY_HTTP,
-    log_event=False,
+    log_event=should_debug,
 )
 @process_auth
 def lambda_handler(event, context):
-    # print(json.dumps({"Event": event, "Context": context}, default=str))
     return app.resolve(event, context)
