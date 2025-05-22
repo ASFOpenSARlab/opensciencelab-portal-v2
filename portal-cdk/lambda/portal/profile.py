@@ -1,7 +1,12 @@
 from util.format import portal_template
 from util.auth import require_access, get_user_from_event
+from pathlib import Path
+import json
 
+from aws_lambda_powertools import Logger
 from aws_lambda_powertools.event_handler.api_gateway import Router
+
+logger = Logger(service="APP", level="DEBUG")
 
 profile_router = Router()
 
@@ -17,22 +22,46 @@ profile_route = {
 @require_access()
 @portal_template(profile_router)
 def profile_root():
-    return "Profile Base 1"
+    page_components={
+        "input": {},
+        "content": "Profile Base 1"
+    }
+    return page_components
 
 
 @profile_router.get("/bob")
 @require_access()
 @portal_template(profile_router)
 def profile_bob():
+    page_components={
+        "input": {},
+        "content": "Profile Bob"
+    }
     username = get_user_from_event(profile_router)
     if username != "bob":
+        page_components["contents"] = "You are <b>NOT</b> Bob!"
         return "You are <b>NOT</b> Bob!"
 
-    return "Profile Bob"
+    return page_components
 
 
 @profile_router.get("/<user>")
 @require_access()
-@portal_template(profile_router)
+@portal_template(profile_router, name="profile.j2")
 def profile_user(user):
-    return f"Profile for user {user}"
+    page_dict={
+        "content": f"Profile for user {user}",
+        "input": {
+            "default_value": "Choose...",
+        },
+    }
+    
+    CWD = Path(__file__).parent.resolve().absolute()
+    # print("MY CWD IS %s", CWD)
+    # all_items = [str(item.name) for item in CWD.iterdir()]
+    # result = " ".join(all_items)
+    # print("Stuff in CWD: %s", result)
+    
+    with open(CWD / "../data/countries.json", "r") as f:
+        page_dict["input"]["countries"] = json.loads(f.read())
+    return page_dict
