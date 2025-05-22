@@ -4,6 +4,7 @@ import os
 from util.responses import wrap_response
 from util.dynamo_db import update_item
 from util.exceptions import BadSsoToken
+from util.session import current_session, PortalAuth
 
 import requests
 import jwt
@@ -72,14 +73,6 @@ def encrypt_data(data: dict | str) -> str:
 def decrypt_data(data):
     sso_token = parameters.get_secret(SSO_TOKEN_SECRET_NAME)
     return encryptedjwt.decrypt(data, sso_token=sso_token)
-
-
-def get_user_from_event(app):
-    raw_event = app.current_event.raw_event
-    if "requestContext" in raw_event:
-        if "cognito_username" in raw_event["requestContext"]:
-            return raw_event["requestContext"]["cognito_username"]
-    return None
 
 
 def get_key_validation():
@@ -208,23 +201,28 @@ def get_cookies_from_event(event):
 def process_auth(handler, event, context):
     # Cookies we care about:
     cookies = get_cookies_from_event(event)
+    current_session.auth = PortalAuth()
 
     if cookies.get(PORTAL_USER_COOKIE):
-        event["requestContext"]["portal_username_cookie"] = cookies.get(
-            PORTAL_USER_COOKIE
-        )
+        portal_username_cookie = cookies.get(PORTAL_USER_COOKIE)
+        current_session.auth.portal_username.raw = portal_username_cookie
+    else:
+        logger.debug(f"No {PORTAL_USER_COOKIE} cookie provided")
 
     if cookies.get(COGNITO_JWT_COOKIE):
         jwt_cookie = cookies.get(COGNITO_JWT_COOKIE)
         jwt_username = get_param_from_jwt(jwt_cookie, "username")
-        event["requestContext"]["cognito_jwt_cookie"] = jwt_cookie
-        event["requestContext"]["cognito_username"] = jwt_username
+        current_session.auth.cognito.raw = jwt_cookie
+        current_session.auth.cognito.username = jwt_username
         logger.debug("JWT Username is %s", jwt_username)
 
         validated_jwt = validate_jwt(jwt_cookie)
         logger.debug({"jwt_cookie_payload": validated_jwt})
         if validated_jwt:
-            event["requestContext"]["cognito_validated"] = validated_jwt
+            current_session.auth.cognito.decoded = validated_jwt
+
+    else:
+        logger.debug(f"No {COGNITO_JWT_COOKIE} cookie provided")
 
     # process the actual request
     return handler(event, context)
@@ -234,13 +232,14 @@ def require_access(access="user"):
     def inner(func):
         def wrapper(*args, **kwargs):
             # app is pulled in from outer scope via a function attribute
-            app = require_access.router.app  # pylint: disable=no-member
 
             # Check for cookie auth
-            username = get_user_from_event(app)
+            username = current_session.auth.cognito.username
 
             if not username:
-                return_path = app.current_event.request_context.http.path
+                return_path = (
+                    current_session.app.current_event.request_context.http.path
+                )
 
                 return wrap_response(
                     body="User is not logged in",
