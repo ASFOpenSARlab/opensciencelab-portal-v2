@@ -1,0 +1,108 @@
+{# djlint:off H016,H030,H031 #}
+<!DOCTYPE html>
+<html lang="en">
+    {% include 'head.j2' %}
+    <body class="margin-left-30 margin-top-30">
+        {% include './noscript.j2' %}
+        {% include './navbar.j2' %}
+
+        <div>
+            <h2>
+                Hello <i>{{ username }}</i>
+            </h2>
+            <form>
+                <fieldset>
+                    <!-- Country -->
+                    <div>
+                        <label>
+What is your current country of residence?
+                        </label>
+                        <select id="country_of_residence" name="country_of_residence" onchange="removeDropdownDefault(this)">
+                            <option value="default">
+{{ default_value }}
+                            </option>
+                            {% for country in countries -%}
+                                <option value="{{ country }}">
+{{ countries[country] }}
+                                </option>
+                                
+                            {% endfor -%}
+                        </select>
+                    </div>
+                    <div>
+                        <label>
+Are you affiliated with NASA?
+                        </label>
+                        <select id="nasa_affiliated_email" name="nasa_affiliated_email" onchange="removeDropdownDefault(this); expandSelect(this);">
+                            <option value="default">
+{{ default_value }}
+                            </option>
+                            <option value="yes" data-id-to-show="user_or_pi_nasa_email_div">Yes</option>
+                            <option value="no">No</option>
+                        </select>
+                        <div id="user_or_pi_nasa_email_div">
+                            <label>
+                                Do you have a NASA email address?
+                            </label>
+                            <select id="user_or_pi_nasa_email" name="user_or_pi_nasa_email" onchange="removeDropdownDefault(this); expandSelect(this);">
+                                <option value="default">{{ default_value }}</option>
+                                <option value="yes" data-id-to-show="<ID>">Yes</option>
+                                <option value="no">No</option>
+                            </select>
+                        </div>
+                        
+                        {# <div>
+                                <label>
+What is your NASA email address?
+                                </label>
+                                <input id="user_affliated_with_nasa_research_email"
+                                       name="user_affliated_with_nasa_research_email"
+                                       type="email"
+                                       placeholder="example@nasa.gov"
+                                       {# value="{{ user_profile.user_affliated_with_nasa_research_email }}"> #}
+                        </div> #}
+                        <select id="pi_nasa_email">
+
+                        </select>
+                    </div>
+                    <!-- Sumbit button -->
+                    <div>
+                        <button type="submit">
+Submit Your Answers
+                        </button>
+                    </div>
+                </fieldset>
+            </form>
+        </div>
+
+        <script>
+        // Remove option with value === "default" if it is not selected
+        function removeDropdownDefault(selectElement){
+            if (selectElement.value !== "default") {
+                const defaultOption = selectElement.querySelector('option[value="default"]');
+                if (defaultOption) {
+                    selectElement.remove(defaultOption.index);
+                }
+            }
+        }
+        // Displays element with id provided by option element data field if provided
+        function expandSelect(selectElement){
+            // Get the selected option element
+            const selectedOption = selectElement.options[selectElement.selectedIndex];
+            // Get data fields
+            const idToShow = selectedOption.dataset.idToShow;
+            const elementToReveal = document.getElementById(idToShow);
+            const elementToHide = document.getElementById(selectElement.dataset.idToHide);
+            // Update visibilities
+            if(elementToHide !== null){
+                elementToHide.style.display = 'none';
+            }
+            if(elementToReveal !== null){
+                elementToReveal.style.display = 'block';
+            }
+            // Update data field in selectElement
+            selectElement.dataset.idToHide = idToShow;
+        }
+        </script>
+    </body>
+</html>
