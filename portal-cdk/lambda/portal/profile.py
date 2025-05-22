@@ -22,10 +22,7 @@ profile_route = {
 @require_access()
 @portal_template(profile_router)
 def profile_root():
-    page_components={
-        "input": {},
-        "content": "Profile Base 1"
-    }
+    page_components = {"input": {}, "content": "Profile Base 1"}
     return page_components
 
 
@@ -33,10 +30,7 @@ def profile_root():
 @require_access()
 @portal_template(profile_router)
 def profile_bob():
-    page_components={
-        "input": {},
-        "content": "Profile Bob"
-    }
+    page_components = {"input": {}, "content": "Profile Bob"}
     username = get_user_from_event(profile_router)
     if username != "bob":
         page_components["contents"] = "You are <b>NOT</b> Bob!"
@@ -49,14 +43,14 @@ def profile_bob():
 @require_access()
 @portal_template(profile_router, name="profile.j2")
 def profile_user(user):
-    page_dict={
+    page_dict = {
         "content": f"Profile for user {user}",
         "input": {
             "default_value": "Choose...",
         },
     }
-    
-    CWD = Path(__file__).parent.resolve().absolute()    
+
+    CWD = Path(__file__).parent.resolve().absolute()
     with open(CWD / "../data/countries.json", "r") as f:
         page_dict["input"]["countries"] = json.loads(f.read())
     return page_dict
