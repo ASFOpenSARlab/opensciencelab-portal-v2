@@ -37,6 +37,7 @@ def current_session():
     return dict(
         auth=current_session.auth,
         user=current_session.user,
+        app=current_session.app,
     )
 
 
