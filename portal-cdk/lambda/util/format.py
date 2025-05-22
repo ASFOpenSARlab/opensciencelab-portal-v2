@@ -53,7 +53,9 @@ NAV_BAR_OPTIONS = [
 ]
 
 
-def render_template(app, content, input=None, name=None, title="OSL Portal", username=None):
+def render_template(
+    app, content, input=None, name=None, title="OSL Portal", username=None
+):
     # App will be used later to generate template input
 
     # Check for a logged-out return path
@@ -90,24 +92,24 @@ def portal_template(app, name=None, title=None, username=None, response=200):
     def inner(func):
         def wrapper(*args, **kwargs):
             # Dict for each value a page needs
-            page_dict={
+            page_dict = {
                 "content": "",
                 "input": {},
                 "name": name,
                 "title": title,
                 "username": username,
             }
-            
+
             # Get page info from function
             content = func(*args, **kwargs)
-            
+
             # If return value is string, assume it is contents
             if isinstance(content, str):
                 page_dict["content"] = content
             elif isinstance(content, dict):
                 # Else if return value is dict, update page_dict with provided values
                 page_dict.update(content)
-                
+
             # Render page
             body = render_template(app, **page_dict)
             #     app, name=name, content=page_components["contents"], input=page_components["input"], title=title, username=username

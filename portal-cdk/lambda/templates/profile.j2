@@ -5,7 +5,6 @@
     <body>
         {% include './noscript.j2' %}
         {% include './navbar.j2' %}
-
         <div class="margin-left-50">
             <h2>
                 Hello <i>{{ username }}</i>
@@ -14,151 +13,128 @@
                 <fieldset>
                     <!-- Country -->
                     <div>
-                        <label>
-What is your current country of residence?
-                        </label>
-                        <select id="country_of_residence" name="country_of_residence" onchange="removeDropdownDefault(this)">
-                            <option value="default">
-{{ default_value }}
-                            </option>
+                        <label>What is your current country of residence?</label>
+                        <select id="country_of_residence"
+                                name="country_of_residence"
+                                onchange="removeDropdownDefault(this)">
+                            <option value="default">{{ default_value }}</option>
                             {% for country in countries -%}
-                                <option value="{{ country }}">
-{{ countries[country] }}
-                                </option>
-                                
+                                <option value="{{ country }}">{{ countries[country] }}</option>
                             {% endfor -%}
                         </select>
                     </div>
                     <!-- NASA Email -->
                     <div>
-                        <label>
-Are you affiliated with NASA?
-                        </label>
-                        <select id="nasa_affiliated_email" name="nasa_affiliated_email" onchange="removeDropdownDefault(this); expandSelect(this);">
+                        <label>Are you affiliated with NASA?</label>
+                        <select id="nasa_affiliated_email"
+                                name="nasa_affiliated_email"
+                                onchange="removeDropdownDefault(this); expandSelect(this);">
                             <option value="default">{{ default_value }}</option>
                             <option value="yes" data-id-to-show="user_or_pi_nasa_email_div">Yes</option>
                             <option value="no">No</option>
                         </select>
-
                         <!-- User Or PI NASA Email -->
                         <div id="user_or_pi_nasa_email_div" class="margin-left-30" hidden>
-                            <label>
-Do you have a NASA email address?
-                            </label>
-                            <select id="user_or_pi_nasa_email" name="user_or_pi_nasa_email" onchange="removeDropdownDefault(this); expandSelect(this);">
+                            <label>Do you have a NASA email address?</label>
+                            <select id="user_or_pi_nasa_email"
+                                    name="user_or_pi_nasa_email"
+                                    onchange="removeDropdownDefault(this); expandSelect(this);">
                                 <option value="default">{{ default_value }}</option>
                                 <option value="yes" data-id-to-show="user_nasa_email">Yes</option>
                                 <option value="no" data-id-to-show="pi_nasa_email">No</option>
                             </select>
-
                             <!-- User NASA Email -->
                             <div id="user_nasa_email" class="margin-left-30" hidden>
-                                <label>
-What is your NASA email address?
-                                </label>
+                                <label>What is your NASA email address?</label>
                                 <input id="user_affliated_with_nasa_research_email"
-                                    name="user_affliated_with_nasa_research_email"
-                                    type="email"
-                                    placeholder="example@nasa.gov">
+                                       name="user_affliated_with_nasa_research_email"
+                                       type="email"
+                                       placeholder="example@nasa.gov">
                             </div>
-
                             <!-- PI NASA Email -->
                             <div id="pi_nasa_email" class="margin-left-30" hidden>
-                                <label>
-What is the email address of the NASA project&rsquo;s PI?
-                                </label>
+                                <label>What is the email address of the NASA project&rsquo;s PI?</label>
                                 <input id="pi_affliated_with_nasa_research_email"
-                                    name="pi_affliated_with_nasa_research_email"
-                                    type="email"
-                                    placeholder="example@nasa.gov">
+                                       name="pi_affliated_with_nasa_research_email"
+                                       type="email"
+                                       placeholder="example@nasa.gov">
                             </div>
                         </div>
                     </div>
                     <!-- US Gov Research Email -->
                     <div>
-                        <label>
-Are you affiliated with a US government-funded research program?
-                        </label>
-                        <select id="us_gov_research_affiliated_email" name="us_gov_research_affiliated_email" onchange="removeDropdownDefault(this); expandSelect(this);">
+                        <label>Are you affiliated with a US government-funded research program?</label>
+                        <select id="us_gov_research_affiliated_email"
+                                name="us_gov_research_affiliated_email"
+                                onchange="removeDropdownDefault(this); expandSelect(this);">
                             <option value="default">{{ default_value }}</option>
                             <option value="yes" data-id-to-show="user_gov_email">Yes</option>
                             <option value="no">No</option>
                         </select>
-
                         <div id="user_gov_email" class="margin-left-30" hidden>
-                            <label>
-What is your official US government email address? 
-                            </label>
+                            <label>What is your official US government email address?</label>
                             <input id="user_affliated_with_gov_research_email"
-                                name="user_affliated_with_gov_research_email"
-                                type="email"
-                                placeholder="example@example.com">
+                                   name="user_affliated_with_gov_research_email"
+                                   type="email"
+                                   placeholder="example@example.com">
                         </div>
                     </div>
-
                     <!-- ISRO Email -->
                     <div>
-                        <label>
-Are you affiliated with ISRO?
-                        </label>
-                        <select id="is_affliated_with_isro_research" name="is_affliated_with_isro_research" onchange="removeDropdownDefault(this); expandSelect(this);">
+                        <label>Are you affiliated with ISRO?</label>
+                        <select id="is_affliated_with_isro_research"
+                                name="is_affliated_with_isro_research"
+                                onchange="removeDropdownDefault(this); expandSelect(this);">
                             <option value="default">{{ default_value }}</option>
                             <option value="yes" data-id-to-show="user_isro_email">Yes</option>
                             <option value="no">No</option>
                         </select>
-
                         <div id="user_isro_email" class="margin-left-30" hidden>
-                            <label>
-What is your ISRO email address, or the ISRO email address of the project PI?
-                            </label>
+                            <label>What is your ISRO email address, or the ISRO email address of the project PI?</label>
                             <input id="user_affliated_with_isro_research_email"
-                                name="user_affliated_with_isro_research_email"
-                                type="email"
-                                placeholder="example@example.com">
+                                   name="user_affliated_with_isro_research_email"
+                                   type="email"
+                                   placeholder="example@example.com">
                         </div>
                     </div>
                     <!-- University Affiliation -->
                     <div>
-                        <label>
-Are you affiliated with a university?
-                        </label>
-                        <select id="is_affliated_with_university" name="is_affliated_with_university" onchange="removeDropdownDefault(this); expandSelect(this);">
+                        <label>Are you affiliated with a university?</label>
+                        <select id="is_affliated_with_university"
+                                name="is_affliated_with_university"
+                                onchange="removeDropdownDefault(this); expandSelect(this);">
                             <option value="default">{{ default_value }}</option>
                             <option value="yes" data-id-to-show="university_affiliations">Yes</option>
                             <option value="no">No</option>
                         </select>
-
                         <div id="university_affiliations" class="margin-left-30" hidden>
                             <div>
-                                <input type="checkbox" id="faculty_member_affliated_with_university" name="faculty_member_affliated_with_university">
-                                <label>
-I am a university faculty member
-                                </label>
+                                <input type="checkbox"
+                                       id="faculty_member_affliated_with_university"
+                                       name="faculty_member_affliated_with_university">
+                                <label>I am a university faculty member</label>
                             </div>
                             <div>
-                                <input type="checkbox" id="research_member_affliated_with_university" name="research_member_affliated_with_university">
-                                <label>
-I am a university research scientist
-                                </label>
+                                <input type="checkbox"
+                                       id="research_member_affliated_with_university"
+                                       name="research_member_affliated_with_university">
+                                <label>I am a university research scientist</label>
                             </div>
                             <div>
-                                <input type="checkbox" id="graduate_student_affliated_with_university" name="graduate_student_affliated_with_university">
-                                <label>
-I am a university graduate student
-                                </label>
+                                <input type="checkbox"
+                                       id="graduate_student_affliated_with_university"
+                                       name="graduate_student_affliated_with_university">
+                                <label>I am a university graduate student</label>
                             </div>
                         </div>
                     </div>
                     <!-- Sumbit button -->
                     <div>
-                        <button type="submit">
-Submit Your Answers
-                        </button>
+                        <button type="submit">Submit Your Answers</button>
                     </div>
                 </fieldset>
             </form>
         </div>
-
         <script>
         // Remove option with value === "default" if it is not selected
         function removeDropdownDefault(selectElement){
