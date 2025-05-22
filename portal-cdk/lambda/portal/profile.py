@@ -56,12 +56,7 @@ def profile_user(user):
         },
     }
     
-    CWD = Path(__file__).parent.resolve().absolute()
-    # print("MY CWD IS %s", CWD)
-    # all_items = [str(item.name) for item in CWD.iterdir()]
-    # result = " ".join(all_items)
-    # print("Stuff in CWD: %s", result)
-    
+    CWD = Path(__file__).parent.resolve().absolute()    
     with open(CWD / "../data/countries.json", "r") as f:
         page_dict["input"]["countries"] = json.loads(f.read())
     return page_dict
