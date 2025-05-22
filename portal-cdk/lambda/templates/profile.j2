@@ -2,11 +2,11 @@
 <!DOCTYPE html>
 <html lang="en">
     {% include 'head.j2' %}
-    <body class="margin-left-30 margin-top-30">
+    <body>
         {% include './noscript.j2' %}
         {% include './navbar.j2' %}
 
-        <div>
+        <div class="margin-left-50">
             <h2>
                 Hello <i>{{ username }}</i>
             </h2>
@@ -41,7 +41,7 @@ Are you affiliated with NASA?
                         </select>
 
                         <!-- User Or PI NASA Email -->
-                        <div id="user_or_pi_nasa_email_div" hidden>
+                        <div id="user_or_pi_nasa_email_div" class="margin-left-30" hidden>
                             <label>
 Do you have a NASA email address?
                             </label>
@@ -52,7 +52,7 @@ Do you have a NASA email address?
                             </select>
 
                             <!-- User NASA Email -->
-                            <div id="user_nasa_email" hidden>
+                            <div id="user_nasa_email" class="margin-left-30" hidden>
                                 <label>
 What is your NASA email address?
                                 </label>
@@ -63,7 +63,7 @@ What is your NASA email address?
                             </div>
 
                             <!-- PI NASA Email -->
-                            <div id="pi_nasa_email" hidden>
+                            <div id="pi_nasa_email" class="margin-left-30" hidden>
                                 <label>
 What is the email address of the NASA project&rsquo;s PI?
                                 </label>
@@ -85,7 +85,7 @@ Are you affiliated with a US government-funded research program?
                             <option value="no">No</option>
                         </select>
 
-                        <div id="user_gov_email" hidden>
+                        <div id="user_gov_email" class="margin-left-30" hidden>
                             <label>
 What is your official US government email address? 
                             </label>
@@ -107,7 +107,7 @@ Are you affiliated with ISRO?
                             <option value="no">No</option>
                         </select>
 
-                        <div id="user_isro_email" hidden>
+                        <div id="user_isro_email" class="margin-left-30" hidden>
                             <label>
 What is your ISRO email address, or the ISRO email address of the project PI?
                             </label>
@@ -128,7 +128,7 @@ Are you affiliated with a university?
                             <option value="no">No</option>
                         </select>
 
-                        <div id="university_affiliations" hidden>
+                        <div id="university_affiliations" class="margin-left-30" hidden>
                             <div>
                                 <input type="checkbox" id="faculty_member_affliated_with_university" name="faculty_member_affliated_with_university">
                                 <label>
