@@ -116,7 +116,6 @@ def process_profile_form(request_body:str) -> tuple[bool, dict[str, Any]]:
 
 @profile_router.post("/<user>")
 @require_access()
-@portal_template(profile_router, name="profile.j2")
 def profile_user_filled(user):
     # Parse form request
     body = profile_router.current_event.body
@@ -124,24 +123,20 @@ def profile_user_filled(user):
     
     if success:        
         # Update user profile
-        print(query_dict)
         update_item(user, {"profile": query_dict})
-        print("PROFILE UPDATED")
 
         # Send the user to the portal
         next_url = "/portal"
         return wrap_response(
-            body={"Redirect": next_url},
+            body={f"Redirect to {next_url}"},
             code=302,
-            content_type=content_types.APPLICATION_JSON,
             headers={"Location": next_url},
         )
-    else:
-        # Send the user back to the profile page
-        next_url = "/portal/profile/<user>"
-        return wrap_response(
-            body={"Redirect": next_url},
-            code=302,
-            content_type=content_types.APPLICATION_JSON,
-            headers={"Location": next_url},
-        )
+        
+    # Send the user back to the profile page
+    next_url = "/portal/profile/<user>"
+    return wrap_response(
+        body={f"Redirect to {next_url}"},
+        code=302,
+        headers={"Location": next_url},
+    )
