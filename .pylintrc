@@ -1,0 +1,5 @@
+
+
+# Ignore Dynamic Classes:
+[TYPECHECK]
+ignored-classes=User,

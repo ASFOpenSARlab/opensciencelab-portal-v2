@@ -37,9 +37,13 @@ def create_item(username: str, item: dict) -> dict:
     Creates an item in the DB.
     """
     _client, _db, table = _get_dynamo()
-    # Adding ID here so you don't have to remember what the key should be, and
-    # it matches the parameters for the other functions in this file.
-    item["id"] = username
+    ## ID is a reserved keyword for us:
+    for restricted_key in ["username", "created-at", "last-update"]:
+        if restricted_key in item:
+            raise ValueError(f"Can't set '{restricted_key}', that's one we set automatically and WILL get overridden.")
+    ## Adding ID here so y ou don't have to remember what the key should be, and
+    #  it matches the parameters for the other functions in this file.
+    item["username"] = username
     item["created-at"] = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     item["last-update"] = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     table.put_item(Item=item)
@@ -51,7 +55,7 @@ def get_item(username: str) -> dict:
     Returns an item from the DB, or False if it doesn't exist.
     """
     _client, _db, table = _get_dynamo()
-    response = table.get_item(Key={"id": username})
+    response = table.get_item(Key={"username": username})
     if "Item" in response:
         return response["Item"]
     return False
@@ -79,10 +83,9 @@ def update_item(username: str, updates: dict) -> dict:
     listed will be left alone.
     """
     _client, _db, table = _get_dynamo()
-    ### If it doesn't exist, use the create_item function instead since that might
-    # add extra fields, like when the item was created:
+    ### Fail fast if it doesn't exist, they should call create_item instead:
     if not get_item(username):
-        return create_item(username, updates)
+        return False
     ### Otherwise craft the boto3 update item call:
     updates["last-update"] = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     # The '#var' is ID for the keys:
@@ -95,7 +98,7 @@ def update_item(username: str, updates: dict) -> dict:
         [f"#{alpha(k)}=:{alpha(k)}" for k in updates.keys()]
     )
     table.update_item(
-        Key={"id": username},
+        Key={"username": username},
         ExpressionAttributeNames=expression_attribute_names,
         ExpressionAttributeValues=expression_attribute_values,
         UpdateExpression=update_expression,
@@ -108,7 +111,7 @@ def delete_item(username: str) -> None:
     Deletes an item from the DB.
     """
     _client, _db, table = _get_dynamo()
-    table.delete_item(Key={"id": username})
+    table.delete_item(Key={"username": username})
 
 
 def update_username(old_username: str, new_username: str) -> bool:
@@ -120,7 +123,7 @@ def update_username(old_username: str, new_username: str) -> bool:
     _client, _db, table = _get_dynamo()
     item = get_item(old_username)
     if item:
-        item["id"] = new_username
+        item["username"] = new_username
         table.put_item(Item=item)
         delete_item(old_username)
         return True
