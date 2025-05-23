@@ -1,4 +1,5 @@
 import json
+import os
 import ast
 
 from util.responses import wrap_response
@@ -11,8 +12,12 @@ from aws_lambda_powertools import Logger
 
 logger = Logger(child=True)
 
+# Get current file location template loading
+absolute_path = os.path.abspath(__file__)
+current_directory = os.path.dirname(absolute_path)
+
 ENV = Environment(
-    loader=FileSystemLoader("./templates/"),
+    loader=FileSystemLoader(f"{current_directory}/../templates/"),
     autoescape=select_autoescape(),
     undefined=StrictUndefined,
     trim_blocks=True,

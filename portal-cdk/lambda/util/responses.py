@@ -30,7 +30,7 @@ def wrap_response(body, code=200, content_type=None, headers=None, cookies=None)
     return Response(**response_payload)
 
 
-def basic_html(code=None, content_type=None, headers=None, cookies=None):
+def basic_html(code=200, content_type=None, headers=None, cookies=None):
     # username will eventually come from app
     def inner(func):
         def wrapper(*args, **kwargs):
@@ -43,7 +43,7 @@ def basic_html(code=None, content_type=None, headers=None, cookies=None):
 
 
 def basic_json(
-    code=None, content_type=content_types.APPLICATION_JSON, headers=None, cookies=None
+    code=200, content_type=content_types.APPLICATION_JSON, headers=None, cookies=None
 ):
     def inner(func):
         def wrapper(*args, **kwargs):
