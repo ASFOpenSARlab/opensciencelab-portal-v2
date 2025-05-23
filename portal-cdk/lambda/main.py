@@ -8,7 +8,7 @@ from util.format import (
     request_context_string,
     render_template,
 )
-from util.responses import basic_html, wrap_response
+from util.responses import wrap_response
 from util.auth import get_set_cookie_headers, validate_code, process_auth
 from util.exceptions import GenericFatalError
 from util.session import current_session
@@ -45,27 +45,11 @@ def root():
     return "Welcome to OpenScienceLab"
 
 
-@app.get("/login")
-@portal_template(title="Please Log In", name="logged-out.j2")
-def login():
-    return "Add login form here."
-
-
 @app.get("/logout")
 @portal_template(title="Logged Out", name="logged-out.j2")
 def logout():
     # TODO: Remove cookies here.
     return "You have been logged out"
-
-
-@app.get("/test")
-@basic_html(code=200)
-@portal_template(name="logged-out.j2", response=None)
-def test():
-    # Another way to use basic_html & portal_template
-    return """
-    <h3>This is a test html</h3>
-    """
 
 
 @app.get("/register")
