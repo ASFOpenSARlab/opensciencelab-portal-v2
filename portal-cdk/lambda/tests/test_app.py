@@ -82,6 +82,32 @@ class TestPortalFormating:
         assert ret["headers"].get("Location").endswith("?return=/portal")
         assert ret["headers"].get("Content-Type") == "text/html"
 
+    def test_static_image_dne(self, lambda_context: LambdaContext, monkeypatch):
+        event = get_event(path="/static/img/dne.png")
+        ret = main.lambda_handler(event, lambda_context)
+        assert ret["statusCode"] == 404
+
+    def test_static_image_bad_type(self, lambda_context: LambdaContext, monkeypatch):
+        event = get_event(path="/static/foo/bar.zip")
+        ret = main.lambda_handler(event, lambda_context)
+        assert ret["statusCode"] == 404
+
+    def test_static_image(self, lambda_context: LambdaContext, monkeypatch):
+        event = get_event(path="/static/img/jh_logo.png")
+        ret = main.lambda_handler(event, lambda_context)
+        assert ret["statusCode"] == 200
+        assert ret["headers"].get("Content-Type") == "image/png"
+
+        event = get_event(path="/static/js/require.js")
+        ret = main.lambda_handler(event, lambda_context)
+        assert ret["statusCode"] == 200
+        assert ret["headers"].get("Content-Type") == "text/javascript"
+
+        event = get_event(path="/static/css/style.min.css")
+        ret = main.lambda_handler(event, lambda_context)
+        assert ret["statusCode"] == 200
+        assert ret["headers"].get("Content-Type") == "text/css"
+
     def test_bad_jwt(self, lambda_context: LambdaContext, monkeypatch):
         monkeypatch.setattr("util.auth.get_key_validation", lambda: {"bla": "bla"})
         event = get_event(path="/portal", cookies={"portal-jwt": BAD_JWT})
@@ -101,6 +127,19 @@ class TestPortalFormating:
         ret = main.lambda_handler(event, lambda_context)
 
         assert ret["statusCode"] == 200
-        assert ret["body"].find("Welcome to OpenScienceLab")
+        assert ret["body"].find("Welcome to OpenScienceLab") != -1
         assert ret["headers"].get("Location") is None
         assert ret["headers"].get("Content-Type") == "text/html"
+
+    def test_generic_error(self, lambda_context: LambdaContext, monkeypatch):
+        # Create an invalid SSO token
+        monkeypatch.setattr(
+            "aws_lambda_powertools.utilities.parameters.get_secret",
+            lambda a: "this-is-bad-sso-token",
+        )
+        from util.auth import encrypt_data
+        from util.exceptions import BadSsoToken
+
+        with pytest.raises(BadSsoToken) as excinfo:
+            encrypt_data("blablabla")
+        assert str(excinfo.value).find("change the SSO Secret") != -1
