@@ -1,7 +1,11 @@
+import copy
+import json
 from dataclasses import dataclass
 import time
 
 import main
+from util.auth import PORTAL_USER_COOKIE, COGNITO_JWT_COOKIE
+
 import pytest
 import jwt
 
@@ -12,6 +16,7 @@ BASIC_REQUEST = {
         "http": {"method": "GET", "path": "/test"},
         "stage": "$default",
     },
+    "queryStringParameters": {},
     "cookies": [],
 }
 
@@ -37,8 +42,12 @@ def update_item(*args, **vargs):
     return True
 
 
-def get_event(path="/", method="GET", cookies={}, headers={}):
-    ret_event = BASIC_REQUEST
+def get_event(path="/", method="GET", cookies=None, headers=None, qparams=None):
+    # This rather than defaulting to polluted dicts
+    cookies = {} if not cookies else cookies
+    headers = {} if not headers else headers
+    qparams = {} if not qparams else qparams
+    ret_event = copy.deepcopy(BASIC_REQUEST)
 
     # Update request path/method
     ret_event["rawPath"] = path
@@ -48,7 +57,33 @@ def get_event(path="/", method="GET", cookies={}, headers={}):
     for name, value in cookies.items():
         ret_event["cookies"].append(f"{name}={value}")
 
+    for key, value in qparams.items():
+        ret_event["queryStringParameters"][key] = value
+
     return ret_event
+
+
+def mocked_requests_post(*args, **kwargs):
+    class MockResponse:
+        def __init__(self, json_data, status_code):
+            self.json_data = json_data
+            self.status_code = status_code
+
+        def json(self):
+            return self.json_data
+
+    json_response_payload = {}
+
+    if kwargs["data"]["code"] == "good_code":
+        json_response_payload = {
+            "id_token": "valid_id_token",
+            "access_token": "valid_access_token",
+        }
+
+    if args[0].endswith("/oauth2/token"):
+        return MockResponse(json_response_payload, 200)
+
+    return MockResponse(None, 404)
 
 
 @dataclass
@@ -64,7 +99,27 @@ def lambda_context() -> LambdaContext:
     return LambdaContext()
 
 
-class TestPortalFormating:
+@pytest.fixture
+def fake_auth(monkeypatch):
+    # Bypass JWT
+    monkeypatch.setattr("util.auth.validate_jwt", validate_jwt)
+    monkeypatch.setattr("jwt.decode", validate_jwt)
+
+    # Ignore DB
+    monkeypatch.setattr("util.auth.update_item", update_item)
+
+    # Override signing key
+    monkeypatch.setattr(
+        "aws_lambda_powertools.utilities.parameters.get_secret",
+        lambda a: "er9LnqEOiH+JLBsFCy0kVeba6ZSlG903cliU7VYKnM8=",
+    )
+
+    auth_cookies = {PORTAL_USER_COOKIE: "bla", COGNITO_JWT_COOKIE: "bla"}
+
+    return auth_cookies
+
+
+class TestPortalIntegrations:
     def test_landing_handler(self, lambda_context: LambdaContext):
         event = get_event()
 
@@ -82,17 +137,17 @@ class TestPortalFormating:
         assert ret["headers"].get("Location").endswith("?return=/portal")
         assert ret["headers"].get("Content-Type") == "text/html"
 
-    def test_static_image_dne(self, lambda_context: LambdaContext, monkeypatch):
+    def test_static_image_dne(self, lambda_context: LambdaContext):
         event = get_event(path="/static/img/dne.png")
         ret = main.lambda_handler(event, lambda_context)
         assert ret["statusCode"] == 404
 
-    def test_static_image_bad_type(self, lambda_context: LambdaContext, monkeypatch):
+    def test_static_image_bad_type(self, lambda_context: LambdaContext):
         event = get_event(path="/static/foo/bar.zip")
         ret = main.lambda_handler(event, lambda_context)
         assert ret["statusCode"] == 404
 
-    def test_static_image(self, lambda_context: LambdaContext, monkeypatch):
+    def test_static_image(self, lambda_context: LambdaContext):
         event = get_event(path="/static/img/jh_logo.png")
         ret = main.lambda_handler(event, lambda_context)
         assert ret["statusCode"] == 200
@@ -108,6 +163,45 @@ class TestPortalFormating:
         assert ret["statusCode"] == 200
         assert ret["headers"].get("Content-Type") == "text/css"
 
+    def test_auth_no_code(self, lambda_context: LambdaContext):
+        event = get_event(path="/auth")
+        ret = main.lambda_handler(event, lambda_context)
+        assert ret["statusCode"] == 401
+        assert ret["body"].find("No return Code found.") != -1
+        assert not ret["headers"].get("Location")
+        assert ret["headers"].get("Content-Type") == "text/html"
+
+    def test_auth_bad_code(self, lambda_context: LambdaContext, monkeypatch):
+        monkeypatch.setattr("requests.post", mocked_requests_post)
+        event = get_event(path="/auth", qparams={"code": "bad_code"})
+        ret = main.lambda_handler(event, lambda_context)
+        assert ret["statusCode"] == 401
+        assert ret["body"].find("Could not complete token exchange") != -1
+
+    def test_auth_good_code(self, lambda_context: LambdaContext, monkeypatch):
+        monkeypatch.setattr("requests.post", mocked_requests_post)
+        monkeypatch.setattr("util.auth.validate_jwt", validate_jwt)
+        monkeypatch.setattr(
+            "aws_lambda_powertools.utilities.parameters.get_secret",
+            lambda a: "er9LnqEOiH+JLBsFCy0kVeba6ZSlG903cliU7VYKnM8=",
+        )
+
+        event = get_event(
+            path="/auth",
+            qparams={
+                "code": "good_code",
+                "state": "/portal/profile",
+            },
+        )
+        ret = main.lambda_handler(event, lambda_context)
+
+        cookies = [cookie.split("=")[0] for cookie in ret["cookies"]]
+        assert ret["statusCode"] == 302
+        assert PORTAL_USER_COOKIE in cookies
+        assert COGNITO_JWT_COOKIE in cookies
+        assert ret["headers"].get("Location") == "/portal/profile"
+        assert ret["body"].find("Redirecting to /portal/profile") != -1
+
     def test_bad_jwt(self, lambda_context: LambdaContext, monkeypatch):
         monkeypatch.setattr("util.auth.get_key_validation", lambda: {"bla": "bla"})
         event = get_event(path="/portal", cookies={"portal-jwt": BAD_JWT})
@@ -115,15 +209,8 @@ class TestPortalFormating:
             main.lambda_handler(event, lambda_context)
         assert str(excinfo.value) == "Signature verification failed"
 
-    def test_logged_in(self, lambda_context: LambdaContext, monkeypatch):
-        # Make JWT validate
-        monkeypatch.setattr("util.auth.validate_jwt", validate_jwt)
-        monkeypatch.setattr("jwt.decode", validate_jwt)
-
-        # Ignore DB
-        monkeypatch.setattr("util.auth.update_item", update_item)
-
-        event = get_event(path="/portal", cookies={"portal-jwt": "bla"})
+    def test_logged_in(self, lambda_context: LambdaContext, fake_auth):
+        event = get_event(path="/portal", cookies=fake_auth)
         ret = main.lambda_handler(event, lambda_context)
 
         assert ret["statusCode"] == 200
@@ -131,12 +218,41 @@ class TestPortalFormating:
         assert ret["headers"].get("Location") is None
         assert ret["headers"].get("Content-Type") == "text/html"
 
+    def test_post_portal_hub_auth(self, lambda_context: LambdaContext, fake_auth):
+        event = get_event(path="/portal/hub/auth", method="POST", cookies=fake_auth)
+        ret = main.lambda_handler(event, lambda_context)
+        assert ret["statusCode"] == 200
+        assert ret["headers"].get("Content-Type") == "application/json"
+        json_payload = json.loads(ret["body"])
+        assert json_payload.get("message") == "OK"
+        assert json_payload.get("data")
+
+    def test_get_portal_hub_auth(self, lambda_context: LambdaContext, fake_auth):
+        event = get_event(path="/portal/hub/login", cookies=fake_auth)
+        ret = main.lambda_handler(event, lambda_context)
+        assert ret["statusCode"] == 200
+        assert ret["headers"].get("Content-Type") == "text/html"
+        assert ret["body"].find("hello - Cookie Created") != -1
+        cookies = [cookie.split("=")[0] for cookie in ret["cookies"]]
+        assert PORTAL_USER_COOKIE in cookies
+
+    def test_get_portal_hub_no_auth(self, lambda_context: LambdaContext):
+        event = get_event(path="/portal/hub", cookies={"foo": "bar"})
+        ret = main.lambda_handler(event, lambda_context)
+        assert ret["statusCode"] == 302
+        assert ret["body"] == "User is not logged in"
+        assert ret["headers"].get("Location").endswith("?return=/portal/hub")
+        assert ret["headers"].get("Content-Type") == "text/html"
+
+
+class TestPortalAuth:
     def test_generic_error(self, lambda_context: LambdaContext, monkeypatch):
         # Create an invalid SSO token
         monkeypatch.setattr(
             "aws_lambda_powertools.utilities.parameters.get_secret",
             lambda a: "this-is-bad-sso-token",
         )
+
         from util.auth import encrypt_data
         from util.exceptions import BadSsoToken
 

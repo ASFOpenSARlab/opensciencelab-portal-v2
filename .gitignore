@@ -2,3 +2,5 @@
 *.env
 /.pytest_cache/
 /.ruff_cache/
+/portal-cdk/lambda/.coverage
+/portal-cdk/lambda/conftest.py
