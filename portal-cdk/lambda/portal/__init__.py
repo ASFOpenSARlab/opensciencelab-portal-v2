@@ -34,6 +34,6 @@ require_access.router = portal_router
 
 @portal_router.get("")
 @require_access()
-@portal_template(portal_router)
+@portal_template()
 def portal_root():
     return "Welcome to OpenScienceLab"

@@ -15,20 +15,20 @@ access_route = {
 # This catches "/portal/access"
 @access_router.get("")
 @require_access()
-@portal_template(access_router)
+@portal_template()
 def access_root():
     return "List All Labs"
 
 
 @access_router.get("/add_lab")
 @require_access()
-@portal_template(access_router)
+@portal_template()
 def add_lab():
     return "Create New Lab"
 
 
 @access_router.get("/lab/<lab>")
 @require_access()
-@portal_template(access_router)
+@portal_template()
 def view_lab(lab):
     return f"inspect lab {lab}"
