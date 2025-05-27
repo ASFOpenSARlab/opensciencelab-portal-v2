@@ -1,3 +1,5 @@
+from constructs import Construct
+
 from aws_cdk import (
     Stack,
     aws_lambda,
@@ -12,8 +14,6 @@ from aws_cdk import (
     aws_secretsmanager as secretsmanager,
     SecretValue,
 )
-from constructs import Construct
-
 from aws_solutions_constructs.aws_lambda_dynamodb import LambdaToDynamoDB
 
 LAMBDA_RUNTIME = aws_lambda.Runtime.PYTHON_3_11

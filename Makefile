@@ -132,6 +132,8 @@ bundle-deps:
 .PHONE := test
 test: install-reqs bundle-deps
 	@echo "Running tests for Portal (${DEPLOY_PREFIX})"
+	pip install -r portal-cdk/requirements-dev.txt && \
+	pip install -r portal-cdk/lambda/requirements.txt && \
 	cd ./portal-cdk && pytest -v
 
 .PHONY := synth-portal
