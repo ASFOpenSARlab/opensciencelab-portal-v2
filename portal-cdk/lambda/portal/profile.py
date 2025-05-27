@@ -63,7 +63,7 @@ def profile_user(user):
 
     user_dict = get_item(user)
     if user_dict:
-        if user_dict["profile"]:
+        if "profile" in user_dict:
             page_dict["input"]["profile"] = user_dict["profile"]
 
     return page_dict
