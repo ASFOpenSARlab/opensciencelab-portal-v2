@@ -32,7 +32,7 @@ def alpha(s: str) -> str:
     return "".join(filter(str.isalnum, s))
 
 
-def create_item(username: str, item: dict) -> dict:
+def create_item(username: str, item: dict) -> bool:
     """
     Creates an item in the DB.
     """
@@ -47,7 +47,7 @@ def create_item(username: str, item: dict) -> dict:
     item["created-at"] = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     item["last-update"] = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     table.put_item(Item=item)
-    return item
+    return True
 
 
 def get_item(username: str) -> dict:
@@ -75,7 +75,7 @@ def get_all_items() -> list:
     return items
 
 
-def update_item(username: str, updates: dict) -> dict:
+def update_item(username: str, updates: dict) -> bool:
     """
     Updates fields in an existing item. (Will create fields if they don't exist.)
 
@@ -103,7 +103,7 @@ def update_item(username: str, updates: dict) -> dict:
         ExpressionAttributeValues=expression_attribute_values,
         UpdateExpression=update_expression,
     )
-    return get_item(username)
+    return True
 
 
 def delete_item(username: str) -> None:
