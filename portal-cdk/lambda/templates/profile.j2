@@ -202,6 +202,14 @@
             </form>
         </div>
         <script>
+        window.addEventListener('load', function () {
+            // Get all select elements
+            const allSelects = document.querySelectorAll('select');
+            // Run expandSelect on each element
+            allSelects.forEach(select => {
+                expandSelect(select);
+            });
+        });
         // Remove option with value === "default" if it is not selected
         function removeDropdownDefault(selectElement){
             if (selectElement.value !== "default") {
