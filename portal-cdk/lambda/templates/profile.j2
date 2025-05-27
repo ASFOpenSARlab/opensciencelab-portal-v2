@@ -18,7 +18,7 @@
                                 name="country_of_residence"
                                 onchange="removeDropdownDefault(this)">
                             <!-- If user does not already have profile, provide default option and all countries -->
-                            {% if profile is not defined %}
+                            {% if profile is not defined or profile["country_of_residence"] == "default" %}
                                 <option value="default">{{ default_value }}</option>
                                 {% for country in countries -%}
                                     <option value="{{ country }}">{{ countries[country] }}</option>
@@ -42,15 +42,17 @@
                                 name="nasa_affiliated_email"
                                 onchange="removeDropdownDefault(this); expandSelect(this);">
                             <!-- If user does not already have profile, provide default option -->
-                            {% if profile is not defined %}<option value="default">{{ default_value }}</option>{% endif %}
+                            {% if profile is not defined or profile["nasa_affiliated_email"] == "default" %}
+                                <option value="default">{{ default_value }}</option>
+                            {% endif %}
                             <!-- Set yes, no, or none to selected depending on the value of nasa_affiliated_email in an existing profile -->
                             <option value="yes"
                                     data-id-to-show="user_or_pi_nasa_email_div"
-                                    {% if profile is defined and profile["nasa_affiliated_email"] == True %}selected{% endif %}>
+                                    {% if profile is defined and profile["nasa_affiliated_email"] == "yes" %}selected{% endif %}>
                                 Yes
                             </option>
                             <option value="no"
-                                    {% if profile is defined and profile["nasa_affiliated_email"] == False %}selected{% endif %}>
+                                    {% if profile is defined and profile["nasa_affiliated_email"] == "no" %}selected{% endif %}>
                                 No
                             </option>
                         </select>
@@ -61,16 +63,18 @@
                                     name="user_or_pi_nasa_email"
                                     onchange="removeDropdownDefault(this); expandSelect(this);">
                                 <!-- If user does not already have profile, provide default option -->
-                                {% if profile is not defined %}<option value="default">{{ default_value }}</option>{% endif %}
+                                {% if profile is not defined or profile["user_or_pi_nasa_email"] == "default" %}
+                                    <option value="default">{{ default_value }}</option>
+                                {% endif %}
                                 <!-- Set yes, no, or none to selected depending on the value of user_or_pi_nasa_email in an existing profile -->
                                 <option value="yes"
                                         data-id-to-show="user_nasa_email"
-                                        {% if profile is defined and profile["user_or_pi_nasa_email"] == True %}selected{% endif %}>
+                                        {% if profile is defined and profile["user_or_pi_nasa_email"] == "yes" %}selected{% endif %}>
                                     Yes
                                 </option>
                                 <option value="no"
                                         data-id-to-show="pi_nasa_email"
-                                        {% if profile is defined and profile["user_or_pi_nasa_email"] == False %}selected{% endif %}>
+                                        {% if profile is defined and profile["user_or_pi_nasa_email"] == "no" %}selected{% endif %}>
                                     No
                                 </option>
                             </select>
@@ -101,15 +105,17 @@
                                 name="us_gov_research_affiliated_email"
                                 onchange="removeDropdownDefault(this); expandSelect(this);">
                             <!-- If user does not already have profile, provide default option -->
-                            {% if profile is not defined %}<option value="default">{{ default_value }}</option>{% endif %}
+                            {% if profile is not defined or profile["us_gov_research_affiliated_email"] == "default" %}
+                                <option value="default">{{ default_value }}</option>
+                            {% endif %}
                             <!-- Set yes, no, or none to selected depending on the value of us_gov_research_affiliated_email in an existing profile -->
                             <option value="yes"
                                     data-id-to-show="user_gov_email"
-                                    {% if profile is defined and profile["us_gov_research_affiliated_email"] == True %}selected{% endif %}>
+                                    {% if profile is defined and profile["us_gov_research_affiliated_email"] == "yes" %}selected{% endif %}>
                                 Yes
                             </option>
                             <option value="no"
-                                    {% if profile is defined and profile["us_gov_research_affiliated_email"] == False %}selected{% endif %}>
+                                    {% if profile is defined and profile["us_gov_research_affiliated_email"] == "no" %}selected{% endif %}>
                                 No
                             </option>
                         </select>
@@ -129,15 +135,17 @@
                                 name="is_affliated_with_isro_research"
                                 onchange="removeDropdownDefault(this); expandSelect(this);">
                             <!-- If user does not already have profile, provide default option -->
-                            {% if profile is not defined %}<option value="default">{{ default_value }}</option>{% endif %}
+                            {% if profile is not defined or profile["is_affliated_with_isro_research"] == "default" %}
+                                <option value="default">{{ default_value }}</option>
+                            {% endif %}
                             <!-- Set yes, no, or none to selected depending on the value of is_affliated_with_isro_research in an existing profile -->
                             <option value="yes"
                                     data-id-to-show="user_isro_email"
-                                    {% if profile is defined and profile["is_affliated_with_isro_research"] == True %}selected{% endif %}>
+                                    {% if profile is defined and profile["is_affliated_with_isro_research"] == "yes" %}selected{% endif %}>
                                 Yes
                             </option>
                             <option value="no"
-                                    {% if profile is defined and profile["is_affliated_with_isro_research"] == False %}selected{% endif %}>
+                                    {% if profile is defined and profile["is_affliated_with_isro_research"] == "no" %}selected{% endif %}>
                                 No
                             </option>
                         </select>
@@ -157,15 +165,17 @@
                                 name="is_affliated_with_university"
                                 onchange="removeDropdownDefault(this); expandSelect(this);">
                             <!-- If user does not already have profile, provide default option -->
-                            {% if profile is not defined %}<option value="default">{{ default_value }}</option>{% endif %}
+                            {% if profile is not defined or profile["is_affliated_with_university"] == "default" %}
+                                <option value="default">{{ default_value }}</option>
+                            {% endif %}
                             <!-- Set yes, no, or none to selected depending on the value of is_affliated_with_university in an existing profile -->
                             <option value="yes"
                                     data-id-to-show="university_affiliations"
-                                    {% if profile is defined and profile["is_affliated_with_university"] == True %}selected{% endif %}>
+                                    {% if profile is defined and profile["is_affliated_with_university"] == "yes" %}selected{% endif %}>
                                 Yes
                             </option>
                             <option value="no"
-                                    {% if profile is defined and profile["is_affliated_with_university"] == False %}selected{% endif %}>
+                                    {% if profile is defined and profile["is_affliated_with_university"] == "no" %}selected{% endif %}>
                                 No
                             </option>
                         </select>

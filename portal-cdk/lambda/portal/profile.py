@@ -92,7 +92,7 @@ def process_profile_form(request_body: str) -> tuple[bool, dict[str, Any]]:
 
     ## Redirect to profile if not filled out correctly
 
-    # Format checkboxes
+    # Format checkboxes to boolean values
     checkbox_fields = [
         "faculty_member_affliated_with_university",
         "research_member_affliated_with_university",
@@ -104,16 +104,6 @@ def process_profile_form(request_body: str) -> tuple[bool, dict[str, Any]]:
             query_dict[field] = True
         else:
             query_dict[field] = False
-
-    # Format yes/no to Bool values
-    for k, v in query_dict.items():
-        if v == "yes":
-            query_dict[k] = True
-        if v == "no":
-            query_dict[k] = False
-        # If value is "default" then it should not be important at this stage since the form is validated
-        if v == "default":
-            query_dict[k] = False
 
     # Return dictionary of values
     return True, query_dict
