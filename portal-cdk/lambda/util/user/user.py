@@ -28,17 +28,18 @@ class User:
         #  (self instead of super, so it DOES hit the method below).
         for key in validator_map:
             if key in db_info:
-                self.__setattr__(key, db_info[key])
+                # You just loaded it to the DB, the one time you don't have to save it:
+                self.__setattr__(key, db_info[key], _save=False)
             else:
                 self.__setattr__(key, None)
 
-    def __setattr__(self, key, value):
+    def __setattr__(self, key, value, _save=True):
         # NOTE: If you use self.__setattr__ here, it will be infinite recursion.
         if key not in validator_map:
             raise DbError(
                 f"Key '{key}' not in validator_map for user {self.username}.",
                 error_code=500,
-                extra_info=self.db,
+                extra_info=dict(self),
             )
         ## Set the Value (if key is the default or None, don't do validation):
         if value is None or self.is_default(key, value):
@@ -52,7 +53,8 @@ class User:
         ## Freeze any lists/dicts inside it, so they can't be modified directly:
         super().__setattr__(key, frozendict.deepfreeze(value))
         ## Update the DB:
-        update_item(self.username, {key: value})
+        if _save:
+            update_item(self.username, {key: value})
 
     def __str__(self):
         """What to display if you print this object."""
