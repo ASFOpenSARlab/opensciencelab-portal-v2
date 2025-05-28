@@ -1,40 +1,13 @@
 
 import json
 
+import frozendict
+
 from util.exceptions import DbError
 
-from .dynamo_db import get_item, create_item, update_item, delete_item, get_all_items
+from .dynamo_db import get_item, create_item, update_item
 from .defaults import defaults
 from .validator_map import validator_map, validate
-
-
-def _callback_object_wrapper(_object, callback):
-    if isinstance(_object, list):
-        return CallbackList(_object, callback=callback)
-    else:
-        return _object
-
-
-class CallbackList(list):
-    """
-    A list that calls a function when an item is added.
-    """
-    def __init__(self, data, callback=None):
-        super().__init__(data)
-        self.callback = callback
-
-    def append(self, item):
-        item = _callback_object_wrapper(item, self.callback)
-        super().append(item)
-        if self.callback:
-            self.callback()
-
-    def extend(self, items):
-        for item in items:
-            item = _callback_object_wrapper(item, self.callback)
-        super().extend(items)
-        if self.callback:
-            self.callback()
 
 
 class User():
@@ -60,55 +33,37 @@ class User():
                 self.__setattr__(key, None)
 
     def __setattr__(self, key, value):
+        # NOTE: If you use self.__setattr__ here, it will be infinite recursion.
         if key not in validator_map:
             raise DbError(
                 f"Key '{key}' not in validator_map for user {self.username}.",
                 error_code=500,
                 extra_info=self.db,
             )
-        ## Set the Value:
-        if value is None:
-            if key in defaults:
-                super().__setattr__(key, defaults[key])
-            else:
-                # This is separated, so it doesn't pass through 'validate':
-                super().__setattr__(key, None)
+        ## Set the Value (if key is the default or None, don't do validation):
+        if value is None or self.is_default(key, value):
+            # If the val is None AND in defaults, change to default:
+            value = defaults[key] if key in defaults else None
+            super().__setattr__(key, value)
         else:
             super().__setattr__(key, validate(key, value))
+        # Update value, in-case 'validate' or defaults changed it:
         value = self.__getattribute__(key)
-        ## Cast it to a smart list/dict if needed:
-        super().__setattr__(
-            key,
-            _callback_object_wrapper(value, callback=self._save)
-        )
+        ## Freeze any lists/dicts inside it, so they can't be modified directly:
+        super().__setattr__(key, frozendict.deepfreeze(value))
         ## Update the DB:
         update_item(self.username, {key: value})
 
     def __str__(self):
-        """
-        What to display if you print this object.
-        """
+        """ What to display if you print this object."""
         return json.dumps(dict(self), indent=4, default=str)
 
     def __iter__(self):
-        """
-        Used when casting to a dict, what keys to show.
-        """
+        """ Used when casting to a dict, what keys to show."""
         for key in validator_map:
             yield key, self.__getattribute__(key)
 
-    def _save(self):
-        """
-        Saves the current state of the user to the DB.
-        """
-        update_item(self.username, dict(self))
-
-if __name__ == "__main__":
-    # delete_item("cjshowalter")  # Clean up for testing.
-    me = User("cjshowalter")
-    print(me.random_dict)
-    me.random_dict["asdf"] = "fdsa"
-    print(me.random_dict)
-
-    print(get_all_items())
-
+    def is_default(self, key, value) -> bool:
+        """ Returns if the value is the default for the key."""
+        default_val = defaults.get(key, None)
+        return value == default_val

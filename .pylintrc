@@ -3,3 +3,7 @@
 # Ignore Dynamic Classes:
 [TYPECHECK]
 ignored-classes=User,
+
+# Ignore Dynamic Attributes:
+[MESSAGES CONTROL]
+disable = attribute-defined-outside-init
