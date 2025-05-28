@@ -38,10 +38,6 @@ def validate_jwt(*args, **vargs):
     }
 
 
-def update_item(*args, **vargs):
-    return True
-
-
 def get_event(path="/", method="GET", cookies=None, headers=None, qparams=None):
     # This rather than defaulting to polluted dicts
     cookies = {} if not cookies else cookies
@@ -104,9 +100,6 @@ def fake_auth(monkeypatch):
     # Bypass JWT
     monkeypatch.setattr("util.auth.validate_jwt", validate_jwt)
     monkeypatch.setattr("jwt.decode", validate_jwt)
-
-    # Ignore DB
-    monkeypatch.setattr("util.auth.update_item", update_item)
 
     # Override signing key
     monkeypatch.setattr(
