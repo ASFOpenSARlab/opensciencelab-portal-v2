@@ -7,7 +7,7 @@ from util.responses import wrap_response
 from pathlib import Path
 import json
 from base64 import b64decode
-from urllib.parse import parse_qs
+from urllib.parse import urlencode, parse_qs
 from typing import Any
 
 from aws_lambda_powertools import Logger
@@ -53,21 +53,75 @@ def profile_user(user):
     page_dict = {
         "content": f"Profile for user {user}",
         "input": {
+            "username": user,
             "default_value": "Choose...",
+            "warning_missing": "value is missing",
         },
     }
 
     CWD = Path(__file__).parent.resolve().absolute()
     with open(CWD / "../data/countries.json", "r") as f:
         page_dict["input"]["countries"] = json.loads(f.read())
-
-    user_dict = get_item(user)
-    if user_dict:
-        if "profile" in user_dict:
-            page_dict["input"]["profile"] = user_dict["profile"]
-
+    
+    # Get query string if present
+    query_params = profile_router.current_event.query_string_parameters
+    
+    # Set profile based on saved user profile or query_params if present
+    profile=None
+    if query_params:
+        profile = query_params
+    else:
+        user_dict = get_item(user)
+        if user_dict:
+            if "profile" in user_dict:
+                profile = user_dict["profile"]
+    
+    # Append profile to page_dict and return
+    if profile:
+        page_dict["input"]["profile"] = profile
     return page_dict
 
+def validate_profile_dict(query_dict: dict) -> tuple[bool, dict[str, str]]:
+    correct = True
+    errors = {}
+    
+    if query_dict["country_of_residence"] == "default":
+        correct = False
+        errors["country_of_residence_error"] = "missing"
+        
+    if query_dict["nasa_affiliated_email"] == "default":
+        correct = False
+        errors["nasa_affiliated_email_error"] = "missing"
+    if query_dict["nasa_affiliated_email"] == "yes" and query_dict["user_or_pi_nasa_email"] == "default":
+        correct = False
+        errors["user_or_pi_nasa_email_error"] = "missing"
+    if query_dict["nasa_affiliated_email"] == "yes" and query_dict["user_or_pi_nasa_email"] == "yes" and query_dict["user_affliated_with_nasa_research_email"] == "":
+        correct = False
+        errors["user_affliated_with_nasa_research_email_error"] = "missing"
+    if query_dict["nasa_affiliated_email"] == "yes" and query_dict["user_or_pi_nasa_email"] == "no" and query_dict["pi_affliated_with_nasa_research_email"] == "":
+        correct = False
+        errors["pi_affliated_with_nasa_research_email_error"] = "missing"
+        
+    if query_dict["us_gov_research_affiliated_email"] == "default":
+        correct = False
+        errors["us_gov_research_affiliated_email_error"] = "missing"
+    if query_dict["us_gov_research_affiliated_email"] == "yes" and query_dict["user_affliated_with_gov_research_email"] == "":
+        correct = False
+        errors["user_affliated_with_gov_research_email_error"] = "missing"
+        
+    if query_dict["is_affliated_with_isro_research"] == "default":
+        correct = False
+        errors["is_affliated_with_isro_research_error"] = "missing"
+    if query_dict["is_affliated_with_isro_research"] == "yes" and query_dict["user_affliated_with_isro_research_email"] == "":
+        correct = False
+        errors["user_affliated_with_isro_research_email_error"] = "missing"
+        
+    if query_dict["is_affliated_with_university"] == "default":
+        correct = False
+        errors["is_affliated_with_university_error"] = "missing"
+        
+    return correct, errors
+    
 
 def process_profile_form(request_body: str) -> tuple[bool, dict[str, Any]]:
     """Processes the profile form
@@ -85,12 +139,7 @@ def process_profile_form(request_body: str) -> tuple[bool, dict[str, Any]]:
     }
 
     # Validate Form
-    ## TODO
-    correct = True
-    if not correct:
-        return False, {}
-
-    ## Redirect to profile if not filled out correctly
+    correct, errors = validate_profile_dict(query_dict)
 
     # Format checkboxes to boolean values
     checkbox_fields = [
@@ -105,6 +154,11 @@ def process_profile_form(request_body: str) -> tuple[bool, dict[str, Any]]:
         else:
             query_dict[field] = False
 
+    # Redirect to profile if not filled out correctly, pass provided values as well for form repopulation
+    if not correct:
+        errors.update(query_dict)
+        return False, errors
+    
     # Return dictionary of values
     return True, query_dict
 
@@ -117,6 +171,7 @@ def profile_user_filled(user):
     success, query_dict = process_profile_form(body)
 
     if success:
+        # query_dict must be profile values at this point
         # Update user profile
         update_item(user, {"profile": query_dict})
 
@@ -127,9 +182,11 @@ def profile_user_filled(user):
             code=302,
             headers={"Location": next_url},
         )
-
+    
+    # query_dict must be errors and descriptions at this point
+    query_string = urlencode(query_dict)
     # Send the user back to the profile page
-    next_url = "/portal/profile/<user>"
+    next_url = f"/portal/profile/{user}?{query_string}"
     return wrap_response(
         body={f"Redirect to {next_url}"},
         code=302,
