@@ -1,6 +1,10 @@
 
 from util.exceptions import DbError
 
+from .validators import (
+    dict_contains_random_key,
+)
+
 def validate(key, value):
     try:
         return validator_map[key](value)
@@ -11,4 +15,5 @@ validator_map = {
     "access": list,
     "some_int_without_default": int,
     "some_int_with_default": int,
+    "random_dict": dict_contains_random_key,
 }
