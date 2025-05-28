@@ -23,6 +23,10 @@ def wrap_response(body, code=200, content_type=None, headers=None, cookies=None)
     if headers:
         response_payload["headers"] = headers
     if cookies:
+        if isinstance(cookies, dict):
+            # if a dict was passed in, format at list
+            cookies = [f"{k}={v};" for k, v in cookies.items()]
+
         response_payload["cookies"] = cookies
 
     logger.info(response_payload)
