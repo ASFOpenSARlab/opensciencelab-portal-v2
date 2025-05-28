@@ -1,10 +1,9 @@
 
 import json
-from copy import deepcopy
 
 from util.exceptions import DbError
-from util.dynamo_db import get_item, create_item, update_item, delete_item, get_all_items
 
+from .dynamo_db import get_item, create_item, update_item, delete_item, get_all_items
 from .defaults import defaults
 from .validator_map import validator_map, validate
 
@@ -76,13 +75,14 @@ class User():
                 super().__setattr__(key, None)
         else:
             super().__setattr__(key, validate(key, value))
+        value = self.__getattribute__(key)
         ## Cast it to a smart list/dict if needed:
         super().__setattr__(
             key,
-            _callback_object_wrapper(self.__getattribute__(key), callback=self._save)
+            _callback_object_wrapper(value, callback=self._save)
         )
         ## Update the DB:
-        update_item(self.username, {key: self.__getattribute__(key)})
+        update_item(self.username, {key: value})
 
     def __str__(self):
         """
@@ -106,8 +106,9 @@ class User():
 if __name__ == "__main__":
     # delete_item("cjshowalter")  # Clean up for testing.
     me = User("cjshowalter")
-    me.access.append("admin")
-    print(type(me.access))
-    print(me)
+    print(me.random_dict)
+    me.random_dict["asdf"] = "fdsa"
+    print(me.random_dict)
+
     print(get_all_items())
 
