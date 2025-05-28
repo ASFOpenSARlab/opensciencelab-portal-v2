@@ -245,7 +245,6 @@ class TestPortalIntegrations:
                 "KBEg4O96Pyyn2k7fcKdl5Lf9OZBITSyKTjGpKPtymDU=": jwk_string,
             },
         )
-        monkeypatch.setattr("util.auth.update_item", update_item)
         event = get_event(path="/portal/profile/joe", cookies={"portal-jwt": OLD_JWT})
         ret = main.lambda_handler(event, lambda_context)
         assert ret["statusCode"] == 302
