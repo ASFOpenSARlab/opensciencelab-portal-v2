@@ -19,7 +19,7 @@ To Access or Modify a User's Attributes:
 access = user.access
 print(access) # ["user"]
 user.access.append("admin") # THIS FAILS! You can't modify direct, reassign it instead:
-user.access = user.access + ["admin"] # This works, since it reassigns the value.
+user.access = list(user.access) + ["admin"] # This works, since it reassigns the value.
 # The new access is saved in the DB too, nothing else to do.
 ```
 
