@@ -8,6 +8,7 @@ from util.auth import PORTAL_USER_COOKIE, COGNITO_JWT_COOKIE
 
 import pytest
 import jwt
+from jwt.algorithms import RSAAlgorithm
 
 BASIC_REQUEST = {
     "rawPath": "/test",
@@ -25,6 +26,39 @@ BAD_JWT = (
     "ibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWUsImlhdCI6MTc0Nzk1OTY4MiwiZXhwIjoxNzQ3OTY"
     "zMjgyLCJ1c2VybmFtZSI6ImJhZF91c2VyIn0.GzmJ_7GBSMSrbt_HwfDE3Rc8X7O_9oTviC1eHWiDrgc"
 )
+
+OLD_JWT = (
+    "eyJraWQiOiJLQkVnNE85NlB5eW4yazdmY0tkbDVMZjlPWkJJVFN5S1RqR3BLUHR5bURVPSIsImFsZyI6"
+    "IlJTMjU2In0.eyJzdWIiOiI3ODExYjM2MC0xMDAxLTcwYTgtMTMxMy03OTE4YmI3ZTRiMTEiLCJpc3Mi"
+    "OiJodHRwczpcL1wvY29nbml0by1pZHAudXMtd2VzdC0yLmFtYXpvbmF3cy5jb21cL3VzLXdlc3QtMl9S"
+    "eTRYRnpaSnEiLCJ2ZXJzaW9uIjoyLCJjbGllbnRfaWQiOiIzNGxwaHQ5MGRhY2xuZHY0M3BhNm8xaWRx"
+    "YyIsIm9yaWdpbl9qdGkiOiI1NzAzNzk4NS1kODUwLTQ1ZjUtOGYwOS1hODY2NTliMjljZmMiLCJldmVu"
+    "dF9pZCI6ImMzOTllNzBmLWQzNjQtNGI5MC1iMWVkLTJiNzY2YmJlZmM5YSIsInRva2VuX3VzZSI6ImFj"
+    "Y2VzcyIsInNjb3BlIjoiYXdzLmNvZ25pdG8uc2lnbmluLnVzZXIuYWRtaW4gcGhvbmUgb3BlbmlkIHBy"
+    "b2ZpbGUgZW1haWwiLCJhdXRoX3RpbWUiOjE3NDcwODk4NzcsImV4cCI6MTc0NzA5MzQ3NywiaWF0Ijox"
+    "NzQ3MDg5ODc3LCJqdGkiOiI2MjFmYzg5Ni1lN2ViLTQ4MjctYjQ2OS04OTYxYzExOTU1ZjgiLCJ1c2Vy"
+    "bmFtZSI6ImJ0YnVlY2hsZXIifQ.PyFIJqkNpji7sebZJ1_XS3oEltzMhywQgSTYZ8l3RLJ9UP6wP-Ki9"
+    "MK3t5XMCnHDGkcks0XXyZawlS5WIjx8k8wl_PBpBcKGRNcLj_loxXcHqvPJnHHEf_nc4YqNfxJ1dnTbt"
+    "W69N-cnhuVaJReUItj5RpojebUyyAyPuT2J9bVM9SsGHKeuk1GPWyR8Xnrsix0lbmELTmfeepIyVJ0zP"
+    "aHEauHCmRvXLR7QPywwQGcqA87_h4mL5CVWqm4Bq1DjM1gRMrcqsiFwWRLbAhtbj7_jsfRYbhtDHDqSb"
+    "buljLV1SI8g3wyODtUuaSsLRPvnkhxcFtzxe15mcSQCP0SPIA"
+)
+
+JWK = {
+    "alg": "RS256",
+    "e": "AQAB",
+    "kid": "KBEg4O96Pyyn2k7fcKdl5Lf9OZBITSyKTjGpKPtymDU=",
+    "kty": "RSA",
+    "n": (
+        "wsYFkKoas_bVKdx3EvOdyQRXu40uZTr6BG11yWkOsZU9rRRK95sLbVhMq7oapK9Og5i5"
+        "IQHCNDh6jyfq92SB44BjkSB2Q4ZsEvOM974yi5vtb42RnCtYsQrhV3iYxc3XbiUrDGon"
+        "jUBdyV3Qsa09LmdI-O_4jSa8jzOLS4dXHrL-DGMklEmbwLM71e_mIiR6O5gutkghC83Y"
+        "IWxSXUo1joBVt7lkd0vB6UKdmc3JuvxH5vhbrXelz3F49Xe0oeaN3UrotVXl0vnXsvtg"
+        "6ftEjtQMi9RQ8c2mk77sjz8mjEUUSmhB6HN6uUh3iBygi8eYbhEBVP6h9vxxg1MGxjiP"
+        "7Q"
+    ),
+    "use": "sig",
+}
 
 
 def validate_jwt(*args, **vargs):
@@ -198,9 +232,27 @@ class TestPortalIntegrations:
     def test_bad_jwt(self, lambda_context: LambdaContext, monkeypatch):
         monkeypatch.setattr("util.auth.get_key_validation", lambda: {"bla": "bla"})
         event = get_event(path="/portal", cookies={"portal-jwt": BAD_JWT})
-        with pytest.raises(jwt.exceptions.InvalidSignatureError) as excinfo:
+        with pytest.raises(jwt.exceptions.InvalidAlgorithmError) as excinfo:
             main.lambda_handler(event, lambda_context)
-        assert str(excinfo.value) == "Signature verification failed"
+        assert str(excinfo.value) == "The specified alg value is not allowed"
+
+    def test_old_jwt(self, lambda_context: LambdaContext, monkeypatch):
+        jwk_string = RSAAlgorithm.from_jwk(json.dumps(JWK))
+
+        monkeypatch.setattr(
+            "util.auth.get_key_validation",
+            lambda: {
+                "KBEg4O96Pyyn2k7fcKdl5Lf9OZBITSyKTjGpKPtymDU=": jwk_string,
+            },
+        )
+        monkeypatch.setattr("util.auth.update_item", update_item)
+        event = get_event(path="/portal/profile/joe", cookies={"portal-jwt": OLD_JWT})
+        ret = main.lambda_handler(event, lambda_context)
+        assert ret["statusCode"] == 302
+        assert ret["body"] == "User is not logged in"
+        assert ret["headers"].get("Location").endswith("?return=/portal/profile/joe")
+        # Make sure we're setting cookies to an empty value
+        assert ret["cookies"][0].find("Expires") != -1
 
     def test_logged_in(self, lambda_context: LambdaContext, fake_auth):
         event = get_event(path="/portal", cookies=fake_auth)
@@ -210,6 +262,19 @@ class TestPortalIntegrations:
         assert ret["body"].find("Welcome to OpenScienceLab") != -1
         assert ret["headers"].get("Location") is None
         assert ret["headers"].get("Content-Type") == "text/html"
+
+    def test_log_out(self, lambda_context: LambdaContext):
+        event = get_event(path="/logout")
+        ret = main.lambda_handler(event, lambda_context)
+        assert ret["statusCode"] == 200
+        # Make sure we've been logged out
+        assert ret["body"].find("You have been logged out") != -1
+        assert ret["body"].find('<span id="login_widget">') != -1
+        # And cookies are being expired
+        assert ret["cookies"][0].find("Expires") != -1
+        assert ret["cookies"][1].find("Expires") != -1
+
+        # login_widget
 
     def test_post_portal_hub_auth(self, lambda_context: LambdaContext, fake_auth):
         event = get_event(path="/portal/hub/auth", method="POST", cookies=fake_auth)
