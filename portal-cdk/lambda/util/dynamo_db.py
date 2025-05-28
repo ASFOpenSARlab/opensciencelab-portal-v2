@@ -2,6 +2,7 @@
 
 import datetime
 import os
+import json
 
 import boto3
 
@@ -10,6 +11,9 @@ _DYNAMO_CLIENT = None
 _DYNAMO_DB = None
 _DYNAMO_TABLE = None
 
+
+# Keys that this module manages, that you don't want the rest of the code messing with.
+RESTRICTED_KEYS = ["username", "created_at", "last_update"]
 
 def _get_dynamo():
     """
@@ -37,15 +41,17 @@ def create_item(username: str, item: dict) -> bool:
     Creates an item in the DB.
     """
     _client, _db, table = _get_dynamo()
+    # "Cast" to a plain dict, so it can be serialized to JSON.
+    item = json.loads(json.dumps(item, default=str))
     ## ID is a reserved keyword for us:
-    for restricted_key in ["username", "created-at", "last-update"]:
+    for restricted_key in RESTRICTED_KEYS:
         if restricted_key in item:
             raise ValueError(f"Can't set '{restricted_key}', that's one we set automatically and WILL get overridden.")
     ## Adding ID here so y ou don't have to remember what the key should be, and
     #  it matches the parameters for the other functions in this file.
     item["username"] = username
-    item["created-at"] = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    item["last-update"] = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    item["created_at"] = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    item["last_update"] = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     table.put_item(Item=item)
     return True
 
@@ -57,6 +63,10 @@ def get_item(username: str) -> dict:
     _client, _db, table = _get_dynamo()
     response = table.get_item(Key={"username": username})
     if "Item" in response:
+        for key in RESTRICTED_KEYS:
+            # Don't return restricted keys, they are for internal use only.
+            if key in response["Item"]:
+                del response["Item"][key]
         return response["Item"]
     return False
 
@@ -83,11 +93,13 @@ def update_item(username: str, updates: dict) -> bool:
     listed will be left alone.
     """
     _client, _db, table = _get_dynamo()
+    # "Cast" to a plain dict, so it can be serialized to JSON.
+    updates = json.loads(json.dumps(updates, default=str))
     ### Fail fast if it doesn't exist, they should call create_item instead:
     if not get_item(username):
         return False
     ### Otherwise craft the boto3 update item call:
-    updates["last-update"] = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    updates["last_update"] = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     # The '#var' is ID for the keys:
     expression_attribute_names = {f"#{alpha(k)}": k for k in updates.keys()}
     # The ':var' is ID for the values:
