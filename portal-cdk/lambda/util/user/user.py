@@ -10,8 +10,8 @@ from .dynamo_db import get_item, create_item, update_item
 from .defaults import defaults
 from .validator_map import validator_map, validate
 
-class User:
 
+class User:
     def __init__(self, username: str):
         ## Using super to avoid setattr validation. 'username'
         #  should NOT be modified like the other attributes.
