@@ -18,8 +18,7 @@ jobs:
 
       - name: Make Coverage File
         run: |
-          cd portal-cdk/lambda/
-          pytest --cov-report xml:/tmp/coverage.xml
+          make test
 
       - name: Archive code coverage results
         uses: actions/upload-artifact@v4
