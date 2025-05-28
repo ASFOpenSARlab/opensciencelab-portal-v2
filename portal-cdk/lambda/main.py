@@ -9,7 +9,12 @@ from util.format import (
     render_template,
 )
 from util.responses import wrap_response
-from util.auth import get_set_cookie_headers, validate_code, process_auth
+from util.auth import (
+    get_set_cookie_headers,
+    validate_code,
+    process_auth,
+    delete_cookies,
+)
 from util.exceptions import GenericFatalError
 from util.session import current_session
 
@@ -46,10 +51,16 @@ def root():
 
 
 @app.get("/logout")
-@portal_template(title="Logged Out", name="logged-out.j2")
 def logout():
-    # TODO: Remove cookies here.
-    return "You have been logged out"
+    return wrap_response(
+        render_template(
+            content="You have been logged out",
+            title="Logged Out",
+            name="logged-out.j2",
+        ),
+        code=200,
+        cookies=delete_cookies(),
+    )
 
 
 @app.get("/register")
