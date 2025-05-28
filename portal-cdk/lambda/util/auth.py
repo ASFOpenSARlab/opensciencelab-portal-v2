@@ -2,7 +2,6 @@ import json
 import os
 
 from util.responses import wrap_response
-from util.dynamo_db import update_item
 from util.exceptions import BadSsoToken
 from util.session import current_session, PortalAuth
 
@@ -248,8 +247,6 @@ def require_access(access="user"):
                 )
 
             logger.info("User %s has %s access", username, access)
-            # not THAT useful, but proof of concept:
-            update_item(username, {"last-access": access})
             # Run the endpoint
             return func(*args, **kwargs)
 

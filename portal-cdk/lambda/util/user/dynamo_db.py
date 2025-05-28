@@ -15,6 +15,7 @@ _DYNAMO_TABLE = None
 # Keys that this module manages, that you don't want the rest of the code messing with.
 RESTRICTED_KEYS = ["username", "created_at", "last_update"]
 
+
 def _get_dynamo():
     """
     Lazy load all DynamoDB stuff since it takes forever the first time.
@@ -46,7 +47,9 @@ def create_item(username: str, item: dict) -> bool:
     ## ID is a reserved keyword for us:
     for restricted_key in RESTRICTED_KEYS:
         if restricted_key in item:
-            raise ValueError(f"Can't set '{restricted_key}', that's one we set automatically and WILL get overridden.")
+            raise ValueError(
+                f"Can't set '{restricted_key}', that's one we set automatically and WILL get overridden."
+            )
     ## Adding ID here so y ou don't have to remember what the key should be, and
     #  it matches the parameters for the other functions in this file.
     item["username"] = username

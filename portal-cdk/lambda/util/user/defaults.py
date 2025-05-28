@@ -1,3 +1,4 @@
+"""To assign any default values for attributes in validator_map."""
 
 defaults = {
     "access": ["user"],

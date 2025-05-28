@@ -35,6 +35,7 @@ class BadSsoToken(GenericFatalError):
 
     pass  # pylint: disable=unnecessary-pass
 
+
 class DbError(GenericFatalError):
     """
     Raised if there is a problem with the DB.

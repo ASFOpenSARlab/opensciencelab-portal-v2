@@ -1,3 +1,4 @@
+"""User Class to abstract the rest of the code using the database."""
 
 import json
 
@@ -9,8 +10,7 @@ from .dynamo_db import get_item, create_item, update_item
 from .defaults import defaults
 from .validator_map import validator_map, validate
 
-
-class User():
+class User:
 
     def __init__(self, username: str):
         ## Using super to avoid setattr validation. 'username'
@@ -55,15 +55,15 @@ class User():
         update_item(self.username, {key: value})
 
     def __str__(self):
-        """ What to display if you print this object."""
+        """What to display if you print this object."""
         return json.dumps(dict(self), indent=4, default=str)
 
     def __iter__(self):
-        """ Used when casting to a dict, what keys to show."""
+        """Used when casting to a dict, what keys to show."""
         for key in validator_map:
             yield key, self.__getattribute__(key)
 
     def is_default(self, key, value) -> bool:
-        """ Returns if the value is the default for the key."""
+        """Returns if the value is the default for the key."""
         default_val = defaults.get(key, None)
         return value == default_val
