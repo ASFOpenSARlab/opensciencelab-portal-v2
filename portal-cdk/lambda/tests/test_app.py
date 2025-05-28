@@ -316,3 +316,82 @@ class TestPortalAuth:
         with pytest.raises(BadSsoToken) as excinfo:
             encrypt_data("blablabla")
         assert str(excinfo.value).find("change the SSO Secret") != -1
+
+class TestUserClass:
+    def test_username(self, lambda_context: LambdaContext):
+        from util.user.user import User
+        from util.user.dynamo_db import delete_item
+        from util.exceptions import DbError
+
+        # Username attr exists:
+        username = "test_user"
+        delete_item(username)
+        user = User(username)
+        assert user.username == "test_user"
+
+        # And you can't change it:
+        with pytest.raises(DbError) as excinfo:
+            user.username = "new_name"
+        assert f"Key 'username' not in validator_map for user {user.username}" in str(excinfo.value)
+        delete_item(user.username)
+
+    def test_is_default(self, lambda_context: LambdaContext):
+        # Test this early, so we can use it in future tests
+        from util.user.user import User
+        from util.user.dynamo_db import delete_item
+
+        username = "test_user"
+        delete_item(username)
+        user = User(username)
+        assert user.is_default("access", None) is False, "Access is not None"
+        assert user.is_default("access", []) is False, "Access is not empty list"
+        assert user.is_default("access", ["user"]) is True, "Access defaults to just 'user'"
+        delete_item(user.username)
+
+    def test_defaults_applied(self, lambda_context: LambdaContext):
+        from util.user.user import User
+        from util.user.dynamo_db import delete_item
+        from util.user.validator_map import validator_map
+        from util.user.defaults import defaults
+        from frozendict import deepfreeze
+
+        username = "test_user"
+        delete_item(username)
+        user = User(username)
+
+        for attr in validator_map:
+            if attr in defaults:
+                # Deepfreeze modifies the value, so we need to compare it:
+                assert getattr(user, attr) == deepfreeze(defaults[attr]), f"Default for '{attr}' should be applied"
+            else:
+                assert getattr(user, attr) is None, f"User should have attribute '{attr}' set to None"
+
+        delete_item(user.username)
+
+    def test_cant_append_list(self, lambda_context: LambdaContext):
+        from util.user.user import User
+        from util.user.dynamo_db import delete_item
+
+        username = "test_user"
+        delete_item(username)
+        user = User(username)
+
+        # Access is a list, so it should be frozen:
+        with pytest.raises(AttributeError) as excinfo:
+            user.access.append("admin")
+        assert "'tuple' object has no attribute 'append'" in str(excinfo.value)
+        delete_item(user.username)
+
+    def test_can_modify_list(self, lambda_context: LambdaContext):
+        from util.user.user import User
+        from util.user.dynamo_db import delete_item
+
+        username = "test_user"
+        delete_item(username)
+        user = User(username)
+
+        # Access is a list, so we can modify it:
+        assert list(user.access) == ["user"], "Base list is not just 'user'"
+        user.access = list(user.access) + ["admin"]
+        assert list(user.access) == ["user", "admin"], "Access should now contain 'admin'"
+        delete_item(user.username)
