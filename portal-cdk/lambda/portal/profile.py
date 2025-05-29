@@ -56,7 +56,7 @@ def profile_user(user):
         "input": {
             "username": user,
             "default_value": "Choose...",
-            "warning_missing": "value is missing",
+            "warning_missing": "Value is missing",
         },
     }
 
@@ -86,10 +86,12 @@ def validate_profile_dict(query_dict: dict) -> tuple[bool, dict[str, str]]:
     correct = True
     errors = {}
     
+    # Country Errors
     if query_dict["country_of_residence"] == "default":
         correct = False
         errors["country_of_residence_error"] = "missing"
-        
+    
+    # NASA relation Errors
     if query_dict["nasa_affiliated_email"] == "default":
         correct = False
         errors["nasa_affiliated_email_error"] = "missing"
@@ -103,6 +105,7 @@ def validate_profile_dict(query_dict: dict) -> tuple[bool, dict[str, str]]:
         correct = False
         errors["pi_affliated_with_nasa_research_email_error"] = "missing"
         
+    # US GOV relation Errors
     if query_dict["us_gov_research_affiliated_email"] == "default":
         correct = False
         errors["us_gov_research_affiliated_email_error"] = "missing"
@@ -110,6 +113,7 @@ def validate_profile_dict(query_dict: dict) -> tuple[bool, dict[str, str]]:
         correct = False
         errors["user_affliated_with_gov_research_email_error"] = "missing"
         
+    # ISRO relation Errors
     if query_dict["is_affliated_with_isro_research"] == "default":
         correct = False
         errors["is_affliated_with_isro_research_error"] = "missing"
@@ -117,6 +121,7 @@ def validate_profile_dict(query_dict: dict) -> tuple[bool, dict[str, str]]:
         correct = False
         errors["user_affliated_with_isro_research_email_error"] = "missing"
         
+    # University relation Errors
     if query_dict["is_affliated_with_university"] == "default":
         correct = False
         errors["is_affliated_with_university_error"] = "missing"
@@ -171,6 +176,7 @@ def profile_user_filled(user):
     body = profile_router.current_event.body
     success, query_dict = process_profile_form(body)
 
+    # Redirect based on if the form was successfully parsed
     if success:
         # query_dict must be profile values at this point
         # Update user profile
@@ -184,7 +190,7 @@ def profile_user_filled(user):
             headers={"Location": next_url},
         )
     
-    # query_dict must be errors and descriptions at this point
+    # query_dict must be form data and errors at this point
     query_string = urlencode(query_dict)
     # Send the user back to the profile page
     next_url = f"/portal/profile/{user}?{query_string}"
