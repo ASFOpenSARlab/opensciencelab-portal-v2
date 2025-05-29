@@ -49,7 +49,7 @@ def profile_bob():
 
 @profile_router.get("/<user>")
 @require_access()
-@portal_template(profile_router, name="profile.j2")
+@portal_template(name="profile.j2")
 def profile_user(user):
     page_dict = {
         "content": f"Profile for user {user}",
