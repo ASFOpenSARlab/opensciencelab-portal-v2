@@ -8,9 +8,16 @@ from util.format import (
     request_context_string,
     render_template,
 )
-from util.responses import basic_html, wrap_response
-from util.auth import get_set_cookie_headers, validate_code, process_auth
+from util.responses import wrap_response
+from util.auth import (
+    get_set_cookie_headers,
+    validate_code,
+    process_auth,
+    delete_cookies,
+)
 from util.exceptions import GenericFatalError
+from util.session import current_session
+
 from static import get_static_object
 
 from aws_lambda_powertools import Logger
@@ -35,40 +42,29 @@ app = APIGatewayHttpResolver()
 # Add portal routes
 for prefix, router in routes.items():
     app.include_router(router, prefix=prefix)
-    router.app = app
 
 
 @app.get("/")
-@portal_template(app, title="OpenScience", name="logged-out.j2")
+@portal_template(title="OpenScience", name="logged-out.j2")
 def root():
     return "Welcome to OpenScienceLab"
 
 
-@app.get("/login")
-@portal_template(app, title="Please Log In", name="logged-out.j2")
-def login():
-    return "Add login form here."
-
-
 @app.get("/logout")
-@portal_template(app, title="Logged Out", name="logged-out.j2")
 def logout():
-    # TODO: Remove cookies here.
-    return "You have been logged out"
-
-
-@app.get("/test")
-@basic_html(code=200)
-@portal_template(app, name="logged-out.j2", response=None)
-def test():
-    # Another way to use basic_html & portal_template
-    return """
-    <h3>This is a test html</h3>
-    """
+    return wrap_response(
+        render_template(
+            content="You have been logged out",
+            title="Logged Out",
+            name="logged-out.j2",
+        ),
+        code=200,
+        cookies=delete_cookies(),
+    )
 
 
 @app.get("/register")
-@portal_template(app, title="Register New User", name="logged-out.j2")
+@portal_template(title="Register New User", name="logged-out.j2")
 def register():
     return "Register a new user here"
 
@@ -77,9 +73,7 @@ def register():
 def auth_code():
     code = app.current_event.query_string_parameters.get("code")
     if not code:
-        return wrap_response(
-            render_template(app, content="No return Code found."), code=401
-        )
+        return wrap_response(render_template(content="No return Code found."), code=401)
 
     # FIXME: inbound_host must match the origin of initial cognito login request.
     #        This value needs to be more dynamically detected. Right now, the CF
@@ -89,7 +83,7 @@ def auth_code():
     token_payload = validate_code(code, inbound_host)
     if not token_payload:
         return wrap_response(
-            render_template(app, content="Could not complete token exchange"), code=401
+            render_template(content="Could not complete token exchange"), code=401
         )
 
     set_cookie_headers = get_set_cookie_headers(token_payload)
@@ -97,7 +91,7 @@ def auth_code():
 
     # Send the newly logged in user to the Portal
     return wrap_response(
-        render_template(app, content=f"Redirecting to {state}"),
+        render_template(content=f"Redirecting to {state}"),
         code=302,
         cookies=set_cookie_headers,
         headers={"Location": state},
@@ -116,7 +110,7 @@ def static():
 
 
 @app.not_found
-@portal_template(app, title="Request Not Found", name="logged-out.j2", response=404)
+@portal_template(title="Request Not Found", name="logged-out.j2", response=404)
 def handle_not_found(error):
     body = f"""
     <h3>Not Found: '{app.current_event.request_context.http.path}'<h3>
@@ -130,7 +124,7 @@ def handle_not_found(error):
 @app.exception_handler(GenericFatalError)
 def handle_generic_fatal_error(exception):
     return wrap_response(
-        render_template(app, content=exception.message),
+        render_template(content=exception.message),
         code=exception.error_code,
     )
 
@@ -144,4 +138,5 @@ def handle_generic_fatal_error(exception):
 )
 @process_auth
 def lambda_handler(event, context):
+    current_session.app = app  # Pass app into downstream functions
     return app.resolve(event, context)

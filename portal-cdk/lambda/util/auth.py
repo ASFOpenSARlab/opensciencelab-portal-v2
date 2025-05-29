@@ -1,9 +1,11 @@
 import json
 import os
+import datetime
 
 from util.responses import wrap_response
 from util.dynamo_db import update_item
 from util.exceptions import BadSsoToken
+from util.session import current_session, PortalAuth
 
 import requests
 import jwt
@@ -74,14 +76,6 @@ def decrypt_data(data):
     return encryptedjwt.decrypt(data, sso_token=sso_token)
 
 
-def get_user_from_event(app):
-    raw_event = app.current_event.raw_event
-    if "requestContext" in raw_event:
-        if "cognito_username" in raw_event["requestContext"]:
-            return raw_event["requestContext"]["cognito_username"]
-    return None
-
-
 def get_key_validation():
     global JWT_VALIDATION
 
@@ -105,15 +99,16 @@ def get_param_from_jwt(jwt_cookie, param_name="username"):
 
 def validate_jwt(jwt_cookie):
     jwt_validation = get_key_validation()
-    alg = jwt.get_unverified_header(jwt_cookie)["alg"]
-    kid = jwt.get_unverified_header(jwt_cookie)["kid"]
-    key = jwt_validation[kid]
 
     try:
-        return jwt.decode(jwt_cookie, key, algorithms=[alg])
+        kid = jwt.get_unverified_header(jwt_cookie)["kid"]
+        key = jwt_validation[kid]
+        return jwt.decode(jwt_cookie, key, algorithms=["RS256"])
     except jwt.exceptions.ExpiredSignatureError:
         username = get_param_from_jwt(jwt_cookie, "username")
         logger.warning(f"Expired Token for user '{username}'")
+    except (jwt.exceptions.InvalidSignatureError, jwt.exceptions.DecodeError):
+        logger.warning("Invalid JWT Token")
 
     return False
 
@@ -174,6 +169,10 @@ def get_set_cookie_headers(token):
     ### id_token can be decoded with "aud":COGNITO_CLIENT_ID
     # id_token_decoded = validate_jwt(id_token_jwt)
 
+    # make sure the JWT validated
+    if not access_token_decoded:
+        return []
+
     cookie_headers = []
 
     # Grab the username from access_token JWT, and encode it
@@ -204,27 +203,44 @@ def get_cookies_from_event(event):
     return cookies
 
 
+def delete_cookies():
+    past_date = datetime.datetime.utcnow() - datetime.timedelta(days=1)
+    expires_str = past_date.strftime("%a, %d %b %Y %H:%M:%S GMT")
+    cookies = []
+    for cookie in [PORTAL_USER_COOKIE, COGNITO_JWT_COOKIE]:
+        cookies.append(f"{cookie}=; Expires={expires_str};")
+
+    return cookies
+
+
 @lambda_handler_decorator
 def process_auth(handler, event, context):
     # Cookies we care about:
     cookies = get_cookies_from_event(event)
+    current_session.auth = PortalAuth()
 
     if cookies.get(PORTAL_USER_COOKIE):
-        event["requestContext"]["portal_username_cookie"] = cookies.get(
-            PORTAL_USER_COOKIE
-        )
+        portal_username_cookie = cookies.get(PORTAL_USER_COOKIE)
+        current_session.auth.portal_username.raw = portal_username_cookie
+    else:
+        logger.debug(f"No {PORTAL_USER_COOKIE} cookie provided")
 
     if cookies.get(COGNITO_JWT_COOKIE):
         jwt_cookie = cookies.get(COGNITO_JWT_COOKIE)
-        jwt_username = get_param_from_jwt(jwt_cookie, "username")
-        event["requestContext"]["cognito_jwt_cookie"] = jwt_cookie
-        event["requestContext"]["cognito_username"] = jwt_username
-        logger.debug("JWT Username is %s", jwt_username)
+        current_session.auth.cognito.raw = jwt_cookie
 
         validated_jwt = validate_jwt(jwt_cookie)
         logger.debug({"jwt_cookie_payload": validated_jwt})
+
         if validated_jwt:
-            event["requestContext"]["cognito_validated"] = validated_jwt
+            jwt_username = validated_jwt["username"]
+            logger.debug("JWT Username is %s", jwt_username)
+            current_session.auth.cognito.decoded = validated_jwt
+            current_session.auth.cognito.username = jwt_username
+            current_session.auth.cognito.valid = True
+
+    else:
+        logger.debug(f"No {COGNITO_JWT_COOKIE} cookie provided")
 
     # process the actual request
     return handler(event, context)
@@ -234,18 +250,27 @@ def require_access(access="user"):
     def inner(func):
         def wrapper(*args, **kwargs):
             # app is pulled in from outer scope via a function attribute
-            app = require_access.router.app  # pylint: disable=no-member
 
             # Check for cookie auth
-            username = get_user_from_event(app)
+            username = current_session.auth.cognito.username
 
             if not username:
-                return_path = app.current_event.request_context.http.path
+                return_path = (
+                    current_session.app.current_event.request_context.http.path
+                )
+
+                # If a jwt cookie was provided, it must be bad, destroy it
+                if current_session.auth.cognito.raw:
+                    cookies = delete_cookies()
+                    logger.info(f"Deleting bad cookies: {cookies=}")
+                else:
+                    cookies = []
 
                 return wrap_response(
                     body="User is not logged in",
                     code=302,
                     headers={"Location": f"/?return={return_path}"},
+                    cookies=cookies,
                 )
 
             logger.info("User %s has %s access", username, access)
