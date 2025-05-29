@@ -60,9 +60,8 @@ NAV_BAR_OPTIONS = [
 
 
 def render_template(
-    app, content, input=None, name=None, title="OSL Portal", username=None
+    content, input=None, name=None, title="OSL Portal", username=None
 ):
-    # App will be used later to generate template input
 
     # Check for a logged-out return path
     current_event = current_session.app.current_event
@@ -102,7 +101,6 @@ def portal_template(name=None, title=None, response=200):
                 "input": {},
                 "name": name,
                 "title": title,
-                "username": username,
             }
 
             # Get page info from function
@@ -116,9 +114,7 @@ def portal_template(name=None, title=None, response=200):
                 page_dict.update(content)
 
             # Render page
-            body = render_template(app, **page_dict)
-            #     app, name=name, content=page_components["contents"], input=page_components["input"], title=title, username=username
-            # )
+            body = render_template(**page_dict)
 
             if response:
                 # If we received basic_response_code, return a basic_html response
