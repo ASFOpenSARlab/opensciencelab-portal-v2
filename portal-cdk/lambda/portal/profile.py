@@ -1,7 +1,8 @@
 from util.format import (
     portal_template,
 )
-from util.auth import require_access, get_user_from_event
+from util.auth import require_access
+from util.session import current_session
 from util.dynamo_db import update_item, get_item
 from util.responses import wrap_response
 from pathlib import Path
@@ -27,7 +28,7 @@ profile_route = {
 # This catches "/portal/profile", but "/portal/profile" is uncatchable
 @profile_router.get("")
 @require_access()
-@portal_template(profile_router)
+@portal_template()
 def profile_root():
     page_components = {"input": {}, "content": "Profile Base 1"}
     return page_components
@@ -35,10 +36,10 @@ def profile_root():
 
 @profile_router.get("/bob")
 @require_access()
-@portal_template(profile_router)
+@portal_template()
 def profile_bob():
     page_components = {"input": {}, "content": "Profile Bob"}
-    username = get_user_from_event(profile_router)
+    username = current_session.auth.cognito.username
     if username != "bob":
         page_components["contents"] = "You are <b>NOT</b> Bob!"
         return "You are <b>NOT</b> Bob!"

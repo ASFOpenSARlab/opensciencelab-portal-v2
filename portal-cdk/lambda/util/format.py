@@ -1,8 +1,10 @@
 import json
+import os
 import ast
 
 from util.responses import wrap_response
-from util.auth import LOGIN_URL, LOGOUT_URL, get_user_from_event
+from util.session import current_session
+from util.auth import LOGIN_URL, LOGOUT_URL
 
 from jinja2 import Environment, FileSystemLoader, StrictUndefined, select_autoescape
 
@@ -10,8 +12,12 @@ from aws_lambda_powertools import Logger
 
 logger = Logger(child=True)
 
+# Get current file location template loading
+absolute_path = os.path.abspath(__file__)
+current_directory = os.path.dirname(absolute_path)
+
 ENV = Environment(
-    loader=FileSystemLoader("./templates/"),
+    loader=FileSystemLoader(f"{current_directory}/../templates/"),
     autoescape=select_autoescape(),
     undefined=StrictUndefined,
     trim_blocks=True,
@@ -59,14 +65,14 @@ def render_template(
     # App will be used later to generate template input
 
     # Check for a logged-out return path
-    return_path = app.current_event.query_string_parameters.get("return", None)
+    current_event = current_session.app.current_event
+    return_path = current_event.query_string_parameters.get("return", None)
     logger.debug("return param is %s", return_path)
 
     if not name:
         name = "main.j2"
 
-    if not username:
-        username = get_user_from_event(app)
+    username = current_session.auth.cognito.username
 
     # Create input dict for jinja formatting
     template_input = {
@@ -86,8 +92,7 @@ def render_template(
     return template.render(**template_input)
 
 
-def portal_template(app, name=None, title=None, username=None, response=200):
-    # username will eventually come from app
+def portal_template(name=None, title=None, response=200):
     # I don't love response here
     def inner(func):
         def wrapper(*args, **kwargs):
@@ -127,6 +132,6 @@ def portal_template(app, name=None, title=None, username=None, response=200):
 
 
 def request_context_string(app):
-    context_string = f"{app.current_event.request_context}"
+    context_string = f"{current_session.app.current_event.request_context}"
     context_ojb = ast.literal_eval(context_string)
     return json.dumps(context_ojb, indent=4, default=str)
