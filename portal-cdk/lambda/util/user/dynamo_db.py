@@ -21,10 +21,11 @@ def _get_dynamo():
     Lazy load all DynamoDB stuff since it takes forever the first time.
     """
     global _DYNAMO_CLIENT, _DYNAMO_DB, _DYNAMO_TABLE  # pylint: disable=global-statement
+    region = os.getenv("STACK_REGION", "us-west-2")
     if not _DYNAMO_CLIENT:
-        _DYNAMO_CLIENT = boto3.client("dynamodb")
+        _DYNAMO_CLIENT = boto3.client("dynamodb", region_name=region)
     if not _DYNAMO_DB:
-        _DYNAMO_DB = boto3.resource("dynamodb")
+        _DYNAMO_DB = boto3.resource("dynamodb", region_name=region)
     if not _DYNAMO_TABLE:
         _DYNAMO_TABLE = _DYNAMO_DB.Table(os.getenv("DYNAMO_TABLE_NAME"))
     return _DYNAMO_CLIENT, _DYNAMO_DB, _DYNAMO_TABLE
@@ -44,14 +45,11 @@ def create_item(username: str, item: dict) -> bool:
     _client, _db, table = _get_dynamo()
     # "Cast" to a plain dict, so it can be serialized to JSON.
     item = json.loads(json.dumps(item, default=str))
-    ## ID is a reserved keyword for us:
     for restricted_key in RESTRICTED_KEYS:
         if restricted_key in item:
             raise ValueError(
                 f"Can't set '{restricted_key}', that's one we set automatically and WILL get overridden."
             )
-    ## Adding ID here so y ou don't have to remember what the key should be, and
-    #  it matches the parameters for the other functions in this file.
     item["username"] = username
     item["created_at"] = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     item["last_update"] = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
