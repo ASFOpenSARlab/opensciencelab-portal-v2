@@ -142,7 +142,6 @@ test: install-reqs bundle-deps
 # 	export DYNAMO_TABLE_NAME=$(aws cloudformation --region=${AWS_REGION} describe-stacks --stack-name="PortalCdkStack-${DEPLOY_PREFIX}" --query 'Stacks[0].Outputs[?OutputKey==`DynamoTableName`].OutputValue' --output text) && \
 # 	export DYNAMO_TABLE_NAME=$(aws cloudformation --region=${AWS_REGION} describe-stacks --stack-name="PortalCdkStack-${DEPLOY_PREFIX}" --query "Stacks[?StackName=='PortalCdkStack-${DEPLOY_PREFIX}'][].Outputs[?OutputKey=='DynamoTableName'].OutputValue" --output text) && \
 
-
 .PHONY := synth-portal
 synth-portal: install-reqs bundle-deps
 	@echo "Synthesizing ${DEPLOY_PREFIX}/portal-cdk"
