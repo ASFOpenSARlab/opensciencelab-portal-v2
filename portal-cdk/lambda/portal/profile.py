@@ -92,24 +92,24 @@ def validate_profile_dict(query_dict: dict) -> tuple[bool, dict[str, str]]:
         errors["country_of_residence_error"] = "missing"
     
     # NASA relation Errors
-    if query_dict["nasa_affiliated_email"] == "default":
+    if query_dict["is_affiliated_with_nasa"] == "default":
         correct = False
-        errors["nasa_affiliated_email_error"] = "missing"
-    if query_dict["nasa_affiliated_email"] == "yes" and query_dict["user_or_pi_nasa_email"] == "default":
+        errors["is_affiliated_with_nasa_error"] = "missing"
+    if query_dict["is_affiliated_with_nasa"] == "yes" and query_dict["user_or_pi_nasa_email"] == "default":
         correct = False
         errors["user_or_pi_nasa_email_error"] = "missing"
-    if query_dict["nasa_affiliated_email"] == "yes" and query_dict["user_or_pi_nasa_email"] == "yes" and query_dict["user_affliated_with_nasa_research_email"] == "":
+    if query_dict["is_affiliated_with_nasa"] == "yes" and query_dict["user_or_pi_nasa_email"] == "yes" and query_dict["user_affliated_with_nasa_research_email"] == "":
         correct = False
         errors["user_affliated_with_nasa_research_email_error"] = "missing"
-    if query_dict["nasa_affiliated_email"] == "yes" and query_dict["user_or_pi_nasa_email"] == "no" and query_dict["pi_affliated_with_nasa_research_email"] == "":
+    if query_dict["is_affiliated_with_nasa"] == "yes" and query_dict["user_or_pi_nasa_email"] == "no" and query_dict["pi_affliated_with_nasa_research_email"] == "":
         correct = False
         errors["pi_affliated_with_nasa_research_email_error"] = "missing"
         
     # US GOV relation Errors
-    if query_dict["us_gov_research_affiliated_email"] == "default":
+    if query_dict["is_affiliated_with_us_gov_research"] == "default":
         correct = False
-        errors["us_gov_research_affiliated_email_error"] = "missing"
-    if query_dict["us_gov_research_affiliated_email"] == "yes" and query_dict["user_affliated_with_gov_research_email"] == "":
+        errors["is_affiliated_with_us_gov_research_error"] = "missing"
+    if query_dict["is_affiliated_with_us_gov_research"] == "yes" and query_dict["user_affliated_with_gov_research_email"] == "":
         correct = False
         errors["user_affliated_with_gov_research_email_error"] = "missing"
         
@@ -143,6 +143,7 @@ def process_profile_form(request_body: str) -> tuple[bool, dict[str, Any]]:
     query_dict: dict[str, Any] = {
         k.decode("utf-8"): v[0].decode("utf-8") for k, v in parsed_qs.items()
     }
+    
 
     # Validate Form
     correct, errors = validate_profile_dict(query_dict)
