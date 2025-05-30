@@ -135,7 +135,7 @@ test: install-reqs bundle-deps
 	pip install -r portal-cdk/requirements-dev.txt && \
 	pip install -r portal-cdk/lambda/requirements.txt && \
 	export DYNAMO_TABLE_NAME=$(aws cloudformation --region=${AWS_REGION} describe-stacks --stack-name="PortalCdkStack-${DEPLOY_PREFIX}" --query 'Stacks[0].Outputs[?OutputKey==`DynamoTableName`].OutputValue' --output text) && \
-	echo "DynamoDB Table Name: ${DYNAMO_TABLE_NAME}" && \
+	echo "DynamoDB Table Name: ${DYNAMO_TABLE_NAME}" && echo "${AWS_REGION}" && echo ${DEPLOY_PREFIX} && \
 	cd ./portal-cdk && pytest -v && \
 	cd ./lambda && pytest --cov=. --cov-report xml:/tmp/coverage.xml
 
