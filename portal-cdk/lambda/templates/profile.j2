@@ -96,10 +96,10 @@
                                 <div class=" horizontal-div">
                                     <label>What is your NASA email address?</label>
                                     <input id="user_affliated_with_nasa_research_email"
-                                        name="user_affliated_with_nasa_research_email"
-                                        type="email"
-                                        value="{% if profile is defined %}{{ profile['user_affliated_with_nasa_research_email'] }}{% endif %}"
-                                        placeholder="example@nasa.gov">
+                                           name="user_affliated_with_nasa_research_email"
+                                           type="email"
+                                           value="{% if profile is defined %}{{ profile['user_affliated_with_nasa_research_email'] }}{% endif %}"
+                                           placeholder="example@nasa.gov">
                                     {% if profile is defined and profile["user_affliated_with_nasa_research_email_error"] is defined and profile["user_affliated_with_nasa_research_email_error"] == "missing" %}
                                         <p class="warning">{{ warning_missing }}</p>
                                     {% endif %}
@@ -110,10 +110,10 @@
                                 <div class=" horizontal-div">
                                     <label>What is the email address of the NASA project&rsquo;s PI?</label>
                                     <input id="pi_affliated_with_nasa_research_email"
-                                        name="pi_affliated_with_nasa_research_email"
-                                        type="email"
-                                        value="{% if profile is defined %}{{ profile['pi_affliated_with_nasa_research_email'] }}{% endif %}"
-                                        placeholder="example@nasa.gov">
+                                           name="pi_affliated_with_nasa_research_email"
+                                           type="email"
+                                           value="{% if profile is defined %}{{ profile['pi_affliated_with_nasa_research_email'] }}{% endif %}"
+                                           placeholder="example@nasa.gov">
                                     {% if profile is defined and profile["pi_affliated_with_nasa_research_email_error"] is defined and profile["pi_affliated_with_nasa_research_email_error"] == "missing" %}
                                         <p class="warning">{{ warning_missing }}</p>
                                     {% endif %}
@@ -151,10 +151,10 @@
                             <div class=" horizontal-div">
                                 <label>What is your official US government email address?</label>
                                 <input id="user_affliated_with_gov_research_email"
-                                    name="user_affliated_with_gov_research_email"
-                                    type="email"
-                                    value="{% if profile is defined %}{{ profile['user_affliated_with_gov_research_email'] }}{% endif %}"
-                                    placeholder="example@example.com">
+                                       name="user_affliated_with_gov_research_email"
+                                       type="email"
+                                       value="{% if profile is defined %}{{ profile['user_affliated_with_gov_research_email'] }}{% endif %}"
+                                       placeholder="example@example.com">
                                 {% if profile is defined and profile["user_affliated_with_gov_research_email_error"] is defined and profile["user_affliated_with_gov_research_email_error"] == "missing" %}
                                     <p class="warning">{{ warning_missing }}</p>
                                 {% endif %}
@@ -191,10 +191,10 @@
                             <div class=" horizontal-div">
                                 <label>What is your ISRO email address, or the ISRO email address of the project PI?</label>
                                 <input id="user_affliated_with_isro_research_email"
-                                    name="user_affliated_with_isro_research_email"
-                                    type="email"
-                                    value="{% if profile is defined %}{{ profile['user_affliated_with_isro_research_email'] }}{% endif %}"
-                                    placeholder="example@example.com">
+                                       name="user_affliated_with_isro_research_email"
+                                       type="email"
+                                       value="{% if profile is defined %}{{ profile['user_affliated_with_isro_research_email'] }}{% endif %}"
+                                       placeholder="example@example.com">
                                 {% if profile is defined and profile["user_affliated_with_isro_research_email_error"] is defined and profile["user_affliated_with_isro_research_email_error"] == "missing" %}
                                     <p class="warning">{{ warning_missing }}</p>
                                 {% endif %}
