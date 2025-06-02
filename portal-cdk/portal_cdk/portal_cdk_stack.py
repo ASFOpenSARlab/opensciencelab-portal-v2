@@ -87,7 +87,6 @@ class PortalCdkStack(Stack):
         lambda_dynamo.lambda_function.add_environment(
             "DYNAMO_TABLE_NAME", lambda_dynamo.dynamo_table.table_name
         )
-        CfnOutput(self, "DynamoTableName", value=lambda_dynamo.dynamo_table.table_name)
 
         ### Integration is after the request is validated:
         # https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_apigatewayv2_integrations.HttpLambdaIntegration.html
