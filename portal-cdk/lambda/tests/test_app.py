@@ -333,6 +333,7 @@ class TestPortalAuth:
 
 
 class TestProfilePages:
+    # Ensure profile page is not reachable if not logged in
     def test_profile_logged_out(self, lambda_context: LambdaContext):
         event = get_event(path="/portal/profile/test_user")
         ret = main.lambda_handler(event, lambda_context)
@@ -342,6 +343,7 @@ class TestProfilePages:
         assert ret["headers"].get("Location").endswith("?return=/portal/profile/test_user")
         assert ret["headers"].get("Content-Type") == "text/html"
     
+    # Ensure page loads if logged in
     def test_profile_logged_in(self, lambda_context: LambdaContext, monkeypatch, fake_auth):
         def get_item(*args, **vargs):
             return False
@@ -354,6 +356,7 @@ class TestProfilePages:
         assert ret["body"].find("<!DOCTYPE html>") != -1
         assert ret["headers"].get("Content-Type") == "text/html"
     
+    # Test query params trigger missing value and autofill values correctly
     def test_profile_query_params(self, lambda_context: LambdaContext, monkeypatch, fake_auth):
         def get_item(*args, **vargs):
             return False
@@ -374,8 +377,8 @@ class TestProfilePages:
             "user_affliated_with_gov_research_email":"",
             "is_affliated_with_isro_research":"default",
             "user_affliated_with_isro_research_email":"",
-            "is_affliated_with_university":"default",
-            "faculty_member_affliated_with_university":False,
+            "is_affliated_with_university":"yes",
+            "faculty_member_affliated_with_university":True,
             "research_member_affliated_with_university":False,
             "graduate_student_affliated_with_university":False,
         }
@@ -385,8 +388,11 @@ class TestProfilePages:
         
         assert ret["statusCode"] == 200
         assert ret["body"].find("<p class=\"warning\">Value is missing</p>") != -1
+        assert ret["body"].find("data-id-to-show=\"university_affiliations\"\nselected") != -1
+        assert ret["body"].find("name=\"faculty_member_affliated_with_university\"\nchecked") != -1
         assert ret["headers"].get("Content-Type") == "text/html"
-        
+    
+    # Test profile autofills from existing profile correctly
     def test_profile_loading(self, lambda_context: LambdaContext, monkeypatch, fake_auth):
         def get_item(*args, **vargs):
             return {"profile": {
@@ -428,7 +434,8 @@ class TestProfilePages:
         assert ret["body"].find("value=\"grabulon@gooble.com\"") != -1
         assert ret["body"].find("data-id-to-show=\"university_affiliations\"\nselected") != -1
         assert ret["body"].find("name=\"faculty_member_affliated_with_university\"\nchecked") != -1
-        
+    
+    # Ensure the profile dict is properly validated
     def test_validate_profile_dict(self):
         ## No fields filled
         profile_dict = {
@@ -555,7 +562,8 @@ class TestProfilePages:
         expected_errors = {}
         assert correct
         assert errors == expected_errors
-        
+    
+    # Ensure profile form is converted to a python dict correctly
     def test_process_profile_form(self, monkeypatch):
         ## Correct Filling
         def validate_profile_true(query_dict:dict) -> tuple[bool, dict[str, str]]:
@@ -603,7 +611,8 @@ class TestProfilePages:
             }
         assert not success
         assert query_dict == expected_dict
-        
+    
+    # Ensure that incorrect profile fillings redirect to profile page, correct filling redirect to portal
     def test_profile_user_filled(self, monkeypatch, lambda_context: LambdaContext, fake_auth):
         user="test_user"
         monkeypatch.setattr("portal.profile.update_item", update_item)
