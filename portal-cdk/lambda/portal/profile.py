@@ -144,7 +144,6 @@ def process_profile_form(request_body: str) -> tuple[bool, dict[str, Any]]:
         k.decode("utf-8"): v[0].decode("utf-8") for k, v in parsed_qs.items()
     }
     
-
     # Validate Form
     correct, errors = validate_profile_dict(query_dict)
 
