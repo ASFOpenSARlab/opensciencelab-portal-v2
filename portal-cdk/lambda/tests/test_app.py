@@ -325,34 +325,6 @@ class TestPortalAuth:
             encrypt_data("blablabla")
         assert str(excinfo.value).find("change the SSO Secret") != -1
 
-# @pytest.fixture()
-# def mock_db():
-#     from util.user.user import User
-#     from util.user.dynamo_db import delete_item
-#     from util.exceptions import DbError
-#     ## These imports have to be the long forum, to let us modify the values here:
-#     # https://stackoverflow.com/a/12496239/11650472
-#     import util
-#     util.user.dynamo_db._DYNAMO_CLIENT = boto3.client("dynamodb", region_name=REGION)
-#     util.user.dynamo_db._DYNAMO_DB = boto3.resource("dynamodb", region_name=REGION)
-#     user_table_name = "TestUserTable"
-#     print(f"Creating DynamoDB table {user_table_name} for tests")
-#     util.user.dynamo_db._DYNAMO_DB.create_table(
-#         TableName = user_table_name,
-#         BillingMode = "PAY_PER_REQUEST",
-#         KeySchema = [{"AttributeName": "username", "KeyType": "HASH"}],
-#         AttributeDefinitions = [{
-#             "AttributeName": "username",
-#             "AttributeType": "S"
-#         }],
-#     )
-#     print("Waiting for table to be created...")
-#     util.user.dynamo_db._DYNAMO_TABLE = util.user.dynamo_db._DYNAMO_DB.Table(user_table_name)
-#     return (
-#         util.user.dynamo_db._DYNAMO_CLIENT,
-#         util.user.dynamo_db._DYNAMO_DB,
-#         util.user.dynamo_db._DYNAMO_TABLE,
-#     )
 
 @mock_aws
 class TestUserClass:
@@ -367,6 +339,7 @@ class TestUserClass:
         util.user.dynamo_db._DYNAMO_DB = boto3.resource("dynamodb", region_name=REGION)
 
     def setup_method(self, method):
+        from util.user.dynamo_db import get_all_items
         ## These imports have to be the long forum, to let us modify the values here:
         # https://stackoverflow.com/a/12496239/11650472
         import util
@@ -380,7 +353,9 @@ class TestUserClass:
                 "AttributeType": "S"
             }],
         )
+        ## No need to delete the table between methods, it goes out of scope anyways.
         util.user.dynamo_db._DYNAMO_TABLE = util.user.dynamo_db._DYNAMO_DB.Table(user_table_name)
+        assert get_all_items() == [], "DB should be empty at the start"
 
 
     def test_username(self, lambda_context: LambdaContext):
@@ -437,11 +412,18 @@ class TestUserClass:
 
     def test_can_modify_list(self, lambda_context: LambdaContext):
         from util.user.user import User
+        from util.user.dynamo_db import get_all_items
 
+    
         username = "test_user"
         user = User(username)
+        assert len(get_all_items()) == 1, "User was NOT inserted into the DB"
+        # Only one item, verify it's what we expect IN the DB too.
+        assert get_all_items()[0]["access"] == ["user"], "Access should be just 'user' by default"
 
         # Access is a list, so we can modify it:
         assert list(user.access) == ["user"], "Base list is not just 'user'"
         user.access = list(user.access) + ["admin"]
         assert list(user.access) == ["user", "admin"], "Access should now contain 'admin'"
+        assert len(get_all_items()) == 1, "There should still only be one item in the DB"
+        assert get_all_items()[0]["access"] == ["user", "admin"], "Access should be updated in the DB too"
