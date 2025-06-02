@@ -418,9 +418,6 @@ class TestProfilePages:
         event = get_event(path=path, cookies=fake_auth)
         ret = main.lambda_handler(event, lambda_context)
         
-        with open("output.txt",'w') as f:
-            f.write(str(ret))
-        
         assert ret["statusCode"] == 200
         assert ret["headers"].get("Content-Type") == "text/html"
         # Check that each value has been filled correctly
