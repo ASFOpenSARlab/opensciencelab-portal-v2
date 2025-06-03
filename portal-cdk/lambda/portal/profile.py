@@ -41,8 +41,7 @@ def profile_bob():
     page_components = {"input": {}, "content": "Profile Bob"}
     username = current_session.auth.cognito.username
     if username != "bob":
-        page_components["contents"] = "You are <b>NOT</b> Bob!"
-        return "You are <b>NOT</b> Bob!"
+        page_components["content"] = "You are <b>NOT</b> Bob!"
 
     return page_components
 
@@ -96,31 +95,25 @@ def validate_profile_dict(query_dict: dict) -> tuple[bool, dict[str, str]]:
     if query_dict["is_affiliated_with_nasa"] == "default":
         correct = False
         errors["is_affiliated_with_nasa_error"] = "missing"
-    if (
-        query_dict["is_affiliated_with_nasa"] == "yes"
-        and query_dict["user_or_pi_nasa_email"] == "default"
-    ):
-        correct = False
-        errors["user_or_pi_nasa_email_error"] = "missing"
-    if (
-        query_dict["is_affiliated_with_nasa"] == "yes"
-        and query_dict["user_or_pi_nasa_email"] == "yes"
-        and query_dict["user_affliated_with_nasa_research_email"] == ""
-    ):
-        correct = False
-        errors["user_affliated_with_nasa_research_email_error"] = "missing"
-    if (
-        query_dict["is_affiliated_with_nasa"] == "yes"
-        and query_dict["user_or_pi_nasa_email"] == "no"
-        and query_dict["pi_affliated_with_nasa_research_email"] == ""
-    ):
-        correct = False
-        errors["pi_affliated_with_nasa_research_email_error"] = "missing"
+    
+    if (query_dict["is_affiliated_with_nasa"] == "yes"):
+        if(query_dict["user_or_pi_nasa_email"] == "default"):
+            correct = False
+            errors["user_or_pi_nasa_email_error"] = "missing"
+            
+        if(query_dict["user_or_pi_nasa_email"] == "yes" and query_dict["user_affliated_with_nasa_research_email"] == ""):
+            correct = False
+            errors["user_affliated_with_nasa_research_email_error"] = "missing"
+            
+        if(query_dict["user_or_pi_nasa_email"] == "no" and query_dict["pi_affliated_with_nasa_research_email"] == ""):
+            correct = False
+            errors["pi_affliated_with_nasa_research_email_error"] = "missing"
 
     # US GOV relation Errors
     if query_dict["is_affiliated_with_us_gov_research"] == "default":
         correct = False
         errors["is_affiliated_with_us_gov_research_error"] = "missing"
+        
     if (
         query_dict["is_affiliated_with_us_gov_research"] == "yes"
         and query_dict["user_affliated_with_gov_research_email"] == ""
@@ -132,6 +125,7 @@ def validate_profile_dict(query_dict: dict) -> tuple[bool, dict[str, str]]:
     if query_dict["is_affliated_with_isro_research"] == "default":
         correct = False
         errors["is_affliated_with_isro_research_error"] = "missing"
+        
     if (
         query_dict["is_affliated_with_isro_research"] == "yes"
         and query_dict["user_affliated_with_isro_research_email"] == ""
