@@ -328,11 +328,12 @@ class TestPortalAuth:
 class TestUserClass:
     def setup_class():
         ## This is here just to fix a weird import timing issue with importing utils directly
-        from util.user import dynamo_db as _import_proxy # pylint: disable=unused-import
+        from util.user import dynamo_db as import_proxy  # pylint: disable=F401 disable=unused-import
 
         ## These imports have to be the long forum, to let us modify the values here:
         # https://stackoverflow.com/a/12496239/11650472
         import util
+
         util.user.dynamo_db._DYNAMO_CLIENT = boto3.client(
             "dynamodb",
             region_name=REGION,
@@ -424,7 +425,7 @@ class TestUserClass:
     def test_can_modify_list(self, lambda_context: LambdaContext):
         from util.user.user import User
         from util.user.dynamo_db import get_all_items
-    
+
         username = "test_user"
         user = User(username)
         assert len(get_all_items()) == 1, "User was NOT inserted into the DB"
