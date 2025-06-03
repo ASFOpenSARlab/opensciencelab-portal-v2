@@ -1,3 +1,4 @@
+import os
 import copy
 import json
 from dataclasses import dataclass
@@ -9,12 +10,14 @@ import boto3
 import main
 from util.auth import PORTAL_USER_COOKIE, COGNITO_JWT_COOKIE
 
+## This is here just to fix a weird import timing issue with importing utils directly
+from util.user import dynamo_db as _  # noqa: F401 # pylint: disable=unused-import,import-error
+
 import pytest
 import jwt
 from jwt.algorithms import RSAAlgorithm
 
-
-REGION = "us-west-2"
+REGION = os.getenv("STACK_REGION", "us-west-2")
 
 BASIC_REQUEST = {
     "rawPath": "/test",
@@ -323,53 +326,25 @@ class TestPortalAuth:
             encrypt_data("blablabla")
         assert str(excinfo.value).find("change the SSO Secret") != -1
 
-
-# @pytest.fixture()
-# def mock_db():
-#     from util.user.user import User
-#     from util.user.dynamo_db import delete_item
-#     from util.exceptions import DbError
-#     ## These imports have to be the long forum, to let us modify the values here:
-#     # https://stackoverflow.com/a/12496239/11650472
-#     import util
-#     util.user.dynamo_db._DYNAMO_CLIENT = boto3.client("dynamodb", region_name=REGION)
-#     util.user.dynamo_db._DYNAMO_DB = boto3.resource("dynamodb", region_name=REGION)
-#     user_table_name = "TestUserTable"
-#     print(f"Creating DynamoDB table {user_table_name} for tests")
-#     util.user.dynamo_db._DYNAMO_DB.create_table(
-#         TableName = user_table_name,
-#         BillingMode = "PAY_PER_REQUEST",
-#         KeySchema = [{"AttributeName": "username", "KeyType": "HASH"}],
-#         AttributeDefinitions = [{
-#             "AttributeName": "username",
-#             "AttributeType": "S"
-#         }],
-#     )
-#     print("Waiting for table to be created...")
-#     util.user.dynamo_db._DYNAMO_TABLE = util.user.dynamo_db._DYNAMO_DB.Table(user_table_name)
-#     return (
-#         util.user.dynamo_db._DYNAMO_CLIENT,
-#         util.user.dynamo_db._DYNAMO_DB,
-#         util.user.dynamo_db._DYNAMO_TABLE,
-#     )
-
-
 @mock_aws
 class TestUserClass:
     def setup_class():
-        ## This is here just to fix a weird import timing issue with importing utils directly
-        from util.user import dynamo_db as _import_proxy  # noqa: F401
-
         ## These imports have to be the long forum, to let us modify the values here:
         # https://stackoverflow.com/a/12496239/11650472
         import util
 
         util.user.dynamo_db._DYNAMO_CLIENT = boto3.client(
-            "dynamodb", region_name=REGION
+            "dynamodb",
+            region_name=REGION,
         )
-        util.user.dynamo_db._DYNAMO_DB = boto3.resource("dynamodb", region_name=REGION)
+        util.user.dynamo_db._DYNAMO_DB = boto3.resource(
+            "dynamodb",
+            region_name=REGION,
+        )
 
     def setup_method(self, method):
+        from util.user.dynamo_db import get_all_items
+
         ## These imports have to be the long forum, to let us modify the values here:
         # https://stackoverflow.com/a/12496239/11650472
         import util
@@ -381,14 +356,28 @@ class TestUserClass:
             KeySchema=[{"AttributeName": "username", "KeyType": "HASH"}],
             AttributeDefinitions=[{"AttributeName": "username", "AttributeType": "S"}],
         )
+        ## No need to delete the table between methods, it goes out of scope anyways.
         util.user.dynamo_db._DYNAMO_TABLE = util.user.dynamo_db._DYNAMO_DB.Table(
             user_table_name
         )
+        assert get_all_items() == [], "DB should be empty at the start"
 
-    def test_username(self, lambda_context: LambdaContext):
+    def test_creating_user_updates_db(self, lambda_context: LambdaContext):
+        from util.user.user import User
+        from util.user.dynamo_db import get_all_items
+
+        username = "test_user"
+        user = User(username)
+        assert len(get_all_items()) == 1, "User was NOT inserted into the DB"
+        assert user.username == username, "Username attr doesn't match init"
+        # Only one item, verify it's what we expect IN the DB too.
+        assert get_all_items()[0]["access"] == ["user"], (
+            "Access should be just 'user' by default"
+        )
+
+    def test_username_immutable(self, lambda_context: LambdaContext):
         from util.user.user import User
         from util.exceptions import DbError
-        import util  # noqa: F401
 
         # Username attr exists:
         username = "test_user"
@@ -402,7 +391,7 @@ class TestUserClass:
             excinfo.value
         )
 
-    def test_is_default(self, lambda_context: LambdaContext):
+    def test_class_method_is_default(self, lambda_context: LambdaContext):
         # Test this early, so we can use it in future tests
         from util.user.user import User
 
@@ -434,7 +423,7 @@ class TestUserClass:
                     f"User should have attribute '{attr}' set to None"
                 )
 
-    def test_cant_append_list(self, lambda_context: LambdaContext):
+    def test_cant_append_list_directly(self, lambda_context: LambdaContext):
         from util.user.user import User
 
         username = "test_user"
@@ -445,7 +434,7 @@ class TestUserClass:
             user.roles.append("admin")
         assert "'tuple' object has no attribute 'append'" in str(excinfo.value)
 
-    def test_can_modify_list(self, lambda_context: LambdaContext):
+    def test_can_modify_list_by_assignment(self, lambda_context: LambdaContext):
         from util.user.user import User
 
         username = "test_user"
@@ -455,3 +444,15 @@ class TestUserClass:
         assert list(user.roles) == ["user"], "Base list is not just 'user'"
         user.roles = list(user.roles) + ["admin"]
         assert list(user.roles) == ["user", "admin"], "Roles should now contain 'admin'"
+
+    def test_number_of_db_items(self, lambda_context: LambdaContext):
+        from util.user.dynamo_db import get_all_items
+
+        assert len(get_all_items()) == 1, (
+            "There should still only be one item in the DB"
+        )
+        
+        ## Unless both "user" and "admin" are in the DB, this will fail(?)
+        # assert get_all_items()[0]["roles"] == ["user", "admin"], (
+        #     "Roles should be updated in the DB too"
+        # )
