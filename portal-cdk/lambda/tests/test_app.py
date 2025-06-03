@@ -13,8 +13,6 @@ import pytest
 import jwt
 from jwt.algorithms import RSAAlgorithm
 
-import util.user
-
 
 REGION = "us-west-2"
 
@@ -325,6 +323,7 @@ class TestPortalAuth:
             encrypt_data("blablabla")
         assert str(excinfo.value).find("change the SSO Secret") != -1
 
+
 # @pytest.fixture()
 # def mock_db():
 #     from util.user.user import User
@@ -354,39 +353,43 @@ class TestPortalAuth:
 #         util.user.dynamo_db._DYNAMO_TABLE,
 #     )
 
+
 @mock_aws
 class TestUserClass:
-
     def setup_class():
         ## This is here just to fix a weird import timing issue with importing utils directly
-        from util.user import dynamo_db as _import_proxy
+        from util.user import dynamo_db as _import_proxy  # noqa: F401
+
         ## These imports have to be the long forum, to let us modify the values here:
         # https://stackoverflow.com/a/12496239/11650472
         import util
-        util.user.dynamo_db._DYNAMO_CLIENT = boto3.client("dynamodb", region_name=REGION)
+
+        util.user.dynamo_db._DYNAMO_CLIENT = boto3.client(
+            "dynamodb", region_name=REGION
+        )
         util.user.dynamo_db._DYNAMO_DB = boto3.resource("dynamodb", region_name=REGION)
 
     def setup_method(self, method):
         ## These imports have to be the long forum, to let us modify the values here:
         # https://stackoverflow.com/a/12496239/11650472
         import util
+
         user_table_name = "TestUserTable"
         util.user.dynamo_db._DYNAMO_DB.create_table(
-            TableName = user_table_name,
-            BillingMode = "PAY_PER_REQUEST",
-            KeySchema = [{"AttributeName": "username", "KeyType": "HASH"}],
-            AttributeDefinitions = [{
-                "AttributeName": "username",
-                "AttributeType": "S"
-            }],
+            TableName=user_table_name,
+            BillingMode="PAY_PER_REQUEST",
+            KeySchema=[{"AttributeName": "username", "KeyType": "HASH"}],
+            AttributeDefinitions=[{"AttributeName": "username", "AttributeType": "S"}],
         )
-        util.user.dynamo_db._DYNAMO_TABLE = util.user.dynamo_db._DYNAMO_DB.Table(user_table_name)
-
+        util.user.dynamo_db._DYNAMO_TABLE = util.user.dynamo_db._DYNAMO_DB.Table(
+            user_table_name
+        )
 
     def test_username(self, lambda_context: LambdaContext):
         from util.user.user import User
         from util.exceptions import DbError
-        import util
+        import util  # noqa: F401
+
         # Username attr exists:
         username = "test_user"
         user = User(username)
@@ -395,7 +398,9 @@ class TestUserClass:
         # And you can't change it:
         with pytest.raises(DbError) as excinfo:
             user.username = "new_name"
-        assert f"Key 'username' not in validator_map for user {user.username}" in str(excinfo.value)
+        assert f"Key 'username' not in validator_map for user {user.username}" in str(
+            excinfo.value
+        )
 
     def test_is_default(self, lambda_context: LambdaContext):
         # Test this early, so we can use it in future tests
@@ -405,7 +410,9 @@ class TestUserClass:
         user = User(username)
         assert user.is_default("roles", None) is False, "Roles is not None"
         assert user.is_default("roles", []) is False, "Roles is not empty list"
-        assert user.is_default("roles", ["user"]) is True, "Roles defaults to just 'user'"
+        assert user.is_default("roles", ["user"]) is True, (
+            "Roles defaults to just 'user'"
+        )
 
     def test_defaults_applied(self, lambda_context: LambdaContext):
         from util.user.user import User
@@ -419,10 +426,13 @@ class TestUserClass:
         for attr in validator_map:
             if attr in defaults:
                 # Deepfreeze modifies the value, so we need to compare it:
-                assert getattr(user, attr) == deepfreeze(defaults[attr]), f"Default for '{attr}' should be applied"
+                assert getattr(user, attr) == deepfreeze(defaults[attr]), (
+                    f"Default for '{attr}' should be applied"
+                )
             else:
-                assert getattr(user, attr) is None, f"User should have attribute '{attr}' set to None"
-
+                assert getattr(user, attr) is None, (
+                    f"User should have attribute '{attr}' set to None"
+                )
 
     def test_cant_append_list(self, lambda_context: LambdaContext):
         from util.user.user import User
