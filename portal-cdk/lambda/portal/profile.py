@@ -63,12 +63,12 @@ def profile_user(user):
     CWD = Path(__file__).parent.resolve().absolute()
     with open(CWD / "../data/countries.json", "r") as f:
         page_dict["input"]["countries"] = json.loads(f.read())
-    
+
     # Get query string if present
     query_params = profile_router.current_event.query_string_parameters
-    
+
     # Set profile based on saved user profile or query_params if present
-    profile=None
+    profile = None
     if query_params:
         profile = query_params
     else:
@@ -76,58 +76,76 @@ def profile_user(user):
         if user_dict:
             if "profile" in user_dict:
                 profile = user_dict["profile"]
-    
+
     # Append profile to page_dict and return
     if profile:
         page_dict["input"]["profile"] = profile
     return page_dict
 
+
 def validate_profile_dict(query_dict: dict) -> tuple[bool, dict[str, str]]:
     correct = True
     errors = {}
-    
+
     # Country Errors
     if query_dict["country_of_residence"] == "default":
         correct = False
         errors["country_of_residence_error"] = "missing"
-    
+
     # NASA relation Errors
     if query_dict["is_affiliated_with_nasa"] == "default":
         correct = False
         errors["is_affiliated_with_nasa_error"] = "missing"
-    if query_dict["is_affiliated_with_nasa"] == "yes" and query_dict["user_or_pi_nasa_email"] == "default":
+    if (
+        query_dict["is_affiliated_with_nasa"] == "yes"
+        and query_dict["user_or_pi_nasa_email"] == "default"
+    ):
         correct = False
         errors["user_or_pi_nasa_email_error"] = "missing"
-    if query_dict["is_affiliated_with_nasa"] == "yes" and query_dict["user_or_pi_nasa_email"] == "yes" and query_dict["user_affliated_with_nasa_research_email"] == "":
+    if (
+        query_dict["is_affiliated_with_nasa"] == "yes"
+        and query_dict["user_or_pi_nasa_email"] == "yes"
+        and query_dict["user_affliated_with_nasa_research_email"] == ""
+    ):
         correct = False
         errors["user_affliated_with_nasa_research_email_error"] = "missing"
-    if query_dict["is_affiliated_with_nasa"] == "yes" and query_dict["user_or_pi_nasa_email"] == "no" and query_dict["pi_affliated_with_nasa_research_email"] == "":
+    if (
+        query_dict["is_affiliated_with_nasa"] == "yes"
+        and query_dict["user_or_pi_nasa_email"] == "no"
+        and query_dict["pi_affliated_with_nasa_research_email"] == ""
+    ):
         correct = False
         errors["pi_affliated_with_nasa_research_email_error"] = "missing"
-        
+
     # US GOV relation Errors
     if query_dict["is_affiliated_with_us_gov_research"] == "default":
         correct = False
         errors["is_affiliated_with_us_gov_research_error"] = "missing"
-    if query_dict["is_affiliated_with_us_gov_research"] == "yes" and query_dict["user_affliated_with_gov_research_email"] == "":
+    if (
+        query_dict["is_affiliated_with_us_gov_research"] == "yes"
+        and query_dict["user_affliated_with_gov_research_email"] == ""
+    ):
         correct = False
         errors["user_affliated_with_gov_research_email_error"] = "missing"
-        
+
     # ISRO relation Errors
     if query_dict["is_affliated_with_isro_research"] == "default":
         correct = False
         errors["is_affliated_with_isro_research_error"] = "missing"
-    if query_dict["is_affliated_with_isro_research"] == "yes" and query_dict["user_affliated_with_isro_research_email"] == "":
+    if (
+        query_dict["is_affliated_with_isro_research"] == "yes"
+        and query_dict["user_affliated_with_isro_research_email"] == ""
+    ):
         correct = False
         errors["user_affliated_with_isro_research_email_error"] = "missing"
-        
+
     # University relation Errors
     if query_dict["is_affliated_with_university"] == "default":
         correct = False
         errors["is_affliated_with_university_error"] = "missing"
-        
+
     return correct, errors
-    
+
 
 def process_profile_form(request_body: str) -> tuple[bool, dict[str, Any]]:
     """Processes the profile form
@@ -143,7 +161,7 @@ def process_profile_form(request_body: str) -> tuple[bool, dict[str, Any]]:
     query_dict: dict[str, Any] = {
         k.decode("utf-8"): v[0].decode("utf-8") for k, v in parsed_qs.items()
     }
-    
+
     # Validate Form
     correct, errors = validate_profile_dict(query_dict)
 
@@ -164,7 +182,7 @@ def process_profile_form(request_body: str) -> tuple[bool, dict[str, Any]]:
     if not correct:
         errors.update(query_dict)
         return False, errors
-    
+
     # Return dictionary of values
     return True, query_dict
 
@@ -189,7 +207,7 @@ def profile_user_filled(user):
             code=302,
             headers={"Location": next_url},
         )
-    
+
     # query_dict must be form data and errors at this point
     query_string = urlencode(query_dict)
     # Send the user back to the profile page
