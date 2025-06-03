@@ -185,5 +185,5 @@ docker-shell:
 		-it \
 		--rm \
 		--pull always \
-  ghcr.io/asfopensarlab/osl-utils:main \
+	ghcr.io/asfopensarlab/osl-utils:main \
 		bash
