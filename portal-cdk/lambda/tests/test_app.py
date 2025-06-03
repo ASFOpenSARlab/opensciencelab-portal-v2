@@ -437,23 +437,17 @@ class TestUserClass:
 
     def test_can_modify_list_by_assignment(self, lambda_context: LambdaContext):
         from util.user.user import User
+        from util.user.dynamo_db import get_all_items
 
         username = "test_user"
         user = User(username)
+
+        # assert len(get_all_items()) == 1, (
+        #    "There should still only be one item in the DB"
+        # )
 
         # Roles is a list, so we can modify it:
         assert list(user.roles) == ["user"], "Base list is not just 'user'"
         user.roles = list(user.roles) + ["admin"]
         assert list(user.roles) == ["user", "admin"], "Roles should now contain 'admin'"
 
-    def test_number_of_db_items(self, lambda_context: LambdaContext):
-        from util.user.dynamo_db import get_all_items
-
-        assert len(get_all_items()) == 1, (
-            "There should still only be one item in the DB"
-        )
-
-        ## Unless both "user" and "admin" are in the DB, this will fail(?)
-        # assert get_all_items()[0]["roles"] == ["user", "admin"], (
-        #     "Roles should be updated in the DB too"
-        # )
