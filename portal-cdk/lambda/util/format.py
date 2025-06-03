@@ -59,10 +59,7 @@ NAV_BAR_OPTIONS = [
 ]
 
 
-def render_template(
-    content, input=None, name=None, title="OSL Portal", username=None
-):
-
+def render_template(content, input=None, name=None, title="OSL Portal", username=None):
     # Check for a logged-out return path
     current_event = current_session.app.current_event
     return_path = current_event.query_string_parameters.get("return", None)
