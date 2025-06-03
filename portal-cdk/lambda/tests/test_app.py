@@ -370,6 +370,7 @@ class TestUserClass:
         username = "test_user"
         user = User(username)
         assert len(get_all_items()) == 1, "User was NOT inserted into the DB"
+        assert user.username == username, "Username attr doesn't match init"
         # Only one item, verify it's what we expect IN the DB too.
         assert get_all_items()[0]["access"] == ["user"], (
             "Access should be just 'user' by default"
