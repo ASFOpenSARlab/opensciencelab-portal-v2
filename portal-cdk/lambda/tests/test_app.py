@@ -1,3 +1,4 @@
+import os
 import copy
 import json
 from dataclasses import dataclass
@@ -16,8 +17,7 @@ import pytest
 import jwt
 from jwt.algorithms import RSAAlgorithm
 
-
-REGION = "us-west-2"
+REGION = os.getenv("STACK_REGION", "us-west-2")
 
 BASIC_REQUEST = {
     "rawPath": "/test",
@@ -363,7 +363,19 @@ class TestUserClass:
         )
         assert get_all_items() == [], "DB should be empty at the start"
 
-    def test_username(self, lambda_context: LambdaContext):
+    def test_creating_user_updates_db(self, lambda_context: LambdaContext):
+        from util.user.user import User
+        from util.user.dynamo_db import get_all_items
+
+        username = "test_user"
+        user = User(username)
+        assert len(get_all_items()) == 1, "User was NOT inserted into the DB"
+        # Only one item, verify it's what we expect IN the DB too.
+        assert get_all_items()[0]["access"] == ["user"], (
+            "Access should be just 'user' by default"
+        )
+
+    def test_username_immutable(self, lambda_context: LambdaContext):
         from util.user.user import User
         from util.exceptions import DbError
 
@@ -379,7 +391,7 @@ class TestUserClass:
             excinfo.value
         )
 
-    def test_is_default(self, lambda_context: LambdaContext):
+    def test_class_method_is_default(self, lambda_context: LambdaContext):
         # Test this early, so we can use it in future tests
         from util.user.user import User
 
@@ -411,7 +423,7 @@ class TestUserClass:
                     f"User should have attribute '{attr}' set to None"
                 )
 
-    def test_cant_append_list(self, lambda_context: LambdaContext):
+    def test_cant_append_list_directly(self, lambda_context: LambdaContext):
         from util.user.user import User
 
         username = "test_user"
@@ -422,17 +434,12 @@ class TestUserClass:
             user.access.append("admin")
         assert "'tuple' object has no attribute 'append'" in str(excinfo.value)
 
-    def test_can_modify_list(self, lambda_context: LambdaContext):
+    def test_can_modify_list_by_assignment(self, lambda_context: LambdaContext):
         from util.user.user import User
         from util.user.dynamo_db import get_all_items
 
         username = "test_user"
         user = User(username)
-        assert len(get_all_items()) == 1, "User was NOT inserted into the DB"
-        # Only one item, verify it's what we expect IN the DB too.
-        assert get_all_items()[0]["access"] == ["user"], (
-            "Access should be just 'user' by default"
-        )
 
         # Access is a list, so we can modify it:
         assert list(user.access) == ["user"], "Base list is not just 'user'"
