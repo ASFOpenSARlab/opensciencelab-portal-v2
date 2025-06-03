@@ -250,7 +250,7 @@ def process_auth(handler, event, context):
     return handler(event, context)
 
 
-def require_access(access="user"):
+def require_auth(roles: list=["user"]):
     def inner(func):
         def wrapper(*args, **kwargs):
             # app is pulled in from outer scope via a function attribute
@@ -276,8 +276,17 @@ def require_access(access="user"):
                     headers={"Location": f"/?return={return_path}"},
                     cookies=cookies,
                 )
+            
+            session_roles = current_session.user.roles
+            logger.info(f"User '{username}' has {session_roles} roles, requires {roles}")
+            if session_roles not in roles:
+                logger.info("User is not authorized")
+                #return wrap_response(
+                #    body="User is not authorized",
+                #    code=401,
+                #    cookies=cookies,
+                #)
 
-            logger.info("User %s has %s access", username, access)
             # Run the endpoint
             return func(*args, **kwargs)
 

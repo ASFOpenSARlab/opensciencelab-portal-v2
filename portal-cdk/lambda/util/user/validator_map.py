@@ -15,7 +15,7 @@ def validate(key, value):
 
 
 validator_map = {
-    "access": list,
+    "roles": list,
     "some_int_without_default": int,
     "some_int_with_default": int,
     "random_dict": dict_contains_random_key,

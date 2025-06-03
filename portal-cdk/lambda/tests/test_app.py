@@ -403,9 +403,9 @@ class TestUserClass:
 
         username = "test_user"
         user = User(username)
-        assert user.is_default("access", None) is False, "Access is not None"
-        assert user.is_default("access", []) is False, "Access is not empty list"
-        assert user.is_default("access", ["user"]) is True, "Access defaults to just 'user'"
+        assert user.is_default("roles", None) is False, "Roles is not None"
+        assert user.is_default("roles", []) is False, "Roles is not empty list"
+        assert user.is_default("roles", ["user"]) is True, "Roles defaults to just 'user'"
 
     def test_defaults_applied(self, lambda_context: LambdaContext):
         from util.user.user import User
@@ -430,9 +430,9 @@ class TestUserClass:
         username = "test_user"
         user = User(username)
 
-        # Access is a list, so it should be frozen:
+        # Roles is a list, so it should be frozen:
         with pytest.raises(AttributeError) as excinfo:
-            user.access.append("admin")
+            user.roles.append("admin")
         assert "'tuple' object has no attribute 'append'" in str(excinfo.value)
 
     def test_can_modify_list(self, lambda_context: LambdaContext):
@@ -441,7 +441,7 @@ class TestUserClass:
         username = "test_user"
         user = User(username)
 
-        # Access is a list, so we can modify it:
-        assert list(user.access) == ["user"], "Base list is not just 'user'"
-        user.access = list(user.access) + ["admin"]
-        assert list(user.access) == ["user", "admin"], "Access should now contain 'admin'"
+        # Roles is a list, so we can modify it:
+        assert list(user.roles) == ["user"], "Base list is not just 'user'"
+        user.roles = list(user.roles) + ["admin"]
+        assert list(user.roles) == ["user", "admin"], "Roles should now contain 'admin'"
