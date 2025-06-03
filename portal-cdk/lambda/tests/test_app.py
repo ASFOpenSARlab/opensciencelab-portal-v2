@@ -326,6 +326,7 @@ class TestPortalAuth:
             encrypt_data("blablabla")
         assert str(excinfo.value).find("change the SSO Secret") != -1
 
+
 @mock_aws
 class TestUserClass:
     def setup_class():
@@ -451,7 +452,7 @@ class TestUserClass:
         assert len(get_all_items()) == 1, (
             "There should still only be one item in the DB"
         )
-        
+
         ## Unless both "user" and "admin" are in the DB, this will fail(?)
         # assert get_all_items()[0]["roles"] == ["user", "admin"], (
         #     "Roles should be updated in the DB too"
