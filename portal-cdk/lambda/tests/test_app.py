@@ -325,7 +325,7 @@ class TestPortalAuth:
 
 
 @mock_aws
-class TestUserClass:s
+class TestUserClass:
     def setup_class():
         ## This is here just to fix a weird import timing issue with importing utils directly
         from util.user import dynamo_db as _import_proxy # pylint: disable=unused-import
