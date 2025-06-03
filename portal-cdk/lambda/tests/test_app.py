@@ -8,13 +8,13 @@ import boto3
 
 import main
 from util.auth import PORTAL_USER_COOKIE, COGNITO_JWT_COOKIE
+
 ## This is here just to fix a weird import timing issue with importing utils directly
 from util.user import dynamo_db as _  # noqa: F401 # pylint: disable=unused-import,import-error 
 
 import pytest
 import jwt
 from jwt.algorithms import RSAAlgorithm
-
 
 
 REGION = "us-west-2"
