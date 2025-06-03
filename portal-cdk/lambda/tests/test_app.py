@@ -328,7 +328,7 @@ class TestPortalAuth:
 class TestUserClass:
     def setup_class():
         ## This is here just to fix a weird import timing issue with importing utils directly
-        from util.user import dynamo_db as import_proxy  # pylint: disable=F401,unused-import,import-error
+        from util.user import dynamo_db as _  # pylint: disable=F401,unused-import,import-error
 
         ## These imports have to be the long forum, to let us modify the values here:
         # https://stackoverflow.com/a/12496239/11650472
