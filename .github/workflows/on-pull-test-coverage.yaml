@@ -5,13 +5,23 @@ on: # yamllint disable-line rule:truthy
     types: [opened, edited, synchronize, reopened, ready_for_review, review_requested]
     branches:
       - main
+  workflow_dispatch: {}
 
 jobs:
+
+  setup:
+    uses: ASFOpenSARlab/osl-utils/.github/workflows/reusable-setup-env.yaml@v1.0.2
+    with:
+      tagname: ${{ inputs.tagname || github.ref_name }}
+
   generate-coverage:
     runs-on: ubuntu-latest
+    needs:
+      - setup
     environment: ${{ needs.setup.outputs.environment }}
     container: ghcr.io/asfopensarlab/osl-utils:v1.0.3
-
+    env:
+      DEPLOY_PREFIX: ${{ needs.setup.outputs.deploy_prefix }}
     steps:
       - name: Checkout Repo
         uses: actions/checkout@v4
