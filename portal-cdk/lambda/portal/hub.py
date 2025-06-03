@@ -4,7 +4,7 @@ import json
 
 from util.responses import wrap_response, basic_json
 from util.format import portal_template, request_context_string
-from util.auth import encrypt_data, require_auth
+from util.auth import encrypt_data, require_authorization
 
 from aws_lambda_powertools import Logger
 from aws_lambda_powertools.event_handler.api_gateway import Router
@@ -25,14 +25,14 @@ logger = Logger(child=True)
 
 
 @hub_router.get("/")
-@require_auth()
+@require_authorization()
 @portal_template()
 def portal_hub_root():
     return "<h4>Hello</h4>"
 
 
 @hub_router.get("/auth")
-# @require_auth()
+# @require_authorization()
 def get_portal_hub_auth():
     # /portal/hub/auth?next_url=%2Flab%2Fsmce-test-opensarlab%2Fhub%2Fhome
     next_url = hub_router.current_event.query_string_parameters.get("next_url", None)
@@ -50,7 +50,7 @@ def get_portal_hub_auth():
 
 
 @hub_router.post("/auth")
-# @require_auth()
+# @require_authorization()
 @basic_json()
 def post_portal_hub_auth():
     logger.info("Request user info")
@@ -77,7 +77,7 @@ def post_portal_hub_auth():
 
 
 @hub_router.get("/login")
-# @require_auth()
+# @require_authorization()
 def portal_hub_login():
     try:
         logger.info("Log in user")

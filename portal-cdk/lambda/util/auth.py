@@ -250,7 +250,7 @@ def process_auth(handler, event, context):
     return handler(event, context)
 
 
-def require_auth(roles: list = ["user"]):
+def require_authorization(roles: list = ["user"]):
     def inner(func):
         def wrapper(*args, **kwargs):
             # app is pulled in from outer scope via a function attribute

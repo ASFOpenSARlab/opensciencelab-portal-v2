@@ -1,5 +1,5 @@
 from util.format import portal_template
-from util.auth import require_auth
+from util.auth import require_authorization
 from util.session import current_session
 
 from aws_lambda_powertools.event_handler.api_gateway import Router
@@ -15,14 +15,14 @@ profile_route = {
 
 # This catches "/portal/profile", but "/portal/profile" is uncatchable
 @profile_router.get("")
-@require_auth()
+@require_authorization()
 @portal_template()
 def profile_root():
     return "Profile Base 1"
 
 
 @profile_router.get("/bob")
-@require_auth()
+@require_authorization()
 @portal_template()
 def profile_bob():
     username = current_session.auth.cognito.username
@@ -33,7 +33,7 @@ def profile_bob():
 
 
 @profile_router.get("/<user>")
-@require_auth()
+@require_authorization()
 @portal_template()
 def profile_user(user):
     return f"Profile for user {user}"
