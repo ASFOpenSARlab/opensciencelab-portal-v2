@@ -437,7 +437,6 @@ class TestUserClass:
 
     def test_can_modify_list_by_assignment(self, lambda_context: LambdaContext):
         from util.user.user import User
-        from util.user.dynamo_db import get_all_items
 
         username = "test_user"
         user = User(username)
@@ -450,4 +449,3 @@ class TestUserClass:
         assert list(user.roles) == ["user"], "Base list is not just 'user'"
         user.roles = list(user.roles) + ["admin"]
         assert list(user.roles) == ["user", "admin"], "Roles should now contain 'admin'"
-
