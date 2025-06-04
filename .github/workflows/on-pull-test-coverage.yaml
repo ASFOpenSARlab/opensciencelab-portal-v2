@@ -5,13 +5,13 @@ on: # yamllint disable-line rule:truthy
     types: [opened, edited, synchronize, reopened, ready_for_review, review_requested]
     branches:
       - main
+  workflow_dispatch: {}
 
 jobs:
+
   generate-coverage:
     runs-on: ubuntu-latest
-    environment: ${{ needs.setup.outputs.environment }}
-    container: ghcr.io/asfopensarlab/osl-utils:v1.0.3
-
+    container: ghcr.io/asfopensarlab/osl-utils:v1.0.4
     steps:
       - name: Checkout Repo
         uses: actions/checkout@v4
