@@ -23,7 +23,7 @@ def validate_profile(validate_dict):
     
     # Throw error with list of missing keys if some keys are missing
     if missing_keys:
-        missing_keys_string = "".join(missing_keys)
+        missing_keys_string = ", ".join(missing_keys)
         raise ValueError(f"Missing the following keys in dictionary: {missing_keys_string}")
     
     return validate_dict
