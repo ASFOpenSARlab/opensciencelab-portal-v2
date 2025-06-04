@@ -4,6 +4,7 @@ from util.exceptions import DbError
 
 from .validators import (
     dict_contains_random_key,
+    validate_profile,
 )
 
 
@@ -19,4 +20,5 @@ validator_map = {
     "some_int_without_default": int,
     "some_int_with_default": int,
     "random_dict": dict_contains_random_key,
+    "profile": validate_profile,
 }
