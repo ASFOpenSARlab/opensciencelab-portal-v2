@@ -25,7 +25,7 @@ jobs:
     needs:
       - setup
     environment: ${{ needs.setup.outputs.environment }}
-    container: ghcr.io/asfopensarlab/osl-utils:v1.0.3
+    container: ghcr.io/asfopensarlab/osl-utils:v1.0.4
     # These permissions are needed to interact with GitHub's OIDC Token endpoint.
     permissions:
       id-token: write
