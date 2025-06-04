@@ -3,7 +3,8 @@ from util.format import (
 )
 from util.auth import require_access
 from util.session import current_session
-from util.dynamo_db import update_item, get_item
+# from util.dynamo_db import update_item, get_item
+from util.user import User
 from util.responses import wrap_response
 from pathlib import Path
 import json
@@ -71,7 +72,10 @@ def profile_user(user):
     if query_params:
         profile = query_params
     else:
-        user_dict = get_item(user)
+        user_dict = User(username=user)
+        print("THE USER THING")
+        print(user_dict)
+        # user_dict = get_item(user)
         if user_dict:
             if "profile" in user_dict:
                 profile = user_dict["profile"]
@@ -198,7 +202,8 @@ def profile_user_filled(user):
     if success:
         # query_dict must be profile values at this point
         # Update user profile
-        update_item(user, {"profile": query_dict})
+        aa = User(username=user)
+        # update_item(user, {"profile": query_dict})
 
         # Send the user to the portal
         next_url = "/portal"

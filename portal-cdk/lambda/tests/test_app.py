@@ -84,8 +84,8 @@ def validate_jwt(*args, **vargs):
     }
 
 
-def update_item(*args, **vargs):
-    return True
+# def update_item(*args, **vargs):
+#     return True
 
 
 def get_event(
@@ -374,7 +374,7 @@ class TestProfilePages:
         def get_item(*args, **vargs):
             return False
 
-        monkeypatch.setattr("portal.profile.get_item", get_item)
+        # monkeypatch.setattr("portal.profile.get_item", get_item)
         qparams = {
             "country_of_residence_error": "missing",
             "is_affiliated_with_nasa_error": "missing",
@@ -434,7 +434,7 @@ class TestProfilePages:
                 }
             }
 
-        monkeypatch.setattr("portal.profile.get_item", get_item)
+        # monkeypatch.setattr("portal.profile.get_item", get_item)
 
         path = "/portal/profile/test_user"
         event = get_event(path=path, cookies=fake_auth)
@@ -651,7 +651,7 @@ class TestProfilePages:
         self, monkeypatch, lambda_context: LambdaContext, fake_auth
     ):
         user = "test_user"
-        monkeypatch.setattr("portal.profile.update_item", update_item)
+        # monkeypatch.setattr("portal.profile.update_item", update_item)
 
         ## Test correct filling
         def process_profile_form_correct(
