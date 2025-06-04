@@ -144,9 +144,11 @@ class LambdaContext:
     invoked_function_arn: str = "arn:aws:lambda:eu-west-1:123456789012:function:test"
     aws_request_id: str = "da658bd3-2d6f-4e7b-8ec2-937234644fdc"
 
+
 @dataclass
 class FakeUser:
     profile: dict
+
 
 @pytest.fixture
 def lambda_context() -> LambdaContext:
@@ -420,20 +422,20 @@ class TestProfilePages:
     ):
         def get_user(*args, **vargs):
             profile = {
-                    "user_affliated_with_nasa_research_email": "",
-                    "pi_affliated_with_nasa_research_email": "apple@apple.com",
-                    "research_member_affliated_with_university": False,
-                    "country_of_residence": "US",
-                    "user_affliated_with_isro_research_email": "grabulon@gooble.com",
-                    "faculty_member_affliated_with_university": True,
-                    "is_affliated_with_isro_research": "yes",
-                    "is_affiliated_with_us_gov_research": "yes",
-                    "user_affliated_with_gov_research_email": "zippo@zip.com",
-                    "graduate_student_affliated_with_university": False,
-                    "is_affiliated_with_nasa": "yes",
-                    "is_affliated_with_university": "yes",
-                    "user_or_pi_nasa_email": "no",
-                }
+                "user_affliated_with_nasa_research_email": "",
+                "pi_affliated_with_nasa_research_email": "apple@apple.com",
+                "research_member_affliated_with_university": False,
+                "country_of_residence": "US",
+                "user_affliated_with_isro_research_email": "grabulon@gooble.com",
+                "faculty_member_affliated_with_university": True,
+                "is_affliated_with_isro_research": "yes",
+                "is_affiliated_with_us_gov_research": "yes",
+                "user_affliated_with_gov_research_email": "zippo@zip.com",
+                "graduate_student_affliated_with_university": False,
+                "is_affiliated_with_nasa": "yes",
+                "is_affliated_with_university": "yes",
+                "user_or_pi_nasa_email": "no",
+            }
             return FakeUser(profile=profile)
 
         monkeypatch.setattr("portal.profile.User", get_user)
@@ -653,9 +655,11 @@ class TestProfilePages:
         self, monkeypatch, lambda_context: LambdaContext, fake_auth
     ):
         user = "test_user"
+
         def get_user(*args, **vargs):
             profile = {}
             return FakeUser(profile=profile)
+
         monkeypatch.setattr("portal.profile.User", get_user)
 
         ## Test correct filling
@@ -858,7 +862,7 @@ class TestUserClass:
                 assert getattr(user, attr) is None, (
                     f"User should have attribute '{attr}' set to None"
                 )
-            
+
     def test_cant_append_list_directly(self, lambda_context: LambdaContext):
         from util.user.user import User
 
@@ -889,32 +893,34 @@ class TestUserClass:
         assert get_all_items()[0]["access"] == ["user", "admin"], (
             "Access should be updated in the DB too"
         )
-    
+
     def test_profile_validator_correct_filling(self):
         from util.user.validators import validate_profile
+
         fake_dict = {
-            "country_of_residence": "", 
+            "country_of_residence": "",
             "is_affiliated_with_nasa": "",
-            "user_or_pi_nasa_email": "", 
-            "user_affliated_with_nasa_research_email": "", 
-            "pi_affliated_with_nasa_research_email": "", 
-            "is_affiliated_with_us_gov_research": "", 
-            "user_affliated_with_gov_research_email": "", 
-            "is_affliated_with_isro_research": "", 
-            "user_affliated_with_isro_research_email": "", 
-            "is_affliated_with_university": "", 
-            "faculty_member_affliated_with_university": "", 
-            "research_member_affliated_with_university": "", 
+            "user_or_pi_nasa_email": "",
+            "user_affliated_with_nasa_research_email": "",
+            "pi_affliated_with_nasa_research_email": "",
+            "is_affiliated_with_us_gov_research": "",
+            "user_affliated_with_gov_research_email": "",
+            "is_affliated_with_isro_research": "",
+            "user_affliated_with_isro_research_email": "",
+            "is_affliated_with_university": "",
+            "faculty_member_affliated_with_university": "",
+            "research_member_affliated_with_university": "",
             "graduate_student_affliated_with_university": "",
         }
-        
+
         ret = validate_profile(fake_dict)
         assert ret == fake_dict
-        
+
     def test_profile_validator_wrong_filling(self):
         from util.user.validators import validate_profile
+
         fake_dict = {}
-        
+
         with pytest.raises(ValueError):
             ret = validate_profile(fake_dict)
             assert ret == fake_dict
