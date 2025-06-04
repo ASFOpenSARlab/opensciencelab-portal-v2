@@ -144,6 +144,9 @@ class LambdaContext:
     invoked_function_arn: str = "arn:aws:lambda:eu-west-1:123456789012:function:test"
     aws_request_id: str = "da658bd3-2d6f-4e7b-8ec2-937234644fdc"
 
+@dataclass
+class FakeUser:
+    profile: dict
 
 @pytest.fixture
 def lambda_context() -> LambdaContext:
@@ -356,10 +359,10 @@ class TestProfilePages:
     def test_profile_logged_in(
         self, lambda_context: LambdaContext, monkeypatch, fake_auth
     ):
-        def get_item(*args, **vargs):
-            return False
+        def get_user(*args, **vargs):
+            return {"profile": None}
 
-        monkeypatch.setattr("portal.profile.get_item", get_item)
+        monkeypatch.setattr("portal.profile.User", get_user)
         event = get_event(path="/portal/profile/test_user", cookies=fake_auth)
         ret = main.lambda_handler(event, lambda_context)
 
@@ -415,9 +418,8 @@ class TestProfilePages:
     def test_profile_loading(
         self, lambda_context: LambdaContext, monkeypatch, fake_auth
     ):
-        def get_item(*args, **vargs):
-            return {
-                "profile": {
+        def get_user(*args, **vargs):
+            profile = {
                     "user_affliated_with_nasa_research_email": "",
                     "pi_affliated_with_nasa_research_email": "apple@apple.com",
                     "research_member_affliated_with_university": False,
@@ -432,9 +434,9 @@ class TestProfilePages:
                     "is_affliated_with_university": "yes",
                     "user_or_pi_nasa_email": "no",
                 }
-            }
+            return FakeUser(profile=profile)
 
-        # monkeypatch.setattr("portal.profile.get_item", get_item)
+        monkeypatch.setattr("portal.profile.User", get_user)
 
         path = "/portal/profile/test_user"
         event = get_event(path=path, cookies=fake_auth)
@@ -651,7 +653,10 @@ class TestProfilePages:
         self, monkeypatch, lambda_context: LambdaContext, fake_auth
     ):
         user = "test_user"
-        # monkeypatch.setattr("portal.profile.update_item", update_item)
+        def get_user(*args, **vargs):
+            profile = {}
+            return FakeUser(profile=profile)
+        monkeypatch.setattr("portal.profile.User", get_user)
 
         ## Test correct filling
         def process_profile_form_correct(
