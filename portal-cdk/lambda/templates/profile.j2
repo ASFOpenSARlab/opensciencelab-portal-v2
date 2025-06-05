@@ -1,0 +1,300 @@
+{# djlint:off H016,H030,H031 #}
+<!DOCTYPE html>
+<html lang="en">
+    {% include 'head.j2' %}
+    <body>
+        {% include './noscript.j2' %}
+        {% include './navbar.j2' %}
+        <div class="margin-left-50">
+            <h2>
+                Hello <i>{{ username }}</i>
+            </h2>
+            <form method="post">
+                <fieldset>
+                    <!-- Country -->
+                    <div class="horizontal-div">
+                        <label>What is your current country of residence?</label>
+                        <select id="country_of_residence"
+                                name="country_of_residence"
+                                onchange="removeDropdownDefault(this)">
+                            <!-- If user does not already have profile, provide default option and all countries -->
+                            {% if profile is not defined or profile["country_of_residence"] == "default" %}
+                                <option value="default">{{ default_value }}</option>
+                                {% for country in countries -%}
+                                    <option value="{{ country }}">{{ countries[country] }}</option>
+                                {% endfor -%}
+                            {% else -%}
+                                <!-- If has a profile, show all country options with previous country selected -->
+                                {% for country in countries -%}
+                                    {% if profile["country_of_residence"] == country %}
+                                        <option value="{{ country }}" selected>{{ countries[country] }}</option>
+                                    {% else %}
+                                        <option value="{{ country }}">{{ countries[country] }}</option>
+                                    {% endif -%}
+                                {% endfor -%}
+                            {% endif -%}
+                        </select>
+                        {% if profile is defined and profile["country_of_residence_error"] is defined and profile["country_of_residence_error"] == "missing" %}
+                            <p class="warning">{{ warning_missing }}</p>
+                        {% endif %}
+                    </div>
+                    <!-- NASA Email -->
+                    <div>
+                        <div class="horizontal-div">
+                            <label>Are you affiliated with NASA?</label>
+                            <select id="is_affiliated_with_nasa"
+                                    name="is_affiliated_with_nasa"
+                                    onchange="removeDropdownDefault(this); expandSelect(this);">
+                                <!-- If user does not already have profile, provide default option -->
+                                {% if profile is not defined or profile["is_affiliated_with_nasa"] == "default" %}
+                                    <option value="default">{{ default_value }}</option>
+                                {% endif %}
+                                <!-- Set yes, no, or none to selected depending on the value of is_affiliated_with_nasa in an existing profile -->
+                                <option value="yes"
+                                        data-id-to-show="user_or_pi_nasa_email_div"
+                                        {% if profile is defined and profile["is_affiliated_with_nasa"] == "yes" %}selected{% endif %}>
+                                    Yes
+                                </option>
+                                <option value="no"
+                                        {% if profile is defined and profile["is_affiliated_with_nasa"] == "no" %}selected{% endif %}>
+                                    No
+                                </option>
+                            </select>
+                            {% if profile is defined and profile["is_affiliated_with_nasa_error"] is defined and profile["is_affiliated_with_nasa_error"] == "missing" %}
+                                <p class="warning">{{ warning_missing }}</p>
+                            {% endif %}
+                        </div>
+                        <!-- User Or PI NASA Email -->
+                        <div id="user_or_pi_nasa_email_div" class="margin-left-30" hidden>
+                            <div class="horizontal-div">
+                                <label>Do you have a NASA email address?</label>
+                                <select id="user_or_pi_nasa_email"
+                                        name="user_or_pi_nasa_email"
+                                        onchange="removeDropdownDefault(this); expandSelect(this);">
+                                    <!-- If user does not already have profile, provide default option -->
+                                    {% if profile is not defined or profile["user_or_pi_nasa_email"] == "default" %}
+                                        <option value="default">{{ default_value }}</option>
+                                    {% endif %}
+                                    <!-- Set yes, no, or none to selected depending on the value of user_or_pi_nasa_email in an existing profile -->
+                                    <option value="yes"
+                                            data-id-to-show="user_nasa_email"
+                                            {% if profile is defined and profile["user_or_pi_nasa_email"] == "yes" %}selected{% endif %}>
+                                        Yes
+                                    </option>
+                                    <option value="no"
+                                            data-id-to-show="pi_nasa_email"
+                                            {% if profile is defined and profile["user_or_pi_nasa_email"] == "no" %}selected{% endif %}>
+                                        No
+                                    </option>
+                                </select>
+                                {% if profile is defined and profile["user_or_pi_nasa_email_error"] is defined and profile["user_or_pi_nasa_email_error"] == "missing" %}
+                                    <p class="warning">{{ warning_missing }}</p>
+                                {% endif %}
+                            </div>
+                            <!-- User NASA Email -->
+                            <div id="user_nasa_email" class="margin-left-30" hidden>
+                                <div class=" horizontal-div">
+                                    <label>What is your NASA email address?</label>
+                                    <input id="user_affliated_with_nasa_research_email"
+                                           name="user_affliated_with_nasa_research_email"
+                                           type="email"
+                                           value="{% if profile is defined %}{{ profile['user_affliated_with_nasa_research_email'] }}{% endif %}"
+                                           placeholder="example@nasa.gov">
+                                    {% if profile is defined and profile["user_affliated_with_nasa_research_email_error"] is defined and profile["user_affliated_with_nasa_research_email_error"] == "missing" %}
+                                        <p class="warning">{{ warning_missing }}</p>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <!-- PI NASA Email -->
+                            <div id="pi_nasa_email" class="margin-left-30" hidden>
+                                <div class=" horizontal-div">
+                                    <label>What is the email address of the NASA project's PI?</label>
+                                    <input id="pi_affliated_with_nasa_research_email"
+                                           name="pi_affliated_with_nasa_research_email"
+                                           type="email"
+                                           value="{% if profile is defined %}{{ profile['pi_affliated_with_nasa_research_email'] }}{% endif %}"
+                                           placeholder="example@nasa.gov">
+                                    {% if profile is defined and profile["pi_affliated_with_nasa_research_email_error"] is defined and profile["pi_affliated_with_nasa_research_email_error"] == "missing" %}
+                                        <p class="warning">{{ warning_missing }}</p>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- US Gov Research Email -->
+                    <div>
+                        <div class="horizontal-div">
+                            <label>Are you affiliated with a US government-funded research program?</label>
+                            <select id="is_affiliated_with_us_gov_research"
+                                    name="is_affiliated_with_us_gov_research"
+                                    onchange="removeDropdownDefault(this); expandSelect(this);">
+                                <!-- If user does not already have profile, provide default option -->
+                                {% if profile is not defined or profile["is_affiliated_with_us_gov_research"] == "default" %}
+                                    <option value="default">{{ default_value }}</option>
+                                {% endif %}
+                                <!-- Set yes, no, or none to selected depending on the value of is_affiliated_with_us_gov_research in an existing profile -->
+                                <option value="yes"
+                                        data-id-to-show="user_gov_email"
+                                        {% if profile is defined and profile["is_affiliated_with_us_gov_research"] == "yes" %}selected{% endif %}>
+                                    Yes
+                                </option>
+                                <option value="no"
+                                        {% if profile is defined and profile["is_affiliated_with_us_gov_research"] == "no" %}selected{% endif %}>
+                                    No
+                                </option>
+                            </select>
+                            {% if profile is defined and profile["is_affiliated_with_us_gov_research_error"] is defined and profile["is_affiliated_with_us_gov_research_error"] == "missing" %}
+                                <p class="warning">{{ warning_missing }}</p>
+                            {% endif %}
+                        </div>
+                        <div id="user_gov_email" class="margin-left-30" hidden>
+                            <div class=" horizontal-div">
+                                <label>What is your official US government email address?</label>
+                                <input id="user_affliated_with_gov_research_email"
+                                       name="user_affliated_with_gov_research_email"
+                                       type="email"
+                                       value="{% if profile is defined %}{{ profile['user_affliated_with_gov_research_email'] }}{% endif %}"
+                                       placeholder="example@example.com">
+                                {% if profile is defined and profile["user_affliated_with_gov_research_email_error"] is defined and profile["user_affliated_with_gov_research_email_error"] == "missing" %}
+                                    <p class="warning">{{ warning_missing }}</p>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    <!-- ISRO Email -->
+                    <div>
+                        <div class="horizontal-div">
+                            <label>Are you affiliated with ISRO?</label>
+                            <select id="is_affliated_with_isro_research"
+                                    name="is_affliated_with_isro_research"
+                                    onchange="removeDropdownDefault(this); expandSelect(this);">
+                                <!-- If user does not already have profile, provide default option -->
+                                {% if profile is not defined or profile["is_affliated_with_isro_research"] == "default" %}
+                                    <option value="default">{{ default_value }}</option>
+                                {% endif %}
+                                <!-- Set yes, no, or none to selected depending on the value of is_affliated_with_isro_research in an existing profile -->
+                                <option value="yes"
+                                        data-id-to-show="user_isro_email"
+                                        {% if profile is defined and profile["is_affliated_with_isro_research"] == "yes" %}selected{% endif %}>
+                                    Yes
+                                </option>
+                                <option value="no"
+                                        {% if profile is defined and profile["is_affliated_with_isro_research"] == "no" %}selected{% endif %}>
+                                    No
+                                </option>
+                            </select>
+                            {% if profile is defined and profile["is_affliated_with_isro_research_error"] is defined and profile["is_affliated_with_isro_research_error"] == "missing" %}
+                                <p class="warning">{{ warning_missing }}</p>
+                            {% endif %}
+                        </div>
+                        <div id="user_isro_email" class="margin-left-30" hidden>
+                            <div class=" horizontal-div">
+                                <label>What is your ISRO email address, or the ISRO email address of the project PI?</label>
+                                <input id="user_affliated_with_isro_research_email"
+                                       name="user_affliated_with_isro_research_email"
+                                       type="email"
+                                       value="{% if profile is defined %}{{ profile['user_affliated_with_isro_research_email'] }}{% endif %}"
+                                       placeholder="example@example.com">
+                                {% if profile is defined and profile["user_affliated_with_isro_research_email_error"] is defined and profile["user_affliated_with_isro_research_email_error"] == "missing" %}
+                                    <p class="warning">{{ warning_missing }}</p>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    <!-- University Affiliation -->
+                    <div>
+                        <div class="horizontal-div">
+                            <label>Are you affiliated with a university?</label>
+                            <select id="is_affliated_with_university"
+                                    name="is_affliated_with_university"
+                                    onchange="removeDropdownDefault(this); expandSelect(this);">
+                                <!-- If user does not already have profile, provide default option -->
+                                {% if profile is not defined or profile["is_affliated_with_university"] == "default" %}
+                                    <option value="default">{{ default_value }}</option>
+                                {% endif %}
+                                <!-- Set yes, no, or none to selected depending on the value of is_affliated_with_university in an existing profile -->
+                                <option value="yes"
+                                        data-id-to-show="university_affiliations"
+                                        {% if profile is defined and profile["is_affliated_with_university"] == "yes" %}selected{% endif %}>
+                                    Yes
+                                </option>
+                                <option value="no"
+                                        {% if profile is defined and profile["is_affliated_with_university"] == "no" %}selected{% endif %}>
+                                    No
+                                </option>
+                            </select>
+                            {% if profile is defined and profile["is_affliated_with_university_error"] is defined and profile["is_affliated_with_university_error"] == "missing" %}
+                                <p class="warning">{{ warning_missing }}</p>
+                            {% endif %}
+                        </div>
+                        <div id="university_affiliations" class="margin-left-30" hidden>
+                            <!-- Tick checkboxes if the corrosponding bool values in profile are True -->
+                            <div>
+                                <input type="checkbox"
+                                       id="faculty_member_affliated_with_university"
+                                       name="faculty_member_affliated_with_university"
+                                       {% if profile is defined and profile["faculty_member_affliated_with_university"] == True %}checked{% endif %}>
+                                <label>I am a university faculty member</label>
+                            </div>
+                            <div>
+                                <input type="checkbox"
+                                       id="research_member_affliated_with_university"
+                                       name="research_member_affliated_with_university"
+                                       {% if profile is defined and profile["research_member_affliated_with_university"] == True %}checked{% endif %}>
+                                <label>I am a university research scientist</label>
+                            </div>
+                            <div>
+                                <input type="checkbox"
+                                       id="graduate_student_affliated_with_university"
+                                       name="graduate_student_affliated_with_university"
+                                       {% if profile is defined and profile["graduate_student_affliated_with_university"] == True %}checked{% endif %}>
+                                <label>I am a university graduate student</label>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Sumbit button -->
+                    <div>
+                        <button type="submit">Submit Your Answers</button>
+                    </div>
+                </fieldset>
+            </form>
+        </div>
+        <script>
+        window.addEventListener('load', function () {
+            // Get all select elements
+            const allSelects = document.querySelectorAll('select');
+            // Run expandSelect on each element
+            allSelects.forEach(select => {
+                expandSelect(select);
+            });
+        });
+        // Remove option with value === "default" if it is not selected
+        function removeDropdownDefault(selectElement){
+            if (selectElement.value !== "default") {
+                const defaultOption = selectElement.querySelector('option[value="default"]');
+                if (defaultOption) {
+                    selectElement.remove(defaultOption.index);
+                }
+            }
+        }
+        // Displays element with id provided by option element data field if provided
+        function expandSelect(selectElement){
+            // Get the selected option element
+            const selectedOption = selectElement.options[selectElement.selectedIndex];
+            // Get data fields
+            const idToShow = selectedOption.dataset.idToShow;
+            const elementToReveal = document.getElementById(idToShow);
+            const elementToHide = document.getElementById(selectElement.dataset.idToHide);
+            // Update visibilities
+            if(elementToHide !== null){
+                elementToHide.hidden = true;
+            }
+            if(elementToReveal !== null){
+                elementToReveal.hidden = false;
+            }
+            // Update data field in selectElement
+            selectElement.dataset.idToHide = idToShow;
+        }
+        </script>
+    </body>
+</html>
