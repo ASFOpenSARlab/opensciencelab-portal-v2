@@ -100,7 +100,9 @@ def auth_code():
     if access_token_decoded:
         username = access_token_decoded.get("username", "Unknown")
         user = User(username)
-        user.last_cookie_assignment = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        user.last_cookie_assignment = datetime.datetime.now().strftime(
+            "%Y-%m-%d %H:%M:%S"
+        )
     else:
         logger.info("Failed to set user last_cookie_assignment")
 
