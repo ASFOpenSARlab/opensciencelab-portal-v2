@@ -203,7 +203,7 @@ def get_cookies_from_event(event):
 
 
 def delete_cookies():
-    past_date = datetime.datetime.utcnow() - datetime.timedelta(days=1)
+    past_date = datetime.datetime.now(datetime.UTC) - datetime.timedelta(days=1)
     expires_str = past_date.strftime("%a, %d %b %Y %H:%M:%S GMT")
     cookies = []
     for cookie in [PORTAL_USER_COOKIE, COGNITO_JWT_COOKIE]:
