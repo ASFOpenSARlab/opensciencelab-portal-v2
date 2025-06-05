@@ -235,10 +235,13 @@ class TestPortalIntegrations:
 
     def test_auth_good_code(self, lambda_context: LambdaContext, monkeypatch):
         # Create FakeUser instance to be monkeypatched in and inspected after modified
-        fake_user_instance = FakeUser(last_cookie_assignment={"last_cookie_assignment": None})
+        fake_user_instance = FakeUser(
+            last_cookie_assignment={"last_cookie_assignment": None}
+        )
+
         def get_user(*args, **vargs):
             return fake_user_instance
-        
+
         def mock_validate_jwt(*args, **vargs):
             return {"username": "test_user"}
 
@@ -246,7 +249,7 @@ class TestPortalIntegrations:
             @classmethod
             def now(cls, tz=None):
                 return cls(2024, 1, 1, 12, 0, 0)
-        
+
         monkeypatch.setattr("requests.post", mocked_requests_post)
         monkeypatch.setattr("util.auth.validate_jwt", validate_jwt)
         monkeypatch.setattr(
@@ -272,7 +275,7 @@ class TestPortalIntegrations:
         assert COGNITO_JWT_COOKIE in cookies
         assert ret["headers"].get("Location") == "/portal/profile"
         assert ret["body"].find("Redirecting to /portal/profile") != -1
-        assert fake_user_instance.last_cookie_assignment == '2024-01-01 12:00:00'
+        assert fake_user_instance.last_cookie_assignment == "2024-01-01 12:00:00"
 
     def test_bad_jwt(self, lambda_context: LambdaContext, monkeypatch):
         monkeypatch.setattr("util.auth.get_key_validation", lambda: {"bla": "bla"})
