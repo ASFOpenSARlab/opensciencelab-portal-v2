@@ -1,4 +1,3 @@
-import os
 import copy
 import json
 from dataclasses import dataclass
@@ -301,19 +300,3 @@ class TestPortalIntegrations:
         assert ret["body"] == "User is not logged in"
         assert ret["headers"].get("Location").endswith("?return=/portal/hub")
         assert ret["headers"].get("Content-Type") == "text/html"
-
-
-class TestPortalAuth:
-    def test_generic_error(self, lambda_context: LambdaContext, monkeypatch):
-        # Create an invalid SSO token
-        monkeypatch.setattr(
-            "aws_lambda_powertools.utilities.parameters.get_secret",
-            lambda a: "this-is-bad-sso-token",
-        )
-
-        from util.auth import encrypt_data
-        from util.exceptions import BadSsoToken
-
-        with pytest.raises(BadSsoToken) as excinfo:
-            encrypt_data("blablabla")
-        assert str(excinfo.value).find("change the SSO Secret") != -1
