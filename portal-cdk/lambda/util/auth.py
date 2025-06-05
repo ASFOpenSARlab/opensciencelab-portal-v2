@@ -182,7 +182,7 @@ def get_set_cookie_headers(token):
     # Format "Set-Cookie" headers
     cookie_headers.append(f"{PORTAL_USER_COOKIE}={username_cookie_value};")
     cookie_headers.append(f"{COGNITO_JWT_COOKIE}={access_token_jwt};")
-    
+
     # Update User last_cookie_assignment
     user = User(username)
     user.last_cookie_assignment = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
