@@ -108,27 +108,6 @@ class PortalCdkStack(Stack):
             default_integration=lambda_integration,
         )
 
-        ## lab proxy
-        LAB_SHORT_NAME = "smce-test-opensarlab"
-        LAB_DOMAIN = "http://smce-test-1433554573.us-west-2.elb.amazonaws.com"  # If https is broken due to mismatch of SSL cert, try http
-        lab_integration = apigwv2_integrations.HttpUrlIntegration(
-            f"{LAB_SHORT_NAME}_Integration",
-            f"{LAB_DOMAIN}/lab/{LAB_SHORT_NAME}/{{proxy}}",
-        )
-        # https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_apigatewayv2.AddRoutesOptions.html
-        http_api.add_routes(
-            path=f"/lab/{LAB_SHORT_NAME}/{{proxy+}}",
-            methods=[apigwv2.HttpMethod.ANY],
-            integration=lab_integration,
-        )
-
-        # Hub endpoint
-        http_api.add_routes(
-            path="/portal",
-            methods=[apigwv2.HttpMethod.ANY],
-            integration=lambda_integration,
-        )
-
         ## And a basic CloudFront Endpoint:
         # https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_cloudfront-readme.html#from-an-http-endpoint
 
@@ -150,6 +129,33 @@ class PortalCdkStack(Stack):
                 cache_policy=cloudfront.CachePolicy.CACHING_DISABLED,
                 response_headers_policy=cloudfront.ResponseHeadersPolicy.CORS_ALLOW_ALL_ORIGINS_WITH_PREFLIGHT_AND_SECURITY_HEADERS,
             ),
+        )
+
+        ## lab proxy
+        LAB_SHORT_NAME = "smce-test-opensarlab"
+        LAB_DOMAIN = "http://smce-test-1433554573.us-west-2.elb.amazonaws.com"  # If https is broken due to mismatch of SSL cert, try http
+        lab_integration = apigwv2_integrations.HttpUrlIntegration(
+            f"{LAB_SHORT_NAME}_Integration",
+            f"{LAB_DOMAIN}/lab/{LAB_SHORT_NAME}/{{proxy}}",
+            # Add `return-path` header to Lab Proxy requests
+            parameter_mapping=apigwv2.ParameterMapping().overwrite_header(
+                "return-path",
+                apigwv2.MappingValue.custom(portal_cloudfront.distribution_domain_name),
+            ),
+        )
+
+        # https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_apigatewayv2.AddRoutesOptions.html
+        http_api.add_routes(
+            path=f"/lab/{LAB_SHORT_NAME}/{{proxy+}}",
+            methods=[apigwv2.HttpMethod.ANY],
+            integration=lab_integration,
+        )
+
+        # Hub endpoint
+        http_api.add_routes(
+            path="/portal",
+            methods=[apigwv2.HttpMethod.ANY],
+            integration=lambda_integration,
         )
 
         # https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_cognito.UserPool.html
