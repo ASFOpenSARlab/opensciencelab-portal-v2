@@ -1,6 +1,7 @@
 """AWS Lambda function to handle HTTP requests and return formatted HTML responses."""
 
 import os
+import datetime
 
 from portal import routes
 from util.format import (
@@ -14,9 +15,11 @@ from util.auth import (
     validate_code,
     process_auth,
     delete_cookies,
+    validate_jwt,
 )
 from util.exceptions import GenericFatalError
 from util.session import current_session
+from util.user import User
 
 from static import get_static_object
 
@@ -88,6 +91,18 @@ def auth_code():
 
     set_cookie_headers = get_set_cookie_headers(token_payload)
     state = app.current_event.query_string_parameters.get("state", "/portal")
+
+    ## Update User last_cookie_assignment
+    # Get username from token
+    access_token_jwt = token_payload["access_token"]
+    access_token_decoded = validate_jwt(access_token_jwt)
+    # make sure the JWT validated
+    if access_token_decoded:
+        username = access_token_decoded.get("username", "Unknown")
+        user = User(username)
+        user.last_cookie_assignment = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    else:
+        logger.info("Failed to set user last_cookie_assignment")
 
     # Send the newly logged in user to the Portal
     return wrap_response(
