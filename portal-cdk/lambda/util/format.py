@@ -59,9 +59,7 @@ NAV_BAR_OPTIONS = [
 ]
 
 
-def render_template(content, name=None, title="OSL Portal"):
-    # App will be used later to generate template input
-
+def render_template(content, input=None, name=None, title="OSL Portal"):
     # Check for a logged-out return path
     current_event = current_session.app.current_event
     return_path = current_event.query_string_parameters.get("return", None)
@@ -72,6 +70,7 @@ def render_template(content, name=None, title="OSL Portal"):
 
     username = current_session.auth.cognito.username
 
+    # Create input dict for jinja formatting
     template_input = {
         "content": content,
         "nav_bar_options": NAV_BAR_OPTIONS,
@@ -81,6 +80,8 @@ def render_template(content, name=None, title="OSL Portal"):
         "logout_url": LOGOUT_URL,
         "return_path": f"&state={return_path}" if return_path else "",
     }
+    if input:
+        template_input.update(input)
 
     template = ENV.get_template(name)
 
@@ -91,9 +92,26 @@ def portal_template(name=None, title=None, response=200):
     # I don't love response here
     def inner(func):
         def wrapper(*args, **kwargs):
+            # Dict for each value a page needs
+            page_dict = {
+                "content": "",
+                "input": {},
+                "name": name,
+                "title": title,
+            }
+
+            # Get page info from function
             content = func(*args, **kwargs)
 
-            body = render_template(name=name, content=content, title=title)
+            # If return value is string, assume it is contents
+            if isinstance(content, str):
+                page_dict["content"] = content
+            elif isinstance(content, dict):
+                # Else if return value is dict, update page_dict with provided values
+                page_dict.update(content)
+
+            # Render page
+            body = render_template(**page_dict)
 
             if response:
                 # If we received basic_response_code, return a basic_html response
