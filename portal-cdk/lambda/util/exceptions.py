@@ -42,3 +42,11 @@ class DbError(GenericFatalError):
     """
 
     pass  # pylint: disable=unnecessary-pass
+
+
+class UnknownUser(GenericFatalError):
+    """
+    Raised if the user is unknown.
+    """
+
+    pass  # pylint: disable=unnecessary-pass
