@@ -60,6 +60,7 @@ BASIC_REQUEST = {
     "cookies": [],
 }
 
+
 @dataclass
 class Helpers:
     @staticmethod
