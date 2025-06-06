@@ -39,7 +39,8 @@ jobs:
           path: /tmp/
 
       - name: Get Cover
-        uses: orgoro/coverage@v3.2
+        uses: orgoro/coverage@7dbd48c7f7ed09df337ff40058340c85bc93cb3d
+        # uses: orgoro/coverage@v3.2
         with:
           coverageFile: /tmp/coverage.xml
           token: ${{ secrets.GITHUB_TOKEN }}
