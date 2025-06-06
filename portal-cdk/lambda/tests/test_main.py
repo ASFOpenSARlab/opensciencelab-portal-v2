@@ -89,9 +89,7 @@ class TestProfilePages:
         assert ret["headers"].get("Content-Type") == "text/html"
 
     # Ensure page loads if logged in
-    def test_profile_logged_in(
-        self, lambda_context, monkeypatch, fake_auth, helpers
-    ):
+    def test_profile_logged_in(self, lambda_context, monkeypatch, fake_auth, helpers):
         def get_user(*args, **vargs):
             return {"profile": None}
 
@@ -148,9 +146,7 @@ class TestProfilePages:
         assert ret["headers"].get("Content-Type") == "text/html"
 
     # Test profile autofills from existing profile correctly
-    def test_profile_loading(
-        self, lambda_context, monkeypatch, fake_auth, helpers
-    ):
+    def test_profile_loading(self, lambda_context, monkeypatch, fake_auth, helpers):
         def get_user(*args, **vargs):
             profile = {
                 "user_affliated_with_nasa_research_email": "",
@@ -382,9 +378,7 @@ class TestProfilePages:
         assert query_dict == expected_dict
 
     # Ensure that incorrect profile fillings redirect to profile page, correct filling redirect to portal
-    def test_profile_user_filled(
-        self, monkeypatch, lambda_context, fake_auth, helpers
-    ):
+    def test_profile_user_filled(self, monkeypatch, lambda_context, fake_auth, helpers):
         user = "test_user"
 
         def get_user(*args, **vargs):

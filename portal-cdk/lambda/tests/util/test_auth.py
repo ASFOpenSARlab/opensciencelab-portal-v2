@@ -150,7 +150,6 @@ class TestPortalAuth:
         # Make sure we're setting cookies to an empty value
         assert ret["cookies"][0].find("Expires") != -1
 
-
     def test_post_portal_hub_auth(self, lambda_context, fake_auth, helpers):
         event = helpers.get_event(
             path="/portal/hub/auth", method="POST", cookies=fake_auth
