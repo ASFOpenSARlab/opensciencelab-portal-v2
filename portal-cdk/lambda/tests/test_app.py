@@ -4,6 +4,7 @@ import json
 from dataclasses import dataclass
 import time
 from base64 import b64encode
+import datetime
 
 from moto import mock_aws
 import boto3
@@ -84,10 +85,6 @@ def validate_jwt(*args, **vargs):
     }
 
 
-# def update_item(*args, **vargs):
-#     return True
-
-
 def get_event(
     path="/", method="GET", cookies=None, headers=None, qparams=None, body=None
 ):
@@ -147,7 +144,13 @@ class LambdaContext:
 
 @dataclass
 class FakeUser:
-    profile: dict
+    profile: dict = None
+    last_cookie_assignment: str = None
+
+    def update_last_cookie_assignment(self) -> None:
+        self.last_cookie_assignment = datetime.datetime(2024, 1, 1, 12, 0, 0).strftime(
+            "%Y-%m-%d %H:%M:%S"
+        )
 
 
 @pytest.fixture
@@ -232,12 +235,21 @@ class TestPortalIntegrations:
         assert ret["body"].find("Could not complete token exchange") != -1
 
     def test_auth_good_code(self, lambda_context: LambdaContext, monkeypatch):
+        # Create FakeUser instance to be monkeypatched in and inspected after modified
+        fake_user_instance = FakeUser(
+            last_cookie_assignment={"last_cookie_assignment": None}
+        )
+
+        def get_user(*args, **vargs):
+            return fake_user_instance
+
         monkeypatch.setattr("requests.post", mocked_requests_post)
         monkeypatch.setattr("util.auth.validate_jwt", validate_jwt)
         monkeypatch.setattr(
             "aws_lambda_powertools.utilities.parameters.get_secret",
             lambda a: "er9LnqEOiH+JLBsFCy0kVeba6ZSlG903cliU7VYKnM8=",
         )
+        monkeypatch.setattr("main.User", get_user)
 
         event = get_event(
             path="/auth",
@@ -254,6 +266,7 @@ class TestPortalIntegrations:
         assert COGNITO_JWT_COOKIE in cookies
         assert ret["headers"].get("Location") == "/portal/profile"
         assert ret["body"].find("Redirecting to /portal/profile") != -1
+        assert fake_user_instance.last_cookie_assignment == "2024-01-01 12:00:00"
 
     def test_bad_jwt(self, lambda_context: LambdaContext, monkeypatch):
         monkeypatch.setattr("util.auth.get_key_validation", lambda: {"bla": "bla"})
