@@ -75,6 +75,7 @@ class TestPortalIntegrations:
         assert ret["cookies"][0].find("Expires") != -1
         assert ret["cookies"][1].find("Expires") != -1
 
+
 class TestProfilePages:
     # Ensure profile page is not reachable if not logged in
     def test_profile_logged_out(self, lambda_context, helpers):
