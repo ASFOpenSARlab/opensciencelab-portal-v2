@@ -84,11 +84,6 @@ def validate_jwt(*args, **vargs):
         "username": "test_user",
     }
 
-
-# def update_item(*args, **vargs):
-#     return True
-
-
 def get_event(
     path="/", method="GET", cookies=None, headers=None, qparams=None, body=None
 ):
@@ -150,6 +145,8 @@ class LambdaContext:
 class FakeUser:
     profile: dict = None
     last_cookie_assignment: str = None
+    def update_last_cookie_assignment(self) -> None:
+        self.last_cookie_assignment = datetime.datetime(2024, 1, 1, 12, 0, 0).strftime("%Y-%m-%d %H:%M:%S")
 
 
 @pytest.fixture
@@ -242,14 +239,6 @@ class TestPortalIntegrations:
         def get_user(*args, **vargs):
             return fake_user_instance
 
-        def mock_validate_jwt(*args, **vargs):
-            return {"username": "test_user"}
-
-        class fixed_datetime(datetime.datetime):
-            @classmethod
-            def now(cls, tz=None):
-                return cls(2024, 1, 1, 12, 0, 0)
-
         monkeypatch.setattr("requests.post", mocked_requests_post)
         monkeypatch.setattr("util.auth.validate_jwt", validate_jwt)
         monkeypatch.setattr(
@@ -257,8 +246,6 @@ class TestPortalIntegrations:
             lambda a: "er9LnqEOiH+JLBsFCy0kVeba6ZSlG903cliU7VYKnM8=",
         )
         monkeypatch.setattr("main.User", get_user)
-        monkeypatch.setattr("main.validate_jwt", mock_validate_jwt)
-        monkeypatch.setattr("main.datetime.datetime", fixed_datetime)
 
         event = get_event(
             path="/auth",
