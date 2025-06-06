@@ -25,9 +25,11 @@ class LambdaContext:
     invoked_function_arn: str = "arn:aws:lambda:eu-west-1:123456789012:function:test"
     aws_request_id: str = "da658bd3-2d6f-4e7b-8ec2-937234644fdc"
 
+
 @pytest.fixture
 def lambda_context() -> LambdaContext:
     return LambdaContext()
+
 
 @pytest.fixture
 def fake_auth(monkeypatch):
@@ -46,6 +48,7 @@ def fake_auth(monkeypatch):
 
     return auth_cookies
 
+
 BASIC_REQUEST = {
     "rawPath": "/test",
     "requestContext": {
@@ -57,9 +60,8 @@ BASIC_REQUEST = {
     "cookies": [],
 }
 
-#dataclass
+@dataclass
 class Helpers:
-
     @staticmethod
     def get_event(
         path="/", method="GET", cookies=None, headers=None, qparams=None, body=None
@@ -96,6 +98,7 @@ class Helpers:
             "iat": time.time() - 100,
             "username": "test_user",
         }
+
 
 @pytest.fixture
 def helpers():

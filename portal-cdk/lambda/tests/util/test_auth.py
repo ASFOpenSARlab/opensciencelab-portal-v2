@@ -46,6 +46,7 @@ JWK = {
     "use": "sig",
 }
 
+
 def mocked_requests_post(*args, **kwargs):
     class MockResponse:
         def __init__(self, json_data, status_code):
@@ -68,6 +69,7 @@ def mocked_requests_post(*args, **kwargs):
 
     return MockResponse(None, 404)
 
+
 class TestPortalAuth:
     def test_generic_error(self, monkeypatch):
         # Create an invalid SSO token
@@ -82,8 +84,6 @@ class TestPortalAuth:
         with pytest.raises(BadSsoToken) as excinfo:
             encrypt_data("blablabla")
         assert str(excinfo.value).find("change the SSO Secret") != -1
-
-
 
     def test_auth_no_code(self, lambda_context, helpers):
         event = helpers.get_event(path="/auth")
@@ -140,7 +140,9 @@ class TestPortalAuth:
                 "KBEg4O96Pyyn2k7fcKdl5Lf9OZBITSyKTjGpKPtymDU=": jwk_string,
             },
         )
-        event = helpers.get_event(path="/portal/profile/joe", cookies={"portal-jwt": OLD_JWT})
+        event = helpers.get_event(
+            path="/portal/profile/joe", cookies={"portal-jwt": OLD_JWT}
+        )
         ret = main.lambda_handler(event, lambda_context)
         assert ret["statusCode"] == 302
         assert ret["body"] == "User is not logged in"
@@ -150,7 +152,9 @@ class TestPortalAuth:
 
 
     def test_post_portal_hub_auth(self, lambda_context, fake_auth, helpers):
-        event = helpers.get_event(path="/portal/hub/auth", method="POST", cookies=fake_auth)
+        event = helpers.get_event(
+            path="/portal/hub/auth", method="POST", cookies=fake_auth
+        )
         ret = main.lambda_handler(event, lambda_context)
         assert ret["statusCode"] == 200
         assert ret["headers"].get("Content-Type") == "application/json"
