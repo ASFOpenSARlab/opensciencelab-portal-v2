@@ -1,5 +1,6 @@
 import pytest
 
+
 class TestPortalAuth:
     def test_generic_error(self, monkeypatch):
         # Create an invalid SSO token
