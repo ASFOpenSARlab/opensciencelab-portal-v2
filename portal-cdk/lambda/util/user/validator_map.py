@@ -21,4 +21,5 @@ validator_map = {
     "some_int_with_default": int,
     "random_dict": dict_contains_random_key,
     "profile": validate_profile,
+    "last_cookie_assignment": str,
 }

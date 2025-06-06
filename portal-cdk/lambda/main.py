@@ -10,13 +10,14 @@ from util.format import (
 )
 from util.responses import wrap_response
 from util.auth import (
-    get_set_cookie_headers,
+    parse_token,
     validate_code,
     process_auth,
     delete_cookies,
 )
 from util.exceptions import GenericFatalError
 from util.session import current_session
+from util.user import User
 
 from static import get_static_object
 
@@ -86,14 +87,17 @@ def auth_code():
             render_template(content="Could not complete token exchange"), code=401
         )
 
-    set_cookie_headers = get_set_cookie_headers(token_payload)
+    token_dict = parse_token(token_payload)
     state = app.current_event.query_string_parameters.get("state", "/portal")
+
+    user = User(token_dict["username"])
+    user.update_last_cookie_assignment()
 
     # Send the newly logged in user to the Portal
     return wrap_response(
         render_template(content=f"Redirecting to {state}"),
         code=302,
-        cookies=set_cookie_headers,
+        cookies=token_dict["cookie_headers"],
         headers={"Location": state},
     )
 
