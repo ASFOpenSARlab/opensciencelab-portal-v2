@@ -136,7 +136,7 @@ test: install-reqs bundle-deps
 	pip install -r portal-cdk/requirements-dev.txt && \
 	pip install -r portal-cdk/lambda/requirements.txt && \
 	cd ./portal-cdk && \
-	pytest -v --cov=./lambda --cov-report xml:/tmp/coverage.xml
+	pytest -v --cov-config=.coveragerc --cov=./lambda --cov-report xml:/tmp/coverage.xml
 
 .PHONY := synth-portal
 synth-portal: install-reqs bundle-deps
