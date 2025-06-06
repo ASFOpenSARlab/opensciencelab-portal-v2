@@ -1,7 +1,6 @@
 """AWS Lambda function to handle HTTP requests and return formatted HTML responses."""
 
 import os
-import datetime
 
 from portal import routes
 from util.format import (
@@ -90,7 +89,7 @@ def auth_code():
 
     token_dict = parse_token(token_payload)
     state = app.current_event.query_string_parameters.get("state", "/portal")
-    
+
     user = User(token_dict["username"])
     user.update_last_cookie_assignment()
 

@@ -176,9 +176,9 @@ def parse_token(token):
 
     # Grab the username from access_token JWT, and encode it
     username = access_token_decoded.get("username", "Unknown")
-    if(username == "Unknown"):
-        raise(UnknownUser("Unknown user from decoded access token"))
-    
+    if username == "Unknown":
+        raise (UnknownUser("Unknown user from decoded access token"))
+
     username_cookie_value = encrypt_data(username)
 
     # Format "Set-Cookie" headers
@@ -192,7 +192,7 @@ def parse_token(token):
         "username": username,
         "cookie_headers": cookie_headers,
     }
-    
+
     return token_dict
 
 
