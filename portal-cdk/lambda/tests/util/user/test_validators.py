@@ -1,5 +1,6 @@
 import pytest
 
+
 class TestValidators:
     def test_profile_validator_correct_filling(self):
         from util.user.validators import validate_profile
