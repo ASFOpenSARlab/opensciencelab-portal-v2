@@ -70,7 +70,8 @@ class User:
         """Returns if the value is the default for the key."""
         default_val = defaults.get(key, None)
         return value == default_val
-    
+
     def update_last_cookie_assignment(self) -> None:
-        self.last_cookie_assignment = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        
+        self.last_cookie_assignment = datetime.datetime.now().strftime(
+            "%Y-%m-%d %H:%M:%S"
+        )

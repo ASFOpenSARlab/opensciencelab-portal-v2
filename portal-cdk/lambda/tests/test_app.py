@@ -84,6 +84,7 @@ def validate_jwt(*args, **vargs):
         "username": "test_user",
     }
 
+
 def get_event(
     path="/", method="GET", cookies=None, headers=None, qparams=None, body=None
 ):
@@ -145,8 +146,11 @@ class LambdaContext:
 class FakeUser:
     profile: dict = None
     last_cookie_assignment: str = None
+
     def update_last_cookie_assignment(self) -> None:
-        self.last_cookie_assignment = datetime.datetime(2024, 1, 1, 12, 0, 0).strftime("%Y-%m-%d %H:%M:%S")
+        self.last_cookie_assignment = datetime.datetime(2024, 1, 1, 12, 0, 0).strftime(
+            "%Y-%m-%d %H:%M:%S"
+        )
 
 
 @pytest.fixture
