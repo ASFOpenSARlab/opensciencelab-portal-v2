@@ -11,11 +11,10 @@ from util.format import (
 )
 from util.responses import wrap_response
 from util.auth import (
-    get_set_cookie_headers,
+    parse_token,
     validate_code,
     process_auth,
     delete_cookies,
-    validate_jwt,
 )
 from util.exceptions import GenericFatalError
 from util.session import current_session
@@ -89,28 +88,17 @@ def auth_code():
             render_template(content="Could not complete token exchange"), code=401
         )
 
-    set_cookie_headers = get_set_cookie_headers(token_payload)
+    token_dict = parse_token(token_payload)
     state = app.current_event.query_string_parameters.get("state", "/portal")
-
-    ## Update User last_cookie_assignment
-    # Get username from token
-    access_token_jwt = token_payload["access_token"]
-    access_token_decoded = validate_jwt(access_token_jwt)
-    # make sure the JWT validated
-    if access_token_decoded:
-        username = access_token_decoded.get("username", "Unknown")
-        user = User(username)
-        user.last_cookie_assignment = datetime.datetime.now().strftime(
-            "%Y-%m-%d %H:%M:%S"
-        )
-    else:
-        logger.info("Failed to set user last_cookie_assignment")
+    
+    user = User(token_dict["username"])
+    user.update_last_cookie_assignment()
 
     # Send the newly logged in user to the Portal
     return wrap_response(
         render_template(content=f"Redirecting to {state}"),
         code=302,
-        cookies=set_cookie_headers,
+        cookies=token_dict["cookie_headers"],
         headers={"Location": state},
     )
 

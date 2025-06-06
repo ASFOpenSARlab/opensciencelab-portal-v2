@@ -3,7 +3,7 @@ import os
 import datetime
 
 from util.responses import wrap_response
-from util.exceptions import BadSsoToken
+from util.exceptions import BadSsoToken, UnknownUser
 from util.session import current_session, PortalAuth
 
 import requests
@@ -156,7 +156,7 @@ def get_jwt_from_token(token, token_name):
     return token[token_name]
 
 
-def get_set_cookie_headers(token):
+def parse_token(token):
     access_token_jwt = token["access_token"]
     id_token_jwt = token["id_token"]
 
@@ -170,12 +170,15 @@ def get_set_cookie_headers(token):
 
     # make sure the JWT validated
     if not access_token_decoded:
-        return []
+        return {}
 
     cookie_headers = []
 
     # Grab the username from access_token JWT, and encode it
     username = access_token_decoded.get("username", "Unknown")
+    if(username == "Unknown"):
+        raise(UnknownUser("Unknown user from decoded access token"))
+    
     username_cookie_value = encrypt_data(username)
 
     # Format "Set-Cookie" headers
@@ -184,7 +187,13 @@ def get_set_cookie_headers(token):
 
     logger.debug({"set-cookie-headers": cookie_headers})
 
-    return cookie_headers
+    # Create and return parsed token
+    token_dict = {
+        "username": username,
+        "cookie_headers": cookie_headers,
+    }
+    
+    return token_dict
 
 
 def get_encoded_username_cookie(username):
