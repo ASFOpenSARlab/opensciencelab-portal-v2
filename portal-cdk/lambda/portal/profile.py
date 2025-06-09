@@ -24,6 +24,34 @@ profile_route = {
     "name": "Profile",
 }
 
+def enforce_profile_access():
+    def inner(func):
+        def wrapper(*args, **kwargs):
+            
+            username = current_session.auth.cognito.username
+            user = User(username=username)
+            
+            if "admin" in user.access:
+                # If admin, continue to return normally
+                pass
+            elif "user" in user.access:
+                # If user, check if username correcly filled out
+                if(kwargs["user"] != username):
+                    # If username not filled correctly, redirect to matching username
+                    next_url = f"/portal/profile/{username}"
+                    return wrap_response(
+                        body={f"Redirect to {next_url}"},
+                        code=302,
+                        headers={"Location": next_url},
+                    )
+            else:
+                # Log error if user does not have a covered access type
+                logger.error(f"{username} does not have covered access type. User access: {user.access}")
+                     
+            return func(*args, **kwargs)
+        return wrapper
+    return inner
+
 
 # This catches "/portal/profile", but "/portal/profile" is uncatchable
 @profile_router.get("")
@@ -48,6 +76,7 @@ def profile_bob():
 
 @profile_router.get("/<user>")
 @require_access()
+@enforce_profile_access()
 @portal_template(name="profile.j2")
 def profile_user(user):
     page_dict = {
@@ -189,6 +218,7 @@ def process_profile_form(request_body: str) -> tuple[bool, dict[str, Any]]:
 
 @profile_router.post("/<user>")
 @require_access()
+@enforce_profile_access()
 def profile_user_filled(user):
     # Parse form request
     body = profile_router.current_event.body
