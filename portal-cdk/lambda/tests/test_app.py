@@ -1,5 +1,6 @@
 import copy
 import json
+import base64
 from dataclasses import dataclass
 import time
 
@@ -76,7 +77,9 @@ def update_item(*args, **vargs):
     return True
 
 
-def get_event(path="/", method="GET", cookies=None, headers=None, qparams=None):
+def get_event(
+    path="/", method="GET", cookies=None, headers=None, qparams=None, body=None
+):
     # This rather than defaulting to polluted dicts
     cookies = {} if not cookies else cookies
     headers = {} if not headers else headers
@@ -87,6 +90,9 @@ def get_event(path="/", method="GET", cookies=None, headers=None, qparams=None):
     ret_event["rawPath"] = path
     ret_event["requestContext"]["http"]["path"] = path
     ret_event["requestContext"]["http"]["method"] = method
+
+    if method == "POST" and body:
+        ret_event["body"] = body
 
     for name, value in cookies.items():
         ret_event["cookies"].append(f"{name}={value}")
@@ -284,7 +290,13 @@ class TestPortalIntegrations:
         # login_widget
 
     def test_post_portal_hub_auth(self, lambda_context: LambdaContext, fake_auth):
-        event = get_event(path="/portal/hub/auth", method="POST", cookies=fake_auth)
+        body_payload = json.dumps({"username": "test_user"})
+        event = get_event(
+            path="/portal/hub/auth",
+            method="POST",
+            body=base64.b64encode(body_payload.encode("ascii")),
+            cookies=fake_auth,
+        )
         ret = main.lambda_handler(event, lambda_context)
         assert ret["statusCode"] == 200
         assert ret["headers"].get("Content-Type") == "application/json"
