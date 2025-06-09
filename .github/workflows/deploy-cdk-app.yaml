@@ -25,7 +25,7 @@ jobs:
     needs:
       - setup
     environment: ${{ needs.setup.outputs.environment }}
-    container: ghcr.io/asfopensarlab/osl-utils:v1.0.2
+    container: ghcr.io/asfopensarlab/osl-utils:v1.0.3
     # These permissions are needed to interact with GitHub's OIDC Token endpoint.
     permissions:
       id-token: write
@@ -39,12 +39,6 @@ jobs:
         with:
           role-to-assume: arn:aws:iam::${{vars.AWS_ACCOUNT_NUMBER}}:role/deploy_portal_stack_role
           aws-region: ${{vars.AWS_DEFAULT_REGION}}
-
-      - name: Install Extras
-        run: |
-          python3 -m pip install --no-cache-dir \
-            -r ./portal-cdk/requirements.txt \
-            -r ./portal-cdk/requirements-dev.txt
 
       - name: Run Portal Testsuite
         run: |

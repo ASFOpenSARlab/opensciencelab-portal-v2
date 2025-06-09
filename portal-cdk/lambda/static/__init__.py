@@ -33,6 +33,8 @@ def get_static_object(event):
         mime_type = "text/css"
     if file_ext == "js":
         mime_type = "text/javascript"
+    if file_ext == "png":
+        mime_type = "image/png"
 
     return Response(
         status_code=200,

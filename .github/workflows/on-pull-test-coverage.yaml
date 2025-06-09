@@ -1,0 +1,45 @@
+---
+name: PR - Run Code Coverage Analysis
+on: # yamllint disable-line rule:truthy
+  pull_request:
+    types: [opened, edited, synchronize, reopened, ready_for_review, review_requested]
+    branches:
+      - main
+
+jobs:
+  generate-coverage:
+    runs-on: ubuntu-latest
+    environment: ${{ needs.setup.outputs.environment }}
+    container: ghcr.io/asfopensarlab/osl-utils:v1.0.3
+
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v4
+
+      - name: Make Coverage File
+        run: |
+          make test
+
+      - name: Archive code coverage results
+        uses: actions/upload-artifact@v4
+        with:
+          name: code-coverage-report
+          path: /tmp/coverage.xml
+          retention-days: 10
+
+  coverage:
+    needs:
+      - generate-coverage
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download code coverage results
+        uses: actions/download-artifact@v4
+        with:
+          name: code-coverage-report
+          path: /tmp/
+
+      - name: Get Cover
+        uses: orgoro/coverage@v3.2
+        with:
+          coverageFile: /tmp/coverage.xml
+          token: ${{ secrets.GITHUB_TOKEN }}
