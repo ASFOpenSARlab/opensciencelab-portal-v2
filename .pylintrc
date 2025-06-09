@@ -1,0 +1,10 @@
+
+
+# Ignore Dynamic Classes:
+[TYPECHECK]
+ignored-classes=User,
+
+# Ignore Dynamic Attributes:
+[MESSAGES CONTROL]
+# User DB class does this a BUNCH:
+disable = attribute-defined-outside-init

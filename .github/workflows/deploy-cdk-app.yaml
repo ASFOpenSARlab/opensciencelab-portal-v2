@@ -25,11 +25,13 @@ jobs:
     needs:
       - setup
     environment: ${{ needs.setup.outputs.environment }}
-    container: ghcr.io/asfopensarlab/osl-utils:v1.0.3
+    container: ghcr.io/asfopensarlab/osl-utils:v1.0.4
     # These permissions are needed to interact with GitHub's OIDC Token endpoint.
     permissions:
       id-token: write
       contents: read
+    env:
+      DEPLOY_PREFIX: ${{ needs.setup.outputs.deploy_prefix }}
     steps:
       - name: Checkout Repo
         uses: actions/checkout@v4
@@ -46,4 +48,4 @@ jobs:
 
       - name: CDK Deploy Portal
         run: |-
-          make deploy-portal -e DEPLOY_PREFIX=${{ needs.setup.outputs.deploy_prefix }}
+          make deploy-portal
