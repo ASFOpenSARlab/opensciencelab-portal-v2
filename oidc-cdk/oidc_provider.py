@@ -66,6 +66,13 @@ class OidcProviderStack(Stack):
                             f"arn:aws:cloudformation:{self.region}:{self.account}:stack/*portal*/*",
                         ],
                     },
+                    {
+                        "effect": "allow",
+                        "actions": ["cloudformation:*"],
+                        "resources": [
+                            f"arn:aws:cloudformation:{self.region}:{self.account}:stack/PortalCdkStack-*/*",
+                        ],
+                    },
                     {  # Allow self modify
                         "effect": "allow",
                         "actions": ["s3:ListBucket"],

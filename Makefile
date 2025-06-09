@@ -86,6 +86,7 @@ cdk-shell:
 		-e AWS_DEFAULT_REGION -e AWS_REGION \
 		-e AWS_DEFAULT_ACCOUNT \
 		-e DEPLOY_PREFIX \
+		--pull always \
 		${IMAGE_NAME} || \
 		(  echo -e "" && echo  'If docker run fails with "no matching manifest", ' \
 		  'try setting ARCH_OVERRIDE: `export ARCH_OVERRIDE=--platform linux/amd64`.' && \
@@ -175,15 +176,3 @@ aws-info:
 		--output text
 	@echo "AWS Default Region: $$AWS_DEFAULT_REGION"
 	@echo "AWS Default Profile: $$AWS_DEFAULT_PROFILE"
-
-.PHONY := docker-shell
-docker-shell:
-	echo "Starting Docker Shell..."
-	echo ""
-	docker run \
-		-v "$$(pwd):/code" \
-		-it \
-		--rm \
-		--pull always \
-  ghcr.io/asfopensarlab/osl-utils:main \
-		bash
