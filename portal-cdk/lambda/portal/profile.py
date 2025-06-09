@@ -27,13 +27,12 @@ profile_route = {
 def enforce_profile_access():
     def inner(func):
         def wrapper(*args, **kwargs):
-            
             username = current_session.auth.cognito.username
             user = User(username=username)
             
             if "admin" in user.access:
                 # If admin, continue to return normally
-                pass
+                return func(*args, **kwargs)
             elif "user" in user.access:
                 # If user, check if username correcly filled out
                 if(kwargs["user"] != username):
@@ -44,11 +43,18 @@ def enforce_profile_access():
                         code=302,
                         headers={"Location": next_url},
                     )
+                # If user is correct, continue to page
+                return func(*args, **kwargs)
             else:
                 # Log error if user does not have a covered access type
                 logger.error(f"{username} does not have covered access type. User access: {user.access}")
                      
-            return func(*args, **kwargs)
+            next_url = "/portal"
+            return wrap_response(
+                body={f"Redirect to {next_url}"},
+                code=302,
+                headers={"Location": next_url},
+            )
         return wrapper
     return inner
 
