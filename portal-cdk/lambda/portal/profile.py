@@ -35,8 +35,8 @@ def enforce_profile_access():
                 # If admin, continue to return normally
                 return func(*args, **kwargs)
             elif "user" in user.access:
-                # If user, check if username correcly filled out
-                if kwargs["user"] != username:
+                # If user role, check if username is their own
+                if kwargs["username"] != username:
                     # If username not filled correctly, redirect to matching username
                     next_url = f"/portal/profile/{username}"
                     return wrap_response(
@@ -85,15 +85,15 @@ def profile_bob():
     return page_components
 
 
-@profile_router.get("/<user>")
+@profile_router.get("/<username>")
 @require_access()
 @enforce_profile_access()
 @portal_template(name="profile.j2")
-def profile_user(user):
+def profile_user(username: str):
     page_dict = {
-        "content": f"Profile for user {user}",
+        "content": f"Profile for user {username}",
         "input": {
-            "username": user,
+            "username": username,
             "default_value": "Choose...",
             "warning_missing": "Value is missing",
         },
@@ -111,7 +111,7 @@ def profile_user(user):
     if query_params:
         profile = query_params
     else:
-        user_class = User(user)
+        user_class = User(username=username)
         if user_class:
             if hasattr(user_class, "profile"):
                 profile = user_class.profile
@@ -227,10 +227,10 @@ def process_profile_form(request_body: str) -> tuple[bool, dict[str, Any]]:
     return True, query_dict
 
 
-@profile_router.post("/<user>")
+@profile_router.post("/<username>")
 @require_access()
 @enforce_profile_access()
-def profile_user_filled(user):
+def profile_user_filled(username: str):
     # Parse form request
     body = profile_router.current_event.body
     success, query_dict = process_profile_form(body)
@@ -239,7 +239,7 @@ def profile_user_filled(user):
     if success:
         # query_dict must be profile values at this point
         # Update user profile
-        user_class = User(user)
+        user_class = User(username)
         user_class.profile = query_dict
 
         # Send the user to the portal
@@ -253,7 +253,7 @@ def profile_user_filled(user):
     # query_dict must be form data and errors at this point
     query_string = urlencode(query_dict)
     # Send the user back to the profile page
-    next_url = f"/portal/profile/{user}?{query_string}"
+    next_url = f"/portal/profile/{username}?{query_string}"
     return wrap_response(
         body={f"Redirect to {next_url}"},
         code=302,

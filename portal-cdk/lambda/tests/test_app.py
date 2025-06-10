@@ -395,7 +395,7 @@ class TestProfilePages:
             return FakeUser(access=access)
 
         monkeypatch.setattr("portal.profile.User", get_user)
-        event = get_event(path="/portal/profile/not_my_account", cookies=fake_auth)
+        event = get_event(path="/portal/profile/not_my_username", cookies=fake_auth)
         ret = main.lambda_handler(event, lambda_context)
 
         assert ret["statusCode"] == 302
@@ -410,11 +410,11 @@ class TestProfilePages:
             return FakeUser(access=access)
 
         monkeypatch.setattr("portal.profile.User", get_user)
-        event = get_event(path="/portal/profile/not_my_account", cookies=fake_auth)
+        event = get_event(path="/portal/profile/not_my_username", cookies=fake_auth)
         ret = main.lambda_handler(event, lambda_context)
 
         assert ret["statusCode"] == 200
-        assert ret["body"].find("Hello <i>not_my_account</i>") != -1
+        assert ret["body"].find("Hello <i>not_my_username</i>") != -1
         assert ret["headers"].get("Content-Type") == "text/html"
 
     def test_no_user_access(
