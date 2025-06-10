@@ -1,6 +1,7 @@
 import os
 import copy
 import json
+import base64
 from dataclasses import dataclass
 import time
 from base64 import b64encode
@@ -315,7 +316,13 @@ class TestPortalIntegrations:
         # login_widget
 
     def test_post_portal_hub_auth(self, lambda_context: LambdaContext, fake_auth):
-        event = get_event(path="/portal/hub/auth", method="POST", cookies=fake_auth)
+        body_payload = json.dumps({"username": "test_user"})
+        event = get_event(
+            path="/portal/hub/auth",
+            method="POST",
+            body=base64.b64encode(body_payload.encode("ascii")),
+            cookies=fake_auth,
+        )
         ret = main.lambda_handler(event, lambda_context)
         assert ret["statusCode"] == 200
         assert ret["headers"].get("Content-Type") == "application/json"
