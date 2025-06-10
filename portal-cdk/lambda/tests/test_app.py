@@ -376,21 +376,23 @@ class TestProfilePages:
         self, lambda_context: LambdaContext, monkeypatch, fake_auth
     ):
         def get_user(*args, **kwargs):
-            access = ['user']
-            return FakeUser(access=access) 
+            access = ["user"]
+            return FakeUser(access=access)
 
         monkeypatch.setattr("portal.profile.User", get_user)
         event = get_event(path="/portal/profile/test_user", cookies=fake_auth)
         ret = main.lambda_handler(event, lambda_context)
-        
+
         assert ret["statusCode"] == 200
         assert ret["body"].find("Hello <i>test_user</i>") != -1
         assert ret["headers"].get("Content-Type") == "text/html"
-    
-    def test_user_access_other_profile(self, lambda_context: LambdaContext, monkeypatch, fake_auth):
+
+    def test_user_access_other_profile(
+        self, lambda_context: LambdaContext, monkeypatch, fake_auth
+    ):
         def get_user(*args, **kwargs):
-            access = ['user']
-            return FakeUser(access=access) 
+            access = ["user"]
+            return FakeUser(access=access)
 
         monkeypatch.setattr("portal.profile.User", get_user)
         event = get_event(path="/portal/profile/not_my_account", cookies=fake_auth)
@@ -399,24 +401,28 @@ class TestProfilePages:
         assert ret["statusCode"] == 302
         assert ret["headers"].get("Content-Type") == "text/html"
         assert ret["headers"].get("Location") == "/portal/profile/test_user"
-    
-    def test_admin_access_other_profile(self, lambda_context: LambdaContext, monkeypatch, fake_auth):
+
+    def test_admin_access_other_profile(
+        self, lambda_context: LambdaContext, monkeypatch, fake_auth
+    ):
         def get_user(*args, **kwargs):
-            access = ['admin']
-            return FakeUser(access=access) 
+            access = ["admin"]
+            return FakeUser(access=access)
 
         monkeypatch.setattr("portal.profile.User", get_user)
         event = get_event(path="/portal/profile/not_my_account", cookies=fake_auth)
         ret = main.lambda_handler(event, lambda_context)
-        
+
         assert ret["statusCode"] == 200
         assert ret["body"].find("Hello <i>not_my_account</i>") != -1
         assert ret["headers"].get("Content-Type") == "text/html"
-    
-    def test_no_user_access(self, lambda_context: LambdaContext, monkeypatch, fake_auth):
+
+    def test_no_user_access(
+        self, lambda_context: LambdaContext, monkeypatch, fake_auth
+    ):
         def get_user(*args, **kwargs):
             access = []
-            return FakeUser(access=access) 
+            return FakeUser(access=access)
 
         monkeypatch.setattr("portal.profile.User", get_user)
         event = get_event(path="/portal/profile/test_user", cookies=fake_auth)
@@ -425,15 +431,14 @@ class TestProfilePages:
         assert ret["statusCode"] == 302
         assert ret["headers"].get("Content-Type") == "text/html"
         assert ret["headers"].get("Location") == "/portal"
-        
 
     # Test query params trigger missing value and autofill values correctly
     def test_profile_query_params(
         self, lambda_context: LambdaContext, monkeypatch, fake_auth
     ):
         def get_user(*args, **kwargs):
-            access = ['user']
-            return FakeUser(access=access) 
+            access = ["user"]
+            return FakeUser(access=access)
 
         monkeypatch.setattr("portal.profile.User", get_user)
         qparams = {
@@ -492,7 +497,7 @@ class TestProfilePages:
                 "is_affliated_with_university": "yes",
                 "user_or_pi_nasa_email": "no",
             }
-            access = ['user']
+            access = ["user"]
             return FakeUser(access=access, profile=profile)
 
         monkeypatch.setattr("portal.profile.User", get_user)
@@ -715,7 +720,7 @@ class TestProfilePages:
 
         def get_user(*args, **kwargs):
             profile = {}
-            access = ['user']
+            access = ["user"]
             return FakeUser(access=access, profile=profile)
 
         monkeypatch.setattr("portal.profile.User", get_user)
