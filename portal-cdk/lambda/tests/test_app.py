@@ -75,7 +75,7 @@ JWK = {
 }
 
 
-def validate_jwt(*args, **vargs):
+def validate_jwt(*args, **kwargs):
     return {
         "client_id": "2pjp68mov6sfhqda8pjphll8cq",
         "token_use": "access",
@@ -147,6 +147,7 @@ class LambdaContext:
 class FakeUser:
     profile: dict = None
     last_cookie_assignment: str = None
+    access: list = None
 
     def update_last_cookie_assignment(self) -> None:
         self.last_cookie_assignment = datetime.datetime(2024, 1, 1, 12, 0, 0).strftime(
@@ -241,7 +242,7 @@ class TestPortalIntegrations:
             last_cookie_assignment={"last_cookie_assignment": None}
         )
 
-        def get_user(*args, **vargs):
+        def get_user(*args, **kwargs):
             return fake_user_instance
 
         monkeypatch.setattr("requests.post", mocked_requests_post)
@@ -285,11 +286,15 @@ class TestPortalIntegrations:
                 "KBEg4O96Pyyn2k7fcKdl5Lf9OZBITSyKTjGpKPtymDU=": jwk_string,
             },
         )
-        event = get_event(path="/portal/profile/joe", cookies={"portal-jwt": OLD_JWT})
+        event = get_event(
+            path="/portal/profile/form/joe", cookies={"portal-jwt": OLD_JWT}
+        )
         ret = main.lambda_handler(event, lambda_context)
         assert ret["statusCode"] == 302
         assert ret["body"] == "User is not logged in"
-        assert ret["headers"].get("Location").endswith("?return=/portal/profile/joe")
+        assert (
+            ret["headers"].get("Location").endswith("?return=/portal/profile/form/joe")
+        )
         # Make sure we're setting cookies to an empty value
         assert ret["cookies"][0].find("Expires") != -1
 
@@ -367,13 +372,15 @@ class TestPortalAuth:
 class TestProfilePages:
     # Ensure profile page is not reachable if not logged in
     def test_profile_logged_out(self, lambda_context: LambdaContext):
-        event = get_event(path="/portal/profile/test_user")
+        event = get_event(path="/portal/profile/form/test_user")
         ret = main.lambda_handler(event, lambda_context)
 
         assert ret["statusCode"] == 302
         assert ret["body"] == "User is not logged in"
         assert (
-            ret["headers"].get("Location").endswith("?return=/portal/profile/test_user")
+            ret["headers"]
+            .get("Location")
+            .endswith("?return=/portal/profile/form/test_user")
         )
         assert ret["headers"].get("Content-Type") == "text/html"
 
@@ -381,25 +388,76 @@ class TestProfilePages:
     def test_profile_logged_in(
         self, lambda_context: LambdaContext, monkeypatch, fake_auth
     ):
-        def get_user(*args, **vargs):
-            return {"profile": None}
+        def get_user(*args, **kwargs):
+            access = ["user"]
+            return FakeUser(access=access)
 
         monkeypatch.setattr("portal.profile.User", get_user)
-        event = get_event(path="/portal/profile/test_user", cookies=fake_auth)
+        event = get_event(path="/portal/profile/form/test_user", cookies=fake_auth)
         ret = main.lambda_handler(event, lambda_context)
 
         assert ret["statusCode"] == 200
-        assert ret["body"].find("<!DOCTYPE html>") != -1
+        assert ret["body"].find("Hello <i>test_user</i>") != -1
         assert ret["headers"].get("Content-Type") == "text/html"
+
+    def test_user_access_other_profile(
+        self, lambda_context: LambdaContext, monkeypatch, fake_auth
+    ):
+        def get_user(*args, **kwargs):
+            access = ["user"]
+            return FakeUser(access=access)
+
+        monkeypatch.setattr("portal.profile.User", get_user)
+        event = get_event(
+            path="/portal/profile/form/not_my_username", cookies=fake_auth
+        )
+        ret = main.lambda_handler(event, lambda_context)
+
+        assert ret["statusCode"] == 302
+        assert ret["headers"].get("Content-Type") == "text/html"
+        assert ret["headers"].get("Location") == "/portal/profile/form/test_user"
+
+    def test_admin_access_other_profile(
+        self, lambda_context: LambdaContext, monkeypatch, fake_auth
+    ):
+        def get_user(*args, **kwargs):
+            access = ["admin"]
+            return FakeUser(access=access)
+
+        monkeypatch.setattr("portal.profile.User", get_user)
+        event = get_event(
+            path="/portal/profile/form/not_my_username", cookies=fake_auth
+        )
+        ret = main.lambda_handler(event, lambda_context)
+
+        assert ret["statusCode"] == 200
+        assert ret["body"].find("Hello <i>not_my_username</i>") != -1
+        assert ret["headers"].get("Content-Type") == "text/html"
+
+    def test_no_user_access(
+        self, lambda_context: LambdaContext, monkeypatch, fake_auth
+    ):
+        def get_user(*args, **kwargs):
+            access = []
+            return FakeUser(access=access)
+
+        monkeypatch.setattr("portal.profile.User", get_user)
+        event = get_event(path="/portal/profile/form/test_user", cookies=fake_auth)
+        ret = main.lambda_handler(event, lambda_context)
+
+        assert ret["statusCode"] == 302
+        assert ret["headers"].get("Content-Type") == "text/html"
+        assert ret["headers"].get("Location") == "/portal"
 
     # Test query params trigger missing value and autofill values correctly
     def test_profile_query_params(
         self, lambda_context: LambdaContext, monkeypatch, fake_auth
     ):
-        def get_item(*args, **vargs):
-            return False
+        def get_user(*args, **kwargs):
+            access = ["user"]
+            return FakeUser(access=access)
 
-        # monkeypatch.setattr("portal.profile.get_item", get_item)
+        monkeypatch.setattr("portal.profile.User", get_user)
         qparams = {
             "country_of_residence_error": "missing",
             "is_affiliated_with_nasa_error": "missing",
@@ -420,7 +478,7 @@ class TestProfilePages:
             "research_member_affliated_with_university": False,
             "graduate_student_affliated_with_university": False,
         }
-        path = "/portal/profile/test_user"
+        path = "/portal/profile/form/test_user"
         event = get_event(path=path, cookies=fake_auth, qparams=qparams)
         ret = main.lambda_handler(event, lambda_context)
 
@@ -440,7 +498,7 @@ class TestProfilePages:
     def test_profile_loading(
         self, lambda_context: LambdaContext, monkeypatch, fake_auth
     ):
-        def get_user(*args, **vargs):
+        def get_user(*args, **kwargs):
             profile = {
                 "user_affliated_with_nasa_research_email": "",
                 "pi_affliated_with_nasa_research_email": "apple@apple.com",
@@ -456,11 +514,12 @@ class TestProfilePages:
                 "is_affliated_with_university": "yes",
                 "user_or_pi_nasa_email": "no",
             }
-            return FakeUser(profile=profile)
+            access = ["user"]
+            return FakeUser(access=access, profile=profile)
 
         monkeypatch.setattr("portal.profile.User", get_user)
 
-        path = "/portal/profile/test_user"
+        path = "/portal/profile/form/test_user"
         event = get_event(path=path, cookies=fake_auth)
         ret = main.lambda_handler(event, lambda_context)
 
@@ -674,11 +733,12 @@ class TestProfilePages:
     def test_profile_user_filled(
         self, monkeypatch, lambda_context: LambdaContext, fake_auth
     ):
-        user = "test_user"
+        username = "test_user"
 
-        def get_user(*args, **vargs):
+        def get_user(*args, **kwargs):
             profile = {}
-            return FakeUser(profile=profile)
+            access = ["user"]
+            return FakeUser(access=access, profile=profile)
 
         monkeypatch.setattr("portal.profile.User", get_user)
 
@@ -716,7 +776,7 @@ class TestProfilePages:
         request_body = b64encode(query_string.encode("utf-8"))
 
         event = get_event(
-            path=f"/portal/profile/{user}",
+            path=f"/portal/profile/form/{username}",
             method="POST",
             body=request_body,
             cookies=fake_auth,
@@ -759,7 +819,7 @@ class TestProfilePages:
         request_body = b64encode(query_string.encode("utf-8"))
 
         event = get_event(
-            path=f"/portal/profile/{user}",
+            path=f"/portal/profile/form/{username}",
             method="POST",
             body=request_body,
             cookies=fake_auth,
@@ -782,7 +842,7 @@ class TestProfilePages:
         assert ret["statusCode"] == 302
         assert (
             ret["body"]
-            == f"\"{{'Redirect to /portal/profile/test_user?{expected_query_string}'}}\""
+            == f"\"{{'Redirect to /portal/profile/form/test_user?{expected_query_string}'}}\""
         )
 
 
