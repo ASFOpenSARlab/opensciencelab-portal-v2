@@ -38,7 +38,7 @@ def enforce_profile_access():
                 # If user role, check if username is their own
                 if kwargs["username"] != username:
                     # If username not filled correctly, redirect to matching username
-                    next_url = f"/portal/profile/{username}"
+                    next_url = f"/portal/profile/form/{username}"
                     return wrap_response(
                         body={f"Redirect to {next_url}"},
                         code=302,
@@ -73,7 +73,7 @@ def profile_root():
     return page_components
 
 
-@profile_router.get("/bob")
+@profile_router.get("/form/bob")
 @require_access()
 @portal_template()
 def profile_bob():
@@ -85,7 +85,7 @@ def profile_bob():
     return page_components
 
 
-@profile_router.get("/<username>")
+@profile_router.get("/form/<username>")
 @require_access()
 @enforce_profile_access()
 @portal_template(name="profile.j2")
@@ -227,7 +227,7 @@ def process_profile_form(request_body: str) -> tuple[bool, dict[str, Any]]:
     return True, query_dict
 
 
-@profile_router.post("/<username>")
+@profile_router.post("/form/<username>")
 @require_access()
 @enforce_profile_access()
 def profile_user_filled(username: str):
@@ -253,7 +253,7 @@ def profile_user_filled(username: str):
     # query_dict must be form data and errors at this point
     query_string = urlencode(query_dict)
     # Send the user back to the profile page
-    next_url = f"/portal/profile/{username}?{query_string}"
+    next_url = f"/portal/profile/form/{username}?{query_string}"
     return wrap_response(
         body={f"Redirect to {next_url}"},
         code=302,
