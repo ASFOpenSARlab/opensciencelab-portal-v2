@@ -285,11 +285,15 @@ class TestPortalIntegrations:
                 "KBEg4O96Pyyn2k7fcKdl5Lf9OZBITSyKTjGpKPtymDU=": jwk_string,
             },
         )
-        event = get_event(path="/portal/profile/form/joe", cookies={"portal-jwt": OLD_JWT})
+        event = get_event(
+            path="/portal/profile/form/joe", cookies={"portal-jwt": OLD_JWT}
+        )
         ret = main.lambda_handler(event, lambda_context)
         assert ret["statusCode"] == 302
         assert ret["body"] == "User is not logged in"
-        assert ret["headers"].get("Location").endswith("?return=/portal/profile/form/joe")
+        assert (
+            ret["headers"].get("Location").endswith("?return=/portal/profile/form/joe")
+        )
         # Make sure we're setting cookies to an empty value
         assert ret["cookies"][0].find("Expires") != -1
 
@@ -367,7 +371,9 @@ class TestProfilePages:
         assert ret["statusCode"] == 302
         assert ret["body"] == "User is not logged in"
         assert (
-            ret["headers"].get("Location").endswith("?return=/portal/profile/form/test_user")
+            ret["headers"]
+            .get("Location")
+            .endswith("?return=/portal/profile/form/test_user")
         )
         assert ret["headers"].get("Content-Type") == "text/html"
 
@@ -395,7 +401,9 @@ class TestProfilePages:
             return FakeUser(access=access)
 
         monkeypatch.setattr("portal.profile.User", get_user)
-        event = get_event(path="/portal/profile/form/not_my_username", cookies=fake_auth)
+        event = get_event(
+            path="/portal/profile/form/not_my_username", cookies=fake_auth
+        )
         ret = main.lambda_handler(event, lambda_context)
 
         assert ret["statusCode"] == 302
@@ -410,7 +418,9 @@ class TestProfilePages:
             return FakeUser(access=access)
 
         monkeypatch.setattr("portal.profile.User", get_user)
-        event = get_event(path="/portal/profile/form/not_my_username", cookies=fake_auth)
+        event = get_event(
+            path="/portal/profile/form/not_my_username", cookies=fake_auth
+        )
         ret = main.lambda_handler(event, lambda_context)
 
         assert ret["statusCode"] == 200
