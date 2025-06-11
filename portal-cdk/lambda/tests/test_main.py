@@ -44,4 +44,3 @@ class TestPortalIntegrations:
         ret = main.lambda_handler(event, lambda_context)
         assert ret["statusCode"] == 200
         assert ret["headers"].get("Content-Type") == "text/css"
-
