@@ -1,10 +1,12 @@
 import datetime
 
 import json
+import base64
 
-from util.responses import wrap_response, basic_json
+from util.responses import wrap_response
 from util.format import portal_template, request_context_string
 from util.auth import encrypt_data, require_access
+from util.session import current_session
 
 from aws_lambda_powertools import Logger
 from aws_lambda_powertools.event_handler.api_gateway import Router
@@ -31,12 +33,24 @@ def portal_hub_root():
     return "<h4>Hello</h4>"
 
 
+@hub_router.get("/home")
+def portal_hub_home():
+    home_root = "/portal"
+    return wrap_response(
+        body={"Redirect": home_root},
+        code=302,
+        content_type=content_types.APPLICATION_JSON,
+        headers={"Location": home_root},
+    )
+
+
 @hub_router.get("/auth")
-# @require_access()
+@require_access()
 def get_portal_hub_auth():
     # /portal/hub/auth?next_url=%2Flab%2Fsmce-test-opensarlab%2Fhub%2Fhome
     next_url = hub_router.current_event.query_string_parameters.get("next_url", None)
-    logger.info(f"GET auth: {next_url=}")
+    username = current_session.auth.cognito.username
+    logger.info(f"GET auth: {next_url=}, (username = {username}")
 
     ### Authenticate with Portal server cookie here
     # If not authenticated, go to /portal/hub/login so the user can authenticate within browser
@@ -50,14 +64,20 @@ def get_portal_hub_auth():
 
 
 @hub_router.post("/auth")
-# @require_access()
-@basic_json()
 def post_portal_hub_auth():
-    logger.info("Request user info")
+    post_data = hub_router.current_event.body
+    post_data_decoded = json.loads(base64.b64decode(post_data).decode("utf-8"))
+    username = post_data_decoded["username"]
+    logger.info(f"Request user info = {username=}")
+
+    # Eventually, here, we'll need to instantiate a user object and
+    # derive access here dynamically. BUT, for now, assume they have
+    # access to the lab!
+
     data = {
         "admin": True,
         "roles": ["user", "admin"],
-        "name": f"{TEMP_USERNAME}",
+        "name": f"{username}",
         "has_2fa": 1,
         "force_user_profile_update": False,
         "ip_country_status": "unrestricted",
@@ -73,7 +93,12 @@ def post_portal_hub_auth():
         },
     }
     encrypted_data = encrypt_data(data)
-    return json.dumps({"data": encrypted_data, "message": "OK"})
+
+    return wrap_response(
+        body=json.dumps({"data": encrypted_data, "message": "OK"}),
+        code=200,
+        content_type=content_types.APPLICATION_JSON,
+    )
 
 
 @hub_router.get("/login")
