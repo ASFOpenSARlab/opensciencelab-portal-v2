@@ -75,6 +75,7 @@ def mocked_requests_post(*args, **kwargs):
 
     return MockResponse(None, 404)
 
+
 @dataclass
 class FakeUser:
     profile: dict = None
@@ -85,6 +86,7 @@ class FakeUser:
         self.last_cookie_assignment = datetime.datetime(2024, 1, 1, 12, 0, 0).strftime(
             "%Y-%m-%d %H:%M:%S"
         )
+
 
 class TestPortalAuth:
     def test_generic_error(self, monkeypatch):
@@ -247,15 +249,15 @@ class TestProfilePages:
         assert ret["headers"].get("Content-Type") == "text/html"
 
     # Ensure page loads if logged in
-    def test_profile_logged_in(
-        self, lambda_context, monkeypatch, fake_auth, helpers
-    ):
+    def test_profile_logged_in(self, lambda_context, monkeypatch, fake_auth, helpers):
         def get_user(*args, **kwargs):
             access = ["user"]
             return FakeUser(access=access)
 
         monkeypatch.setattr("portal.profile.User", get_user)
-        event = helpers.get_event(path="/portal/profile/form/test_user", cookies=fake_auth)
+        event = helpers.get_event(
+            path="/portal/profile/form/test_user", cookies=fake_auth
+        )
         ret = main.lambda_handler(event, lambda_context)
 
         assert ret["statusCode"] == 200
@@ -296,15 +298,15 @@ class TestProfilePages:
         assert ret["body"].find("Hello <i>not_my_username</i>") != -1
         assert ret["headers"].get("Content-Type") == "text/html"
 
-    def test_no_user_access(
-        self, lambda_context, monkeypatch, fake_auth, helpers
-    ):
+    def test_no_user_access(self, lambda_context, monkeypatch, fake_auth, helpers):
         def get_user(*args, **kwargs):
             access = []
             return FakeUser(access=access)
 
         monkeypatch.setattr("portal.profile.User", get_user)
-        event = helpers.get_event(path="/portal/profile/form/test_user", cookies=fake_auth)
+        event = helpers.get_event(
+            path="/portal/profile/form/test_user", cookies=fake_auth
+        )
         ret = main.lambda_handler(event, lambda_context)
 
         assert ret["statusCode"] == 302
@@ -357,9 +359,7 @@ class TestProfilePages:
         assert ret["headers"].get("Content-Type") == "text/html"
 
     # Test profile autofills from existing profile correctly
-    def test_profile_loading(
-        self, lambda_context, monkeypatch, fake_auth, helpers
-    ):
+    def test_profile_loading(self, lambda_context, monkeypatch, fake_auth, helpers):
         def get_user(*args, **kwargs):
             profile = {
                 "user_affliated_with_nasa_research_email": "",
@@ -704,4 +704,3 @@ class TestProfilePages:
             ret["body"]
             == f"\"{{'Redirect to /portal/profile/form/test_user?{expected_query_string}'}}\""
         )
-
