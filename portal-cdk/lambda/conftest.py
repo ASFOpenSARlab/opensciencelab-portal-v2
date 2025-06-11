@@ -5,8 +5,102 @@ https://stackoverflow.com/a/50610630/21674565
 """
 
 import os
+import copy
+import time
+
+import pytest
+from dataclasses import dataclass
 
 
 os.environ["STACK_REGION"] = "us-west-2"
 os.environ["COGNITO_CLIENT_ID"] = "fake-cognito-id"
 os.environ["COGNITO_POOL_ID"] = "fake-pool-id"
+from util.auth import PORTAL_USER_COOKIE, COGNITO_JWT_COOKIE
+
+
+@dataclass
+class LambdaContext:
+    function_name: str = "test"
+    memory_limit_in_mb: int = 128
+    invoked_function_arn: str = "arn:aws:lambda:eu-west-1:123456789012:function:test"
+    aws_request_id: str = "da658bd3-2d6f-4e7b-8ec2-937234644fdc"
+
+
+@pytest.fixture
+def lambda_context() -> LambdaContext:
+    return LambdaContext()
+
+
+@pytest.fixture
+def fake_auth(monkeypatch):
+    # Bypass JWT
+    validate_jwt = Helpers().validate_jwt
+    monkeypatch.setattr("util.auth.validate_jwt", validate_jwt)
+    monkeypatch.setattr("jwt.decode", validate_jwt)
+
+    # Override signing key
+    monkeypatch.setattr(
+        "aws_lambda_powertools.utilities.parameters.get_secret",
+        lambda a: "er9LnqEOiH+JLBsFCy0kVeba6ZSlG903cliU7VYKnM8=",
+    )
+
+    auth_cookies = {PORTAL_USER_COOKIE: "bla", COGNITO_JWT_COOKIE: "bla"}
+
+    return auth_cookies
+
+
+BASIC_REQUEST = {
+    "rawPath": "/test",
+    "requestContext": {
+        "requestContext": {"requestId": "227b78aa-779d-47d4-a48e-ce62120393b8"},
+        "http": {"method": "GET", "path": "/test"},
+        "stage": "$default",
+    },
+    "queryStringParameters": {},
+    "cookies": [],
+}
+
+
+@dataclass
+class Helpers:
+    @staticmethod
+    def get_event(
+        path="/", method="GET", cookies=None, headers=None, qparams=None, body=None
+    ):
+        # This rather than defaulting to polluted dicts
+        cookies = {} if not cookies else cookies
+        headers = {} if not headers else headers
+        qparams = {} if not qparams else qparams
+        ret_event = copy.deepcopy(BASIC_REQUEST)
+
+        # Update request path/method
+        ret_event["rawPath"] = path
+        ret_event["requestContext"]["http"]["path"] = path
+        ret_event["requestContext"]["http"]["method"] = method
+
+        if body:
+            ret_event["body"] = body
+
+        for name, value in cookies.items():
+            ret_event["cookies"].append(f"{name}={value}")
+
+        for key, value in qparams.items():
+            ret_event["queryStringParameters"][key] = value
+
+        return ret_event
+
+    @staticmethod
+    def validate_jwt(*args, **kwargs):
+        return {
+            "client_id": "2pjp68mov6sfhqda8pjphll8cq",
+            "token_use": "access",
+            "auth_time": time.time(),
+            "exp": time.time() + 100,
+            "iat": time.time() - 100,
+            "username": "test_user",
+        }
+
+
+@pytest.fixture
+def helpers():
+    return Helpers()

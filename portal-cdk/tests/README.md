@@ -1,4 +1,4 @@
-# How to Test
+# Testing against CDK Itself
 
 CDK has three main ways to test your code. Using SAM for lambda, using unit testing for making sure the synthed template has specific features (i.e lambda functions can only have specific runtimes), and snapshot testing.
 
