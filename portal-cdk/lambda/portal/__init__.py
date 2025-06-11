@@ -3,7 +3,7 @@ from portal.access import access_route
 from portal.hub import hub_route
 from util.format import portal_template
 from util.auth import require_access
-
+from portal.profile import require_profile_filled
 
 from aws_lambda_powertools.event_handler.api_gateway import Router
 from aws_lambda_powertools import Logger
@@ -34,6 +34,7 @@ require_access.router = portal_router
 
 @portal_router.get("")
 @require_access()
+@require_profile_filled()
 @portal_template()
 def portal_root():
     return "Welcome to OpenScienceLab"

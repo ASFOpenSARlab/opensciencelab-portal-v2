@@ -24,6 +24,26 @@ profile_route = {
     "name": "Profile",
 }
 
+def require_profile_filled():
+    def inner(func):
+        def wrapper(*args, **kwargs):
+            # Get user
+            username = current_session.auth.cognito.username
+            user = User(username=username)
+            # Redirect if user flagged to fill profile
+            if user.require_profile_update:
+                next_url = f"/portal/profile/form/{username}"
+                return wrap_response(
+                    body="User must update profile",
+                    code=302,
+                    headers={"Location": next_url},
+                )
+
+            return func(*args, **kwargs)
+
+        return wrapper
+
+    return inner
 
 def enforce_profile_access():
     def inner(func):
