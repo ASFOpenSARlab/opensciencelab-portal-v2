@@ -25,6 +25,45 @@ profile_route = {
 }
 
 
+def enforce_profile_access():
+    def inner(func):
+        def wrapper(*args, **kwargs):
+            username = current_session.auth.cognito.username
+            user = User(username=username)
+
+            if "admin" in user.access:
+                # If admin, continue to return normally
+                return func(*args, **kwargs)
+            elif "user" in user.access:
+                # If user role, check if username is their own
+                if kwargs["username"] != username:
+                    # If username not filled correctly, redirect to matching username
+                    next_url = f"/portal/profile/form/{username}"
+                    return wrap_response(
+                        body={f"Redirect to {next_url}"},
+                        code=302,
+                        headers={"Location": next_url},
+                    )
+                # If user is correct, continue to page
+                return func(*args, **kwargs)
+            else:
+                # Log error if user does not have a covered access type
+                logger.error(
+                    f"{username} does not have covered access type. User access: {user.access}"
+                )
+
+            next_url = "/portal"
+            return wrap_response(
+                body={f"Redirect to {next_url}"},
+                code=302,
+                headers={"Location": next_url},
+            )
+
+        return wrapper
+
+    return inner
+
+
 # This catches "/portal/profile", but "/portal/profile" is uncatchable
 @profile_router.get("")
 @require_access()
@@ -34,7 +73,7 @@ def profile_root():
     return page_components
 
 
-@profile_router.get("/bob")
+@profile_router.get("/form/bob")
 @require_access()
 @portal_template()
 def profile_bob():
@@ -46,14 +85,15 @@ def profile_bob():
     return page_components
 
 
-@profile_router.get("/<user>")
+@profile_router.get("/form/<username>")
 @require_access()
+@enforce_profile_access()
 @portal_template(name="profile.j2")
-def profile_user(user):
+def profile_user(username: str):
     page_dict = {
-        "content": f"Profile for user {user}",
+        "content": f"Profile for user {username}",
         "input": {
-            "username": user,
+            "username": username,
             "default_value": "Choose...",
             "warning_missing": "Value is missing",
         },
@@ -71,7 +111,7 @@ def profile_user(user):
     if query_params:
         profile = query_params
     else:
-        user_class = User(user)
+        user_class = User(username=username)
         if user_class:
             if hasattr(user_class, "profile"):
                 profile = user_class.profile
@@ -187,9 +227,10 @@ def process_profile_form(request_body: str) -> tuple[bool, dict[str, Any]]:
     return True, query_dict
 
 
-@profile_router.post("/<user>")
+@profile_router.post("/form/<username>")
 @require_access()
-def profile_user_filled(user):
+@enforce_profile_access()
+def profile_user_filled(username: str):
     # Parse form request
     body = profile_router.current_event.body
     success, query_dict = process_profile_form(body)
@@ -198,7 +239,7 @@ def profile_user_filled(user):
     if success:
         # query_dict must be profile values at this point
         # Update user profile
-        user_class = User(user)
+        user_class = User(username)
         user_class.profile = query_dict
 
         # Send the user to the portal
@@ -212,7 +253,7 @@ def profile_user_filled(user):
     # query_dict must be form data and errors at this point
     query_string = urlencode(query_dict)
     # Send the user back to the profile page
-    next_url = f"/portal/profile/{user}?{query_string}"
+    next_url = f"/portal/profile/form/{username}?{query_string}"
     return wrap_response(
         body={f"Redirect to {next_url}"},
         code=302,

@@ -90,7 +90,7 @@ class Helpers:
         return ret_event
 
     @staticmethod
-    def validate_jwt(*args, **vargs):
+    def validate_jwt(*args, **kwargs):
         return {
             "client_id": "2pjp68mov6sfhqda8pjphll8cq",
             "token_use": "access",
