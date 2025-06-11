@@ -22,4 +22,5 @@ validator_map = {
     "random_dict": dict_contains_random_key,
     "profile": validate_profile,
     "last_cookie_assignment": str,
+    "require_profile_update": bool,
 }
