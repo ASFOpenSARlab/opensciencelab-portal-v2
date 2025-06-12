@@ -1,39 +1,17 @@
-import os
-import copy
 import json
-import base64
-from dataclasses import dataclass
-import time
-from base64 import b64encode
 import datetime
-
-from moto import mock_aws
-import boto3
-
-import main
-import portal.profile
-from util.auth import PORTAL_USER_COOKIE, COGNITO_JWT_COOKIE
+from dataclasses import dataclass
+from base64 import b64encode
 from urllib.parse import urlencode
-
-## This is here just to fix a weird import timing issue with importing utils directly
-from util.user import dynamo_db as _  # noqa: F401 # pylint: disable=unused-import,import-error
 
 import pytest
 import jwt
 from jwt.algorithms import RSAAlgorithm
 
-REGION = os.getenv("STACK_REGION", "us-west-2")
+import main
+import portal.profile
+from util.auth import PORTAL_USER_COOKIE, COGNITO_JWT_COOKIE
 
-BASIC_REQUEST = {
-    "rawPath": "/test",
-    "requestContext": {
-        "requestContext": {"requestId": "227b78aa-779d-47d4-a48e-ce62120393b8"},
-        "http": {"method": "GET", "path": "/test"},
-        "stage": "$default",
-    },
-    "queryStringParameters": {},
-    "cookies": [],
-}
 
 BAD_JWT = (
     "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiIsImtpZCI6ImJsYSJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiw"
@@ -75,43 +53,6 @@ JWK = {
 }
 
 
-def validate_jwt(*args, **kwargs):
-    return {
-        "client_id": "2pjp68mov6sfhqda8pjphll8cq",
-        "token_use": "access",
-        "auth_time": time.time(),
-        "exp": time.time() + 100,
-        "iat": time.time() - 100,
-        "username": "test_user",
-    }
-
-
-def get_event(
-    path="/", method="GET", cookies=None, headers=None, qparams=None, body=None
-):
-    # This rather than defaulting to polluted dicts
-    cookies = {} if not cookies else cookies
-    headers = {} if not headers else headers
-    qparams = {} if not qparams else qparams
-    ret_event = copy.deepcopy(BASIC_REQUEST)
-
-    # Update request path/method
-    ret_event["rawPath"] = path
-    ret_event["requestContext"]["http"]["path"] = path
-    ret_event["requestContext"]["http"]["method"] = method
-
-    if body:
-        ret_event["body"] = body
-
-    for name, value in cookies.items():
-        ret_event["cookies"].append(f"{name}={value}")
-
-    for key, value in qparams.items():
-        ret_event["queryStringParameters"][key] = value
-
-    return ret_event
-
-
 def mocked_requests_post(*args, **kwargs):
     class MockResponse:
         def __init__(self, json_data, status_code):
@@ -136,14 +77,6 @@ def mocked_requests_post(*args, **kwargs):
 
 
 @dataclass
-class LambdaContext:
-    function_name: str = "test"
-    memory_limit_in_mb: int = 128
-    invoked_function_arn: str = "arn:aws:lambda:eu-west-1:123456789012:function:test"
-    aws_request_id: str = "da658bd3-2d6f-4e7b-8ec2-937234644fdc"
-
-
-@dataclass
 class FakeUser:
     profile: dict = None
     last_cookie_assignment: str = None
@@ -155,88 +88,37 @@ class FakeUser:
         )
 
 
-@pytest.fixture
-def lambda_context() -> LambdaContext:
-    return LambdaContext()
+class TestPortalAuth:
+    def test_generic_error(self, monkeypatch):
+        # Create an invalid SSO token
+        monkeypatch.setattr(
+            "aws_lambda_powertools.utilities.parameters.get_secret",
+            lambda a: "this-is-bad-sso-token",
+        )
 
+        from util.auth import encrypt_data
+        from util.exceptions import BadSsoToken
 
-@pytest.fixture
-def fake_auth(monkeypatch):
-    # Bypass JWT
-    monkeypatch.setattr("util.auth.validate_jwt", validate_jwt)
-    monkeypatch.setattr("jwt.decode", validate_jwt)
+        with pytest.raises(BadSsoToken) as excinfo:
+            encrypt_data("blablabla")
+        assert str(excinfo.value).find("change the SSO Secret") != -1
 
-    # Override signing key
-    monkeypatch.setattr(
-        "aws_lambda_powertools.utilities.parameters.get_secret",
-        lambda a: "er9LnqEOiH+JLBsFCy0kVeba6ZSlG903cliU7VYKnM8=",
-    )
-
-    auth_cookies = {PORTAL_USER_COOKIE: "bla", COGNITO_JWT_COOKIE: "bla"}
-
-    return auth_cookies
-
-
-class TestPortalIntegrations:
-    def test_landing_handler(self, lambda_context: LambdaContext):
-        event = get_event()
-
-        ret = main.lambda_handler(event, lambda_context)
-        assert ret["statusCode"] == 200
-        assert "Welcome to OpenScienceLab" in ret["body"]
-        assert "Log in" in ret["body"]
-        assert "/login?client_id=fake-cognito-id&response_type=code" in ret["body"]
-
-    def test_not_logged_in(self, lambda_context: LambdaContext):
-        event = get_event(path="/portal")
-        ret = main.lambda_handler(event, lambda_context)
-        assert ret["statusCode"] == 302
-        assert ret["body"] == "User is not logged in"
-        assert ret["headers"].get("Location").endswith("?return=/portal")
-        assert ret["headers"].get("Content-Type") == "text/html"
-
-    def test_static_image_dne(self, lambda_context: LambdaContext):
-        event = get_event(path="/static/img/dne.png")
-        ret = main.lambda_handler(event, lambda_context)
-        assert ret["statusCode"] == 404
-
-    def test_static_image_bad_type(self, lambda_context: LambdaContext):
-        event = get_event(path="/static/foo/bar.zip")
-        ret = main.lambda_handler(event, lambda_context)
-        assert ret["statusCode"] == 404
-
-    def test_static_image(self, lambda_context: LambdaContext):
-        event = get_event(path="/static/img/jh_logo.png")
-        ret = main.lambda_handler(event, lambda_context)
-        assert ret["statusCode"] == 200
-        assert ret["headers"].get("Content-Type") == "image/png"
-
-        event = get_event(path="/static/js/require.js")
-        ret = main.lambda_handler(event, lambda_context)
-        assert ret["statusCode"] == 200
-        assert ret["headers"].get("Content-Type") == "text/javascript"
-
-        event = get_event(path="/static/css/style.min.css")
-        ret = main.lambda_handler(event, lambda_context)
-        assert ret["statusCode"] == 200
-        assert ret["headers"].get("Content-Type") == "text/css"
-
-    def test_auth_no_code(self, lambda_context: LambdaContext):
-        event = get_event(path="/auth")
+    def test_auth_no_code(self, lambda_context, helpers):
+        event = helpers.get_event(path="/auth")
         ret = main.lambda_handler(event, lambda_context)
         assert ret["statusCode"] == 401
         assert ret["body"].find("No return Code found.") != -1
         assert not ret["headers"].get("Location")
         assert ret["headers"].get("Content-Type") == "text/html"
 
-    def test_auth_bad_code(self, lambda_context: LambdaContext, monkeypatch):
+    def test_auth_bad_code(self, lambda_context, monkeypatch, helpers):
         monkeypatch.setattr("requests.post", mocked_requests_post)
-        event = get_event(path="/auth", qparams={"code": "bad_code"})
+        event = helpers.get_event(path="/auth", qparams={"code": "bad_code"})
         ret = main.lambda_handler(event, lambda_context)
         assert ret["statusCode"] == 401
         assert ret["body"].find("Could not complete token exchange") != -1
 
-    def test_auth_good_code(self, lambda_context: LambdaContext, monkeypatch):
+    def test_auth_good_code(self, lambda_context, monkeypatch, helpers):
         # Create FakeUser instance to be monkeypatched in and inspected after modified
         fake_user_instance = FakeUser(
             last_cookie_assignment={"last_cookie_assignment": None}
@@ -246,14 +128,14 @@ class TestPortalIntegrations:
             return fake_user_instance
 
         monkeypatch.setattr("requests.post", mocked_requests_post)
-        monkeypatch.setattr("util.auth.validate_jwt", validate_jwt)
+        monkeypatch.setattr("util.auth.validate_jwt", helpers.validate_jwt)
         monkeypatch.setattr(
             "aws_lambda_powertools.utilities.parameters.get_secret",
             lambda a: "er9LnqEOiH+JLBsFCy0kVeba6ZSlG903cliU7VYKnM8=",
         )
         monkeypatch.setattr("main.User", get_user)
 
-        event = get_event(
+        event = helpers.get_event(
             path="/auth",
             qparams={
                 "code": "good_code",
@@ -270,14 +152,14 @@ class TestPortalIntegrations:
         assert ret["body"].find("Redirecting to /portal/profile") != -1
         assert fake_user_instance.last_cookie_assignment == "2024-01-01 12:00:00"
 
-    def test_bad_jwt(self, lambda_context: LambdaContext, monkeypatch):
+    def test_bad_jwt(self, lambda_context, monkeypatch, helpers):
         monkeypatch.setattr("util.auth.get_key_validation", lambda: {"bla": "bla"})
-        event = get_event(path="/portal", cookies={"portal-jwt": BAD_JWT})
+        event = helpers.get_event(path="/portal", cookies={"portal-jwt": BAD_JWT})
         with pytest.raises(jwt.exceptions.InvalidAlgorithmError) as excinfo:
             main.lambda_handler(event, lambda_context)
         assert str(excinfo.value) == "The specified alg value is not allowed"
 
-    def test_old_jwt(self, lambda_context: LambdaContext, monkeypatch):
+    def test_old_jwt(self, lambda_context, monkeypatch, helpers):
         jwk_string = RSAAlgorithm.from_jwk(json.dumps(JWK))
 
         monkeypatch.setattr(
@@ -286,7 +168,7 @@ class TestPortalIntegrations:
                 "KBEg4O96Pyyn2k7fcKdl5Lf9OZBITSyKTjGpKPtymDU=": jwk_string,
             },
         )
-        event = get_event(
+        event = helpers.get_event(
             path="/portal/profile/form/joe", cookies={"portal-jwt": OLD_JWT}
         )
         ret = main.lambda_handler(event, lambda_context)
@@ -298,34 +180,12 @@ class TestPortalIntegrations:
         # Make sure we're setting cookies to an empty value
         assert ret["cookies"][0].find("Expires") != -1
 
-    def test_logged_in(self, lambda_context: LambdaContext, fake_auth):
-        event = get_event(path="/portal", cookies=fake_auth)
-        ret = main.lambda_handler(event, lambda_context)
-
-        assert ret["statusCode"] == 200
-        assert ret["body"].find("Welcome to OpenScienceLab") != -1
-        assert ret["headers"].get("Location") is None
-        assert ret["headers"].get("Content-Type") == "text/html"
-
-    def test_log_out(self, lambda_context: LambdaContext):
-        event = get_event(path="/logout")
-        ret = main.lambda_handler(event, lambda_context)
-        assert ret["statusCode"] == 200
-        # Make sure we've been logged out
-        assert ret["body"].find("You have been logged out") != -1
-        assert ret["body"].find('<span id="login_widget">') != -1
-        # And cookies are being expired
-        assert ret["cookies"][0].find("Expires") != -1
-        assert ret["cookies"][1].find("Expires") != -1
-
-        # login_widget
-
-    def test_post_portal_hub_auth(self, lambda_context: LambdaContext, fake_auth):
+    def test_post_portal_hub_auth(self, lambda_context, fake_auth, helpers):
         body_payload = json.dumps({"username": "test_user"})
-        event = get_event(
+        event = helpers.get_event(
             path="/portal/hub/auth",
             method="POST",
-            body=base64.b64encode(body_payload.encode("ascii")),
+            body=b64encode(body_payload.encode("ascii")),
             cookies=fake_auth,
         )
         ret = main.lambda_handler(event, lambda_context)
@@ -335,8 +195,8 @@ class TestPortalIntegrations:
         assert json_payload.get("message") == "OK"
         assert json_payload.get("data")
 
-    def test_get_portal_hub_auth(self, lambda_context: LambdaContext, fake_auth):
-        event = get_event(path="/portal/hub/login", cookies=fake_auth)
+    def test_get_portal_hub_auth(self, lambda_context, fake_auth, helpers):
+        event = helpers.get_event(path="/portal/hub/login", cookies=fake_auth)
         ret = main.lambda_handler(event, lambda_context)
         assert ret["statusCode"] == 200
         assert ret["headers"].get("Content-Type") == "text/html"
@@ -344,35 +204,39 @@ class TestPortalIntegrations:
         cookies = [cookie.split("=")[0] for cookie in ret["cookies"]]
         assert PORTAL_USER_COOKIE in cookies
 
-    def test_get_portal_hub_no_auth(self, lambda_context: LambdaContext):
-        event = get_event(path="/portal/hub", cookies={"foo": "bar"})
+    def test_get_portal_hub_no_auth(self, lambda_context, helpers):
+        event = helpers.get_event(path="/portal/hub", cookies={"foo": "bar"})
         ret = main.lambda_handler(event, lambda_context)
         assert ret["statusCode"] == 302
         assert ret["body"] == "User is not logged in"
         assert ret["headers"].get("Location").endswith("?return=/portal/hub")
         assert ret["headers"].get("Content-Type") == "text/html"
 
+    def test_logged_in(self, lambda_context, fake_auth, helpers):
+        event = helpers.get_event(path="/portal", cookies=fake_auth)
+        ret = main.lambda_handler(event, lambda_context)
 
-class TestPortalAuth:
-    def test_generic_error(self, lambda_context: LambdaContext, monkeypatch):
-        # Create an invalid SSO token
-        monkeypatch.setattr(
-            "aws_lambda_powertools.utilities.parameters.get_secret",
-            lambda a: "this-is-bad-sso-token",
-        )
+        assert ret["statusCode"] == 200
+        assert ret["body"].find("Welcome to OpenScienceLab") != -1
+        assert ret["headers"].get("Location") is None
+        assert ret["headers"].get("Content-Type") == "text/html"
 
-        from util.auth import encrypt_data
-        from util.exceptions import BadSsoToken
-
-        with pytest.raises(BadSsoToken) as excinfo:
-            encrypt_data("blablabla")
-        assert str(excinfo.value).find("change the SSO Secret") != -1
+    def test_log_out(self, lambda_context, helpers):
+        event = helpers.get_event(path="/logout")
+        ret = main.lambda_handler(event, lambda_context)
+        assert ret["statusCode"] == 200
+        # Make sure we've been logged out
+        assert ret["body"].find("You have been logged out") != -1
+        assert ret["body"].find('<span id="login_widget">') != -1
+        # And cookies are being expired
+        assert ret["cookies"][0].find("Expires") != -1
+        assert ret["cookies"][1].find("Expires") != -1
 
 
 class TestProfilePages:
     # Ensure profile page is not reachable if not logged in
-    def test_profile_logged_out(self, lambda_context: LambdaContext):
-        event = get_event(path="/portal/profile/form/test_user")
+    def test_profile_logged_out(self, lambda_context, helpers):
+        event = helpers.get_event(path="/portal/profile/form/test_user")
         ret = main.lambda_handler(event, lambda_context)
 
         assert ret["statusCode"] == 302
@@ -385,15 +249,15 @@ class TestProfilePages:
         assert ret["headers"].get("Content-Type") == "text/html"
 
     # Ensure page loads if logged in
-    def test_profile_logged_in(
-        self, lambda_context: LambdaContext, monkeypatch, fake_auth
-    ):
+    def test_profile_logged_in(self, lambda_context, monkeypatch, fake_auth, helpers):
         def get_user(*args, **kwargs):
             access = ["user"]
             return FakeUser(access=access)
 
         monkeypatch.setattr("portal.profile.User", get_user)
-        event = get_event(path="/portal/profile/form/test_user", cookies=fake_auth)
+        event = helpers.get_event(
+            path="/portal/profile/form/test_user", cookies=fake_auth
+        )
         ret = main.lambda_handler(event, lambda_context)
 
         assert ret["statusCode"] == 200
@@ -401,14 +265,14 @@ class TestProfilePages:
         assert ret["headers"].get("Content-Type") == "text/html"
 
     def test_user_access_other_profile(
-        self, lambda_context: LambdaContext, monkeypatch, fake_auth
+        self, lambda_context, monkeypatch, fake_auth, helpers
     ):
         def get_user(*args, **kwargs):
             access = ["user"]
             return FakeUser(access=access)
 
         monkeypatch.setattr("portal.profile.User", get_user)
-        event = get_event(
+        event = helpers.get_event(
             path="/portal/profile/form/not_my_username", cookies=fake_auth
         )
         ret = main.lambda_handler(event, lambda_context)
@@ -418,14 +282,14 @@ class TestProfilePages:
         assert ret["headers"].get("Location") == "/portal/profile/form/test_user"
 
     def test_admin_access_other_profile(
-        self, lambda_context: LambdaContext, monkeypatch, fake_auth
+        self, lambda_context, monkeypatch, fake_auth, helpers
     ):
         def get_user(*args, **kwargs):
             access = ["admin"]
             return FakeUser(access=access)
 
         monkeypatch.setattr("portal.profile.User", get_user)
-        event = get_event(
+        event = helpers.get_event(
             path="/portal/profile/form/not_my_username", cookies=fake_auth
         )
         ret = main.lambda_handler(event, lambda_context)
@@ -434,15 +298,15 @@ class TestProfilePages:
         assert ret["body"].find("Hello <i>not_my_username</i>") != -1
         assert ret["headers"].get("Content-Type") == "text/html"
 
-    def test_no_user_access(
-        self, lambda_context: LambdaContext, monkeypatch, fake_auth
-    ):
+    def test_no_user_access(self, lambda_context, monkeypatch, fake_auth, helpers):
         def get_user(*args, **kwargs):
             access = []
             return FakeUser(access=access)
 
         monkeypatch.setattr("portal.profile.User", get_user)
-        event = get_event(path="/portal/profile/form/test_user", cookies=fake_auth)
+        event = helpers.get_event(
+            path="/portal/profile/form/test_user", cookies=fake_auth
+        )
         ret = main.lambda_handler(event, lambda_context)
 
         assert ret["statusCode"] == 302
@@ -451,7 +315,7 @@ class TestProfilePages:
 
     # Test query params trigger missing value and autofill values correctly
     def test_profile_query_params(
-        self, lambda_context: LambdaContext, monkeypatch, fake_auth
+        self, lambda_context, monkeypatch, fake_auth, helpers
     ):
         def get_user(*args, **kwargs):
             access = ["user"]
@@ -479,7 +343,7 @@ class TestProfilePages:
             "graduate_student_affliated_with_university": False,
         }
         path = "/portal/profile/form/test_user"
-        event = get_event(path=path, cookies=fake_auth, qparams=qparams)
+        event = helpers.get_event(path=path, cookies=fake_auth, qparams=qparams)
         ret = main.lambda_handler(event, lambda_context)
 
         assert ret["statusCode"] == 200
@@ -495,9 +359,7 @@ class TestProfilePages:
         assert ret["headers"].get("Content-Type") == "text/html"
 
     # Test profile autofills from existing profile correctly
-    def test_profile_loading(
-        self, lambda_context: LambdaContext, monkeypatch, fake_auth
-    ):
+    def test_profile_loading(self, lambda_context, monkeypatch, fake_auth, helpers):
         def get_user(*args, **kwargs):
             profile = {
                 "user_affliated_with_nasa_research_email": "",
@@ -520,7 +382,7 @@ class TestProfilePages:
         monkeypatch.setattr("portal.profile.User", get_user)
 
         path = "/portal/profile/form/test_user"
-        event = get_event(path=path, cookies=fake_auth)
+        event = helpers.get_event(path=path, cookies=fake_auth)
         ret = main.lambda_handler(event, lambda_context)
 
         assert ret["statusCode"] == 200
@@ -730,9 +592,7 @@ class TestProfilePages:
         assert query_dict == expected_dict
 
     # Ensure that incorrect profile fillings redirect to profile page, correct filling redirect to portal
-    def test_profile_user_filled(
-        self, monkeypatch, lambda_context: LambdaContext, fake_auth
-    ):
+    def test_profile_user_filled(self, monkeypatch, lambda_context, fake_auth, helpers):
         username = "test_user"
 
         def get_user(*args, **kwargs):
@@ -775,7 +635,7 @@ class TestProfilePages:
         query_string: str = urlencode(query_dict)
         request_body = b64encode(query_string.encode("utf-8"))
 
-        event = get_event(
+        event = helpers.get_event(
             path=f"/portal/profile/form/{username}",
             method="POST",
             body=request_body,
@@ -818,7 +678,7 @@ class TestProfilePages:
         query_string: str = urlencode(query_dict)
         request_body = b64encode(query_string.encode("utf-8"))
 
-        event = get_event(
+        event = helpers.get_event(
             path=f"/portal/profile/form/{username}",
             method="POST",
             body=request_body,
@@ -844,163 +704,3 @@ class TestProfilePages:
             ret["body"]
             == f"\"{{'Redirect to /portal/profile/form/test_user?{expected_query_string}'}}\""
         )
-
-
-@mock_aws
-class TestUserClass:
-    def setup_class():
-        ## These imports have to be the long forum, to let us modify the values here:
-        # https://stackoverflow.com/a/12496239/11650472
-        import util
-
-        util.user.dynamo_db._DYNAMO_CLIENT = boto3.client(
-            "dynamodb",
-            region_name=REGION,
-        )
-        util.user.dynamo_db._DYNAMO_DB = boto3.resource(
-            "dynamodb",
-            region_name=REGION,
-        )
-
-    def setup_method(self, method):
-        from util.user.dynamo_db import get_all_items
-
-        ## These imports have to be the long forum, to let us modify the values here:
-        # https://stackoverflow.com/a/12496239/11650472
-        import util
-
-        user_table_name = "TestUserTable"
-        util.user.dynamo_db._DYNAMO_DB.create_table(
-            TableName=user_table_name,
-            BillingMode="PAY_PER_REQUEST",
-            KeySchema=[{"AttributeName": "username", "KeyType": "HASH"}],
-            AttributeDefinitions=[{"AttributeName": "username", "AttributeType": "S"}],
-        )
-        ## No need to delete the table between methods, it goes out of scope anyways.
-        util.user.dynamo_db._DYNAMO_TABLE = util.user.dynamo_db._DYNAMO_DB.Table(
-            user_table_name
-        )
-        assert get_all_items() == [], "DB should be empty at the start"
-
-    def test_creating_user_updates_db(self, lambda_context: LambdaContext):
-        from util.user.user import User
-        from util.user.dynamo_db import get_all_items
-
-        username = "test_user"
-        user = User(username)
-        assert len(get_all_items()) == 1, "User was NOT inserted into the DB"
-        assert user.username == username, "Username attr doesn't match init"
-        # Only one item, verify it's what we expect IN the DB too.
-        assert get_all_items()[0]["access"] == ["user"], (
-            "Access should be just 'user' by default"
-        )
-
-    def test_username_immutable(self, lambda_context: LambdaContext):
-        from util.user.user import User
-        from util.exceptions import DbError
-
-        # Username attr exists:
-        username = "test_user"
-        user = User(username)
-        assert user.username == "test_user"
-
-        # And you can't change it:
-        with pytest.raises(DbError) as excinfo:
-            user.username = "new_name"
-        assert f"Key 'username' not in validator_map for user {user.username}" in str(
-            excinfo.value
-        )
-
-    def test_class_method_is_default(self, lambda_context: LambdaContext):
-        # Test this early, so we can use it in future tests
-        from util.user.user import User
-
-        username = "test_user"
-        user = User(username)
-        assert user.is_default("access", None) is False, "Access is not None"
-        assert user.is_default("access", []) is False, "Access is not empty list"
-        assert user.is_default("access", ["user"]) is True, (
-            "Access defaults to just 'user'"
-        )
-
-    def test_defaults_applied(self, lambda_context: LambdaContext):
-        from util.user.user import User
-        from util.user.validator_map import validator_map
-        from util.user.defaults import defaults
-        from frozendict import deepfreeze
-
-        username = "test_user"
-        user = User(username)
-
-        for attr in validator_map:
-            if attr in defaults:
-                # Deepfreeze modifies the value, so we need to compare it:
-                assert getattr(user, attr) == deepfreeze(defaults[attr]), (
-                    f"Default for '{attr}' should be applied"
-                )
-            else:
-                assert getattr(user, attr) is None, (
-                    f"User should have attribute '{attr}' set to None"
-                )
-
-    def test_cant_append_list_directly(self, lambda_context: LambdaContext):
-        from util.user.user import User
-
-        username = "test_user"
-        user = User(username)
-
-        # Access is a list, so it should be frozen:
-        with pytest.raises(AttributeError) as excinfo:
-            user.access.append("admin")
-        assert "'tuple' object has no attribute 'append'" in str(excinfo.value)
-
-    def test_can_modify_list_by_assignment(self, lambda_context: LambdaContext):
-        from util.user.user import User
-        from util.user.dynamo_db import get_all_items
-
-        username = "test_user"
-        user = User(username)
-
-        # Access is a list, so we can modify it:
-        assert list(user.access) == ["user"], "Base list is not just 'user'"
-        user.access = list(user.access) + ["admin"]
-        assert list(user.access) == ["user", "admin"], (
-            "Access should now contain 'admin'"
-        )
-        assert len(get_all_items()) == 1, (
-            "There should still only be one item in the DB"
-        )
-        assert get_all_items()[0]["access"] == ["user", "admin"], (
-            "Access should be updated in the DB too"
-        )
-
-    def test_profile_validator_correct_filling(self):
-        from util.user.validators import validate_profile
-
-        fake_dict = {
-            "country_of_residence": "",
-            "is_affiliated_with_nasa": "",
-            "user_or_pi_nasa_email": "",
-            "user_affliated_with_nasa_research_email": "",
-            "pi_affliated_with_nasa_research_email": "",
-            "is_affiliated_with_us_gov_research": "",
-            "user_affliated_with_gov_research_email": "",
-            "is_affliated_with_isro_research": "",
-            "user_affliated_with_isro_research_email": "",
-            "is_affliated_with_university": "",
-            "faculty_member_affliated_with_university": "",
-            "research_member_affliated_with_university": "",
-            "graduate_student_affliated_with_university": "",
-        }
-
-        ret = validate_profile(fake_dict)
-        assert ret == fake_dict
-
-    def test_profile_validator_wrong_filling(self):
-        from util.user.validators import validate_profile
-
-        fake_dict = {}
-
-        with pytest.raises(ValueError):
-            ret = validate_profile(fake_dict)
-            assert ret == fake_dict
