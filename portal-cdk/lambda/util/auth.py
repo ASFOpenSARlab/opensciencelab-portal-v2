@@ -2,6 +2,7 @@ import json
 import os
 import datetime
 
+from util.user import User
 from util.responses import wrap_response
 from util.exceptions import BadSsoToken, UnknownUser
 from util.session import current_session, PortalAuth
@@ -249,7 +250,7 @@ def process_auth(handler, event, context):
 
     else:
         logger.debug(f"No {COGNITO_JWT_COOKIE} cookie provided")
-
+    
     # process the actual request
     return handler(event, context)
 
@@ -280,7 +281,17 @@ def require_access(access="user"):
                     headers={"Location": f"/?return={return_path}"},
                     cookies=cookies,
                 )
-
+                
+            user = User(username=username)
+            # Redirect if user flagged to fill profile
+            requested_url = current_session.app.current_event.request_context.http.path
+            if user.require_profile_update and requested_url != f"/portal/profile/form/{username}":
+                next_url = f"/portal/profile/form/{username}"
+                return wrap_response(
+                    body="User must update profile",
+                    code=302,
+                    headers={"Location": next_url},
+                )
             logger.info("User %s has %s access", username, access)
             # Run the endpoint
             return func(*args, **kwargs)
