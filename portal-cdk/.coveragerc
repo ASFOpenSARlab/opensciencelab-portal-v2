@@ -1,0 +1,7 @@
+## Full settings for this file at
+# https://coverage.readthedocs.io/en/latest/config.html#sample-file
+
+[run]
+## To fix files not being displayed in GH Actions:
+# https://github.com/orgoro/coverage/issues/248
+relative_files = True
