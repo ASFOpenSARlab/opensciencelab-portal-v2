@@ -215,8 +215,9 @@ class TestPortalAuth:
         def get_user(*args, **kwargs):
             access = ["user"]
             return FakeUser(access=access)
+
         monkeypatch.setattr("util.auth.User", get_user)
-        
+
         event = helpers.get_event(path="/portal", cookies=fake_auth)
         ret = main.lambda_handler(event, lambda_context)
 
