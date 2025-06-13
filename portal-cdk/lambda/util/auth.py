@@ -5,6 +5,7 @@ import datetime
 from util.responses import wrap_response
 from util.exceptions import BadSsoToken, UnknownUser
 from util.session import current_session, PortalAuth
+from util.user import User
 
 import requests
 import jwt
@@ -226,6 +227,7 @@ def process_auth(handler, event, context):
     # Cookies we care about:
     cookies = get_cookies_from_event(event)
     current_session.auth = PortalAuth()
+    current_session.user = None
 
     if cookies.get(PORTAL_USER_COOKIE):
         portal_username_cookie = cookies.get(PORTAL_USER_COOKIE)
@@ -246,6 +248,9 @@ def process_auth(handler, event, context):
             current_session.auth.cognito.decoded = validated_jwt
             current_session.auth.cognito.username = jwt_username
             current_session.auth.cognito.valid = True
+
+            # Get User info
+            current_session.user = User(username=jwt_username)
 
     else:
         logger.debug(f"No {COGNITO_JWT_COOKIE} cookie provided")
