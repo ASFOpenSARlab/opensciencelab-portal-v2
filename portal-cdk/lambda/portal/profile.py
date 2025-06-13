@@ -24,6 +24,7 @@ profile_route = {
     "name": "Profile",
 }
 
+
 def enforce_profile_access():
     def inner(func):
         def wrapper(*args, **kwargs):

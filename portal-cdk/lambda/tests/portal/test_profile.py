@@ -6,6 +6,7 @@ from base64 import b64encode
 import main
 import portal.profile
 
+
 @dataclass
 class FakeUser:
     profile: dict = None
@@ -17,7 +18,8 @@ class FakeUser:
         self.last_cookie_assignment = datetime.datetime(2024, 1, 1, 12, 0, 0).strftime(
             "%Y-%m-%d %H:%M:%S"
         )
-        
+
+
 class TestProfilePages:
     # Ensure profile page is not reachable if not logged in
     def test_profile_logged_out(self, lambda_context, helpers):
@@ -59,7 +61,7 @@ class TestProfilePages:
 
         monkeypatch.setattr("portal.profile.User", get_user)
         monkeypatch.setattr("util.auth.User", get_user)
-        
+
         event = helpers.get_event(
             path="/portal/profile/form/not_my_username", cookies=fake_auth
         )
@@ -78,7 +80,7 @@ class TestProfilePages:
 
         monkeypatch.setattr("portal.profile.User", get_user)
         monkeypatch.setattr("util.auth.User", get_user)
-        
+
         event = helpers.get_event(
             path="/portal/profile/form/not_my_username", cookies=fake_auth
         )
@@ -435,7 +437,7 @@ class TestProfilePages:
             body=request_body,
             cookies=fake_auth,
         )
-        
+
         ret = main.lambda_handler(event, lambda_context)
 
         assert ret["statusCode"] == 302
@@ -499,7 +501,7 @@ class TestProfilePages:
             ret["body"]
             == f"\"{{'Redirect to /portal/profile/form/test_user?{expected_query_string}'}}\""
         )
-        
+
     def test_profile_redirect(self, monkeypatch, lambda_context, fake_auth, helpers):
         def get_user(*args, **kwargs):
             access = ["user"]
@@ -515,5 +517,3 @@ class TestProfilePages:
         assert ret["statusCode"] == 302
         assert ret["body"] == "User must update profile"
         assert ret["headers"].get("Location") == "/portal/profile/form/test_user"
-        
-        
