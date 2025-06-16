@@ -1,4 +1,3 @@
-
 from urllib.parse import urlencode
 from base64 import b64encode
 
@@ -23,12 +22,11 @@ class TestProfilePages:
 
     # Ensure page loads if logged in
     def test_profile_logged_in(self, lambda_context, monkeypatch, fake_auth, helpers):
-
         user = helpers.FakeUser()
-        
+
         monkeypatch.setattr("portal.profile.User", lambda *args, **kwargs: user)
         monkeypatch.setattr("util.auth.User", lambda *args, **kwargs: user)
-        
+
         event = helpers.get_event(
             path="/portal/profile/form/test_user", cookies=fake_auth
         )
@@ -41,9 +39,8 @@ class TestProfilePages:
     def test_user_access_other_profile(
         self, lambda_context, monkeypatch, fake_auth, helpers
     ):
-
         user = helpers.FakeUser()
-        
+
         monkeypatch.setattr("portal.profile.User", lambda *args, **kwargs: user)
         monkeypatch.setattr("util.auth.User", lambda *args, **kwargs: user)
 
@@ -59,7 +56,6 @@ class TestProfilePages:
     def test_admin_access_other_profile(
         self, lambda_context, monkeypatch, fake_auth, helpers
     ):
-        
         user = helpers.FakeUser(access=["admin"])
         monkeypatch.setattr("portal.profile.User", lambda *args, **kwargs: user)
         monkeypatch.setattr("util.auth.User", lambda *args, **kwargs: user)
@@ -74,11 +70,10 @@ class TestProfilePages:
         assert ret["headers"].get("Content-Type") == "text/html"
 
     def test_no_user_access(self, lambda_context, monkeypatch, fake_auth, helpers):
-
         user = helpers.FakeUser(access=[])
         monkeypatch.setattr("portal.profile.User", lambda *args, **kwargs: user)
         monkeypatch.setattr("util.auth.User", lambda *args, **kwargs: user)
-        
+
         event = helpers.get_event(
             path="/portal/profile/form/test_user", cookies=fake_auth
         )
@@ -95,7 +90,7 @@ class TestProfilePages:
         user = helpers.FakeUser()
         monkeypatch.setattr("portal.profile.User", lambda *args, **kwargs: user)
         monkeypatch.setattr("util.auth.User", lambda *args, **kwargs: user)
-        
+
         qparams = {
             "country_of_residence_error": "missing",
             "is_affiliated_with_nasa_error": "missing",
@@ -134,7 +129,6 @@ class TestProfilePages:
 
     # Test profile autofills from existing profile correctly
     def test_profile_loading(self, lambda_context, monkeypatch, fake_auth, helpers):
-
         profile = {
             "user_affliated_with_nasa_research_email": "",
             "pi_affliated_with_nasa_research_email": "apple@apple.com",
@@ -478,7 +472,6 @@ class TestProfilePages:
         )
 
     def test_profile_redirect(self, monkeypatch, lambda_context, fake_auth, helpers):
-
         user = helpers.FakeUser(require_profile_update=True)
         monkeypatch.setattr("portal.profile.User", lambda *args, **kwargs: user)
         monkeypatch.setattr("util.auth.User", lambda *args, **kwargs: user)
