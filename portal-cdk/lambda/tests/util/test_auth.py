@@ -74,19 +74,6 @@ def mocked_requests_post(*args, **kwargs):
     return MockResponse(None, 404)
 
 
-@dataclass
-class FakeUser:
-    profile: dict = None
-    last_cookie_assignment: str = None
-    access: list = None
-    require_profile_update: bool = False
-
-    def update_last_cookie_assignment(self) -> None:
-        self.last_cookie_assignment = datetime.datetime(2024, 1, 1, 12, 0, 0).strftime(
-            "%Y-%m-%d %H:%M:%S"
-        )
-
-
 class TestPortalAuth:
     def test_generic_error(self, monkeypatch):
         # Create an invalid SSO token
@@ -119,12 +106,8 @@ class TestPortalAuth:
 
     def test_auth_good_code(self, lambda_context, monkeypatch, helpers):
         # Create FakeUser instance to be monkeypatched in and inspected after modified
-        fake_user_instance = FakeUser(
-            last_cookie_assignment={"last_cookie_assignment": None}
-        )
-
-        def get_user(*args, **kwargs):
-            return fake_user_instance
+        user = helpers.FakeUser()
+        monkeypatch.setattr("main.User", lambda *args, **kwargs: user)
 
         monkeypatch.setattr("requests.post", mocked_requests_post)
         monkeypatch.setattr("util.auth.validate_jwt", helpers.validate_jwt)
@@ -132,7 +115,6 @@ class TestPortalAuth:
             "aws_lambda_powertools.utilities.parameters.get_secret",
             lambda a: "er9LnqEOiH+JLBsFCy0kVeba6ZSlG903cliU7VYKnM8=",
         )
-        monkeypatch.setattr("main.User", get_user)
 
         event = helpers.get_event(
             path="/auth",
@@ -149,7 +131,7 @@ class TestPortalAuth:
         assert COGNITO_JWT_COOKIE in cookies
         assert ret["headers"].get("Location") == "/portal/profile"
         assert ret["body"].find("Redirecting to /portal/profile") != -1
-        assert fake_user_instance.last_cookie_assignment == "2024-01-01 12:00:00"
+        assert user.last_cookie_assignment == "2024-01-01 12:00:00"
 
     def test_bad_jwt(self, lambda_context, monkeypatch, helpers):
         monkeypatch.setattr("util.auth.get_key_validation", lambda: {"bla": "bla"})
@@ -212,11 +194,8 @@ class TestPortalAuth:
         assert ret["headers"].get("Content-Type") == "text/html"
 
     def test_logged_in(self, lambda_context, fake_auth, helpers, monkeypatch):
-        def get_user(*args, **kwargs):
-            access = ["user"]
-            return FakeUser(access=access)
-
-        monkeypatch.setattr("util.auth.User", get_user)
+        user = helpers.FakeUser()
+        monkeypatch.setattr("util.auth.User", lambda *args, **kwargs: user)
 
         event = helpers.get_event(path="/portal", cookies=fake_auth)
         ret = main.lambda_handler(event, lambda_context)
