@@ -9,8 +9,8 @@ import copy
 import time
 
 import pytest
-from dataclasses import dataclass
-
+from dataclasses import dataclass, field
+import datetime
 
 os.environ["STACK_REGION"] = "us-west-2"
 os.environ["COGNITO_CLIENT_ID"] = "fake-cognito-id"
@@ -99,6 +99,18 @@ class Helpers:
             "iat": time.time() - 100,
             "username": "test_user",
         }
+    
+    @dataclass
+    class FakeUser:
+        profile: dict = None
+        last_cookie_assignment: str = None
+        access: list = field(default_factory=lambda: ["user"])
+        require_profile_update: bool = False
+
+        def update_last_cookie_assignment(self) -> None:
+            self.last_cookie_assignment = datetime.datetime(2024, 1, 1, 12, 0, 0).strftime(
+                "%Y-%m-%d %H:%M:%S"
+            )
 
 
 @pytest.fixture
