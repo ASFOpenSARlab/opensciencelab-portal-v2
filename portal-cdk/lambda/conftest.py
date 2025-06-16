@@ -99,7 +99,7 @@ class Helpers:
             "iat": time.time() - 100,
             "username": "test_user",
         }
-    
+
     @dataclass
     class FakeUser:
         profile: dict = None
@@ -108,9 +108,9 @@ class Helpers:
         require_profile_update: bool = False
 
         def update_last_cookie_assignment(self) -> None:
-            self.last_cookie_assignment = datetime.datetime(2024, 1, 1, 12, 0, 0).strftime(
-                "%Y-%m-%d %H:%M:%S"
-            )
+            self.last_cookie_assignment = datetime.datetime(
+                2024, 1, 1, 12, 0, 0
+            ).strftime("%Y-%m-%d %H:%M:%S")
 
 
 @pytest.fixture
