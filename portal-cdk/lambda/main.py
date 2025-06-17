@@ -54,12 +54,9 @@ def root():
 @app.get("/logout")
 def logout():
     return wrap_response(
-        render_template(
-            content="You have been logged out",
-            title="Logged Out",
-            name="logged-out.j2",
-        ),
-        code=200,
+        body="You have been logged out",
+        headers={"Location": "/"},
+        code=302,
         cookies=delete_cookies(),
     )
 
