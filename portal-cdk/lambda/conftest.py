@@ -102,6 +102,7 @@ class Helpers:
 
     @dataclass
     class FakeUser:
+        username: str = "test_user"
         profile: dict = None
         last_cookie_assignment: str = None
         access: list = field(default_factory=lambda: ["user"])
