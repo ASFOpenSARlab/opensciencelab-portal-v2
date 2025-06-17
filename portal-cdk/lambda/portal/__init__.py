@@ -4,7 +4,6 @@ from portal.hub import hub_route
 from util.format import portal_template
 from util.auth import require_access
 
-
 from aws_lambda_powertools.event_handler.api_gateway import Router
 from aws_lambda_powertools import Logger
 
