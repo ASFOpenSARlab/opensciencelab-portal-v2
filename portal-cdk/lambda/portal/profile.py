@@ -239,8 +239,10 @@ def profile_user_filled(username: str):
     if success:
         # query_dict must be profile values at this point
         # Update user profile
-        user_class = User(username)
-        user_class.profile = query_dict
+        user = User(username)
+        user.profile = query_dict
+        # Update require user access
+        user.require_profile_update = False
 
         # Send the user to the portal
         next_url = "/portal"

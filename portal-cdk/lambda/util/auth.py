@@ -2,6 +2,7 @@ import json
 import os
 import datetime
 
+from util.user import User
 from util.responses import wrap_response
 from util.exceptions import BadSsoToken, UnknownUser
 from util.session import current_session, PortalAuth
@@ -281,6 +282,17 @@ def require_access(access="user"):
                     cookies=cookies,
                 )
 
+            user = User(username=username)
+            # Redirect if user flagged to fill profile
+            requested_url = current_session.app.current_event.request_context.http.path
+            profile_form_url = f"/portal/profile/form/{username}"
+            if user.require_profile_update and requested_url != profile_form_url:
+                requested_url = profile_form_url
+                return wrap_response(
+                    body="User must update profile",
+                    code=302,
+                    headers={"Location": requested_url},
+                )
             logger.info("User %s has %s access", username, access)
             # Run the endpoint
             return func(*args, **kwargs)
