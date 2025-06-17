@@ -206,10 +206,11 @@ class TestPortalAuth:
     def test_log_out(self, lambda_context, helpers):
         event = helpers.get_event(path="/logout")
         ret = main.lambda_handler(event, lambda_context)
-        assert ret["statusCode"] == 200
+        assert ret["statusCode"] == 302
         # Make sure we've been logged out
         assert ret["body"].find("You have been logged out") != -1
-        assert ret["body"].find('<span id="login_widget">') != -1
         # And cookies are being expired
         assert ret["cookies"][0].find("Expires") != -1
         assert ret["cookies"][1].find("Expires") != -1
+        # And user is redirected to home page
+        assert ret["headers"].get("Location") == "/"
