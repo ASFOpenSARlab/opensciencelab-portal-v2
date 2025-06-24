@@ -79,7 +79,6 @@ cdk-shell:
 	docker run --rm -it \
 		$$ARCH_OVERRIDE \
 		-v ~/.aws/:/root/.aws/:ro \
-		-v /tmp/cdkawscli/cache:/root/.aws/cli/cache/ \
 		-v ${PROJECT_DIR}/:/code/ \
 		-e AWS_ACCESS_KEY_ID -e AWS_SECRET_ACCESS_KEY \
 		-e AWS_DEFAULT_PROFILE -e AWS_PROFILE \
