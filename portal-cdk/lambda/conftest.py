@@ -107,6 +107,7 @@ class Helpers:
         last_cookie_assignment: str = None
         access: list = field(default_factory=lambda: ["user"])
         require_profile_update: bool = False
+        labs: list = field(default_factory=lambda: [])
 
         def update_last_cookie_assignment(self) -> None:
             self.last_cookie_assignment = datetime.datetime(
