@@ -114,8 +114,6 @@ class TestPortalAuth:
 
     def test_bad_jwt(self, lambda_context, monkeypatch, helpers):
         monkeypatch.setattr("util.auth.get_key_validation", lambda: {"bla": "bla"})
-        user = helpers.FakeUser()
-        monkeypatch.setattr("util.auth.User", lambda *args, **kwargs: user)
         event = helpers.get_event(path="/portal", cookies={"portal-jwt": BAD_JWT})
         with pytest.raises(jwt.exceptions.InvalidAlgorithmError) as excinfo:
             main.lambda_handler(event, lambda_context)
