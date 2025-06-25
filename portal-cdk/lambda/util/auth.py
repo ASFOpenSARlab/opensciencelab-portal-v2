@@ -6,7 +6,6 @@ from util.user import User
 from util.responses import wrap_response
 from util.exceptions import BadSsoToken, UnknownUser
 from util.session import current_session, PortalAuth
-from util.user import User
 
 import requests
 import jwt
