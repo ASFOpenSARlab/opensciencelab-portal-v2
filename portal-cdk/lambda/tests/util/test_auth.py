@@ -49,29 +49,6 @@ JWK = {
 }
 
 
-def mocked_requests_post(*args, **kwargs):
-    class MockResponse:
-        def __init__(self, json_data, status_code):
-            self.json_data = json_data
-            self.status_code = status_code
-
-        def json(self):
-            return self.json_data
-
-    json_response_payload = {}
-
-    if kwargs["data"]["code"] == "good_code":
-        json_response_payload = {
-            "id_token": "valid_id_token",
-            "access_token": "valid_access_token",
-        }
-
-    if args[0].endswith("/oauth2/token"):
-        return MockResponse(json_response_payload, 200)
-
-    return MockResponse(None, 404)
-
-
 class TestPortalAuth:
     def test_generic_error(self, monkeypatch):
         # Create an invalid SSO token
@@ -95,14 +72,14 @@ class TestPortalAuth:
         assert not ret["headers"].get("Location")
         assert ret["headers"].get("Content-Type") == "text/html"
 
-    def test_auth_bad_code(self, lambda_context, monkeypatch, helpers):
+    def test_auth_bad_code(self, lambda_context, monkeypatch, helpers, mocked_requests_post):
         monkeypatch.setattr("requests.post", mocked_requests_post)
         event = helpers.get_event(path="/auth", qparams={"code": "bad_code"})
         ret = main.lambda_handler(event, lambda_context)
         assert ret["statusCode"] == 401
         assert ret["body"].find("Could not complete token exchange") != -1
 
-    def test_auth_good_code(self, lambda_context, monkeypatch, helpers):
+    def test_auth_good_code(self, lambda_context, monkeypatch, helpers, mocked_requests_post):
         # Create FakeUser instance to be monkeypatched in and inspected after modified
         user = helpers.FakeUser()
         monkeypatch.setattr("main.User", lambda *args, **kwargs: user)
@@ -133,6 +110,8 @@ class TestPortalAuth:
 
     def test_bad_jwt(self, lambda_context, monkeypatch, helpers):
         monkeypatch.setattr("util.auth.get_key_validation", lambda: {"bla": "bla"})
+        user = helpers.FakeUser()
+        monkeypatch.setattr("util.auth.User", lambda *args, **kwargs: user)
         event = helpers.get_event(path="/portal", cookies={"portal-jwt": BAD_JWT})
         with pytest.raises(jwt.exceptions.InvalidAlgorithmError) as excinfo:
             main.lambda_handler(event, lambda_context)
