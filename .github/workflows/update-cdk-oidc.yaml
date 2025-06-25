@@ -12,7 +12,7 @@ on: # yamllint disable-line rule:truthy
           - 'prod'
   push:
     paths:
-      - "oidc-cdk/*"
+      - "oidc-cdk/**"
       # Or changes to this action:
       - .github/workflows/update-cdk-oidc.yaml
     branches:
