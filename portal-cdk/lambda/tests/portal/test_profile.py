@@ -56,7 +56,7 @@ class TestProfilePages:
     def test_admin_access_other_profile(
         self, lambda_context, monkeypatch, fake_auth, helpers
     ):
-        user = helpers.FakeUser(access=["admin"])
+        user = helpers.FakeUser(access=["admin", "user"])
         monkeypatch.setattr("portal.profile.User", lambda *args, **kwargs: user)
         monkeypatch.setattr("util.auth.User", lambda *args, **kwargs: user)
 
