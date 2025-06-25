@@ -37,7 +37,9 @@ class TestAuthSession:
         assert current_session.user is None, "User should not be set before handler"
         main.lambda_handler(event, lambda_context)
         assert current_session.user is not None, "User should be set after handler"
-        assert current_session.user.username == "test_user", "Username should be set to 'test_user'"
+        assert current_session.user.username == (
+            "test_user", "Username should be set to 'test_user'"
+        )
 
     def test_session_no_cookie(
         self, lambda_context, monkeypatch, helpers, mocked_requests_post
