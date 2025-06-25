@@ -24,6 +24,8 @@ class LambdaContext:
     memory_limit_in_mb: int = 128
     invoked_function_arn: str = "arn:aws:lambda:eu-west-1:123456789012:function:test"
     aws_request_id: str = "da658bd3-2d6f-4e7b-8ec2-937234644fdc"
+
+
 @pytest.fixture
 def lambda_context() -> LambdaContext:
     return LambdaContext()
@@ -49,6 +51,8 @@ def MockedRequestsPost(*args, **kwargs):
         return MockResponse(json_response_payload, 200)
 
     return MockResponse(None, 404)
+
+
 @pytest.fixture
 def mocked_requests_post() -> MockedRequestsPost:
     return MockedRequestsPost

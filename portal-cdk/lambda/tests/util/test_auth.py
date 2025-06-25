@@ -72,14 +72,18 @@ class TestPortalAuth:
         assert not ret["headers"].get("Location")
         assert ret["headers"].get("Content-Type") == "text/html"
 
-    def test_auth_bad_code(self, lambda_context, monkeypatch, helpers, mocked_requests_post):
+    def test_auth_bad_code(
+            self, lambda_context, monkeypatch, helpers, mocked_requests_post
+        ):
         monkeypatch.setattr("requests.post", mocked_requests_post)
         event = helpers.get_event(path="/auth", qparams={"code": "bad_code"})
         ret = main.lambda_handler(event, lambda_context)
         assert ret["statusCode"] == 401
         assert ret["body"].find("Could not complete token exchange") != -1
 
-    def test_auth_good_code(self, lambda_context, monkeypatch, helpers, mocked_requests_post):
+    def test_auth_good_code(
+            self, lambda_context, monkeypatch, helpers, mocked_requests_post
+        ):
         # Create FakeUser instance to be monkeypatched in and inspected after modified
         user = helpers.FakeUser()
         monkeypatch.setattr("main.User", lambda *args, **kwargs: user)
@@ -138,7 +142,9 @@ class TestPortalAuth:
         # Make sure we're setting cookies to an empty value
         assert ret["cookies"][0].find("Expires") != -1
 
-    def test_post_portal_hub_auth(self, lambda_context, fake_auth, helpers, monkeypatch):
+    def test_post_portal_hub_auth(
+            self, lambda_context, fake_auth, helpers, monkeypatch
+        ):
         # Create FakeUser instance to be monkeypatched in and inspected after modified
         user = helpers.FakeUser()
         monkeypatch.setattr("util.auth.User", lambda *args, **kwargs: user)
