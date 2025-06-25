@@ -18,6 +18,14 @@ from aws_solutions_constructs.aws_lambda_dynamodb import LambdaToDynamoDB
 
 LAMBDA_RUNTIME = aws_lambda.Runtime.PYTHON_3_11
 
+# I'd like to see this get spun off into CodeAsConfig collocated with the portal code.
+LABS = (
+    {
+        "LAB_SHORT_NAME": "smce-test-opensarlab",
+        "LAB_DOMAIN": "smce-test-1433554573.us-west-2.elb.amazonaws.com",
+    },
+)
+
 
 class PortalCdkStack(Stack):
     def __init__(
@@ -131,25 +139,28 @@ class PortalCdkStack(Stack):
             ),
         )
 
-        ## lab proxy
-        LAB_SHORT_NAME = "smce-test-opensarlab"
-        LAB_DOMAIN = "http://smce-test-1433554573.us-west-2.elb.amazonaws.com"  # If https is broken due to mismatch of SSL cert, try http
-        lab_integration = apigwv2_integrations.HttpUrlIntegration(
-            f"{LAB_SHORT_NAME}_Integration",
-            f"{LAB_DOMAIN}/lab/{LAB_SHORT_NAME}/{{proxy}}",
-            # Add `return-path` header to Lab Proxy requests
-            parameter_mapping=apigwv2.ParameterMapping().overwrite_header(
-                "return-path",
-                apigwv2.MappingValue.custom(portal_cloudfront.distribution_domain_name),
-            ),
-        )
+        # Loop over Labs and add proxy behaviors
+        for lab in LABS:
+            # https://docs.aws.amazon.com/cdk/api/v2/python/aws_cdk.aws_cloudfront_origins/HttpOrigin.html
+            lab_origin = origins.HttpOrigin(
+                lab["LAB_DOMAIN"],
+                protocol_policy=cloudfront.OriginProtocolPolicy.HTTP_ONLY,
+                custom_headers={
+                    # This *SHOULD* link to the CF Endpoint, but that creates a circular dependency
+                    "return-path": f"{http_api.http_api_id}.execute-api.{self.region}.amazonaws.com"
+                },
+            )
 
-        # https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_apigatewayv2.AddRoutesOptions.html
-        http_api.add_routes(
-            path=f"/lab/{LAB_SHORT_NAME}/{{proxy+}}",
-            methods=[apigwv2.HttpMethod.ANY],
-            integration=lab_integration,
-        )
+            # LAB_SHORT_NAME, LAB_DOMAIN
+            portal_cloudfront.add_behavior(
+                path_pattern=f"/lab/{lab['LAB_SHORT_NAME']}/*",
+                origin=lab_origin,
+                origin_request_policy=cloudfront.OriginRequestPolicy.ALL_VIEWER,
+                allowed_methods=cloudfront.AllowedMethods.ALLOW_ALL,
+                cache_policy=cloudfront.CachePolicy.CACHING_DISABLED,
+                response_headers_policy=cloudfront.ResponseHeadersPolicy.CORS_ALLOW_ALL_ORIGINS_WITH_PREFLIGHT,
+                viewer_protocol_policy=cloudfront.ViewerProtocolPolicy.ALLOW_ALL,
+            )
 
         # Hub endpoint
         http_api.add_routes(
@@ -317,4 +328,11 @@ class PortalCdkStack(Stack):
             "SSO-TOKEN-ARN",
             value=sso_token_secret.secret_full_arn,
             description="ARN of SSO Token",
+        )
+
+        CfnOutput(
+            self,
+            "return-path-whitelist-value",
+            value=f"{http_api.http_api_id}.execute-api.{self.region}.amazonaws.com",
+            description="The return-path value that needs to be added to Lab whitelists (for non-prod)",
         )
