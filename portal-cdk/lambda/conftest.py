@@ -31,6 +31,33 @@ def lambda_context() -> LambdaContext:
     return LambdaContext()
 
 
+def MockedRequestsPost(*args, **kwargs):
+    class MockResponse:
+        def __init__(self, json_data, status_code):
+            self.json_data = json_data
+            self.status_code = status_code
+
+        def json(self):
+            return self.json_data
+
+    json_response_payload = {}
+    if kwargs["data"]["code"] == "good_code":
+        json_response_payload = {
+            "id_token": "valid_id_token",
+            "access_token": "valid_access_token",
+        }
+
+    if args[0].endswith("/oauth2/token"):
+        return MockResponse(json_response_payload, 200)
+
+    return MockResponse(None, 404)
+
+
+@pytest.fixture
+def mocked_requests_post() -> MockedRequestsPost:
+    return MockedRequestsPost
+
+
 @pytest.fixture
 def fake_auth(monkeypatch):
     # Bypass JWT
