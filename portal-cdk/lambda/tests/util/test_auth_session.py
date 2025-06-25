@@ -11,8 +11,8 @@ class TestAuthSession:
         current_session.app = None
 
     def test_session_user_saved(
-            self, lambda_context, monkeypatch, helpers, fake_auth, mocked_requests_post
-        ):
+        self, lambda_context, monkeypatch, helpers, fake_auth, mocked_requests_post
+    ):
         # Create FakeUser instance to be monkeypatched in and inspected after modified
         user = helpers.FakeUser()
         monkeypatch.setattr("main.User", lambda *args, **kwargs: user)
@@ -40,8 +40,8 @@ class TestAuthSession:
         assert current_session.user.username == "test_user", "Username should be set to 'test_user'"
 
     def test_session_no_cookie(
-            self, lambda_context, monkeypatch, helpers, mocked_requests_post
-        ):
+        self, lambda_context, monkeypatch, helpers, mocked_requests_post
+    ):
         # Create FakeUser instance to be monkeypatched in and inspected after modified
         user = helpers.FakeUser()
         monkeypatch.setattr("main.User", lambda *args, **kwargs: user)
@@ -69,8 +69,8 @@ class TestAuthSession:
         )
 
     def test_session_user_overridden(
-            self, lambda_context, monkeypatch, helpers, mocked_requests_post
-        ):
+        self, lambda_context, monkeypatch, helpers, mocked_requests_post
+    ):
         # Create FakeUser instance to be monkeypatched in and inspected after modified
         user = helpers.FakeUser()
         monkeypatch.setattr("main.User", lambda *args, **kwargs: user)
