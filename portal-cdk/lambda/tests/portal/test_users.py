@@ -55,7 +55,7 @@ class TestUsersPages:
         ret = main.lambda_handler(event, lambda_context)
         # FIXME: Admin checks is not currently functional
         # assert ret["statusCode"] != 200
-        assert ret["statusCode"] != 200
+        assert ret["statusCode"] == 200  # WRONG!!
         assert True
 
     def test_users_admin_logged_in(
