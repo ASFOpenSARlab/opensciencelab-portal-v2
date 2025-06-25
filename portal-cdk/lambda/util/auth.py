@@ -286,11 +286,30 @@ def require_access(access="user"):
                     cookies=cookies,
                 )
 
-            user = User(username=username)
+            # Ensure use has access they are trying to achieve
+            if access not in current_session.user.access:
+                logger.warning(
+                    "User %s attempted to access %s which requires %s access (user has %s Privs)",
+                    username,
+                    current_session.app.current_event.request_context.http.path,
+                    access,
+                    ", ".join(current_session.user.access),
+                )
+
+                # Send the user back to home base
+                return wrap_response(
+                    body="User does not have required access",
+                    code=302,
+                    headers={"Location": "/portal"},
+                )
+
             # Redirect if user flagged to fill profile
             requested_url = current_session.app.current_event.request_context.http.path
             profile_form_url = f"/portal/profile/form/{username}"
-            if user.require_profile_update and requested_url != profile_form_url:
+            if (
+                current_session.user.require_profile_update
+                and requested_url != profile_form_url
+            ):
                 requested_url = profile_form_url
                 return wrap_response(
                     body="User must update profile",
