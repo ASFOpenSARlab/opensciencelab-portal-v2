@@ -286,7 +286,7 @@ def require_access(access="user"):
                     cookies=cookies,
                 )
 
-            # Ensure use has access they are trying to achieve
+            # Ensure user has access they are trying to achieve
             if access not in current_session.user.access:
                 logger.warning(
                     "User %s attempted to access %s which requires %s access (user has %s Privs)",
