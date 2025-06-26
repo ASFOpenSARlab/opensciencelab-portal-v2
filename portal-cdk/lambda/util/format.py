@@ -59,6 +59,11 @@ NAV_BAR_OPTIONS = [
 ]
 
 
+def jinja_template(template_input, template_name):
+    template = ENV.get_template(template_name)
+    return template.render(**template_input)
+
+
 def render_template(content, input=None, name=None, title="OSL Portal"):
     # Check for a logged-out return path
     current_event = current_session.app.current_event
@@ -83,9 +88,7 @@ def render_template(content, input=None, name=None, title="OSL Portal"):
     if input:
         template_input.update(input)
 
-    template = ENV.get_template(name)
-
-    return template.render(**template_input)
+    return jinja_template(template_input, name)
 
 
 def portal_template(name=None, title=None, response=200):
