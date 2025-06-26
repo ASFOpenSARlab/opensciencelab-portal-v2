@@ -1,6 +1,7 @@
 import json
 import os
 import ast
+import copy
 
 from util.responses import wrap_response
 from util.session import current_session
@@ -37,24 +38,31 @@ NAV_BAR_OPTIONS = [
         "title": "Profile",
     },
     {
-        "visible": True,
+        "visible": False,
         "path": "/portal/access",
         "title": "Access",
+        "requires_admin": True,
     },
     {
-        "visible": True,
+        "visible": False,
         "path": "/change_pass",
         "title": "Change Password",
     },
     {
-        "visible": True,
+        "visible": False,
         "path": "/set_mfa",
         "title": "Configure New MFA Device",
     },
     {
-        "visible": True,
+        "visible": False,
         "path": "/set_mfa",
         "title": "Authorize Users",
+    },
+    {
+        "visible": False,
+        "path": "/portal/users",
+        "title": "Manage Users",
+        "requires_admin": True,
     },
 ]
 
@@ -75,10 +83,17 @@ def render_template(content, input=None, name=None, title="OSL Portal"):
 
     username = current_session.auth.cognito.username
 
+    # Manage restrict access
+    nav_bar_options = copy.deepcopy(NAV_BAR_OPTIONS)
+    for option in nav_bar_options:
+        if current_session.user and option.get("requires_admin"):
+            if "admin" in current_session.user.access:
+                option["visible"] = True
+
     # Create input dict for jinja formatting
     template_input = {
         "content": content,
-        "nav_bar_options": NAV_BAR_OPTIONS,
+        "nav_bar_options": nav_bar_options,
         "username": username,
         "title": title,
         "login_url": LOGIN_URL,
