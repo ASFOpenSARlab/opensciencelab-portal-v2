@@ -53,10 +53,8 @@ class TestUsersPages:
         event = helpers.get_event(path="/portal/users", cookies=fake_auth)
 
         ret = main.lambda_handler(event, lambda_context)
-        # FIXME: Admin checks is not currently functional
-        # assert ret["statusCode"] != 200
-        assert ret["statusCode"] == 200  # WRONG!!
-        assert True
+        assert ret["statusCode"] == 302
+        assert ret["headers"].get("Location") == "/portal"
 
     def test_users_admin_logged_in(
         self, lambda_context, monkeypatch, fake_auth, helpers
