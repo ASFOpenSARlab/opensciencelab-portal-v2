@@ -36,6 +36,22 @@ class TestProfilePages:
         assert ret["body"].find("Hello <i>test_user</i>") != -1
         assert ret["headers"].get("Content-Type") == "text/html"
 
+    # Ensure users gets redirected to THEIR profile
+    def test_profile_logged_in_root_redirect(
+        self, lambda_context, monkeypatch, fake_auth, helpers
+    ):
+        user = helpers.FakeUser()
+
+        monkeypatch.setattr("portal.profile.User", lambda *args, **kwargs: user)
+        monkeypatch.setattr("util.auth.User", lambda *args, **kwargs: user)
+
+        event = helpers.get_event(path="/portal/profile", cookies=fake_auth)
+        ret = main.lambda_handler(event, lambda_context)
+
+        assert ret["statusCode"] == 302
+        assert ret["body"] == "Redirecting to User Profile"
+        assert ret["headers"].get("Location") == "/portal/profile/form/test_user"
+
     def test_user_access_other_profile(
         self, lambda_context, monkeypatch, fake_auth, helpers
     ):

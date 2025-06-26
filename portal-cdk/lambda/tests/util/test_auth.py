@@ -194,6 +194,19 @@ class TestPortalAuth:
         assert ret["headers"].get("Location") is None
         assert ret["headers"].get("Content-Type") == "text/html"
 
+    def test_users_logged_in_root_forward(
+        self, monkeypatch, lambda_context, fake_auth, helpers
+    ):
+        user = helpers.FakeUser()
+        monkeypatch.setattr("portal.profile.User", lambda *args, **kwargs: user)
+        monkeypatch.setattr("util.auth.User", lambda *args, **kwargs: user)
+
+        event = helpers.get_event(path="/", cookies=fake_auth)
+        ret = main.lambda_handler(event, lambda_context)
+        assert ret["statusCode"] == 302
+        assert ret["body"] == "Redirecting to Portal"
+        assert ret["headers"].get("Location") == "/portal"
+
     def test_log_out(self, lambda_context, helpers):
         event = helpers.get_event(path="/logout")
         ret = main.lambda_handler(event, lambda_context)

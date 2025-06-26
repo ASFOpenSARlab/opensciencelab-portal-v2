@@ -67,10 +67,13 @@ def enforce_profile_access():
 # This catches "/portal/profile", but "/portal/profile" is uncatchable
 @profile_router.get("")
 @require_access()
-@portal_template()
 def profile_root():
-    page_components = {"input": {}, "content": "Profile Base 1"}
-    return page_components
+    username = current_session.user.username
+    return wrap_response(
+        body="Redirecting to User Profile",
+        headers={"Location": f"/portal/profile/form/{username}"},
+        code=302,
+    )
 
 
 @profile_router.get("/form/bob")

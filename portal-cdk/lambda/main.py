@@ -46,9 +46,22 @@ for prefix, router in routes.items():
 
 
 @app.get("/")
-@portal_template(title="OpenScience", name="logged-out.j2")
 def root():
-    return "Welcome to OpenScienceLab"
+    # Forward to portal if they are logged in
+    if current_session.user:
+        return wrap_response(
+            body="Redirecting to Portal",
+            headers={"Location": "/portal"},
+            code=302,
+        )
+
+    return wrap_response(
+        render_template(
+            content="Welcome to OpenScienceLab",
+            title="OpenScience",
+            name="logged-out.j2",
+        )
+    )
 
 
 @app.get("/logout")
