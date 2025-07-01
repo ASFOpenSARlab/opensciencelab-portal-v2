@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+    {% include 'head.j2' %}
+    <body>
+        {% include './noscript.j2' %}
+        {% include './navbar.j2' %}
+        <div>
+            <div class="horizontal-div">
+                <span>
+                    {% if lab.logo is defined and lab.logo != None -%}
+                    <img src="/portal/hub/static/img/{{ lab.logo }}" alt="logo for {{ lab.friendly_name }}"/>
+                    {% endif %}
+                </span>
+                <legend> {{ lab.friendly_name }} </legend>
+            </div>
+            {% for user in users %}
+                {{ user }}
+            {% endfor %}
+        </div>
+    </body>
+</html>
