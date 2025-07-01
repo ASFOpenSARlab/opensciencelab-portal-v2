@@ -1,3 +1,5 @@
+import pathlib
+
 from constructs import Construct
 
 from aws_cdk import (
@@ -169,6 +171,12 @@ class PortalCdkStack(Stack):
             integration=lambda_integration,
         )
 
+        pre_sign_up_trigger = aws_lambda.Function(self, "preSignUpTrigger",
+            runtime=LAMBDA_RUNTIME,
+            handler="pre_sign_up.lambda_handler",
+            code=aws_lambda.Code.from_asset(pathlib.Path(__file__).parent / "triggers")
+        )
+
         # https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_cognito.UserPool.html
         ### NOTE: To change these settings, you HAVE to delete and re-create the stack :(
         user_pool = cognito.UserPool(
@@ -214,6 +222,9 @@ class PortalCdkStack(Stack):
                 username=True,
             ),
             sign_in_case_sensitive=False,
+            lambda_triggers=cognito.UserPoolTriggers(
+                pre_sign_up=pre_sign_up_trigger
+            )
         )
 
         ## User Pool Client, AKA App Client:
