@@ -65,7 +65,7 @@ class PortalCdkStack(Stack):
             self,
             "test_lambda_dynamodb_stack",
             lambda_function_props=aws_lambda.FunctionProps(
-                code=aws_lambda.Code.from_asset("lambda"),
+                code=aws_lambda.Code.from_asset("lambda_main"),
                 description=f"Powertools API with Dynamo ({construct_id})",
                 runtime=LAMBDA_RUNTIME,
                 handler="main.lambda_handler",
@@ -169,6 +169,18 @@ class PortalCdkStack(Stack):
             integration=lambda_integration,
         )
 
+        ## Cognito Lambda Endpoint for Signup:
+        # https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_lambda.Function.html
+        lambda_cognito_signup = aws_lambda.Function(
+            self,
+            "LambdaCognitoSignup",
+            code=aws_lambda.Code.from_asset("lambda_signup"),
+            description=f"Lambda for Cognito Signup ({construct_id})",
+            runtime=LAMBDA_RUNTIME,
+            handler="main.lambda_handler",
+
+        )
+
         # https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_cognito.UserPool.html
         ### NOTE: To change these settings, you HAVE to delete and re-create the stack :(
         user_pool = cognito.UserPool(
@@ -187,7 +199,7 @@ class PortalCdkStack(Stack):
             # https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_cognito.UserPoolEmail.html
             email=cognito.UserPoolEmail.with_cognito(reply_to=None),
             # https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_cognito.Mfa.html
-            mfa=cognito.Mfa.OPTIONAL,
+            mfa=cognito.Mfa.REQUIRED,
             ## The different ways users can get a MFA code:
             # https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_cognito.MfaSecondFactor.html
             mfa_second_factor=cognito.MfaSecondFactor(sms=True, otp=True, email=False),
@@ -214,6 +226,10 @@ class PortalCdkStack(Stack):
                 username=True,
             ),
             sign_in_case_sensitive=False,
+            # https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_cognito.UserPoolTriggers.html#presignup
+            lambda_triggers=cognito.UserPoolTriggers(
+                pre_sign_up=lambda_cognito_signup,
+            )
         )
 
         ## User Pool Client, AKA App Client:
