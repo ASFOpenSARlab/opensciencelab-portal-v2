@@ -4,6 +4,7 @@ from portal.hub import hub_route
 from portal.users import users_route
 from util.format import portal_template
 from util.auth import require_access
+from labs import labs_dict
 
 from aws_lambda_powertools.event_handler.api_gateway import Router
 from aws_lambda_powertools import Logger
@@ -34,6 +35,15 @@ require_access.router = portal_router
 
 @portal_router.get("")
 @require_access()
-@portal_template()
+@portal_template(name="portal.j2")
 def portal_root():
-    return "Welcome to OpenScienceLab"
+    page_dict = {
+        "content": "List All Labs",
+        "input": {
+        },
+    }
+    
+    labs = labs_dict.values()
+    
+    page_dict["input"]["labs"] = labs
+    return page_dict
