@@ -10,6 +10,7 @@ ERROR_MESSAGE = (
     "Only periods, underscores, and dashes allowed"
 )
 
+
 def lambda_handler(event, _context):
     if re.match(USERNAME_REGEX, event["userName"]) is None:
         raise ValueError(ERROR_MESSAGE)
