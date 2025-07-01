@@ -132,7 +132,6 @@ def portal_template(name=None, title=None, response=200):
             body = render_template(**page_dict)
 
             if response:
-                # If we received basic_response_code, return a basic_html response
                 return wrap_response(body=body, code=response)
 
             return body

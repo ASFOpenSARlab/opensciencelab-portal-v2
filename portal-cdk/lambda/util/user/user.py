@@ -5,9 +5,10 @@ import datetime
 
 import frozendict
 
-from util.exceptions import DbError
+from util.exceptions import DbError, CognitoError
+from util.cognito import delete_user_from_user_pool
 
-from .dynamo_db import get_item, create_item, update_item
+from .dynamo_db import get_item, create_item, update_item, delete_item
 from .defaults import defaults
 from .validator_map import validator_map, validate
 
@@ -75,3 +76,23 @@ class User:
         self.last_cookie_assignment = datetime.datetime.now().strftime(
             "%Y-%m-%d %H:%M:%S"
         )
+
+    # Convenience methods
+    def is_admin(self) -> bool:
+        if "admin" in self.access:
+            return True
+        return False
+
+    def remove_user(self) -> bool:
+        # Delete user from Cognito
+        if not delete_user_from_user_pool(self.username):
+            raise CognitoError(f"Could not delete Cognito user {self.username}")
+
+        # Delete item from dynamodb
+        delete_item(self.username)
+
+        # ensure item is deleted
+        if get_item(self.username):
+            raise DbError(f"Could not delete db user {self.username}")
+
+        return True
