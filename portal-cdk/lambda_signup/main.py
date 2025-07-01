@@ -11,7 +11,7 @@ ERROR_MESSAGE = (
 )
 
 def lambda_handler(event, _context):
-    if re.match(USERNAME_REGEX, event['userName']) is None:
+    if re.match(USERNAME_REGEX, event["userName"]) is None:
         raise ValueError(ERROR_MESSAGE)
     # Return to Amazon Cognito
     return event

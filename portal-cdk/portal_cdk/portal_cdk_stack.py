@@ -178,7 +178,6 @@ class PortalCdkStack(Stack):
             description=f"Lambda for Cognito Signup ({construct_id})",
             runtime=LAMBDA_RUNTIME,
             handler="main.lambda_handler",
-
         )
 
         # https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_cognito.UserPool.html
@@ -229,7 +228,7 @@ class PortalCdkStack(Stack):
             # https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_cognito.UserPoolTriggers.html#presignup
             lambda_triggers=cognito.UserPoolTriggers(
                 pre_sign_up=lambda_cognito_signup,
-            )
+            ),
         )
 
         ## User Pool Client, AKA App Client:
