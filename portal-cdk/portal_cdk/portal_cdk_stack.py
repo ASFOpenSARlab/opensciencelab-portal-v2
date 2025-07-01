@@ -171,10 +171,36 @@ class PortalCdkStack(Stack):
             integration=lambda_integration,
         )
 
-        pre_sign_up_trigger = aws_lambda.Function(self, "preSignUpTrigger",
+        pre_sign_up_trigger = aws_lambda.Function(
+            self,
+            "PreSignUpTrigger",
             runtime=LAMBDA_RUNTIME,
             handler="pre_sign_up.lambda_handler",
-            code=aws_lambda.Code.from_asset(pathlib.Path(__file__).parent / "triggers")
+            code=aws_lambda.Code.from_asset(
+                str(pathlib.Path(__file__).parent / "triggers")
+            ),
+            description=f"Cognito PreSignup Trigger with Portal Userpool - ({deploy_prefix})",
+            layers=[requirements_layer],
+            memory_size=1024,
+            environment={
+                "DEBUG": str(deploy_prefix != "prod").lower(),
+            },
+        )
+
+        pre_auth_trigger = aws_lambda.Function(
+            self,
+            "PreAuthTrigger",
+            runtime=LAMBDA_RUNTIME,
+            handler="pre_auth.lambda_handler",
+            code=aws_lambda.Code.from_asset(
+                str(pathlib.Path(__file__).parent / "triggers")
+            ),
+            description=f"Cognito PreAuthentication Trigger with Portal Userpool - ({deploy_prefix})",
+            layers=[requirements_layer],
+            memory_size=1024,
+            environment={
+                "DEBUG": str(deploy_prefix != "prod").lower(),
+            },
         )
 
         # https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_cognito.UserPool.html
@@ -223,8 +249,8 @@ class PortalCdkStack(Stack):
             ),
             sign_in_case_sensitive=False,
             lambda_triggers=cognito.UserPoolTriggers(
-                pre_sign_up=pre_sign_up_trigger
-            )
+                pre_sign_up=pre_sign_up_trigger, pre_authentication=pre_auth_trigger
+            ),
         )
 
         ## User Pool Client, AKA App Client:

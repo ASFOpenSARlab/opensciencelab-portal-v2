@@ -3,4 +3,3 @@ pytest-mock==3.14.0
 pytest-cov==6.1.1
 aws_lambda_powertools==3.13.0
 moto[dynamodb]==5.1.5
-username-validator==0.0.1
