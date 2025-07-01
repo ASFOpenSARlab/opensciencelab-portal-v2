@@ -11,6 +11,7 @@ from aws_cdk import (
     aws_apigatewayv2_integrations as apigwv2_integrations,
     aws_cloudfront as cloudfront,
     aws_cloudfront_origins as origins,
+    aws_iam as iam,
     aws_secretsmanager as secretsmanager,
     SecretValue,
 )
@@ -278,6 +279,21 @@ class PortalCdkStack(Stack):
         lambda_dynamo.lambda_function.add_environment("STACK_REGION", self.region)
         lambda_dynamo.lambda_function.add_environment(
             "CLOUDFRONT_ENDPOINT", f"{portal_cloudfront.distribution_domain_name}"
+        )
+
+        # Allow lambda to delete users from cognito
+        lambda_dynamo.lambda_function.role.add_to_policy(
+            iam.PolicyStatement(
+                actions=[
+                    "cognito-idp:DescribeUserPool",
+                    "cognito-idp:ListUsers",
+                    "cognito-idp:AdminInitiateAuth",
+                    "cognito-idp:AdminCreateUser",
+                    "cognito-idp:AdminDeleteUser",
+                    "cognito-idp:AdminGetUser",
+                ],
+                resources=[user_pool.user_pool_arn],
+            )
         )
 
         # Configuration to allow Cognito OAuth2

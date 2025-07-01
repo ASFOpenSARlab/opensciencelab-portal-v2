@@ -61,10 +61,8 @@ class TestUsersPages:
     ):
         user = helpers.FakeUser(access=["admin", "user"])
 
-        monkeypatch.setattr("portal.profile.User", lambda *args, **kwargs: user)
+        monkeypatch.setattr("portal.users.User", lambda *args, **kwargs: user)
         monkeypatch.setattr("util.auth.User", lambda *args, **kwargs: user)
-        # monkeypatch.setattr("util.user.dynamo_db.get_all_items", lambda: USER_TABLE_DATA)
-        # portal.users import get_all_items from util.user.dynamo_db
         monkeypatch.setattr("portal.users.get_all_items", lambda: USER_TABLE_DATA)
 
         event = helpers.get_event(path="/portal/users", cookies=fake_auth)
@@ -74,3 +72,105 @@ class TestUsersPages:
         assert ret["body"].find("<b>YES</b>") != -1
         assert ret["body"].find("<b>GeneralUser</b>") != -1
         assert ret["headers"].get("Content-Type") == "text/html"
+
+    def test_delete_invalid_cognito_user(
+        self, lambda_context, monkeypatch, fake_auth, helpers
+    ):
+        user = helpers.FakeUser(access=["admin", "user"])
+        delete_user = "dne_user"
+
+        monkeypatch.setattr("portal.users.User", lambda *args, **kwargs: user)
+        monkeypatch.setattr("util.auth.User", lambda *args, **kwargs: user)
+        monkeypatch.setattr("portal.users.get_all_items", lambda: USER_TABLE_DATA)
+        monkeypatch.setattr(
+            "util.cognito.delete_user_from_user_pool", lambda *args, **kwargs: True
+        )
+        monkeypatch.setattr(
+            "util.user.dynamo_db.delete_item", lambda *args, **kwargs: False
+        )
+
+        event = helpers.get_event(
+            path=f"/portal/users/delete/{delete_user}",
+            cookies=fake_auth,
+            method="post",
+        )
+
+        ret = main.lambda_handler(event, lambda_context)
+        assert ret["statusCode"] == 302
+        assert ret["headers"].get("Location", "").find("success=False") != -1
+
+    def test_delete_invalid_dynamodb_user(
+        self, lambda_context, monkeypatch, fake_auth, helpers
+    ):
+        user = helpers.FakeUser(access=["admin", "user"])
+        delete_user = "GeneralUser"
+
+        monkeypatch.setattr("portal.users.User", lambda *args, **kwargs: user)
+        monkeypatch.setattr("util.auth.User", lambda *args, **kwargs: user)
+        monkeypatch.setattr("portal.users.get_all_items", lambda: USER_TABLE_DATA)
+        monkeypatch.setattr(
+            "util.cognito.delete_user_from_user_pool", lambda *args, **kwargs: True
+        )
+        monkeypatch.setattr(
+            "util.user.dynamo_db.delete_item", lambda *args, **kwargs: False
+        )
+
+        event = helpers.get_event(
+            path=f"/portal/users/delete/{delete_user}",
+            cookies=fake_auth,
+            method="post",
+        )
+
+        ret = main.lambda_handler(event, lambda_context)
+        assert ret["statusCode"] == 302
+        assert ret["headers"].get("Location", "").find("success=False") != -1
+
+    def test_delete_invalid_admin_user(
+        self, lambda_context, monkeypatch, fake_auth, helpers
+    ):
+        user = helpers.FakeUser(access=["admin", "user"])
+        delete_user = "AdminUser"
+
+        monkeypatch.setattr("portal.users.User", lambda *args, **kwargs: user)
+        monkeypatch.setattr("util.auth.User", lambda *args, **kwargs: user)
+        monkeypatch.setattr("portal.users.get_all_items", lambda: USER_TABLE_DATA)
+        monkeypatch.setattr(
+            "util.cognito.delete_user_from_user_pool", lambda *args, **kwargs: True
+        )
+        monkeypatch.setattr(
+            "util.user.dynamo_db.delete_item", lambda *args, **kwargs: True
+        )
+
+        event = helpers.get_event(
+            path=f"/portal/users/delete/{delete_user}",
+            cookies=fake_auth,
+            method="post",
+        )
+
+        ret = main.lambda_handler(event, lambda_context)
+        assert ret["statusCode"] == 302
+        assert ret["headers"].get("Location", "").find("success=False") != -1
+
+    def test_delete_valid_user(self, lambda_context, monkeypatch, fake_auth, helpers):
+        acting_user = helpers.FakeUser(access=["admin", "user"])
+        delete_user = helpers.FakeUser(username="GeneralUser")
+
+        monkeypatch.setattr("portal.users.User", lambda *args, **kwargs: delete_user)
+        monkeypatch.setattr("util.auth.User", lambda *args, **kwargs: acting_user)
+        monkeypatch.setattr("portal.users.get_all_items", lambda: USER_TABLE_DATA)
+        monkeypatch.setattr(
+            "util.cognito.delete_user_from_user_pool", lambda *args, **kwargs: True
+        )
+        monkeypatch.setattr(
+            "util.user.dynamo_db.delete_item", lambda *args, **kwargs: True
+        )
+
+        event = helpers.get_event(
+            path=f"/portal/users/delete/{delete_user.username}",
+            cookies=fake_auth,
+            method="post",
+        )
+
+        ret = main.lambda_handler(event, lambda_context)
+        assert ret["statusCode"] == 302
+        assert ret["headers"].get("Location", "").find("success=True") != -1

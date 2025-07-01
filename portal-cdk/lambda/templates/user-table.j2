@@ -1,4 +1,20 @@
 {# djlint:off H021 #}
+{% if message %}
+    {% if message == "deleted" %}
+        {% if success %}
+            <div style="border: 2px solid green;
+                        background-color: lightgreen;
+                        width:95%;
+                        vertical-align: middle">User {{ username }} was successfully deleted</div>
+        {% else %}
+            <div style="border: 2px solid red;
+                        background-color: lightcoral;
+                        width:95%;
+                        vertical-align: middle">User {{ username }} could not be deleted</div>
+        {% endif %}
+    {% endif %}
+    <hr>
+{% endif %}
 <table style="width:100%" border=1>
     <tr>
         <th>Username</th>
@@ -6,6 +22,7 @@
         <th>Last Login</th>
         <th>Access</th>
         <th>Requires Profile Update</th>
+        <th></th>
     </tr>
     {% for user in all_users_sorted %}
         <tr>
@@ -20,6 +37,20 @@
                     <b>YES</b>
                 {% else %}
                     No
+                {% endif %}
+            </td>
+            <td>
+                {% if "admin" in user['access'] %}
+                {% else %}
+                    <form onsubmit="return confirm('Do you really want to delete `{{ user['username'] }}`?');"
+                          action="/portal/users/delete/{{ user['username'] }}"
+                          method="post">
+                        <input type="image"
+                               src="/static/img/delete.png"
+                               border="0"
+                               height="30"
+                               alt="Delete" />
+                    </form>
                 {% endif %}
             </td>
         </tr>

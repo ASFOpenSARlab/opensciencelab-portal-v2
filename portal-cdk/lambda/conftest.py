@@ -129,7 +129,7 @@ class Helpers:
 
     @dataclass
     class FakeUser:
-        username: str = "test_user"
+        username: str = field(default_factory=lambda: "test_user")
         profile: dict = None
         last_cookie_assignment: str = None
         access: list = field(default_factory=lambda: ["user"])
@@ -140,6 +140,12 @@ class Helpers:
             self.last_cookie_assignment = datetime.datetime(
                 2024, 1, 1, 12, 0, 0
             ).strftime("%Y-%m-%d %H:%M:%S")
+
+        def is_admin(self) -> bool:
+            return "admin" in self.access
+
+        def remove_user(self) -> bool:
+            return True
 
 
 @pytest.fixture
