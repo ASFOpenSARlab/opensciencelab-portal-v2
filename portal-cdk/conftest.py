@@ -1,6 +1,7 @@
 import pytest
 from dataclasses import dataclass
 
+
 @dataclass
 class LambdaContext:
     function_name: str = "test"
