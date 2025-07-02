@@ -18,19 +18,6 @@ os.environ["COGNITO_POOL_ID"] = "fake-pool-id"
 from util.auth import PORTAL_USER_COOKIE, COGNITO_JWT_COOKIE
 
 
-@dataclass
-class LambdaContext:
-    function_name: str = "test"
-    memory_limit_in_mb: int = 128
-    invoked_function_arn: str = "arn:aws:lambda:eu-west-1:123456789012:function:test"
-    aws_request_id: str = "da658bd3-2d6f-4e7b-8ec2-937234644fdc"
-
-
-@pytest.fixture
-def lambda_context() -> LambdaContext:
-    return LambdaContext()
-
-
 def MockedRequestsPost(*args, **kwargs):
     class MockResponse:
         def __init__(self, json_data, status_code):
