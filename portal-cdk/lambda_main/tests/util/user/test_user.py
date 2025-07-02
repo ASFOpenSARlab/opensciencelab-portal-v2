@@ -128,10 +128,12 @@ class TestUserClass:
 
         # Access is a list, so we can modify it:
         assert list(user.access) == ["user"], "Base list is not just 'user'"
+        assert not user.is_admin()
         user.access = list(user.access) + ["admin"]
         assert list(user.access) == ["user", "admin"], (
             "Access should now contain 'admin'"
         )
+        assert user.is_admin()
         assert len(get_all_items()) == 1, (
             "There should still only be one item in the DB"
         )
@@ -153,3 +155,21 @@ class TestUserClass:
         user3.labs = ["differentlab"]
 
         assert list_users_with_lab("testlab") == ["test_user1", "test_user2"]
+
+    def test_delete_user(self, monkeypatch):
+        from util.user.user import User
+        from util.user.dynamo_db import get_all_items
+
+        # Don't try to actually delete the user from userpool
+        monkeypatch.setattr(
+            "util.user.user.delete_user_from_user_pool", lambda *args, **kwargs: True
+        )
+
+        # Create user
+        username = "test_user1"
+        user1 = User(username=username)
+        assert username in [x["username"] for x in get_all_items()]
+
+        # Remove user
+        user1.remove_user()
+        assert username not in [x["username"] for x in get_all_items()]

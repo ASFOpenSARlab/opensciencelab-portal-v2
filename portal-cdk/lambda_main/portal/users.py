@@ -2,8 +2,12 @@ from util.format import (
     portal_template,
 )
 from util.auth import require_access
+from util.session import current_session
 from util.user.dynamo_db import get_all_items
 from util.format import jinja_template
+from util.responses import wrap_response
+from util.exceptions import CognitoError, DbError
+from util.user import User
 
 from aws_lambda_powertools import Logger
 from aws_lambda_powertools.event_handler.api_gateway import Router
@@ -19,14 +23,66 @@ users_route = {
 }
 
 
+def _delete_user(username) -> bool:
+    current_username = current_session.auth.cognito.username
+    user_to_delete = User(username=username)
+
+    if user_to_delete.is_admin():
+        logger.warning(
+            "%s attempted to delete admin user %s",
+            current_username,
+            user_to_delete.username,
+        )
+        return False
+
+    try:
+        user_to_delete.remove_user()
+    except (CognitoError, DbError):
+        logger.warning(
+            "could not delete user %s",
+            username,
+        )
+        return False
+
+    return True
+
+
 @users_router.get("")
 @require_access("admin")
 @portal_template()
-def profile_root():
+def users_root():
+    # See if we were redirected with a message:
+    message = users_router.current_event.query_string_parameters.get("message")
+    success = users_router.current_event.query_string_parameters.get("success", "false")
+    username = users_router.current_event.query_string_parameters.get("username")
+
     # Fetch all users
     all_users = get_all_items()
     all_users_sorted = sorted(all_users, key=lambda x: x["username"])
-    template_input = {"all_users_sorted": all_users_sorted}
+    template_input = {
+        "all_users_sorted": all_users_sorted,
+        "message": message,
+        "success": success.lower() == "true",
+        "username": username,
+    }
 
     # Generate an HTML table
     return jinja_template(template_input, "user-table.j2")
+
+
+@users_router.post("/delete/<username>")
+@require_access("admin")
+def delete_user(username):
+    success = _delete_user(username)
+
+    get_params = [
+        f"username={username}",
+        "message=deleted",
+        f"success={success}",
+    ]
+
+    return wrap_response(
+        body="Post Delete redirect",
+        headers={"Location": f"/portal/users?{'&'.join(get_params)}"},
+        code=302,
+    )
