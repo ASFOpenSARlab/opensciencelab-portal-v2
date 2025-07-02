@@ -8,6 +8,7 @@ class SessionJwt:
     decoded: Optional[dict] = None
     username: Optional[str] = None
     valid: Optional[bool] = None
+    email: Optional[str] = None
 
 
 @dataclass
