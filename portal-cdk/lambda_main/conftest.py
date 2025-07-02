@@ -122,7 +122,7 @@ class Helpers:
             "iat": time.time() - 100,
             "username": "test_user",
             # email comes from id_token
-            "email": "user@mail.com",
+            "email": "test_user@user.com",
         }
 
     @dataclass
@@ -133,6 +133,7 @@ class Helpers:
         access: list = field(default_factory=lambda: ["user"])
         require_profile_update: bool = False
         labs: list = field(default_factory=lambda: [])
+        email: str = None
 
         def update_last_cookie_assignment(self) -> None:
             self.last_cookie_assignment = datetime.datetime(

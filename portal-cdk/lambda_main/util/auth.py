@@ -316,6 +316,14 @@ def process_auth(handler, event, context):
 
             # Get User info
             current_session.user = User(username=jwt_username)
+            # Check that we have the correct email
+            if current_session.user.email != validated_id_jwt["email"]:
+                logger.debug(
+                    "Setting user %s email to %s",
+                    jwt_username,
+                    validated_id_jwt["email"],
+                )
+                current_session.user.email = validated_id_jwt["email"]
 
     else:
         logger.debug(f"No {COGNITO_JWT_COOKIE} cookie provided")
