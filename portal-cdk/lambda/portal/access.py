@@ -1,7 +1,10 @@
 from util.format import portal_template
 from util.auth import require_access
 from util.user.dynamo_db import list_users_with_lab
+from util.user import User
 from labs import labs_dict
+
+import json
 
 from aws_lambda_powertools.event_handler.api_gateway import Router
 
@@ -46,6 +49,32 @@ def manage_lab(shortname):
     page_dict["input"]["users"] = users
     
     return page_dict
+
+
+@access_router.post("/manage/<shortname>/edituser")
+@require_access()
+def edit_user(shortname):
+    # Parse request
+    body = access_router.current_event.body
+    if body is None:
+        return ValueError("Body not provided to edit_user")
+    body:dict = json.loads(body)
+    
+    # Validate request
+    if "action" not in body:
+        return ValueError("Action not provided to edit_user")
+    if "username" not in body:
+        return ValueError("Username not provided to edit_user")
+    
+    # Edit user
+    if body["action"] == "add":
+        user = User(body["username"])
+        user.add_lab(shortname)
+    elif body["action"] == "remove":
+        user = User(body["username"])
+        user.remove_lab(shortname)
+    else:
+        return ValueError(f"Invalid edit_user action {body['action']}")
 
 
 @access_router.get("/lab/<lab>")
