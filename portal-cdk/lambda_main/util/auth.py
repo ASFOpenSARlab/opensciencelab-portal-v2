@@ -6,6 +6,7 @@ from util.user import User
 from util.responses import wrap_response
 from util.exceptions import BadSsoToken, UnknownUser
 from util.session import current_session, PortalAuth
+import util.cognito
 
 import requests
 import jwt
@@ -19,35 +20,21 @@ logger = Logger(child=True)
 
 PORTAL_USER_COOKIE = "portal-username"
 COGNITO_JWT_COOKIE = "portal-jwt"
-
-# FIXME: These values should all be passed in dynamically!
 AWS_DEFAULT_REGION = os.getenv("STACK_REGION")
-COGNITO_CLIENT_ID = os.getenv("COGNITO_CLIENT_ID")
-COGNITO_POOL_ID = os.getenv("COGNITO_POOL_ID")
-COGNITO_PUBLIC_KEYS_URL = (
-    f"https://cognito-idp.{AWS_DEFAULT_REGION}.amazonaws.com/"
-    + COGNITO_POOL_ID
-    + "/.well-known/jwks.json"
-)
-COGNITO_DOMAIN_ID = os.getenv("COGNITO_DOMAIN_ID")
-COGNITO_HOST = (
-    f"https://{COGNITO_DOMAIN_ID}.auth.{AWS_DEFAULT_REGION}.amazoncognito.com"
-)
-
 CLOUDFRONT_ENDPOINT = os.getenv("CLOUDFRONT_ENDPOINT")
 LOGIN_URL = (
-    COGNITO_HOST
+    util.cognito.COGNITO_HOST
     + "/login?"
-    + f"client_id={COGNITO_CLIENT_ID}&"
+    + f"client_id={util.cognito.COGNITO_CLIENT_ID}&"
     + "response_type=code&"
     + "scope=aws.cognito.signin.user.admin+email+openid+phone+profile&"
     + f"redirect_uri=https://{CLOUDFRONT_ENDPOINT}/auth"
 )
 
 LOGOUT_URL = (
-    COGNITO_HOST
+    util.cognito.COGNITO_HOST
     + "/logout?"
-    + f"client_id={COGNITO_CLIENT_ID}&"
+    + f"client_id={util.cognito.COGNITO_CLIENT_ID}&"
     + f"logout_uri=https://{CLOUDFRONT_ENDPOINT}/logout"
 )
 
@@ -81,8 +68,8 @@ def get_key_validation():
 
     if not JWT_VALIDATION:
         public_keys = {}
-        logger.debug({"keys": COGNITO_PUBLIC_KEYS_URL})
-        jwks = requests.get(COGNITO_PUBLIC_KEYS_URL).json()
+        logger.debug({"keys": util.cognito.COGNITO_PUBLIC_KEYS_URL})
+        jwks = requests.get(util.cognito.COGNITO_PUBLIC_KEYS_URL).json()
         for jwk in jwks["keys"]:
             kid = jwk["kid"]
             public_keys[kid] = RSAAlgorithm.from_jwk(json.dumps(jwk))
@@ -114,12 +101,12 @@ def validate_jwt(jwt_cookie):
 
 
 def validate_code(code, request_host):
-    oauth2_token_url = f"{COGNITO_HOST}/oauth2/token"
+    oauth2_token_url = f"{util.cognito.COGNITO_HOST}/oauth2/token"
 
     data = {
         "grant_type": "authorization_code",
         "code": code,
-        "client_id": COGNITO_CLIENT_ID,
+        "client_id": util.cognito.COGNITO_CLIENT_ID,
         "redirect_uri": f"https://{request_host}/auth",
     }
 
