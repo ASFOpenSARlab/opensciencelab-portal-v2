@@ -40,6 +40,7 @@ class TestAuthSession:
         assert current_session.user.username == "test_user", (
             "Username should be set to 'test_user'"
         )
+        assert current_session.user.email == "test_user@user.com"
 
     def test_session_no_cookie(
         self, lambda_context, monkeypatch, helpers, mocked_requests_post
