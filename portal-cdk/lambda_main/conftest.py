@@ -32,7 +32,7 @@ def MockedRequestsPost(*args, **kwargs):
         json_response_payload = {
             "id_token": "valid_id_token",
             "access_token": "valid_access_token",
-            "refresh_token": "valid_refres_token",
+            "refresh_token": "valid_refresh_token",
         }
 
     if args[0].endswith("/oauth2/token"):
