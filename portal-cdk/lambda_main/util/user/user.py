@@ -23,7 +23,6 @@ class User:
         db_info = get_item(self.username)
         ## If it doesn't exist, create it with the defaults:
         if not db_info:
-            print(f"Creating {self.username} with {defaults}")
             create_item(self.username, defaults)
             db_info = {}
 
