@@ -32,28 +32,3 @@ def wrap_response(body, code=200, content_type=None, headers=None, cookies=None)
     logger.info(response_payload)
 
     return Response(**response_payload)
-
-
-def basic_html(code=200, content_type=None, headers=None, cookies=None):
-    # username will eventually come from app
-    def inner(func):
-        def wrapper(*args, **kwargs):
-            body = func(*args, **kwargs)
-            return wrap_response(body, code, content_type, headers, cookies)
-
-        return wrapper
-
-    return inner
-
-
-def basic_json(
-    code=200, content_type=content_types.APPLICATION_JSON, headers=None, cookies=None
-):
-    def inner(func):
-        def wrapper(*args, **kwargs):
-            body = func(*args, **kwargs)
-            return wrap_response(body, code, content_type, headers, cookies)
-
-        return wrapper
-
-    return inner
