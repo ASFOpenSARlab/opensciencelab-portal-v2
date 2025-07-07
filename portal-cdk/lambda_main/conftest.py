@@ -32,6 +32,7 @@ def MockedRequestsPost(*args, **kwargs):
         json_response_payload = {
             "id_token": "valid_id_token",
             "access_token": "valid_access_token",
+            "refresh_token": "valid_refresh_token",
         }
 
     if args[0].endswith("/oauth2/token"):
@@ -49,6 +50,14 @@ def mocked_requests_post() -> MockedRequestsPost:
 def fake_auth(monkeypatch):
     # Bypass JWT
     validate_jwt = Helpers().validate_jwt
+    tokens = {
+        "access_token": "valid_access_token",
+        "id_token": "valid_id_token",
+    }
+    monkeypatch.setattr(
+        "util.auth.get_tokens_from_refresh",
+        lambda *args, **kwargs: tokens,
+    )
     monkeypatch.setattr("util.auth.validate_jwt", validate_jwt)
     monkeypatch.setattr("jwt.decode", validate_jwt)
 
@@ -112,6 +121,8 @@ class Helpers:
             "exp": time.time() + 100,
             "iat": time.time() - 100,
             "username": "test_user",
+            # email comes from id_token
+            "email": "test_user@user.com",
         }
 
     @dataclass
@@ -122,6 +133,7 @@ class Helpers:
         access: list = field(default_factory=lambda: ["user"])
         require_profile_update: bool = False
         labs: list = field(default_factory=lambda: [])
+        email: str = None
 
         def update_last_cookie_assignment(self) -> None:
             self.last_cookie_assignment = datetime.datetime(

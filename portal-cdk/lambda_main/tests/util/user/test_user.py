@@ -52,13 +52,17 @@ class TestUserClass:
         from util.user.dynamo_db import get_all_items
 
         username = "test_user"
+        email = "test_user@user.com"
+
         user = User(username)
+        user.email = email
         assert len(get_all_items()) == 1, "User was NOT inserted into the DB"
         assert user.username == username, "Username attr doesn't match init"
         # Only one item, verify it's what we expect IN the DB too.
         assert get_all_items()[0]["access"] == ["user"], (
             "Access should be just 'user' by default"
         )
+        assert get_all_items()[0]["email"] == email
 
     def test_username_immutable(self):
         from util.user.user import User
