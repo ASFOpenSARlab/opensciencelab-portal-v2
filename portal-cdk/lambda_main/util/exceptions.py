@@ -50,3 +50,11 @@ class UnknownUser(GenericFatalError):
     """
 
     pass  # pylint: disable=unnecessary-pass
+
+
+class CognitoError(GenericFatalError):
+    """
+    Raised if there is a problem with the DB.
+    """
+
+    pass  # pylint: disable=unnecessary-pass
