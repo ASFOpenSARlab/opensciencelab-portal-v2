@@ -177,3 +177,35 @@ class TestUserClass:
         # Remove user
         user1.remove_user()
         assert username not in [x["username"] for x in get_all_items()]
+
+    def test_user_profile_in_cache(self, monkeypatch):
+        from util.user.user import User
+        from util.user.dynamo_db import cached
+
+        monkeypatch.setattr(
+            "util.user.user.delete_user_from_user_pool", lambda *args, **kwargs: True
+        )
+
+        username = "test_user_cache1"
+        assert not cached(username)
+
+        # Create a user
+        _user_copy_0 = User(username=username)
+
+        # Pull a user, this will be cached since it is not a create
+        user_copy_1 = User(username=username)
+        assert cached(username)
+        assert not user_copy_1.is_admin()
+
+        # Mutate cache
+        from util.user.dynamo_db import PROFILE_CACHE
+
+        PROFILE_CACHE[username]["access"].append("admin")
+
+        # Fetch mutated profile to verify cache was used
+        user_copy_2 = User(username=username)
+        assert user_copy_2.is_admin()
+
+        # Remove item from cache
+        user_copy_1.remove_user()
+        assert not cached(username)
