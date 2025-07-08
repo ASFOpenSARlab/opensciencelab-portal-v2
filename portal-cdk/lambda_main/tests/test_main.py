@@ -44,3 +44,37 @@ class TestPortalIntegrations:
         ret = main.lambda_handler(event, lambda_context)
         assert ret["statusCode"] == 200
         assert ret["headers"].get("Content-Type") == "text/css"
+        
+    def test_user_home_page(self, monkeypatch, lambda_context, helpers, fake_auth):
+        user = helpers.FakeUser(labs=["testlab"])
+        monkeypatch.setattr("portal.User", lambda *args, **kwargs: user)
+        monkeypatch.setattr("util.auth.User", lambda *args, **kwargs: user)
+        
+        labs = helpers.LABS
+        monkeypatch.setattr("portal.labs_dict", labs)
+        
+        event = helpers.get_event(path="/portal", cookies=fake_auth)
+        ret = main.lambda_handler(event, lambda_context)
+        
+        assert ret["statusCode"] == 200
+        assert ret["body"].find('<div id="lab-choices">') != -1
+        assert ret["body"].find('href="/portal/access/manage/testlab"') == -1
+        assert ret["headers"].get("Location") is None
+        assert ret["headers"].get("Content-Type") == "text/html"
+        
+    def test_admin_home_page(self, monkeypatch, lambda_context, helpers, fake_auth):
+        user = helpers.FakeUser(access=["admin", "user"], labs=["testlab"])
+        monkeypatch.setattr("portal.User", lambda *args, **kwargs: user)
+        monkeypatch.setattr("util.auth.User", lambda *args, **kwargs: user)
+        
+        labs = helpers.LABS
+        monkeypatch.setattr("portal.labs_dict", labs)
+        
+        event = helpers.get_event(path="/portal", cookies=fake_auth)
+        ret = main.lambda_handler(event, lambda_context)
+            
+        assert ret["statusCode"] == 200
+        assert ret["body"].find('<div id="lab-choices">') != -1
+        assert ret["body"].find('href="/portal/access/manage/testlab"') >= -1
+        assert ret["headers"].get("Location") is None
+        assert ret["headers"].get("Content-Type") == "text/html"

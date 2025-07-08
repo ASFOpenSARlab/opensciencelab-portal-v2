@@ -16,6 +16,7 @@ os.environ["STACK_REGION"] = "us-west-2"
 os.environ["COGNITO_CLIENT_ID"] = "fake-cognito-id"
 os.environ["COGNITO_POOL_ID"] = "fake-pool-id"
 from util.auth import PORTAL_USER_COOKIE, COGNITO_JWT_COOKIE
+from labs import BaseLab
 
 
 def MockedRequestsPost(*args, **kwargs):
@@ -133,6 +134,8 @@ class Helpers:
 
         def remove_user(self) -> bool:
             return True
+    
+    LABS = {"testlab" : BaseLab(friendly_name="Test Lab", short_lab_name="testlab")}
 
 
 @pytest.fixture
