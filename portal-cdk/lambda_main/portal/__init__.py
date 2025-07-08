@@ -41,24 +41,23 @@ require_access.router = portal_router
 def portal_root():
     page_dict = {
         "content": "List All Labs",
-        "input": {
-        },
+        "input": {},
     }
     username = current_session.auth.cognito.username
     user = User(username=username)
-    
+
     # Get all labs as a list
     labs = list(labs_dict.values())
-    
+
     # Filter by labs the user has access to
     for index, lab in enumerate(labs):
-        # Remove all labs the user is not given access to 
+        # Remove all labs the user is not given access to
         if lab.short_lab_name not in user.labs:
             labs.pop(index)
-            
+
     # Add labs to page_dict
     page_dict["input"]["labs"] = labs
-    
+
     # Add admin check to formatting
     page_dict["input"]["admin"] = user.is_admin()
     return page_dict
