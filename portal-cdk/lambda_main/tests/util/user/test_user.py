@@ -180,21 +180,21 @@ class TestUserClass:
 
     def test_user_profile_in_cache(self, monkeypatch):
         from util.user.user import User
-        from util.user.dynamo_db import cached
+        from util.user.dynamo_db import is_cached
 
         monkeypatch.setattr(
             "util.user.user.delete_user_from_user_pool", lambda *args, **kwargs: True
         )
 
         username = "test_user_cache1"
-        assert not cached(username)
+        assert not is_cached(username)
 
         # Create a user
         _user_copy_0 = User(username=username)
 
         # Pull a user, this will be cached since it is not a create
         user_copy_1 = User(username=username)
-        assert cached(username)
+        assert is_cached(username)
         assert not user_copy_1.is_admin()
 
         # Mutate cache
@@ -208,4 +208,4 @@ class TestUserClass:
 
         # Remove item from cache
         user_copy_1.remove_user()
-        assert not cached(username)
+        assert not is_cached(username)

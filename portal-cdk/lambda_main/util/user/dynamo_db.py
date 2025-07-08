@@ -42,19 +42,19 @@ def _remove_restricted_keys(item: dict):
             del item[key]
 
 
-def cached(username: str) -> bool:
+def is_cached(username: str) -> bool:
     if username in PROFILE_CACHE:
         return True
 
 
-def cache(username: str) -> dict | bool:
-    if cached(username):
+def get_cache(username: str) -> dict | None:
+    if is_cached(username):
         return PROFILE_CACHE[username]
-    return False
+    return None
 
 
 def _del_cache(username: str) -> bool:
-    if cached(username):
+    if is_cached(username):
         del PROFILE_CACHE[username]
         return True
     return False
@@ -102,8 +102,8 @@ def get_item(username: str) -> dict:
     Returns an item from the DB, or False if it doesn't exist.
     """
     # Check profile cache
-    if cached(username):
-        return cache(username)
+    if is_cached(username):
+        return get_cache(username)
 
     _client, _db, table = _get_dynamo()
     response = table.get_item(Key={"username": username})
