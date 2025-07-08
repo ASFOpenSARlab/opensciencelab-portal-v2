@@ -184,13 +184,14 @@ class TestPortalAuth:
 
     def test_logged_in(self, lambda_context, fake_auth, helpers, monkeypatch):
         user = helpers.FakeUser()
+        monkeypatch.setattr("portal.User", lambda *args, **kwargs: user)
         monkeypatch.setattr("util.auth.User", lambda *args, **kwargs: user)
 
         event = helpers.get_event(path="/portal", cookies=fake_auth)
         ret = main.lambda_handler(event, lambda_context)
 
         assert ret["statusCode"] == 200
-        assert ret["body"].find("Welcome to OpenScienceLab") != -1
+        assert ret["body"].find('<div id="lab-choices">') != -1
         assert ret["headers"].get("Location") is None
         assert ret["headers"].get("Content-Type") == "text/html"
 
