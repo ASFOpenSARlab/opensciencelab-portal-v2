@@ -56,6 +56,9 @@ def portal_root():
         if lab.short_lab_name not in user.labs:
             labs.pop(index)
             
-    # Add labs to format
+    # Add labs to page_dict
     page_dict["input"]["labs"] = labs
+    
+    # Add admin check to formatting
+    page_dict["input"]["admin"] = user.is_admin()
     return page_dict
