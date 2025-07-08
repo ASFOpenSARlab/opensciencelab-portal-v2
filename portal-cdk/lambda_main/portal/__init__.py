@@ -4,6 +4,8 @@ from portal.hub import hub_route
 from portal.users import users_route
 from util.format import portal_template
 from util.auth import require_access
+from util.session import current_session
+from util.user import User
 from labs import labs_dict
 
 from aws_lambda_powertools.event_handler.api_gateway import Router
@@ -42,8 +44,18 @@ def portal_root():
         "input": {
         },
     }
+    username = current_session.auth.cognito.username
+    user = User(username=username)
     
-    labs = labs_dict.values()
+    # Get all labs as a list
+    labs = list(labs_dict.values())
     
+    # Filter by labs the user has access to
+    for index, lab in enumerate(labs):
+        # Remove all labs the user is not given access to 
+        if lab.short_lab_name not in user.labs:
+            labs.pop(index)
+            
+    # Add labs to format
     page_dict["input"]["labs"] = labs
     return page_dict
