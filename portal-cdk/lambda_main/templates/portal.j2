@@ -16,13 +16,15 @@
         <fieldset>
             <div class="horizontal-div">
                 <legend> {{ mylab.friendly_name }} </legend>
-                <a id="about-{{ mylab.short_lab_name }}" 
-                    role="button" 
-                    class="btn btn-lg btn-primary go-to-about-btn" 
-                    href="/portal/access/manage/{{ mylab.short_lab_name }}"
-                    >
-                    Manage
-                </a>
+                {% if admin %}
+                    <a id="about-{{ mylab.short_lab_name }}" 
+                        role="button" 
+                        class="btn btn-lg btn-primary go-to-about-btn" 
+                        href="/portal/access/manage/{{ mylab.short_lab_name }}"
+                        >
+                        Manage
+                    </a>
+                {% endif %}
             </div>
             
 

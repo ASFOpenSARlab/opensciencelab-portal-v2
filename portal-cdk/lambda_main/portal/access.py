@@ -33,7 +33,7 @@ def add_lab():
 
 
 @access_router.get("/manage/<shortname>")
-@require_access()
+@require_access("admin")
 @portal_template(name="manage.j2")
 def manage_lab(shortname):
     page_dict = {
