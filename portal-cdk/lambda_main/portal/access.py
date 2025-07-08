@@ -38,16 +38,15 @@ def add_lab():
 def manage_lab(shortname):
     page_dict = {
         "content": "Manage Lab",
-        "input": {
-        },
+        "input": {},
     }
-    
+
     lab = labs_dict[shortname]
     page_dict["input"]["lab"] = lab
-    
+
     users = list_users_with_lab(lab.short_lab_name)
     page_dict["input"]["users"] = users
-    
+
     return page_dict
 
 
@@ -58,14 +57,14 @@ def edit_user(shortname):
     body = access_router.current_event.body
     if body is None:
         return ValueError("Body not provided to edit_user")
-    body:dict = json.loads(body)
-    
+    body: dict = json.loads(body)
+
     # Validate request
     if "action" not in body:
         return ValueError("Action not provided to edit_user")
     if "username" not in body:
         return ValueError("Username not provided to edit_user")
-    
+
     # Edit user
     if body["action"] == "add":
         user = User(body["username"])
