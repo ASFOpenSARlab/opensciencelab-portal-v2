@@ -26,5 +26,16 @@ labs_dict = {
             deployment_url= "labdeployment.com",
             enabled= True,
             accessibility= "protected",
+        ),
+    "secret-lab": BaseLab(
+            friendly_name="Secret Lab",
+            short_lab_name="secret-lab",
+            description= "A secret test lab for testing",
+            logo= "favicon.ico",
+            about_page_url= "google.com",
+            about_page_button_label= "Not Google",
+            deployment_url= "labdeployment.com",
+            enabled= True,
+            accessibility= "protected",
         )
 }
