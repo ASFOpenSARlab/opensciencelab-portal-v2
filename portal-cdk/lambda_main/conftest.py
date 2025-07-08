@@ -135,7 +135,9 @@ class Helpers:
         def remove_user(self) -> bool:
             return True
     
-    LABS = {"testlab" : BaseLab(friendly_name="Test Lab", short_lab_name="testlab")}
+    LABS = {
+            "testlab" : BaseLab(friendly_name="Test Lab", short_lab_name="testlab")
+            }
 
 
 @pytest.fixture
