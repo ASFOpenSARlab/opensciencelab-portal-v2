@@ -50,13 +50,13 @@ def portal_root():
     labs = list(labs_dict.values())
 
     # Filter by labs the user has access to
-    for index, lab in enumerate(labs):
-        # Remove all labs the user is not given access to
-        if lab.short_lab_name not in user.labs:
-            labs.pop(index)
+    filtered_labs = []
+    for lab in labs:
+        if lab.short_lab_name in user.labs:
+            filtered_labs.push(lab)
 
     # Add labs to page_dict
-    page_dict["input"]["labs"] = labs
+    page_dict["input"]["labs"] = filtered_labs
 
     # Add admin check to formatting
     page_dict["input"]["admin"] = user.is_admin()
