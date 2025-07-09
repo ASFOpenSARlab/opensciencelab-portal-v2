@@ -16,7 +16,9 @@
                     </span>
                     <legend>{{ lab.friendly_name }}</legend>
                 </div>
-                {% for user in users %}{{ user }}{% endfor %}
+                <p>
+                {{ users | join(' ')  }}
+                </p>
             </div>
             <div>
                 <h4>Tools</h4>
