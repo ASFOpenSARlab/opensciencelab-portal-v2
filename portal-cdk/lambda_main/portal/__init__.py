@@ -40,7 +40,7 @@ require_access.router = portal_router
 @portal_template()
 def portal_root():
     template_input = {}
-    
+
     username = current_session.auth.cognito.username
     user = User(username=username)
 

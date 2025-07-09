@@ -11,7 +11,8 @@ class BaseLab:
     about_page_button_label: str = None
     deployment_url: str = None
     ip_country_status: dict = field(
-        default_factory=lambda: {"limited": [
+        default_factory=lambda: {
+            "limited": [
                 "BH",
                 "BT",
                 "EG",
@@ -25,7 +26,8 @@ class BaseLab:
                 "AE",
                 "YE",
                 "EH",
-            ], "prohibited": [
+            ],
+            "prohibited": [
                 "AF",
                 "BY",
                 "MM",
@@ -52,7 +54,8 @@ class BaseLab:
                 "ZW",
                 "RU",
                 "TW",
-            ]}
+            ],
+        }
     )
     enabled: str = None
     accessibility: str = None

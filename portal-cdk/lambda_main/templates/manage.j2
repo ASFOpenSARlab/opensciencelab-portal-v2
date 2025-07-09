@@ -4,14 +4,14 @@
             <span>
                 {% if lab.logo is defined and lab.logo != None -%}
                     <img src="/portal/hub/static/img/{{ lab.logo }}"
-                            alt="logo for {{ lab.friendly_name }}" width="100" height="100"/>
+                         alt="logo for {{ lab.friendly_name }}"
+                         width="100"
+                         height="100" />
                 {% endif %}
             </span>
             <legend>{{ lab.friendly_name }}</legend>
         </div>
-        <p>
-        {{ users | join(' ')  }}
-        </p>
+        <p>{{ users | join(" ") }}</p>
     </div>
     <div>
         <h4>Tools</h4>
@@ -25,7 +25,6 @@
         </div>
     </div>
 </div>
-
 <script>
     function postAndRefresh(url, data={}){
         fetch(url, {
