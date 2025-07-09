@@ -4,6 +4,7 @@ import datetime
 import os
 import json
 
+from cachetools import TTLCache
 import boto3
 from boto3.dynamodb.conditions import Attr
 
@@ -15,6 +16,9 @@ _DYNAMO_TABLE = None
 
 # Keys that this module manages, that you don't want the rest of the code messing with.
 RESTRICTED_KEYS = ["username", "created_at", "last_update"]
+
+# Profile cache, upto 100 items, max life 5mins
+PROFILE_CACHE = TTLCache(maxsize=100, ttl=5 * 60)
 
 
 def _get_dynamo():
@@ -30,6 +34,37 @@ def _get_dynamo():
     if not _DYNAMO_TABLE:
         _DYNAMO_TABLE = _DYNAMO_DB.Table(os.getenv("DYNAMO_TABLE_NAME"))
     return _DYNAMO_CLIENT, _DYNAMO_DB, _DYNAMO_TABLE
+
+
+def _remove_restricted_keys(item: dict):
+    for key in RESTRICTED_KEYS:
+        if key in item:
+            del item[key]
+
+
+def is_cached(username: str) -> bool:
+    if username in PROFILE_CACHE:
+        return True
+
+
+def get_cache(username: str) -> dict | None:
+    if is_cached(username):
+        return PROFILE_CACHE[username]
+    return None
+
+
+def _del_cache(username: str) -> bool:
+    if is_cached(username):
+        del PROFILE_CACHE[username]
+        return True
+    return False
+
+
+def _add_cache(username: str, item: dict) -> dict:
+    # Don't cache restricted keys, they are for internal use only.
+    _remove_restricted_keys(item)
+    PROFILE_CACHE[username] = item
+    return item
 
 
 def alpha(s: str) -> str:
@@ -55,6 +90,10 @@ def create_item(username: str, item: dict) -> bool:
     item["created_at"] = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     item["last_update"] = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     table.put_item(Item=item)
+
+    # Add new item to profile cache
+    _add_cache(username, item)
+
     return True
 
 
@@ -62,14 +101,15 @@ def get_item(username: str) -> dict:
     """
     Returns an item from the DB, or False if it doesn't exist.
     """
+    # Check profile cache
+    if is_cached(username):
+        return get_cache(username)
+
     _client, _db, table = _get_dynamo()
     response = table.get_item(Key={"username": username})
     if "Item" in response:
-        for key in RESTRICTED_KEYS:
-            # Don't return restricted keys, they are for internal use only.
-            if key in response["Item"]:
-                del response["Item"][key]
-        return response["Item"]
+        # Add response to cache & Return
+        return _add_cache(username, response["Item"])
     return False
 
 
@@ -117,14 +157,19 @@ def update_item(username: str, updates: dict) -> bool:
         ExpressionAttributeValues=expression_attribute_values,
         UpdateExpression=update_expression,
     )
+
+    # Profile was mutated, lets invalidate
+    _del_cache(username)
+
     return True
 
 
 def delete_item(username: str) -> None:
     """
-    Deletes an item from the DB.
+    Deletes an item from the DB & Cache.
     """
     _client, _db, table = _get_dynamo()
+    _del_cache(username)
     table.delete_item(Key={"username": username})
 
 
