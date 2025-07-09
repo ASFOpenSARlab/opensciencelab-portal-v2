@@ -212,6 +212,7 @@ class TestUserClass:
 
     def test_user_is_locked_method(self):
         from util.user.user import User
+
         user = User(username="test_user")
         assert not user.is_locked, "User shouldn't be locked yet."
         user.is_locked = True
