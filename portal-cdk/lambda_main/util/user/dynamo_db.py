@@ -185,7 +185,6 @@ def update_username(old_username: str, new_username: str) -> bool:
         item["username"] = new_username
         table.put_item(Item=item)
         delete_item(old_username)
-        _del_cache(old_username)
         return True
     return False
 
