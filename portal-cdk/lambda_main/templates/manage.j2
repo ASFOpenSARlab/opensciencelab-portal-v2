@@ -1,3 +1,4 @@
+{# djlint:off H016,H030,H031 #}
 <!DOCTYPE html>
 <html lang="en">
     {% include 'head.j2' %}
@@ -10,7 +11,7 @@
                     <span>
                         {% if lab.logo is defined and lab.logo != None -%}
                             <img src="/portal/hub/static/img/{{ lab.logo }}"
-                                 alt="logo for {{ lab.friendly_name }}" />
+                                 alt="logo for {{ lab.friendly_name }}" width="100" height="100"/>
                         {% endif %}
                     </span>
                     <legend>{{ lab.friendly_name }}</legend>
