@@ -1,4 +1,4 @@
-from util.format import portal_template
+from util.format import portal_template, jinja_template
 from util.auth import require_access
 from util.user.dynamo_db import list_users_with_lab
 from util.user import User
@@ -34,24 +34,21 @@ def add_lab():
 
 @access_router.get("/manage/<shortname>")
 @require_access("admin")
-@portal_template(name="manage.j2")
+@portal_template()
 def manage_lab(shortname):
-    page_dict = {
-        "content": "Manage Lab",
-        "input": {},
-    }
+    template_input = {}
 
     lab = labs_dict[shortname]
-    page_dict["input"]["lab"] = lab
+    template_input["lab"] = lab
 
     users = list_users_with_lab(lab.short_lab_name)
-    page_dict["input"]["users"] = users
+    template_input["users"] = users
 
-    return page_dict
+    return jinja_template(template_input, "manage.j2")
 
 
 @access_router.post("/manage/<shortname>/edituser")
-@require_access()
+@require_access("admin")
 def edit_user(shortname):
     # Parse request
     body = access_router.current_event.body
