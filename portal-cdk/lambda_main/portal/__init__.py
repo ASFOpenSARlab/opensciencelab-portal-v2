@@ -2,7 +2,7 @@ from portal.profile import profile_route
 from portal.access import access_route
 from portal.hub import hub_route
 from portal.users import users_route
-from util.format import portal_template
+from util.format import portal_template, jinja_template
 from util.auth import require_access
 from util.session import current_session
 from util.user import User
@@ -37,12 +37,10 @@ require_access.router = portal_router
 
 @portal_router.get("")
 @require_access()
-@portal_template(name="portal.j2")
+@portal_template()
 def portal_root():
-    page_dict = {
-        "content": "List All Labs",
-        "input": {},
-    }
+    template_input = {}
+    
     username = current_session.auth.cognito.username
     user = User(username=username)
 
@@ -53,11 +51,11 @@ def portal_root():
     filtered_labs = []
     for lab in labs:
         if lab.short_lab_name in user.labs:
-            filtered_labs.push(lab)
+            filtered_labs.append(lab)
 
     # Add labs to page_dict
-    page_dict["input"]["labs"] = filtered_labs
+    template_input["labs"] = filtered_labs
 
     # Add admin check to formatting
-    page_dict["input"]["admin"] = user.is_admin()
-    return page_dict
+    template_input["admin"] = user.is_admin()
+    return jinja_template(template_input, "portal.j2")
