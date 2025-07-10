@@ -233,7 +233,9 @@ class TestPortalAuth:
         # And user is redirected to home page
         assert ret["headers"].get("Location") == "/"
 
-    def test_user_locked_no_access(self, lambda_context, fake_auth, helpers, monkeypatch):
+    def test_user_locked_no_access(
+        self, lambda_context, fake_auth, helpers, monkeypatch
+    ):
         user = helpers.FakeUser()
         user.is_locked = True
         monkeypatch.setattr("util.auth.User", lambda *args, **kwargs: user)
