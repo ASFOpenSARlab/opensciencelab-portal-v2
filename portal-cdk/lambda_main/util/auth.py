@@ -7,6 +7,7 @@ from util.user import User
 from util.responses import wrap_response
 from util.exceptions import BadSsoToken, UnknownUser
 from util.session import current_session, PortalAuth
+from util.format import render_template
 import util.cognito
 
 import requests
@@ -24,23 +25,6 @@ REFRESH_CACHE = TTLCache(maxsize=100, ttl=10 * 60)
 
 PORTAL_USER_COOKIE = "portal-username"
 COGNITO_JWT_COOKIE = "portal-jwt"
-AWS_DEFAULT_REGION = os.getenv("STACK_REGION")
-CLOUDFRONT_ENDPOINT = os.getenv("CLOUDFRONT_ENDPOINT")
-LOGIN_URL = (
-    util.cognito.COGNITO_HOST
-    + "/login?"
-    + f"client_id={util.cognito.COGNITO_CLIENT_ID}&"
-    + "response_type=code&"
-    + "scope=aws.cognito.signin.user.admin+email+openid+phone+profile&"
-    + f"redirect_uri=https://{CLOUDFRONT_ENDPOINT}/auth"
-)
-
-LOGOUT_URL = (
-    util.cognito.COGNITO_HOST
-    + "/logout?"
-    + f"client_id={util.cognito.COGNITO_CLIENT_ID}&"
-    + f"logout_uri=https://{CLOUDFRONT_ENDPOINT}/logout"
-)
 
 TOKEN_URL = f"{util.cognito.COGNITO_HOST}/oauth2/token"
 
@@ -358,7 +342,19 @@ def require_access(access="user"):
                     headers={"Location": f"/?return={return_path}"},
                     cookies=cookies,
                 )
-
+            # Check if user is disabled:
+            if current_session.user.is_locked:
+                logger.warning("User %s is locked", username)
+                return wrap_response(
+                    body=render_template(
+                        content=(
+                            "Sorry, your account isn't available right now. "
+                            f"Please reach out to {os.getenv('SES_EMAIL')} if you have any questions or concerns."
+                        ),
+                        title="OSL Portal - Account Locked",
+                    ),
+                    code=403,
+                )
             # Ensure user has access they are trying to achieve
             if access not in current_session.user.access:
                 logger.warning(
