@@ -1,3 +1,4 @@
+import os
 from constructs import Construct
 
 from aws_cdk import (
@@ -75,6 +76,7 @@ class PortalCdkStack(Stack):
                 environment={
                     "POWERTOOLS_SERVICE_NAME": "APP",
                     "DEBUG": str(deploy_prefix != "prod").lower(),
+                    "SES_EMAIL": str(os.getenv("SES_EMAIL")),
                 },
             ),
             # https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_dynamodb.TableProps.html
