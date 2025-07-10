@@ -26,4 +26,5 @@ validator_map = {
     "labs": list,
     "email": str,
     "_rec_counter": int,
+    "is_locked": bool,
 }

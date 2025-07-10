@@ -16,6 +16,23 @@ COGNITO_PUBLIC_KEYS_URL = (
 
 _COGNITO_CLIENT = boto3.client("cognito-idp", region_name=AWS_DEFAULT_REGION)
 
+CLOUDFRONT_ENDPOINT = os.getenv("CLOUDFRONT_ENDPOINT")
+LOGIN_URL = (
+    COGNITO_HOST
+    + "/login?"
+    + f"client_id={COGNITO_CLIENT_ID}&"
+    + "response_type=code&"
+    + "scope=aws.cognito.signin.user.admin+email+openid+phone+profile&"
+    + f"redirect_uri=https://{CLOUDFRONT_ENDPOINT}/auth"
+)
+
+LOGOUT_URL = (
+    COGNITO_HOST
+    + "/logout?"
+    + f"client_id={COGNITO_CLIENT_ID}&"
+    + f"logout_uri=https://{CLOUDFRONT_ENDPOINT}/logout"
+)
+
 
 def get_user_from_user_pool(username) -> dict:
     try:
