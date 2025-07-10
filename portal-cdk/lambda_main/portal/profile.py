@@ -239,8 +239,9 @@ def profile_user_filled(username: str):
         # Update user profile
         user = User(username)
         user.profile = query_dict
-        # Update require user access
-        user.require_profile_update = False
+        # Update require user access if it had been required
+        if user.require_profile_update:
+            user.require_profile_update = False
 
         # Send the user to the portal
         next_url = "/portal"

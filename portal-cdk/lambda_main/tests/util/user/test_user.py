@@ -210,6 +210,13 @@ class TestUserClass:
         user_copy_1.remove_user()
         assert not is_cached(username)
 
+        # ensure cache record counter is increment
+        user_copy_3 = User(username=username)
+        uc3_counter_initial = user_copy_3._rec_counter
+        user_copy_3.access = list(user_copy_3.access) + ["admin"]
+        user_copy_4 = User(username=username)
+        assert user_copy_4._rec_counter != uc3_counter_initial
+
     def test_user_is_locked_method(self):
         from util.user.user import User
 
