@@ -36,7 +36,8 @@ def wrap_response(body, code=200, content_type=None, headers=None, cookies=None)
 
     return Response(**response_payload)
 
-def form_body_to_dict(body:str) -> dict:
+
+def form_body_to_dict(body: str) -> dict:
     """Converts an html form body to a python dictionary
 
     Args:

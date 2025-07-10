@@ -186,7 +186,7 @@ class TestPortalAuth:
         user = helpers.FakeUser(labs=["testlab"])
         monkeypatch.setattr("portal.User", lambda *args, **kwargs: user)
         monkeypatch.setattr("util.auth.User", lambda *args, **kwargs: user)
-        
+
         labs = helpers.LABS
         monkeypatch.setattr("portal.labs_dict", labs)
 

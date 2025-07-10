@@ -70,7 +70,7 @@ def edit_user(shortname):
         user.remove_lab(shortname)
     else:
         return ValueError(f"Invalid edit_user action {body['action']}")
-    
+
     # Send the user to the management page
     next_url = f"/portal/access/manage/{shortname}"
     return wrap_response(
