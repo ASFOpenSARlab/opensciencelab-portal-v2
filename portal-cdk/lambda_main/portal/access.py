@@ -2,9 +2,8 @@ from util.format import portal_template, jinja_template
 from util.auth import require_access
 from util.user.dynamo_db import list_users_with_lab
 from util.user import User
+from util.responses import wrap_response, form_body_to_dict
 from labs import labs_dict
-
-import json
 
 from aws_lambda_powertools.event_handler.api_gateway import Router
 
@@ -54,7 +53,7 @@ def edit_user(shortname):
     body = access_router.current_event.body
     if body is None:
         return ValueError("Body not provided to edit_user")
-    body: dict = json.loads(body)
+    body = form_body_to_dict(body)
 
     # Validate request
     if "action" not in body:
@@ -71,6 +70,14 @@ def edit_user(shortname):
         user.remove_lab(shortname)
     else:
         return ValueError(f"Invalid edit_user action {body['action']}")
+    
+    # Send the user to the management page
+    next_url = f"/portal/access/manage/{shortname}"
+    return wrap_response(
+        body={f"Redirect to {next_url}"},
+        code=302,
+        headers={"Location": next_url},
+    )
 
 
 @access_router.get("/lab/<lab>")

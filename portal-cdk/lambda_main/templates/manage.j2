@@ -16,49 +16,12 @@
     <div>
         <h4>Tools</h4>
         <h5>Manage Users</h5>
-        <div>
-            <input type="text" id="user-field">
-            <label for="add-user-btn">Add User</label>
-            <input type="button" id="add-user-btn" onclick="">
-            <label for="remove-user-btn">Remove User</label>
-            <input type="button" id="remove-user-btn">
-        </div>
+        <form method="post" action="{{lab.short_lab_name}}/edituser">
+            <fieldset>
+                <input type="text" name="username" placeholder="username">
+                <button type="submit" name="action" value="add">Add</button>
+                <button type="submit" name="action" value="remove">Remove</button>
+            </fieldset>
+        </form>
     </div>
 </div>
-<script>
-    function postAndRefresh(url, data={}){
-        fetch(url, {
-            method: 'POST',
-            headers:{
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(data)
-        })
-        .then(response => {
-            // Check response is ok
-            if(!response.ok){
-                throw new Error("Request failed");
-            }
-            return response.json();
-        })
-        .then(result => {
-            // Reload page
-            location.reload();
-        })
-        .catch(error => {
-            // Handle Errors
-            console.error("Error:", error);
-        });
-    }
-    // Add button listeners
-    document.getElementById("add-user-btn").addEventListener('click', function(){
-        const username = document.getElementById("user-field").value;
-        document.getElementById("user-field").value = "";
-        postAndRefresh("/portal/access/manage/{{lab.short_lab_name}}/edituser", { action: "add", username: username });
-    });
-    document.getElementById("remove-user-btn").addEventListener('click', function(){
-        const username = document.getElementById("user-field").value;
-        document.getElementById("user-field").value = "";
-        postAndRefresh("/portal/access/manage/{{lab.short_lab_name}}/edituser", { action: "remove", username: username });
-    });
-</script>
