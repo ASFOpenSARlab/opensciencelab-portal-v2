@@ -216,3 +216,11 @@ class TestUserClass:
         user_copy_3.access = list(user_copy_3.access) + ["admin"]
         user_copy_4 = User(username=username)
         assert user_copy_4._rec_counter != uc3_counter_initial
+
+    def test_user_is_locked_method(self):
+        from util.user.user import User
+
+        user = User(username="test_user")
+        assert not user.is_locked, "User shouldn't be locked yet."
+        user.is_locked = True
+        assert user.is_locked, "User should be locked now."
