@@ -134,6 +134,7 @@ class Helpers:
         require_profile_update: bool = False
         labs: list = field(default_factory=lambda: [])
         email: str = None
+        rec_counter: int = field(default_factory=lambda: 1)
 
         def update_last_cookie_assignment(self) -> None:
             self.last_cookie_assignment = datetime.datetime(

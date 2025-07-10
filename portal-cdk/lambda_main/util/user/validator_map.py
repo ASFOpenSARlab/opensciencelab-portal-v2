@@ -25,4 +25,5 @@ validator_map = {
     "require_profile_update": bool,
     "labs": list,
     "email": str,
+    "rec_counter": int,
 }
