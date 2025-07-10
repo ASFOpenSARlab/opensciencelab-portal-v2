@@ -69,10 +69,10 @@ def _add_cache(username: str, item: dict) -> dict:
 
 def _check_cache_counter(username, table) -> bool:
     cache_value = get_cache(username)
-    if "rec_counter" not in cache_value:
+    if "_rec_counter" not in cache_value:
         # User hasn't been updated since cache counter was added?
         return False
-    if cache_value["rec_counter"] != get_record_counter(table, username):
+    if cache_value["_rec_counter"] != get_record_counter(table, username):
         return False
     return True
 
@@ -126,18 +126,20 @@ def get_item(username: str) -> dict:
 
 def get_record_counter(table, username) -> int:
     response = table.get_item(
-        Key={"username": username}, ProjectionExpression="rec_counter"
+        Key={"username": username},
+        ProjectionExpression="#rec_counter",
+        ExpressionAttributeNames={"#rec_counter": "_rec_counter"},
     )
 
     if "Item" not in response:
         # Item doesn't have a record yet
         return 1
 
-    if "rec_counter" not in response["Item"]:
+    if "_rec_counter" not in response["Item"]:
         # Item doesn't have a counter yet
         return 1
 
-    return int(response["Item"]["rec_counter"])
+    return int(response["Item"]["_rec_counter"])
 
 
 def get_all_items() -> list:
@@ -172,7 +174,7 @@ def update_item(username: str, updates: dict) -> bool:
     updates["last_update"] = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
     ### increment the record counter
-    updates["rec_counter"] = get_record_counter(table, username) + 1
+    updates["_rec_counter"] = get_record_counter(table, username) + 1
 
     # The '#var' is ID for the keys:
     expression_attribute_names = {f"#{alpha(k)}": k for k in updates.keys()}
