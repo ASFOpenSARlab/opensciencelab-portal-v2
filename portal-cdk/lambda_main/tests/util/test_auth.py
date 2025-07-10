@@ -256,4 +256,3 @@ class TestPortalAuth:
         assert os.getenv("SES_EMAIL") is not None, (
             "SES_EMAIL environment variable is not set"
         )
-
