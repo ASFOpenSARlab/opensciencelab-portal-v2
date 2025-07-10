@@ -232,3 +232,16 @@ class TestPortalAuth:
         assert ret["cookies"][1].find("Expires") != -1
         # And user is redirected to home page
         assert ret["headers"].get("Location") == "/"
+
+    def test_user_locked_no_access(self, lambda_context, fake_auth, helpers, monkeypatch):
+        user = helpers.FakeUser()
+        user.is_locked = True
+        monkeypatch.setattr("util.auth.User", lambda *args, **kwargs: user)
+
+        event = helpers.get_event(path="/portal", cookies=fake_auth)
+        ret = main.lambda_handler(event, lambda_context)
+
+        assert ret["statusCode"] == 403
+        assert ret["body"].find("Sorry, you're account isn't available right now") != -1
+        assert ret["headers"].get("Location") is None
+        assert ret["headers"].get("Content-Type") == "text/html"
