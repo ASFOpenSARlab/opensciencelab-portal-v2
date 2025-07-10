@@ -32,6 +32,7 @@ jobs:
       contents: read
     env:
       DEPLOY_PREFIX: ${{ needs.setup.outputs.deploy_prefix }}
+      SES_EMAIL: ${{ secrets.SES_EMAIL }}
     steps:
       - name: Checkout Repo
         uses: actions/checkout@v4

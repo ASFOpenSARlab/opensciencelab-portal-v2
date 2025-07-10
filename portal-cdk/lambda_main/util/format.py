@@ -5,7 +5,7 @@ import copy
 
 from util.responses import wrap_response
 from util.session import current_session
-from util.auth import LOGIN_URL, LOGOUT_URL
+from util.cognito import LOGIN_URL, LOGOUT_URL
 
 from jinja2 import Environment, FileSystemLoader, StrictUndefined, select_autoescape
 
