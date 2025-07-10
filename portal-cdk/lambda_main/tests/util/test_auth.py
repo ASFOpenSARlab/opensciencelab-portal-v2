@@ -258,4 +258,5 @@ class TestPortalAuth:
         )
 
     def test_github_setting_undeclared_secret(self):
+        assert os.getenv("SES_EMAIL"), "Is this what works?"
         assert False, f"Github Sets undeclared to: '{os.getenv('SES_EMAIL')}'"
