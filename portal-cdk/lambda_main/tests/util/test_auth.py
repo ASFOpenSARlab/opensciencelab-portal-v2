@@ -253,5 +253,7 @@ class TestPortalAuth:
         deploy_prefix = os.getenv("DEPLOY_PREFIX")
         if deploy_prefix not in ["test", "prod"]:
             pytest.skip("Skipping test for development environment")
-        assert os.getenv("SES_EMAIL") is not None, "SES_EMAIL environment variable is not set"
+        assert os.getenv("SES_EMAIL") is not None, (
+            "SES_EMAIL environment variable is not set"
+        )
 

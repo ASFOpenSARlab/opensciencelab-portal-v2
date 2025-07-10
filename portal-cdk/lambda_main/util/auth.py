@@ -351,7 +351,7 @@ def require_access(access="user"):
                             "Sorry, your account isn't available right now. "
                             f"Please reach out to {os.getenv('SES_EMAIL')} if you have any questions or concerns."
                         ),
-                        title="OSL Portal - Account Locked"
+                        title="OSL Portal - Account Locked",
                     ),
                     code=403,
                 )
