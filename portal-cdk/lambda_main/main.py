@@ -14,6 +14,8 @@ from util.auth import (
     validate_code,
     process_auth,
     delete_cookies,
+    revoke_refresh_token,
+    refresh_map_del,
 )
 from util.exceptions import GenericFatalError
 from util.session import current_session
@@ -66,6 +68,11 @@ def root():
 
 @app.get("/logout")
 def logout():
+    # Revoke this refresh token, kill session
+    if current_session.auth.cognito.raw:
+        revoke_refresh_token(current_session.auth.cognito.raw)
+        refresh_map_del(current_session.auth.cognito.raw)
+
     return wrap_response(
         body="You have been logged out",
         headers={"Location": "/"},

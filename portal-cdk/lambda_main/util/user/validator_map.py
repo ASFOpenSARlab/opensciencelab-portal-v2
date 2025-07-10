@@ -24,4 +24,6 @@ validator_map = {
     "last_cookie_assignment": str,
     "require_profile_update": bool,
     "labs": list,
+    "email": str,
+    "is_locked": bool,
 }

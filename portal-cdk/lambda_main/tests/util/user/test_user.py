@@ -52,13 +52,17 @@ class TestUserClass:
         from util.user.dynamo_db import get_all_items
 
         username = "test_user"
+        email = "test_user@user.com"
+
         user = User(username)
+        user.email = email
         assert len(get_all_items()) == 1, "User was NOT inserted into the DB"
         assert user.username == username, "Username attr doesn't match init"
         # Only one item, verify it's what we expect IN the DB too.
         assert get_all_items()[0]["access"] == ["user"], (
             "Access should be just 'user' by default"
         )
+        assert get_all_items()[0]["email"] == email
 
     def test_username_immutable(self):
         from util.user.user import User
@@ -173,3 +177,43 @@ class TestUserClass:
         # Remove user
         user1.remove_user()
         assert username not in [x["username"] for x in get_all_items()]
+
+    def test_user_profile_in_cache(self, monkeypatch):
+        from util.user.user import User
+        from util.user.dynamo_db import is_cached
+
+        monkeypatch.setattr(
+            "util.user.user.delete_user_from_user_pool", lambda *args, **kwargs: True
+        )
+
+        username = "test_user_cache1"
+        assert not is_cached(username)
+
+        # Create a user
+        _user_copy_0 = User(username=username)
+
+        # Pull a user, this will be cached since it is not a create
+        user_copy_1 = User(username=username)
+        assert is_cached(username)
+        assert not user_copy_1.is_admin()
+
+        # Mutate cache
+        from util.user.dynamo_db import PROFILE_CACHE
+
+        PROFILE_CACHE[username]["access"].append("admin")
+
+        # Fetch mutated profile to verify cache was used
+        user_copy_2 = User(username=username)
+        assert user_copy_2.is_admin()
+
+        # Remove item from cache
+        user_copy_1.remove_user()
+        assert not is_cached(username)
+
+    def test_user_is_locked_method(self):
+        from util.user.user import User
+
+        user = User(username="test_user")
+        assert not user.is_locked, "User shouldn't be locked yet."
+        user.is_locked = True
+        assert user.is_locked, "User should be locked now."

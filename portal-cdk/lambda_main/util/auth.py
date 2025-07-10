@@ -1,11 +1,13 @@
 import json
 import os
 import datetime
+from cachetools import TTLCache
 
 from util.user import User
 from util.responses import wrap_response
 from util.exceptions import BadSsoToken, UnknownUser
 from util.session import current_session, PortalAuth
+from util.format import render_template
 import util.cognito
 
 import requests
@@ -18,25 +20,15 @@ from aws_lambda_powertools.middleware_factory import lambda_handler_decorator
 
 logger = Logger(child=True)
 
+# Refresh token cache, upto 100 items, max life 10mins
+REFRESH_CACHE = TTLCache(maxsize=100, ttl=10 * 60)
+
 PORTAL_USER_COOKIE = "portal-username"
 COGNITO_JWT_COOKIE = "portal-jwt"
-AWS_DEFAULT_REGION = os.getenv("STACK_REGION")
-CLOUDFRONT_ENDPOINT = os.getenv("CLOUDFRONT_ENDPOINT")
-LOGIN_URL = (
-    util.cognito.COGNITO_HOST
-    + "/login?"
-    + f"client_id={util.cognito.COGNITO_CLIENT_ID}&"
-    + "response_type=code&"
-    + "scope=aws.cognito.signin.user.admin+email+openid+phone+profile&"
-    + f"redirect_uri=https://{CLOUDFRONT_ENDPOINT}/auth"
-)
 
-LOGOUT_URL = (
-    util.cognito.COGNITO_HOST
-    + "/logout?"
-    + f"client_id={util.cognito.COGNITO_CLIENT_ID}&"
-    + f"logout_uri=https://{CLOUDFRONT_ENDPOINT}/logout"
-)
+TOKEN_URL = f"{util.cognito.COGNITO_HOST}/oauth2/token"
+
+REVOKE_TOKEN_URL = f"{util.cognito.COGNITO_HOST}/oauth2/revoke"
 
 SSO_TOKEN_SECRET_NAME = os.getenv("SSO_TOKEN_SECRET_NAME")
 
@@ -63,6 +55,37 @@ def decrypt_data(data):
     return encryptedjwt.decrypt(data, sso_token=sso_token)
 
 
+def refresh_map_del(refresh_token) -> bool:
+    # Delete an item from refesh cache
+    if refresh_token in REFRESH_CACHE:
+        del REFRESH_CACHE[refresh_token]
+    return True
+
+
+def refresh_map(refresh_token):
+    if refresh_token in REFRESH_CACHE:
+        tokens = REFRESH_CACHE[refresh_token]
+        access_token = tokens["access_token"]
+        if validate_jwt(access_token):
+            logger.info("Access token found in refresh map")
+            return tokens
+
+    tokens = get_tokens_from_refresh(refresh_token)
+    if not tokens.get("access_token"):
+        logger.warning("Refresh token exchange failed")
+        return {}
+
+    access_token = tokens.get("access_token")
+
+    if validate_jwt(access_token):
+        # Save new access token to cache
+        REFRESH_CACHE[refresh_token] = tokens
+        return tokens
+
+    logger.warning("Refresh token missing or invalid")
+    return {}
+
+
 def get_key_validation():
     global JWT_VALIDATION
 
@@ -84,13 +107,16 @@ def get_param_from_jwt(jwt_cookie, param_name="username"):
     return decoded[param_name]
 
 
-def validate_jwt(jwt_cookie):
+def validate_jwt(jwt_cookie, aud=None):
+    if not jwt_cookie:
+        return False
+
     jwt_validation = get_key_validation()
 
     try:
         kid = jwt.get_unverified_header(jwt_cookie)["kid"]
         key = jwt_validation[kid]
-        return jwt.decode(jwt_cookie, key, algorithms=["RS256"])
+        return jwt.decode(jwt_cookie, key, audience=aud, algorithms=["RS256"])
     except jwt.exceptions.ExpiredSignatureError:
         username = get_param_from_jwt(jwt_cookie, "username")
         logger.warning(f"Expired Token for user '{username}'")
@@ -100,29 +126,54 @@ def validate_jwt(jwt_cookie):
     return False
 
 
+def get_token_data_and_headers():
+    data = {"client_id": util.cognito.COGNITO_CLIENT_ID}
+    headers = {"Content-Type": "application/x-www-form-urlencoded"}
+    return data, headers
+
+
+def revoke_refresh_token(refresh_token):
+    data, headers = get_token_data_and_headers()
+    data["token"] = refresh_token
+    response = requests.post(REVOKE_TOKEN_URL, data=data, headers=headers).content
+    logger.info("Revoke token response: %s", response)
+
+
+def get_tokens_from_refresh(refresh_token):
+    data, headers = get_token_data_and_headers()
+    data["grant_type"] = "refresh_token"
+    data["refresh_token"] = refresh_token
+
+    logger.debug("Refresh Token exchange @ %s w/ %s", TOKEN_URL, data)
+
+    # Attempt to exchange a code for a Token
+    token_data = requests.post(TOKEN_URL, data=data, headers=headers).json()
+    logger.debug("post response token_data: %s", token_data)
+    if token_data.get("access_token"):
+        logger.debug("Successfully converted refresh to access token")
+        return token_data
+
+    logger.warning("Refresh token exchange failed: %s", token_data)
+    return {}
+
+
 def validate_code(code, request_host):
-    oauth2_token_url = f"{util.cognito.COGNITO_HOST}/oauth2/token"
+    data, headers = get_token_data_and_headers()
 
-    data = {
-        "grant_type": "authorization_code",
-        "code": code,
-        "client_id": util.cognito.COGNITO_CLIENT_ID,
-        "redirect_uri": f"https://{request_host}/auth",
-    }
-
-    headers = {
-        "Content-Type": "application/x-www-form-urlencoded",
-    }
+    # Non-generic params
+    data["grant_type"] = "authorization_code"
+    data["code"] = code
+    data["redirect_uri"] = f"https://{request_host}/auth"
 
     logger.debug(
         {
             "exchange-data": data,
-            "auth-host": oauth2_token_url,
+            "auth-host": TOKEN_URL,
         }
     )
 
     # Attempt to exchange a code for a Token
-    token_data = requests.post(oauth2_token_url, data=data, headers=headers).json()
+    token_data = requests.post(TOKEN_URL, data=data, headers=headers).json()
 
     if token_data.get("id_token"):
         return token_data
@@ -147,7 +198,12 @@ def get_jwt_from_token(token, token_name):
 def parse_token(token):
     access_token_jwt = token["access_token"]
     id_token_jwt = token["id_token"]
+    refresh_token_jwt = token["refresh_token"]
 
+    # Add tokens to TTL Cache
+    REFRESH_CACHE[refresh_token_jwt] = token
+
+    logger.debug({"refresh_token": refresh_token_jwt})
     logger.debug({"access_token": access_token_jwt})
     logger.debug({"id_token": id_token_jwt})
 
@@ -155,10 +211,6 @@ def parse_token(token):
 
     ### id_token can be decoded with "aud":COGNITO_CLIENT_ID
     # id_token_decoded = validate_jwt(id_token_jwt)
-
-    # make sure the JWT validated
-    if not access_token_decoded:
-        return {}
 
     cookie_headers = []
 
@@ -171,7 +223,7 @@ def parse_token(token):
 
     # Format "Set-Cookie" headers
     cookie_headers.append(f"{PORTAL_USER_COOKIE}={username_cookie_value};")
-    cookie_headers.append(f"{COGNITO_JWT_COOKIE}={access_token_jwt};")
+    cookie_headers.append(f"{COGNITO_JWT_COOKIE}={refresh_token_jwt};")
 
     logger.debug({"set-cookie-headers": cookie_headers})
 
@@ -223,21 +275,39 @@ def process_auth(handler, event, context):
         logger.debug(f"No {PORTAL_USER_COOKIE} cookie provided")
 
     if cookies.get(COGNITO_JWT_COOKIE):
+        # jwt_cookie is the Cognito REFRESH token
         jwt_cookie = cookies.get(COGNITO_JWT_COOKIE)
         current_session.auth.cognito.raw = jwt_cookie
 
-        validated_jwt = validate_jwt(jwt_cookie)
-        logger.debug({"jwt_cookie_payload": validated_jwt})
+        # Attempt to convert REFRESH to ACCESS token
+        tokens = refresh_map(jwt_cookie)
+        access_token = tokens.get("access_token")
+        validated_access_jwt = validate_jwt(access_token)
+        validated_id_jwt = validate_jwt(
+            tokens.get("id_token"),
+            aud=util.cognito.COGNITO_CLIENT_ID,
+        )
+        logger.debug({"validated_access_jwt": validated_access_jwt})
+        logger.debug({"validated_id_jwt": validated_id_jwt})
 
-        if validated_jwt:
-            jwt_username = validated_jwt["username"]
+        if validated_access_jwt:
+            jwt_username = validated_access_jwt["username"]
             logger.debug("JWT Username is %s", jwt_username)
-            current_session.auth.cognito.decoded = validated_jwt
+            current_session.auth.cognito.decoded = validated_access_jwt
             current_session.auth.cognito.username = jwt_username
+            current_session.auth.cognito.email = validated_id_jwt["email"]
             current_session.auth.cognito.valid = True
 
             # Get User info
             current_session.user = User(username=jwt_username)
+            # Check that we have the correct email
+            if current_session.user.email != validated_id_jwt["email"]:
+                logger.debug(
+                    "Setting user %s email to %s",
+                    jwt_username,
+                    validated_id_jwt["email"],
+                )
+                current_session.user.email = validated_id_jwt["email"]
 
     else:
         logger.debug(f"No {COGNITO_JWT_COOKIE} cookie provided")
@@ -272,7 +342,19 @@ def require_access(access="user"):
                     headers={"Location": f"/?return={return_path}"},
                     cookies=cookies,
                 )
-
+            # Check if user is disabled:
+            if current_session.user.is_locked:
+                logger.warning("User %s is locked", username)
+                return wrap_response(
+                    body=render_template(
+                        content=(
+                            "Sorry, your account isn't available right now. "
+                            f"Please reach out to {os.getenv('SES_EMAIL')} if you have any questions or concerns."
+                        ),
+                        title="OSL Portal - Account Locked",
+                    ),
+                    code=403,
+                )
             # Ensure user has access they are trying to achieve
             if access not in current_session.user.access:
                 logger.warning(

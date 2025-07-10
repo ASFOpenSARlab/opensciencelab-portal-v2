@@ -1,3 +1,4 @@
+import os
 import json
 from base64 import b64encode
 
@@ -114,6 +115,13 @@ class TestPortalAuth:
 
     def test_bad_jwt(self, lambda_context, monkeypatch, helpers):
         monkeypatch.setattr("util.auth.get_key_validation", lambda: {"bla": "bla"})
+        monkeypatch.setattr(
+            "util.auth.refresh_map",
+            lambda *args, **kwargs: {
+                "access_token": BAD_JWT,
+                "id_token": {"email": "bla@bla.com"},
+            },
+        )
         event = helpers.get_event(path="/portal", cookies={"portal-jwt": BAD_JWT})
         with pytest.raises(jwt.exceptions.InvalidAlgorithmError) as excinfo:
             main.lambda_handler(event, lambda_context)
@@ -122,6 +130,13 @@ class TestPortalAuth:
     def test_old_jwt(self, lambda_context, monkeypatch, helpers):
         jwk_string = RSAAlgorithm.from_jwk(json.dumps(JWK))
 
+        monkeypatch.setattr(
+            "util.auth.refresh_map",
+            lambda *args, **kwargs: {
+                "access_token": OLD_JWT,
+                "id_token": {"email": "bla@bla.com"},
+            },
+        )
         monkeypatch.setattr(
             "util.auth.get_key_validation",
             lambda: {
@@ -222,3 +237,26 @@ class TestPortalAuth:
         assert ret["cookies"][1].find("Expires") != -1
         # And user is redirected to home page
         assert ret["headers"].get("Location") == "/"
+
+    def test_user_locked_no_access(
+        self, lambda_context, fake_auth, helpers, monkeypatch
+    ):
+        user = helpers.FakeUser()
+        user.is_locked = True
+        monkeypatch.setattr("util.auth.User", lambda *args, **kwargs: user)
+
+        event = helpers.get_event(path="/portal", cookies=fake_auth)
+        ret = main.lambda_handler(event, lambda_context)
+
+        assert ret["statusCode"] == 403
+        assert ret["body"].find("Sorry, your account isn't available right now") != -1
+        assert ret["headers"].get("Location") is None
+        assert ret["headers"].get("Content-Type") == "text/html"
+
+    def test_email_is_set_in_prod(self):
+        deploy_prefix = os.getenv("DEPLOY_PREFIX")
+        if deploy_prefix not in ["test", "prod"]:
+            pytest.skip("Skipping test for development environment")
+        # GitHub sets this to an empty string if not set, BUT IT EXISTS.
+        #    Can't just compare it to None.
+        assert os.getenv("SES_EMAIL"), "SES_EMAIL environment variable is not set"
