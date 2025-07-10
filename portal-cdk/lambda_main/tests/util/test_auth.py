@@ -256,3 +256,6 @@ class TestPortalAuth:
         assert os.getenv("SES_EMAIL") is not None, (
             "SES_EMAIL environment variable is not set"
         )
+
+    def test_github_setting_undeclared_secret(self):
+        assert False, f"Github Sets undeclared to: '{os.getenv('SES_EMAIL')}'"
