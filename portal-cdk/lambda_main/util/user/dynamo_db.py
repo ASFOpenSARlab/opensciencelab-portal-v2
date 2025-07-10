@@ -66,6 +66,16 @@ def _add_cache(username: str, item: dict) -> dict:
     return item
 
 
+def _check_cache_counter(username, table) -> bool:
+    cache_value = get_cache(username)
+    if "_rec_counter" not in cache_value:
+        # User hasn't been updated since cache counter was added?
+        return False
+    if cache_value["_rec_counter"] != get_record_counter(table, username):
+        return False
+    return True
+
+
 def alpha(s: str) -> str:
     """
     Only returns the alpha parts of a string.
@@ -100,16 +110,35 @@ def get_item(username: str) -> dict:
     """
     Returns an item from the DB, or False if it doesn't exist.
     """
+    _client, _db, table = _get_dynamo()
     # Check profile cache
     if is_cached(username):
-        return get_cache(username)
+        if _check_cache_counter(username, table):
+            return get_cache(username)
 
-    _client, _db, table = _get_dynamo()
     response = table.get_item(Key={"username": username})
     if "Item" in response:
         # Add response to cache & Return
         return _add_cache(username, response["Item"])
     return False
+
+
+def get_record_counter(table, username) -> int:
+    response = table.get_item(
+        Key={"username": username},
+        ProjectionExpression="#rec_counter",
+        ExpressionAttributeNames={"#rec_counter": "_rec_counter"},
+    )
+
+    if "Item" not in response:
+        # Item doesn't have a record yet
+        return 1
+
+    if "_rec_counter" not in response["Item"]:
+        # Item doesn't have a counter yet
+        return 1
+
+    return int(response["Item"]["_rec_counter"])
 
 
 def get_all_items() -> list:
@@ -139,8 +168,13 @@ def update_item(username: str, updates: dict) -> bool:
     ### Fail fast if it doesn't exist, they should call create_item instead:
     if not get_item(username):
         return False
+
     ### Otherwise craft the boto3 update item call:
     updates["last_update"] = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+    ### increment the record counter
+    updates["_rec_counter"] = get_record_counter(table, username) + 1
+
     # The '#var' is ID for the keys:
     expression_attribute_names = {f"#{alpha(k)}": k for k in updates.keys()}
     # The ':var' is ID for the values:
