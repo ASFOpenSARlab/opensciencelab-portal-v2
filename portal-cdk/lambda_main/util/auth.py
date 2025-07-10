@@ -358,7 +358,16 @@ def require_access(access="user"):
                     headers={"Location": f"/?return={return_path}"},
                     cookies=cookies,
                 )
-
+            # Check if user is disabled:
+            if current_session.user.is_locked:
+                logger.warning("User %s is locked", username)
+                return wrap_response(
+                    body=(
+                        "Sorry, you're account isn't available right now. "
+                        "Please reach out to SES@ASF if you have any questions or concerns."
+                    ),
+                    code=403,
+                )
             # Ensure user has access they are trying to achieve
             if access not in current_session.user.access:
                 logger.warning(
