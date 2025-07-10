@@ -5,5 +5,6 @@ defaults = {
     "some_int_with_default": 42,
     "require_profile_update": True,
     "labs": [],
+    "_rec_counter": 1,
     "is_locked": False,
 }
