@@ -255,6 +255,4 @@ class TestPortalAuth:
             pytest.skip("Skipping test for development environment")
         # GitHub sets this to an empty string if not set, BUT IT EXISTS.
         #    Can't just compare it to None.
-        assert os.getenv("SES_EMAIL"), (
-            "SES_EMAIL environment variable is not set"
-        )
+        assert os.getenv("SES_EMAIL"), "SES_EMAIL environment variable is not set"
