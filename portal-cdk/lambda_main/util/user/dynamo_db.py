@@ -43,8 +43,7 @@ def _remove_restricted_keys(item: dict):
 
 
 def is_cached(username: str) -> bool:
-    if username in PROFILE_CACHE:
-        return True
+    return username in PROFILE_CACHE
 
 
 def get_cache(username: str) -> dict | None:
