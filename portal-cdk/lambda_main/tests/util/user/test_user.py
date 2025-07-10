@@ -212,7 +212,7 @@ class TestUserClass:
 
         # ensure cache record counter is increment
         user_copy_3 = User(username=username)
-        uc3_counter_initial = user_copy_3.rec_counter
+        uc3_counter_initial = user_copy_3._rec_counter
         user_copy_3.access = list(user_copy_3.access) + ["admin"]
         user_copy_4 = User(username=username)
-        assert user_copy_4.rec_counter != uc3_counter_initial
+        assert user_copy_4._rec_counter != uc3_counter_initial
