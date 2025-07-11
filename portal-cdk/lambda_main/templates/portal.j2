@@ -1,6 +1,9 @@
-<h2 style="border-bottom: 1px solid black;
-           margin-bottom: 25px;
-           padding-bottom: 10px">Welcome To OpenScienceLab</h2>
+{# djlint:off H006,H025 #}
+{# 
+    remove H025 after multiline jinja comment dealth with 
+    inside of <a> tag with id="start-{{ mylab.short_lab_name }}"
+#}
+<h2 class="title">Welcome To OpenScienceLab</h2>
 <p>
     <i>
         For an overview of best practices and guidance for resolving some issues,
@@ -12,23 +15,23 @@
     </i>
 </p>
 {% for mylab in labs -%}
-    <div class="container" style="margin-top: 10px;">
+    <div class="container margin-top-10">
         <div class="row">
             <section>
                 <div id="lab-choices">
                     <fieldset class="fieldset-border">
                         <legend class="legend-border-text font-30">{{ mylab.friendly_name }}</legend>
                         {# {% if mylab.can_user_access_lab is defined and not mylab.can_user_access_lab -%}
-                <p class="alert alert-warning show">
-                    You do not have access to this lab. <a href="/user/request/lab/{{ mylab.short_lab_name }}">Request access here</a>
-                    <br />
-                </p>
-            {% elif mylab.is_lab_deployment_healthy is defined and not mylab.is_lab_deployment_healthy -%}
-                <p class="alert alert-danger show">
-                    The lab url is either unhealthy or no longer exists. Please contact the <a href="mailto:uaf-jupyterhub-asf+help@alaska.edu">OpenScienceLab Team</a>.
-                    <br />
-                </p>
-{% endif %} #}
+                            <p class="alert alert-warning show">
+                                You do not have access to this lab. <a href="/user/request/lab/{{ mylab.short_lab_name }}">Request access here</a>
+                                <br />
+                            </p>
+                        {% elif mylab.is_lab_deployment_healthy is defined and not mylab.is_lab_deployment_healthy -%}
+                            <p class="alert alert-danger show">
+                                The lab url is either unhealthy or no longer exists. Please contact the <a href="mailto:uaf-jupyterhub-asf+help@alaska.edu">OpenScienceLab Team</a>.
+                                <br />
+                            </p>
+                        {% endif %} #}
                         <div class="lab-logo">
                             <span>
                                 {% if mylab.logo is defined and mylab.logo != None -%}
@@ -47,14 +50,14 @@
                                     role="button"
                                     class="btn btn-lg btn-primary go-to-lab-btn"
                                     {# {% if mylab.can_user_access_lab is defined and not mylab.can_user_access_lab -%}
-                        href="javascript:void(0)"
-                        title="You do not have access to the lab"
-                        disabled
-                        {% elif mylab.is_lab_deployment_healthy is defined and not mylab.is_lab_deployment_healthy -%}
-                        href="javascript:void(0)"
-                        title="The lab url is either unhealthy or the lab no longer exists"
-                        disabled
-                        {% else -%} #}
+                                    href="javascript:void(0)"
+                                    title="You do not have access to the lab"
+                                    disabled
+                                    {% elif mylab.is_lab_deployment_healthy is defined and not mylab.is_lab_deployment_healthy -%}
+                                    href="javascript:void(0)"
+                                    title="The lab url is either unhealthy or the lab no longer exists"
+                                    disabled
+                                    {% else -%} #}
                                     href="/lab/{{ mylab.short_lab_name }}/hub/login"
                                     title="Click to go to the lab {{ mylab.short_lab_name }}"
                                     {# {% endif %} #}
