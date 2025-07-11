@@ -55,7 +55,7 @@ def portal_root():
 
     # Add labs to page_dict
     template_input["labs"] = filtered_labs
-    
+
     ## Curently missing ##
     ## Lab ordering
     ## is_global_lab_country_status_limited warning
