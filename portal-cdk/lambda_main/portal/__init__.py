@@ -55,6 +55,11 @@ def portal_root():
 
     # Add labs to page_dict
     template_input["labs"] = filtered_labs
+    
+    ## Curently missing ##
+    ## Lab ordering
+    ## is_global_lab_country_status_limited warning
+    ## is_mfa_enabled warning
 
     # Add admin check to formatting
     template_input["admin"] = user.is_admin()
