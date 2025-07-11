@@ -145,6 +145,7 @@ synth-portal: install-reqs bundle-deps
 .PHONY := deploy-portal
 deploy-portal: install-reqs bundle-deps
 	@echo "Deploying ${DEPLOY_PREFIX}/portal-cdk"
+	cd ./portal-cdk/lambda_main/user_access && npm run build
 	cd ./portal-cdk && cdk --require-approval never deploy
 
 .PHONY := destroy-portal

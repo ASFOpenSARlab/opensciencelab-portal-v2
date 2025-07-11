@@ -22,6 +22,7 @@ from util.session import current_session
 from util.user import User
 
 from static import get_static_object
+from user_access import get_dist_object
 
 from aws_lambda_powertools import Logger
 from aws_lambda_powertools.event_handler import APIGatewayHttpResolver
@@ -124,6 +125,16 @@ def static():
     logger.debug("Path is %s", app.current_event.path)
     return get_static_object(app.current_event)
 
+@app.get("/user-access")
+def user_access_root():
+    event_path = "/user-access/dist/index.html"
+    logger.debug("Path is %s", event_path)
+    return get_dist_object(event_path)
+
+@app.get("/user-access/.+")
+def user_access():
+    logger.debug("Path is %s", app.current_event.path)
+    return get_dist_object(app.current_event)
 
 ######################
 ### Error Handling ###
