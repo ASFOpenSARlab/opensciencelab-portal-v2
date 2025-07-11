@@ -4,11 +4,10 @@ from util.format import (
 from util.auth import require_access
 from util.session import current_session
 from util.user import User
-from util.responses import wrap_response
+from util.responses import wrap_response, form_body_to_dict
 from pathlib import Path
 import json
-from base64 import b64decode
-from urllib.parse import urlencode, parse_qs
+from urllib.parse import urlencode
 from typing import Any
 
 from aws_lambda_powertools import Logger
@@ -199,11 +198,7 @@ def process_profile_form(request_body: str) -> tuple[bool, dict[str, Any]]:
     Returns:
         tuple[bool, dict[str, Any]]: _description_
     """
-    decoded_body = b64decode(request_body)
-    parsed_qs = parse_qs(decoded_body, keep_blank_values=True)
-    query_dict: dict[str, Any] = {
-        k.decode("utf-8"): v[0].decode("utf-8") for k, v in parsed_qs.items()
-    }
+    query_dict = form_body_to_dict(request_body)
 
     # Validate Form
     correct, errors = validate_profile_dict(query_dict)

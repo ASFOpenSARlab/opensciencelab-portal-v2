@@ -1,0 +1,32 @@
+{# djlint:off H006 #}
+<div>
+    <legend>{{ lab.friendly_name }}</legend>
+    <div class="lab-logo">
+        <span>
+            {% if lab.logo is defined and lab.logo != None -%}
+                <img class="lab-logo-img"
+                     src="/portal-cdk/lambda_main/static/img/{{ lab.logo }}"
+                     alt="logo for {{ lab.friendly_name }}" />
+            {% endif %}
+        </span>
+    </div>
+</div>
+<div class="horizontal-div screen-width">
+    <div class="margin-left-30">
+        <h4>Users</h4>
+        {% for user in users %}<p>{{ user }}</p>{% endfor %}
+    </div>
+    <div class="right-align margin-right-30">
+        <div>
+            <h4>Tools</h4>
+            <form method="post" action="{{ lab.short_lab_name }}/edituser">
+                <fieldset class="fieldset-border">
+                    <legend class="legend-border-text font-20">Manage Users</legend>
+                    <input type="text" name="username" placeholder="username">
+                    <button type="submit" name="action" value="add">Add</button>
+                    <button type="submit" name="action" value="remove">Remove</button>
+                </fieldset>
+            </form>
+        </div>
+    </div>
+</div>

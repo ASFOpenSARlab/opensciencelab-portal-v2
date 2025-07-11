@@ -77,6 +77,20 @@ class User:
             "%Y-%m-%d %H:%M:%S"
         )
 
+    def add_lab(self, lab_short_name: str) -> None:
+        new_lab_list = []
+        for lab in self.labs:
+            new_lab_list.append(lab)
+        new_lab_list.append(lab_short_name)
+        self.labs = new_lab_list
+
+    def remove_lab(self, lab_short_name: str) -> None:
+        new_lab_list = []
+        for lab in self.labs:
+            if lab != lab_short_name:
+                new_lab_list.append(lab)
+        self.labs = new_lab_list
+
     # Convenience methods
     def is_admin(self) -> bool:
         if "admin" in self.access:

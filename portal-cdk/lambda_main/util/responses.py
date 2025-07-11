@@ -1,4 +1,7 @@
 import json
+from base64 import b64decode
+from urllib.parse import parse_qs
+from typing import Any
 
 from aws_lambda_powertools import Logger
 from aws_lambda_powertools.event_handler import (
@@ -32,3 +35,20 @@ def wrap_response(body, code=200, content_type=None, headers=None, cookies=None)
     logger.info(response_payload)
 
     return Response(**response_payload)
+
+
+def form_body_to_dict(body: str) -> dict:
+    """Converts an html form body to a python dictionary
+
+    Args:
+        body (str): Body of an html form
+
+    Returns:
+        dict: Python dictionary with key values provided from body
+    """
+    body = b64decode(body)
+    parsed_qs = parse_qs(body, keep_blank_values=True)
+    query_dict: dict[str, Any] = {
+        k.decode("utf-8"): v[0].decode("utf-8") for k, v in parsed_qs.items()
+    }
+    return query_dict

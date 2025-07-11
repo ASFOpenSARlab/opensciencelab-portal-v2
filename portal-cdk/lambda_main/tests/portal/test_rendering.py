@@ -14,7 +14,7 @@ class TestRenderingTemplates:
         self, monkeypatch, lambda_context, fake_auth, helpers
     ):
         user = helpers.FakeUser()
-        monkeypatch.setattr("portal.profile.User", lambda *args, **kwargs: user)
+        monkeypatch.setattr("portal.User", lambda *args, **kwargs: user)
         monkeypatch.setattr("util.auth.User", lambda *args, **kwargs: user)
 
         event = helpers.get_event(path="/portal", cookies=fake_auth)
@@ -28,7 +28,7 @@ class TestRenderingTemplates:
         self, monkeypatch, lambda_context, fake_auth, helpers
     ):
         user = helpers.FakeUser(access=["user", "admin"])
-        monkeypatch.setattr("portal.profile.User", lambda *args, **kwargs: user)
+        monkeypatch.setattr("portal.User", lambda *args, **kwargs: user)
         monkeypatch.setattr("util.auth.User", lambda *args, **kwargs: user)
 
         event = helpers.get_event(path="/portal", cookies=fake_auth)
