@@ -2,7 +2,7 @@ import mimetypes
 import os
 import pathlib
 
-from util.format import portal_template
+#from util.format import portal_template
 from util.auth import require_access
 
 from aws_lambda_powertools.event_handler.api_gateway import Router
@@ -63,8 +63,8 @@ def get_response(event_path: str):
 require_access.router = user_access_router
 
 @user_access_router.get("")
-#@require_access()
-#@portal_template()
+@require_access()
+# @portal_template() ## Overwrites HTML response incorrectly
 def user_access_root():
     event_path = "index.html"
     logger.debug("Path is %s", event_path)
@@ -72,8 +72,8 @@ def user_access_root():
 
 
 @user_access_router.get(".+")
-#@require_access()
-#@portal_template()
+@require_access()
+# @portal_template() ## Overwrites HTML response incorrectly
 def user_access():
     event_path = str(user_access_router.current_event.path)
     logger.debug("Path is %s", event_path)
