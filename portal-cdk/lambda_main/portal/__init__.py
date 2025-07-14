@@ -2,6 +2,7 @@ from portal.profile import profile_route
 from portal.access import access_route
 from portal.hub import hub_route
 from portal.users import users_route
+from portal.user_access import user_access_route
 from util.format import portal_template
 from util.auth import require_access
 
@@ -21,7 +22,7 @@ routes = {}
 route_names = {}
 
 # Import Nested routes, eg /portal/profile
-for route in (portal_route, profile_route, access_route, hub_route, users_route):
+for route in (portal_route, profile_route, access_route, hub_route, users_route, user_access_route):
     routes[route["prefix"]] = route["router"]
 
     if "name" in route:
