@@ -125,16 +125,20 @@ def static():
     logger.debug("Path is %s", app.current_event.path)
     return get_static_object(app.current_event)
 
+
 @app.get("/user-access")
 def user_access_root():
-    event_path = "/user-access/dist/index.html"
+    event_path = "/user-access/index.html"
     logger.debug("Path is %s", event_path)
     return get_dist_object(event_path)
 
+
 @app.get("/user-access/.+")
 def user_access():
-    logger.debug("Path is %s", app.current_event.path)
-    return get_dist_object(app.current_event)
+    event_path = str(app.current_event.path)
+    logger.debug("Path is %s", event_path)
+    return get_dist_object(event_path)
+
 
 ######################
 ### Error Handling ###
