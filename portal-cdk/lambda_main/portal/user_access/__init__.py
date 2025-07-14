@@ -2,7 +2,7 @@ import mimetypes
 import os
 import pathlib
 
-#from util.format import portal_template
+# from util.format import portal_template
 from util.auth import require_access
 
 from aws_lambda_powertools.event_handler.api_gateway import Router
@@ -16,7 +16,7 @@ user_access_router = Router()
 user_access_route = {
     "router": user_access_router,
     "prefix": "/portal/user-access",
-    "name": "User Access"
+    "name": "User Access",
 }
 
 routes = {}
@@ -29,10 +29,15 @@ for route in (user_access_route,):
     if "name" in route:
         route_names[route["name"]] = route["prefix"]
 
+
 def get_response(event_path: str):
     # Don't include the url path /user-access as part fo the file path
     # ./dist/ is the within the file path root.
-    file_path = event_path.removeprefix("/portal").removeprefix("/user-access").removeprefix("/dist")
+    file_path = (
+        event_path.removeprefix("/portal")
+        .removeprefix("/user-access")
+        .removeprefix("/dist")
+    )
     file_path = "/dist/" + file_path.removeprefix("/").removeprefix("./")
 
     local_path = pathlib.Path.cwd() / pathlib.Path(__file__).parent
@@ -58,9 +63,11 @@ def get_response(event_path: str):
         body=body,
     )
 
+
 # Pass router into require_access for accessing `app`
 # portal_router.app doesn't exist _yet_, but will later. And we'll need access.
 require_access.router = user_access_router
+
 
 @user_access_router.get("")
 @require_access()

@@ -22,7 +22,14 @@ routes = {}
 route_names = {}
 
 # Import Nested routes, eg /portal/profile
-for route in (portal_route, profile_route, access_route, hub_route, users_route, user_access_route):
+for route in (
+    portal_route,
+    profile_route,
+    access_route,
+    hub_route,
+    users_route,
+    user_access_route,
+):
     routes[route["prefix"]] = route["router"]
 
     if "name" in route:
