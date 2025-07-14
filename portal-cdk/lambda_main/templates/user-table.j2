@@ -22,8 +22,8 @@
         <th>Last Login</th>
         <th>Access</th>
         <th>Requires Profile Update</th>
-        <th>Locked User</th>
-        <th>Delete User</th>
+        <th>Is Locked</th>
+        <th>Should Delete</th>
     </tr>
     {% for user in all_users_sorted %}
         <tr>
@@ -67,6 +67,7 @@
             </td>
             <td>
                 {% if "admin" in user['access'] %}
+                    Admin
                 {% else %}
                     <form onsubmit="return confirm('Do you really want to delete `{{ user['username'] }}`?');"
                           action="/portal/users/delete/{{ user['username'] }}"
