@@ -7,6 +7,7 @@ from util.responses import wrap_response
 from util.format import portal_template, request_context_string
 from util.auth import encrypt_data, require_access
 from util.session import current_session
+from util.user import User
 
 from aws_lambda_powertools import Logger
 from aws_lambda_powertools.event_handler.api_gateway import Router
@@ -73,24 +74,17 @@ def post_portal_hub_auth():
     # Eventually, here, we'll need to instantiate a user object and
     # derive access here dynamically. BUT, for now, assume they have
     # access to the lab!
+    user = User(username=username)
 
-    data = {
-        "admin": True,
-        "roles": ["user", "admin"],
+    data = { # populate
+        "admin": user.is_admin(),
+        "roles": user.get("access"),
         "name": f"{username}",
-        "has_2fa": 1,
-        "force_user_profile_update": False,
+        "has_2fa": 1, # not implemented
+        "force_user_profile_update": user.get("require_profile_update"),
         "ip_country_status": "unrestricted",
-        "country_code": "US",
-        "lab_access": {
-            "smce-test-opensarlab": {
-                "lab_profiles": ["m6a.large"],
-                "time_quota": None,
-                "lab_country_status": "unrestricted",
-                "can_user_access_lab": True,
-                "can_user_see_lab_card": True,
-            },
-        },
+        "country_code": user.get("profile")["country_of_residence"],
+        "lab_access": user.get("labs")
     }
     encrypted_data = encrypt_data(data)
 
@@ -102,7 +96,7 @@ def post_portal_hub_auth():
 
 
 @hub_router.get("/login")
-# @require_access()
+@require_access()
 def portal_hub_login():
     try:
         logger.info("Log in user")
