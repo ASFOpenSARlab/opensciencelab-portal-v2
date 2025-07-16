@@ -6,7 +6,7 @@ from util.format import (
 )
 from util.auth import require_access
 from util.session import current_session
-from util.user.dynamo_db import get_all_items
+from util.user.dynamo_db import get_all_items, get_item
 from util.format import jinja_template
 from util.responses import wrap_response
 from util.exceptions import CognitoError, DbError
@@ -116,3 +116,13 @@ def users_all_usernames():
     all_usernames_sorted = sorted(all_usernames)
 
     return json.dumps(all_usernames_sorted)
+
+
+@users_router.get("/get/<username>")
+def users_get_username(username):
+    # Fetch all users
+    username_item = get_item(username)
+    if not username_item:
+        return {}
+
+    return json.dumps(username_item, cls=DecimalEncoder)
