@@ -160,6 +160,7 @@ class TestPortalAuth:
     ):
         # Create FakeUser instance to be monkeypatched in and inspected after modified
         user = helpers.FakeUser()
+        monkeypatch.setattr("portal.hub.User", lambda *args, **kwargs: user)
         monkeypatch.setattr("util.auth.User", lambda *args, **kwargs: user)
 
         body_payload = json.dumps({"username": "test_user"})
@@ -170,6 +171,7 @@ class TestPortalAuth:
             cookies=fake_auth,
         )
         ret = main.lambda_handler(event, lambda_context)
+        
         assert ret["statusCode"] == 200
         assert ret["headers"].get("Content-Type") == "application/json"
         json_payload = json.loads(ret["body"])
