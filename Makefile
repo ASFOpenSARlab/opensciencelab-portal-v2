@@ -10,7 +10,9 @@ Makefile commands:
 
     manual-cdk-bootstrap:   Bootstrap an account for CDK
 
-    test:					Run PyTest tests
+    build-npm:              Build npm packages
+
+    test:                   Run PyTest tests
 
     synth-portal:           Synth portal CDK project
 
@@ -22,7 +24,7 @@ Makefile commands:
 
     aws-info:               Get AWS account info
 
-    clean:					Remove .build/ & cdk.out/
+    clean:                  Remove .build/ & cdk.out/
 
 endef
 export HELP
@@ -85,6 +87,7 @@ cdk-shell:
 		-e AWS_DEFAULT_REGION -e AWS_REGION \
 		-e AWS_DEFAULT_ACCOUNT \
 		-e DEPLOY_PREFIX \
+		--network host \
 		--pull always \
 		${IMAGE_NAME} || \
 		(  echo -e "" && echo  'If docker run fails with "no matching manifest", ' \
@@ -129,6 +132,11 @@ bundle-deps:
 		echo "Skipping deps bundled in ${BUILD_DEPS}. Remove to rebuild."; \
 	fi
 
+.PHONY := build-npm
+build-npm:
+	echo "Building npm packages..." && \
+	cd ./portal-cdk/lambda_main/portal/user_access && npm install . && npm run build
+
 .PHONE := test
 test: install-reqs bundle-deps
 	@echo "Running tests for Portal (${DEPLOY_PREFIX})"
@@ -143,9 +151,8 @@ synth-portal: install-reqs bundle-deps
 	cd ./portal-cdk && cdk synth
 
 .PHONY := deploy-portal
-deploy-portal: install-reqs bundle-deps
+deploy-portal: install-reqs bundle-deps build-npm
 	@echo "Deploying ${DEPLOY_PREFIX}/portal-cdk"
-	cd ./portal-cdk/lambda_main/portal/user_access && npm install . && npm run build
 	cd ./portal-cdk && cdk --require-approval never deploy
 
 .PHONY := destroy-portal
