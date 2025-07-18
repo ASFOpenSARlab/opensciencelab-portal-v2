@@ -5,7 +5,7 @@
   import { Tabs } from "bits-ui";
 
   let usernames = $state();
-  let selectedUsername = $state("emlundell");
+  let selectedUsername = $state("username");
 
   onMount(async () => {
       const url = '/portal/users/all/usernames'
@@ -46,7 +46,7 @@
     </div>
 
     <div id="username-div">
-      <h1>{selectedUsername}</h1>
+      <p>{selectedUsername}</p>
     </div>
 
     <div id="tabs-div">
@@ -78,9 +78,13 @@
 
 <style>
   .container {
+    border: 3px solid gray;
     display: grid;
-    grid-template-columns: 400px 400px 1000px;
-    grid-template-rows: 50px 50px 1000px;
+    align-items: center;
+    row-gap: 20px;
+    column-gap: 50px;
+    grid-template-columns: 400px 200px auto;
+    grid-template-rows: 50px 50px minmax(10px, 100%);
     grid-template-areas: 
       "btn . ."
       "search username ."
@@ -89,26 +93,33 @@
 
   #add-users-buttons-div {
     grid-area: btn;
-    justify-items: left;
   }
 
   #search-bar-div {
     grid-area: search;
-    justify-items: left;
   }
 
   #username-div {
     grid-area: username;
   }
 
+  #username-div > p {
+    margin: 0;
+    text-align: left;
+    font-size: 3rem;
+  }
+
   #scrollarea-div {
     grid-area: scrolls;
-    border: 3px solid brown;
+    border: 3px solid gray;
+    height: 100%;
   }
 
   #tabs-div {
     grid-area: tabs;
-    border: 3px solid brown;
+    border: 3px solid gray;
+    height: 100%;
+    width: 100%;
   }
 
 </style>

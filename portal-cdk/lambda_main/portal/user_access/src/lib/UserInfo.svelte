@@ -49,29 +49,49 @@
     */   
 </script>
 
-<div>
-    <p>=== User info: { JSON.stringify(userData, null, 2) }</p>
-
-    {#if userData }
-        <div>
-            <h2>Username</h2> 
-            <p>{ username }</p>
-        </div>
-        <div>
-            <h2>Email</h2>
-            <p>{ userData.email }</p>
-        </div>
-        <div>
-            <h2>Profile</h2>
-            {#each Object.entries(userData.profile) as [key, value]}
-            <p>{ key }: { value }</p>
-            {/each}
-        </div>
-    {:else}
-        <p>No Info found for {username}</p>
-    {/if}
-</div>
+<main>
+    <p style="border: 2px solid red;">=== User info: { JSON.stringify(userData, null, 2) }</p>
+    <div class="container">
+        {#if userData }
+            <div>
+                <p>Username: { username }</p>
+            </div>
+            <div>
+                <p>Created: { userData.created_at }</p>
+            </div>
+            <div>
+                <p>Updated: { userData.last_update }</p>
+            </div>
+            <div>
+                <p>Email: { userData.email }</p>
+            </div>
+            <div>
+                <p>access: { userData.access }</p>
+            </div>
+            <div>
+                <p>Labs: { userData.labs }</p>
+            </div>
+            <div>
+                <p>Profile:</p>
+                {#each Object.entries(userData.profile) as [key, value]}
+                <p>{ key }: { value }</p>
+                {/each}
+            </div>
+        {:else}
+            <div>
+                <p>No Info found for {username}</p>
+            </div>
+        {/if}
+    </div>
+</main>
 
 <style>
-
+    .container {
+        display: grid;
+        align-items: center;
+        row-gap: 10px;
+        column-gap: 10px;
+        grid-row: repeat(5, minmax(10px, auto));
+        grid-column: auto auto;
+    }
 </style>
