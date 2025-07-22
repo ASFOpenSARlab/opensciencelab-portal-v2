@@ -1,11 +1,12 @@
 <script>
   import { onMount } from 'svelte';
   import UserInfo from './lib/UserInfo.svelte'
-  import { ScrollArea } from "bits-ui";
-  import { Tabs } from "bits-ui";
+  import { Button, Input, ListGroup, ListGroupItem, Spinner, TabContent, TabPane } from '@sveltestrap/sveltestrap';
 
-  let usernames = $state();
-  let selectedUsername = $state("username");
+  let usernames = $state([]);
+  let selectedUsername = $state("emlundell");
+  let searchTerm = $state("");
+  let filteredUsernames = $derived(usernames.filter(username => username.indexOf(searchTerm) !== -1));
 
   onMount(async () => {
       const url = '/portal/users/all/usernames'
@@ -18,31 +19,27 @@
   });
 </script>
 
+<svelte:head>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+</svelte:head>
+
 <main>
   <div class="container">
     <div id="add-users-buttons-div">
-      <div>
-        <button>+ Add Users</button>
-        <button>+ Bulk Add Users</button>
-      </div>
+      <Button color="primary" disabled>+ Add Users</Button>
+      <Button color="primary" disabled>+ Bulk Add Users</Button>
     </div>
 
     <div id="search-bar-div">
-      <input type="search" id="site-search" name="q" />
-      <button>Search Users</button>
+      <Input type="search" placeholder="search username"  bind:value={searchTerm}/>
     </div>
 
     <div id="scrollarea-div">
-      <ScrollArea.Root>
-        <ScrollArea.Viewport>
-          {#each usernames as username}
-          <button onclick={() => selectedUsername = username}> { username } </button>
-          {/each}
-        </ScrollArea.Viewport>
-        <ScrollArea.Scrollbar orientation="vertical">
-          <ScrollArea.Thumb/>
-        </ScrollArea.Scrollbar>
-      </ScrollArea.Root>
+      <ListGroup>
+        {#each filteredUsernames as username}
+          <ListGroupItem onclick={() => selectedUsername = username}> { username } </ListGroupItem>
+        {/each}
+      </ListGroup>
     </div>
 
     <div id="username-div">
@@ -51,26 +48,19 @@
 
     <div id="tabs-div">
       {#if selectedUsername }
-        <Tabs.Root value="userinfo">
-          <Tabs.List>
-            <Tabs.Trigger value="userinfo">
-              User Info
-            </Tabs.Trigger>
-            <Tabs.Trigger value="labinfo">
-              Assigned Labs
-            </Tabs.Trigger>
-          </Tabs.List>
-          <Tabs.Content value="userinfo">
+        <TabContent>
+          <TabPane tabId="userInfo" tab="User Info" active>
             {#key selectedUsername}
               <UserInfo username={ selectedUsername }/>
             {/key}
-          </Tabs.Content>
-          <Tabs.Content value="labinfo">
+          </TabPane>
+          <TabPane tabId="labInfo" tab="Lab Info">
             <p>Under construction</p>
-          </Tabs.Content>
-        </Tabs.Root>
+          </TabPane>
+        </TabContent>
       {:else}
         <p>Please select username</p>
+        <Spinner type="border" size="" color="primary"/>
       {/if}
     </div>
   </div>
@@ -78,13 +68,13 @@
 
 <style>
   .container {
-    border: 3px solid gray;
+    /*border: 3px solid gray;*/
     display: grid;
     align-items: center;
     row-gap: 20px;
     column-gap: 50px;
     grid-template-columns: 400px 200px auto;
-    grid-template-rows: 50px 50px minmax(10px, 100%);
+    grid-template-rows: 50px 50px minmax(50rem, 100%);
     grid-template-areas: 
       "btn . ."
       "search username ."
@@ -93,6 +83,7 @@
 
   #add-users-buttons-div {
     grid-area: btn;
+    text-align: left;
   }
 
   #search-bar-div {
@@ -111,13 +102,13 @@
 
   #scrollarea-div {
     grid-area: scrolls;
-    border: 3px solid gray;
+    border: 1px solid gray;
     height: 100%;
   }
 
   #tabs-div {
     grid-area: tabs;
-    border: 3px solid gray;
+    border: 3px solid yellow;
     height: 100%;
     width: 100%;
   }

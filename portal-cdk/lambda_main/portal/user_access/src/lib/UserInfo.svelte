@@ -1,4 +1,6 @@
 <script>
+    import { Button } from '@sveltestrap/sveltestrap';
+
     let { username } = $props()
     let userData = $state()
 
@@ -15,8 +17,8 @@
         .catch( error => { console.log(error)} )
     }
 
-    /*
-    [{
+    
+    userData = {
         "last_cookie_assignment": "2025-07-14 23:11:13",
         "created_at": "2025-06-03 07:12:32",
         "last_update": "2025-07-14 23:11:13",
@@ -45,41 +47,45 @@
         "username": "emlundell", 
         "some_int_with_default": "42", 
         "require_profile_update": false
-    }]
-    */   
+    };
+      
 </script>
 
 <main>
-    <p style="border: 2px solid red;">=== User info: { JSON.stringify(userData, null, 2) }</p>
+    <!--p style="border: 2px solid red;">=== User info: { JSON.stringify(userData, null, 2) }</p-->
     <div class="container">
         {#if userData }
-            <div>
+            <div id="username-div">
                 <p>Username: { username }</p>
             </div>
-            <div>
+            <div id="createdTime-div">
                 <p>Created: { userData.created_at }</p>
             </div>
-            <div>
+            <div id="updatedTime-div">
                 <p>Updated: { userData.last_update }</p>
             </div>
-            <div>
+            <div id="email-div">
                 <p>Email: { userData.email }</p>
             </div>
-            <div>
+            <div id="access-div">
                 <p>access: { userData.access }</p>
             </div>
-            <div>
+            <div id="labs-div">
                 <p>Labs: { userData.labs }</p>
             </div>
-            <div>
+            <div id="profile-div">
                 <p>Profile:</p>
                 {#each Object.entries(userData.profile) as [key, value]}
                 <p>{ key }: { value }</p>
                 {/each}
             </div>
+            <div id="actionBtns-div">
+                <Button color="warning" disabled>Lock User</Button>
+                <Button color="danger" disabled>Delete User</Button>
+            </div>
         {:else}
             <div>
-                <p>No Info found for {username}</p>
+                <h1>No Info found for {username}</h1>
             </div>
         {/if}
     </div>
@@ -88,10 +94,54 @@
 <style>
     .container {
         display: grid;
-        align-items: center;
+        text-align: left;
         row-gap: 10px;
         column-gap: 10px;
-        grid-row: repeat(5, minmax(10px, auto));
-        grid-column: auto auto;
+        grid-template-rows: auto auto auto auto auto auto minmax(10rem, 100%);
+        grid-template-columns: auto auto auto;
+        grid-template-areas:
+            "username . actionBtns"
+            "email . ."
+            "createdTime updatedTime ."
+            "ipAddr ipCountry ."
+            "access . ."
+            "labs . ."
+            "profileEditBtn commentsEditBtn ."
+            "profile profile profile" 
+            "comments comments .";
+    }
+
+    #username-div {
+        grid-area: username;
+    }
+
+    #createdTime-div {
+        grid-area: createdTime;
+    }
+
+    #updatedTime-div {
+        grid-area: updatedTime;
+    }
+
+    #email-div {
+        grid-area: email;
+    }
+
+    #access-div {
+        grid-area: access;
+    }
+
+    #labs-div {
+        grid-area: labs;
+    }
+
+    #profile-div {
+        border: 1px solid black;
+        grid-area: profile;
+        font-size: 10pt;
+    }
+
+    #actionBtns-div {
+        grid-area: actionBtns;
     }
 </style>
