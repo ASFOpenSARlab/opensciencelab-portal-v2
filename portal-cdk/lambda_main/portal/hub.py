@@ -76,11 +76,11 @@ def post_portal_hub_auth():
     # access to the lab!
     user = User(username=username)
 
-    data = { # populate
+    data = {
         "admin": user.is_admin(),
         "roles": user.access,
         "name": f"{username}",
-        "has_2fa": 1, # not implemented
+        "has_2fa": 1, # populate after implemented
         "force_user_profile_update": user.require_profile_update,
         "ip_country_status": "unrestricted",
         "country_code": user.profile["country_of_residence"],
