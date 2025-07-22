@@ -129,21 +129,23 @@ class Helpers:
     @dataclass
     class FakeUser:
         username: str = field(default_factory=lambda: "test_user")
-        profile: dict = field(default_factory=lambda: {
-            "country_of_residence": "US",
-            "faculty_member_affliated_with_university": False,
-            "graduate_student_affliated_with_university": False,
-            "is_affiliated_with_nasa": "no",
-            "is_affiliated_with_us_gov_research": "no",
-            "is_affliated_with_isro_research": "no",
-            "is_affliated_with_university": "no",
-            "pi_affliated_with_nasa_research_email": "",
-            "research_member_affliated_with_university": False,
-            "user_affliated_with_gov_research_email": "",
-            "user_affliated_with_isro_research_email": "",
-            "user_affliated_with_nasa_research_email": "",
-            "user_or_pi_nasa_email": "default"
-        })
+        profile: dict = field(
+            default_factory=lambda: {
+                "country_of_residence": "US",
+                "faculty_member_affliated_with_university": False,
+                "graduate_student_affliated_with_university": False,
+                "is_affiliated_with_nasa": "no",
+                "is_affiliated_with_us_gov_research": "no",
+                "is_affliated_with_isro_research": "no",
+                "is_affliated_with_university": "no",
+                "pi_affliated_with_nasa_research_email": "",
+                "research_member_affliated_with_university": False,
+                "user_affliated_with_gov_research_email": "",
+                "user_affliated_with_isro_research_email": "",
+                "user_affliated_with_nasa_research_email": "",
+                "user_or_pi_nasa_email": "default",
+            }
+        )
         last_cookie_assignment: str = None
         access: list = field(default_factory=lambda: ["user"])
         require_profile_update: bool = False

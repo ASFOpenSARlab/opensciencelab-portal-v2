@@ -170,8 +170,9 @@ class TestPortalAuth:
             body=b64encode(body_payload.encode("ascii")),
             cookies=fake_auth,
         )
+
         ret = main.lambda_handler(event, lambda_context)
-        
+
         assert ret["statusCode"] == 200
         assert ret["headers"].get("Content-Type") == "application/json"
         json_payload = json.loads(ret["body"])
