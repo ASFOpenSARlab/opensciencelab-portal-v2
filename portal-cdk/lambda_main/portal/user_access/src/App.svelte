@@ -1,16 +1,18 @@
+<svelte:head>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.2/font/bootstrap-icons.css">
+</svelte:head>
+
 <script>
   import { onMount } from 'svelte';
   import UserInfo from './lib/UserInfo.svelte'
-  import { Button, Icon, Input, ListGroup, ListGroupItem, Spinner, TabContent, TabPane } from '@sveltestrap/sveltestrap';
+  import { Button, Icon, Input, ListGroup, ListGroupItem, Spinner } from '@sveltestrap/sveltestrap';
 
   // sm}psmnpmnpsml{mms{ppmpnm{plmsmpps{pllp{p{npsmpp
   let usernames = $state(["emlundell"]);
   let searchTerm = $state("");
   let filteredUsernames = $derived(usernames.filter(username => username.indexOf(searchTerm) !== -1));
   let selectedUsername = $state("emlundell");
-  let selectedChildData = $state({});
-
-  let setUsernameData = (childData) => { selectedChildData = childData; console.log($state.snapshot(selectedChildData))}
 
   onMount(async () => {
       const url = '/portal/users/all/usernames'
@@ -22,11 +24,6 @@
           .catch( error => { console.log(error)} )
   });
 </script>
-
-<svelte:head>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.2/font/bootstrap-icons.css">
-</svelte:head>
 
 <main>
   <div class="container">
@@ -51,31 +48,11 @@
       </ListGroup>
     </div>
 
-    <div id="username-div">
-      <p> 
-        {selectedUsername}
-        &nbsp;
-        {#if selectedChildData.is_locked == true }
-          <Icon name="lock" />
-        {/if}
-        {#if [selectedChildData.roles].includes('admin') }
-          <Icon name="person-rolodex" />
-        {/if}
-      </p>
-    </div>
-
     <div id="tabs-div">
       {#if selectedUsername }
-        <TabContent>
-          <TabPane tabId="userInfo" tab="User Info" active>
-            {#key selectedUsername}
-              <UserInfo username={ selectedUsername } { setUsernameData } />
-            {/key}
-          </TabPane>
-          <TabPane tabId="labInfo" tab="Lab Info">
-            <p>Under construction</p>
-          </TabPane>
-        </TabContent>
+        {#key selectedUsername}
+          <UserInfo username={ selectedUsername } />
+        {/key}
       {:else}
         <p>Please select username</p>
         <Spinner type="border" size="" color="primary"/>
@@ -110,14 +87,6 @@
 
   #username-div {
     grid-area: username;
-  }
-
-  #username-div > p {
-    margin-bottom: 1rem;
-    text-align: left;
-    font-size: 3rem;
-    text-overflow: ellipsis;
-    overflow: hidden;
   }
 
   #scrollarea-div {
