@@ -87,9 +87,7 @@ class TestUsersPages:
         assert ret["body"].find("<b>GeneralUser</b>") != -1
         assert ret["headers"].get("Content-Type") == "text/html"
 
-    def test_user_is_locked(
-        self, lambda_context, monkeypatch, fake_auth, helpers
-    ):
+    def test_user_is_locked(self, lambda_context, monkeypatch, fake_auth, helpers):
         user = helpers.FakeUser(access=["admin", "user"])
 
         monkeypatch.setattr("portal.users.User", lambda *args, **kwargs: user)
@@ -103,7 +101,10 @@ class TestUsersPages:
         assert ret["headers"].get("Content-Type") == "text/html"
 
         # Since the message is asking to unlock, this user is LOCKED here:
-        assert ret["body"].find("Do you really want to unlock `TotallyNotCryptoMiner`?") != -1
+        assert (
+            ret["body"].find("Do you really want to unlock `TotallyNotCryptoMiner`?")
+            != -1
+        )
         assert ret["body"].find("<b>TotallyNotCryptoMiner</b>") != -1
         assert ret["body"].find("<b>Locked</b>") != -1
 
