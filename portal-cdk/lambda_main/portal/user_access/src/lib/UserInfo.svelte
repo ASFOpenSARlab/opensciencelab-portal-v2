@@ -1,28 +1,16 @@
 <script>
     import { Button } from '@sveltestrap/sveltestrap';
 
-    let { username } = $props()
+    let { username, setUsernameData } = $props()
     let userData = $state()
 
     console.log("prop 'username' selected: " + username)
 
-    if (username) {
-        const url = '/portal/users/get/'+username;
-
-        fetch(url, {
-            method: 'GET',
-        })
-        .then( response => response.json() )
-        .then( data => { userData = data } )
-        .catch( error => { console.log(error)} )
-    }
-
-    
     userData = {
         "last_cookie_assignment": "2025-07-14 23:11:13",
         "created_at": "2025-06-03 07:12:32",
         "last_update": "2025-07-14 23:11:13",
-        "labs": [], 
+        "labs": ["qwerty"], 
         "profile": {
             "user_affliated_with_nasa_research_email": "", 
             "pi_affliated_with_nasa_research_email": "", 
@@ -42,12 +30,23 @@
         "random_dict": null, 
         "email": "emlundell@alaska.edu", 
         "roles": ["user"], 
-        "is_locked": false, 
+        "is_locked": true, 
         "some_int_without_default": null, 
         "username": "emlundell", 
         "some_int_with_default": "42", 
         "require_profile_update": false
     };
+
+    if (username) {
+        const url = '/portal/users/get/'+username;
+
+        fetch(url, {
+            method: 'GET',
+        })
+        .then( response => response.json() )
+        .then( data => { userData = data; setUsernameData(userData) } )
+        .catch( error => { console.log(error); setUsernameData(userData)} )
+    }
       
 </script>
 
@@ -56,10 +55,10 @@
     <div class="container">
         {#if userData }
             <div id="username-div">
-                <p>Username: { username }</p>
+                <p><b>Username:</b> { username }</p>
             </div>
             <div id="createdTime-div">
-                <p>Created: { userData.created_at }</p>
+                <p>Created: <i>{ userData.created_at }</i></p>
             </div>
             <div id="updatedTime-div">
                 <p>Updated: { userData.last_update }</p>
@@ -93,6 +92,7 @@
 
 <style>
     .container {
+        border: 1px solid grey;
         display: grid;
         text-align: left;
         row-gap: 10px;
@@ -100,15 +100,19 @@
         grid-template-rows: auto auto auto auto auto auto minmax(10rem, 100%);
         grid-template-columns: auto auto auto;
         grid-template-areas:
-            "username . actionBtns"
+            "username username actionBtns"
             "email . ."
             "createdTime updatedTime ."
             "ipAddr ipCountry ."
-            "access . ."
-            "labs . ."
+            "access labs labs"
             "profileEditBtn commentsEditBtn ."
             "profile profile profile" 
             "comments comments .";
+    }
+
+    .container > div {
+        margin: 0.5rem;
+        padding: 0.5rem;
     }
 
     #username-div {
@@ -143,5 +147,6 @@
 
     #actionBtns-div {
         grid-area: actionBtns;
+        justify-self: end;
     }
 </style>
