@@ -9,10 +9,10 @@
   import { Button, Icon, Input, ListGroup, ListGroupItem, Spinner } from '@sveltestrap/sveltestrap';
 
   // sm}psmnpmnpsml{mms{ppmpnm{plmsmpps{pllp{p{npsmpp
-  let usernames = $state(["emlundell"]);
+  let usernames = $state();
   let searchTerm = $state("");
   let filteredUsernames = $derived(usernames.filter(username => username.indexOf(searchTerm) !== -1));
-  let selectedUsername = $state("emlundell");
+  let selectedUsername = $state();
 
   onMount(async () => {
       const url = '/portal/users/all/usernames'
