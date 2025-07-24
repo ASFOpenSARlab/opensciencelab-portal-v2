@@ -1,17 +1,26 @@
 <script>
     let { username, userData } = $props();
 
-    import { Button, Icon, Toast, ToastHeader, ToastBody } from '@sveltestrap/sveltestrap';
+    import { Button, Icon } from '@sveltestrap/sveltestrap';
+    import { showToast } from '../utils/toast/toast.js'
     import { clickToCopy } from "../utils/clickToCopy.js"
 
     let text = '';
 	
 	function copySuccess(){
-		text = "Success!"
+        showToast({
+            "type": "success",
+            "text": "Copied text '"+ text +"'"
+        })
 	}
 	
 	function copyError(event){
 		text = `Error! ${event.detail}`
+
+        showToast({
+            "type": "success",
+            "text": text
+        })
 	}
 
 </script>
@@ -20,12 +29,13 @@
 
 <main>
     <div id="div-id">
-        <div class="ellipsis"> 
+        <div id="username-id" class="ellipsis"> 
             { username }
         </div>
-
         <div class="icons no-wrap">
-            <Icon name="copy" />
+            <span use:clickToCopy={'#username-id'}>
+                <Icon name="copy"/>
+            </span>
 
             {#if userData.is_locked == true }
             <Icon name="lock" />
@@ -35,21 +45,6 @@
             <Icon name="person-rolodex" />
             {/if}
         </div>
-
-    </div>
-
-    <div>
-        <Toast isOpen=false>
-            <ToastHeader>
-                <Icon slot="icon" name="emoji-smile-fill" />
-                Congrats!!
-            </ToastHeader>
-            <ToastBody>
-                <p>
-                    Username <i>{ username }</i> copied to clipboard.
-                </p>
-            </ToastBody>
-        </Toast>
     </div>
 </main>
 

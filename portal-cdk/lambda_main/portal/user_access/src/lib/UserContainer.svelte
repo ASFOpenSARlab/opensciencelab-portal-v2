@@ -113,7 +113,7 @@
             </div>
         </div>
     {:else}
-        <div>
+        <div class="container">
             <h1>No Info found for { username }</h1>
         </div>
     {/if}

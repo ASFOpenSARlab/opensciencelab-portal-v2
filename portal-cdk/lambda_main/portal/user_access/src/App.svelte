@@ -6,6 +6,7 @@
 <script>
   import { onMount } from 'svelte';
   import UserContainer from './lib/UserContainer.svelte'
+  import ToastContainer from './lib/utils/toast/Toast.svelte'
   import { Button, Icon, Input, ListGroup, ListGroupItem, Spinner } from '@sveltestrap/sveltestrap';
 
   // sm}psmnpmnpsml{mms{ppmpnm{plmsmpps{pllp{p{npsmpp
@@ -16,6 +17,7 @@
 
   onMount(async () => {
       const url = '/portal/users/all/usernames'
+      //const url = 'https://dq3yyi71b8t6w.cloudfront.net//portal/users/all/usernames'
       fetch(url, {
               method: 'GET',
           })
@@ -25,6 +27,8 @@
   });
 </script>
 
+<ToastContainer/>
+
 <main>
   <div class="container">
     <div id="add-users-buttons-div">
@@ -33,31 +37,39 @@
     </div>
 
     <div id="search-bar-div">
-      <Input type="search" placeholder="search usernames"  bind:value={searchTerm}/>
+      <Input type="search" placeholder="search usernames" bind:value={searchTerm}/>
     </div>
 
     <div id="scrollarea-div">
-      <ListGroup>
-        {#each filteredUsernames as username}
-          <ListGroupItem onclick={() => selectedUsername = username}> 
-            <p class="scrollarea-p" id="scrollarea-p-{ username }"> 
-              <span> { username } </span>
-            </p>
-          </ListGroupItem>
-        {/each}
-      </ListGroup>
+      {#key filteredUsernames}
+        {#if filteredUsernames == [] || filteredUsernames == '' }
+          <div id="filtered-username-id">
+            <Spinner type="border" size="" color="primary"/>
+          </div>
+        {:else}
+          <ListGroup>
+            {#each filteredUsernames as username}
+              <ListGroupItem onclick={() => selectedUsername = username}> 
+                <p class="scrollarea-p" id="scrollarea-p-{ username }"> 
+                  <span> { username } </span>
+                </p>
+              </ListGroupItem>
+            {/each}
+          </ListGroup>
+        {/if}
+      {/key}
     </div>
 
     <div id="usercontainer-div">
-      {#if selectedUsername }
-        {#key selectedUsername}
+      {#key selectedUsername}
+        {#if selectedUsername }
           <UserContainer username={ selectedUsername } />
-        {/key}
-      {:else}
-        <p>Please select username</p>
-        <Spinner type="border" size="" color="primary"/>
-      {/if}
+        {:else}
+          <h3>Please select username</h3>
+        {/if}
+      {/key}
     </div>
+
   </div>
 </main>
 
@@ -70,7 +82,7 @@
     grid-template-columns: 300px auto;
     grid-template-rows: 2rem 2rem minmax(20rem, 100%) auto;
     grid-template-areas: 
-      "btns ."
+      "btns toastcontainer"
       "search usercontainer"
       "scrolls usercontainer"
       ". usercontainer";
@@ -99,6 +111,10 @@
     text-overflow: ellipsis;
     overflow: hidden;
     text-align: left;
+  }
+
+  #scrollarea-div #filtered-username-id {
+    padding-top: 2rem;
   }
 
   #usercontainer-div {
