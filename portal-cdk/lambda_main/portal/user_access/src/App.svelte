@@ -5,14 +5,14 @@
 
 <script>
   import { onMount } from 'svelte';
-  import UserInfo from './lib/UserInfo.svelte'
+  import UserContainer from './lib/UserContainer.svelte'
   import { Button, Icon, Input, ListGroup, ListGroupItem, Spinner } from '@sveltestrap/sveltestrap';
 
   // sm}psmnpmnpsml{mms{ppmpnm{plmsmpps{pllp{p{npsmpp
-  let usernames = $state();
+  let usernames = $state([]);
   let searchTerm = $state("");
   let filteredUsernames = $derived(usernames.filter(username => username.indexOf(searchTerm) !== -1));
-  let selectedUsername = $state();
+  let selectedUsername = $state("emlundell");
 
   onMount(async () => {
       const url = '/portal/users/all/usernames'
@@ -33,7 +33,7 @@
     </div>
 
     <div id="search-bar-div">
-      <Input type="search" placeholder="search username"  bind:value={searchTerm}/>
+      <Input type="search" placeholder="search usernames"  bind:value={searchTerm}/>
     </div>
 
     <div id="scrollarea-div">
@@ -48,10 +48,10 @@
       </ListGroup>
     </div>
 
-    <div id="tabs-div">
+    <div id="usercontainer-div">
       {#if selectedUsername }
         {#key selectedUsername}
-          <UserInfo username={ selectedUsername } />
+          <UserContainer username={ selectedUsername } />
         {/key}
       {:else}
         <p>Please select username</p>
@@ -63,46 +63,46 @@
 
 <style>
   .container {
-    /*border: 3px solid gray;*/
     display: grid;
     align-items: center;
     row-gap: 20px;
     column-gap: 50px;
-    grid-template-columns: 300px 80% auto;
-    grid-template-rows: 50px 50px minmax(50rem, 100%);
+    grid-template-columns: 300px auto;
+    grid-template-rows: 2rem 2rem minmax(20rem, 100%) auto;
     grid-template-areas: 
-      "btn . ."
-      "search username ."
-      "scrolls tabs tabs";
+      "btns ."
+      "search usercontainer"
+      "scrolls usercontainer"
+      ". usercontainer";
   }
 
   #add-users-buttons-div {
-    grid-area: btn;
+    grid-area: btns;
     text-align: left;
+    margin-top: 0rem;
   }
 
   #search-bar-div {
     grid-area: search;
-  }
-
-  #username-div {
-    grid-area: username;
+    margin-top: 1rem;
   }
 
   #scrollarea-div {
     grid-area: scrolls;
     border: 1px solid gray;
     height: 100%;
+    border-radius: 1rem;
+    margin-top: 1rem;
   }
 
-  .scrollarea-p {
+  #scrollarea-div .scrollarea-p {
     text-overflow: ellipsis;
     overflow: hidden;
     text-align: left;
   }
 
-  #tabs-div {
-    grid-area: tabs;
+  #usercontainer-div {
+    grid-area: usercontainer;
     height: 100%;
     width: 100%;
   }
