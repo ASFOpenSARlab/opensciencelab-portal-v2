@@ -9,27 +9,33 @@
   import ToastContainer from './lib/utils/toast/Toast.svelte'
   import { Button, Icon, Input, ListGroup, ListGroupItem, Spinner } from '@sveltestrap/sveltestrap';
 
-  // sm}psmnpmnpsml{mms{ppmpnm{plmsmpps{pllp{p{npsmpp
   let usernames = $state([]);
   let searchTerm = $state("");
   let filteredUsernames = $derived(usernames.filter(username => username.indexOf(searchTerm) !== -1));
   let selectedUsername = $state("");
 
+  function getUsernames() {
+    const url = '/portal/users/all/usernames'
+    //const url = 'https://dq3yyi71b8t6w.cloudfront.net//portal/users/all/usernames'
+    fetch(url, {
+            method: 'GET',
+        })
+        .then( response => response.json() )
+        .then( data => { usernames = data; usernames.push("sm}psmnpmnpsml{mms{ppmpnm{plmsmpps{pllp{p{npsmpp") } )
+        .catch( error => { console.log(error)} )
+  }
+
   onMount(async () => {
-      const url = '/portal/users/all/usernames'
-      //const url = 'https://dq3yyi71b8t6w.cloudfront.net//portal/users/all/usernames'
-      fetch(url, {
-              method: 'GET',
-          })
-          .then( response => response.json() )
-          .then( data => { usernames = data } )
-          .catch( error => { console.log(error)} )
+      getUsernames();
   });
 </script>
 
-<ToastContainer/>
+<header>
+  <ToastContainer/>
+</header>
 
 <main>
+
   <div class="container">
     <div id="add-users-buttons-div">
       <Button color="primary" disabled>+ Add Users</Button>

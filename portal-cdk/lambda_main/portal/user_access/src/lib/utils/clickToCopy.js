@@ -12,22 +12,15 @@ export function clickToCopy(node, target) {
       node.dispatchEvent(
         new CustomEvent("copysuccess", {
           bubbles: true,
+          detail: text,
         })
       );
-
-      console.log("Copy button pressed: text is " + text);
     } catch (error) {
       node.dispatchEvent(
         new CustomEvent("copyerror", {
           bubbles: true,
           detail: error,
         })
-      );
-      console.log(
-        "Copy button pressed with error: text is " +
-          text +
-          ", error is " +
-          error
       );
     }
   }

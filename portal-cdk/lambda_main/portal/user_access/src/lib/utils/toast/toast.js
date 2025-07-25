@@ -3,7 +3,8 @@ export function showToast(payload) {
   console.log(
     "Dispatching 'giveaToast' for payload " + JSON.stringify(payload, null, 2)
   );
-  document.dispatchEvent(
+
+  window.dispatchEvent(
     new CustomEvent("giveAToast", {
       bubbles: true,
       detail: {

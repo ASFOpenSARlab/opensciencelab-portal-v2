@@ -5,21 +5,19 @@
     import { showToast } from '../utils/toast/toast.js'
     import { clickToCopy } from "../utils/clickToCopy.js"
 
-    let text = '';
+    let text = $state('Hello');
 	
-	function copySuccess(){
+	function copySuccess(event){
         showToast({
             "type": "success",
-            "text": "Copied text '"+ text +"'"
+            "text": "Copied text: " + event.detail
         })
 	}
 	
 	function copyError(event){
-		text = `Error! ${event.detail}`
-
         showToast({
             "type": "success",
-            "text": text
+            "text": "Error! " + event.detail
         })
 	}
 
