@@ -19,28 +19,28 @@
         </div>
 
         <div id="email-id">
-            <span>Email:</span>
-            <span>{ userData.email }</span>
+            <p>Email:</p>
+            <p>{ userData.email }</p>
         </div>
         
-        <div id="created-id">
-            <span>Created:</span>
-            <span>{ userData.created_at }</span>
+        <div id="createdTime-id">
+            <p>Created:</p>
+            <p>{ userData.created_at }</p>
         </div>
 
-        <div id="created-id">
-            <span>Last Update:</span>
-            <span>{ userData.last_update }</span>
+        <div id="updatedTime-id">
+            <p>Last Update:</p>
+            <p>{ userData.last_update }</p>
         </div>
 
-        <div id="created-id">
-            <span>Access:</span>
-            <span>{ userData.access }</span>
+        <div id="access-id">
+            <p>Access:</p>
+            <p>{ userData.access }</p>
         </div>
 
-        <div id="created-id">
-            <span>Roles:</span>
-            <span>{ userData.roles }</span>
+        <div id="roles-id">
+            <p>Roles:</p>
+            <p>{ userData.roles }</p>
         </div>
     </div>
 </main>
@@ -50,13 +50,12 @@
         border: 1px solid grey;
         border-radius: 1rem;
         display: grid;
-        text-align: left;
         row-gap: 10px;
         column-gap: 10px;
-        grid-template-rows: auto auto auto auto auto auto minmax(10rem, 100%);
+        grid-template-rows: auto auto auto auto auto auto;
         grid-template-columns: auto auto auto;
         grid-template-areas:
-            "userinfo"
+            "userinfo . ."
             "email . ."
             "createdTime updatedTime ."
             "ipAddr ipCountry ."
@@ -64,25 +63,28 @@
             "comments comments .";
     }
 
-
-
-    #createdTime-div {
+    #createdTime-id {
         grid-area: createdTime;
+        justify-self: left;
     }
 
-    #updatedTime-div {
+    #updatedTime-id {
         grid-area: updatedTime;
+        justify-self: left;
     }
 
-    #email-div {
+    #email-id {
         grid-area: email;
+        justify-self: left;
     }
 
-    #access-div {
+    #access-id {
         grid-area: access;
+        justify-self: left;
     }
 
-    #labs-div {
-        grid-area: labs;
+    #roles-id {
+        grid-area: roles;
+        justify-self: left;
     }
 </style>

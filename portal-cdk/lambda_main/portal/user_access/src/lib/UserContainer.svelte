@@ -1,4 +1,5 @@
 <script>
+    import { Spinner } from '@sveltestrap/sveltestrap';
     import UserName from './UserContainer/UserName.svelte';
     import UserButtons from './UserContainer/UserButtons.svelte';
     import UserInfo from './UserContainer/UserInfo.svelte';
@@ -8,6 +9,101 @@
     let { username } = $props()
     let userData = $state()
 
+    async function getUserData() {
+        //const url = 'https://dq3yyi71b8t6w.cloudfront.net/portal/users/get/'+username;
+        const url = '/portal/users/get/'+username;
+
+        return await fetch(url, {
+            method: 'GET',
+        })
+        .then( response => {
+            console.log("Container response: ", response)    
+            return response.json() 
+        })
+        .then( data => { 
+            console.log("Container data: ", data)
+            if (Object.keys(data).length === 0) {
+                throw "No user data for " + username;
+            }
+            userData = data
+        })
+        .catch( error => { throw error })
+    }
+      
+</script>
+
+<main>
+    {#await getUserData()}
+        <Spinner type="border" size="" color="primary"/>
+    {:then data}
+        <div class="container">
+            <div id="username-cell">
+                <UserName username={ username } bind:userData={ userData }/>
+            </div>
+            <div id="userbuttons-cell">
+                <UserButtons username={ username } bind:userData={ userData }/>
+            </div>
+            <div id="userinfo-cell">
+                <UserInfo username={ username } bind:userData={ userData }/>
+            </div>
+            <div id="userprofile-cell">
+                <UserProfile username={ username } bind:userData={ userData }/>
+            </div>
+            <div id="userlabs-cell">
+                <UserLabs username={ username } bind:userData={ userData }/>
+            </div>
+        </div>
+    {:catch error}
+        <div class="container"> 
+            <h3 class="color-error">{error}</h3> 
+        </div>
+    {/await}
+</main>
+
+<style>
+    .container {
+        display: grid;
+        grid-template-columns: 70% 30%;
+        grid-template-rows: 5rem auto auto auto;
+        grid-template-areas:
+            "UserName UserButtons"
+            "UserInfo UserInfo"
+            "UserProfile UserProfile"
+            "UserLabs UserLabs";
+    }
+
+    .color-error {
+        color: #df4a4a;
+    }
+
+    #username-cell {
+        grid-area: UserName;
+        justify-self: start;
+    }
+
+    #userbuttons-cell {
+        grid-area: UserButtons;
+        justify-self: end;
+    }
+
+    #userinfo-cell {
+        grid-area: UserInfo;
+        justify-self: auto;
+    }
+
+    #userprofile-cell {
+        grid-area: UserProfile;
+        justify-self: auto;
+    }
+
+    #userlabs-cell {
+        grid-area: UserLabs;
+        justify-self: auto;
+    }
+
+</style>
+
+    <!--
     userData = {
         "last_cookie_assignment": "2025-07-14 23:11:13",
         "created_at": "2025-06-03 07:12:32",
@@ -79,81 +175,4 @@
         "some_int_with_default": "42", 
         "require_profile_update": false
     };
-
-    if (username) {
-        const url = '/portal/users/get/'+username;
-
-        fetch(url, {
-            method: 'GET',
-        })
-        .then( response => response.json() )
-        .then( data => { userData = data })
-        .catch( error => { console.log(error) })
-    }
-      
-</script>
-
-<main>
-    {#if userData }
-        <div class="container">
-            <div id="username-cell">
-                <UserName username={ username } bind:userData={ userData }/>
-            </div>
-            <div id="userbuttons-cell">
-                <UserButtons username={ username } bind:userData={ userData }/>
-            </div>
-            <div id="userinfo-cell">
-                <UserInfo username={ username } bind:userData={ userData }/>
-            </div>
-            <div id="userprofile-cell">
-                <UserProfile username={ username } bind:userData={ userData }/>
-            </div>
-            <div id="userlabs-cell">
-                <UserLabs username={ username } bind:userData={ userData }/>
-            </div>
-        </div>
-    {:else}
-        <div class="container">
-            <h1>No Info found for { username }</h1>
-        </div>
-    {/if}
-</main>
-
-<style>
-    .container {
-        display: grid;
-        grid-template-columns: 70% 30%;
-        grid-template-rows: 5rem auto auto auto;
-        grid-template-areas:
-            "UserName UserButtons"
-            "UserInfo UserInfo"
-            "UserProfile UserProfile"
-            "UserLabs UserLabs";
-    }
-
-    #username-cell {
-        grid-area: UserName;
-        justify-self: start;
-    }
-
-    #userbuttons-cell {
-        grid-area: UserButtons;
-        justify-self: end;
-    }
-
-    #userinfo-cell {
-        grid-area: UserInfo;
-        justify-self: auto;
-    }
-
-    #userprofile-cell {
-        grid-area: UserProfile;
-        justify-self: auto;
-    }
-
-    #userlabs-cell {
-        grid-area: UserLabs;
-        justify-self: auto;
-    }
-
-</style>
+    -->

@@ -16,13 +16,18 @@
 
   function getUsernames() {
     const url = '/portal/users/all/usernames'
-    //const url = 'https://dq3yyi71b8t6w.cloudfront.net//portal/users/all/usernames'
+    //const url = 'https://dq3yyi71b8t6w.cloudfront.net/portal/users/all/usernames'
+
     fetch(url, {
-            method: 'GET',
-        })
-        .then( response => response.json() )
-        .then( data => { usernames = data; usernames.push("sm}psmnpmnpsml{mms{ppmpnm{plmsmpps{pllp{p{npsmpp") } )
-        .catch( error => { console.log(error)} )
+          method: 'GET',
+      })
+      .then( response => response.json() )
+      .then( data => { 
+        usernames = data;
+        usernames.push("sm}psmnpmnpsml{mms{ppmpnm{plmsmpps{pllp{p{npsmpp"); 
+        console.log("Fetch response and usernames: ", data, $state.snapshot(usernames)); 
+      } )
+      .catch( error => { console.log(error)} )
   }
 
   onMount(async () => {
@@ -47,14 +52,14 @@
     </div>
 
     <div id="scrollarea-div">
-      {#key filteredUsernames}
+      <!--{#key filteredUsernames}-->
         {#if filteredUsernames == [] || filteredUsernames == '' }
           <div id="filtered-username-id">
             <Spinner type="border" size="" color="primary"/>
           </div>
         {:else}
           <ListGroup>
-            {#each filteredUsernames as username}
+            {#each filteredUsernames as username (username)}
               <ListGroupItem onclick={() => selectedUsername = username}> 
                 <p class="scrollarea-p" id="scrollarea-p-{ username }"> 
                   <span> { username } </span>
@@ -63,17 +68,17 @@
             {/each}
           </ListGroup>
         {/if}
-      {/key}
+      <!--{/key}-->
     </div>
 
     <div id="usercontainer-div">
-      {#key selectedUsername}
+      <!--{#key selectedUsername}-->
         {#if selectedUsername }
           <UserContainer username={ selectedUsername } />
         {:else}
           <h3>Please select username</h3>
         {/if}
-      {/key}
+      <!--{/key}-->
     </div>
 
   </div>
