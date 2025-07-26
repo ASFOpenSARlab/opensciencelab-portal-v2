@@ -10,8 +10,8 @@
     let userData = $state()
 
     async function getUserData() {
-        //const url = 'https://dq3yyi71b8t6w.cloudfront.net/portal/users/get/'+username;
-        const url = '/portal/users/get/'+username;
+        const url = 'https://dq3yyi71b8t6w.cloudfront.net/portal/users/get/'+username;
+        //const url = '/portal/users/get/'+username;
 
         return await fetch(url, {
             method: 'GET',
@@ -32,7 +32,7 @@
       
 </script>
 
-<main>
+<div>
     {#await getUserData()}
         <Spinner type="border" size="" color="primary"/>
     {:then data}
@@ -40,7 +40,7 @@
             <div id="username-cell">
                 <UserName username={ username } bind:userData={ userData }/>
             </div>
-            <div id="userbuttons-cell">
+             <div id="userbuttons-cell">
                 <UserButtons username={ username } bind:userData={ userData }/>
             </div>
             <div id="userinfo-cell">
@@ -58,18 +58,20 @@
             <h3 class="color-error">{error}</h3> 
         </div>
     {/await}
-</main>
+</div>
 
 <style>
     .container {
         display: grid;
+        grid-row-gap: 2rem;
         grid-template-columns: 70% 30%;
-        grid-template-rows: 5rem auto auto auto;
+        grid-template-rows: 2rem auto auto auto;
         grid-template-areas:
             "UserName UserButtons"
             "UserInfo UserInfo"
-            "UserProfile UserProfile"
-            "UserLabs UserLabs";
+            "UserLabs UserLabs"
+            "UserProfile UserProfile";
+            
     }
 
     .color-error {

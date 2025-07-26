@@ -1,4 +1,7 @@
 <script>
+    import { Icon } from '@sveltestrap/sveltestrap';
+    import { clickToCopy } from "../utils/clickToCopy.js"
+
     let { username, userData } = $props();
 
     import {
@@ -12,79 +15,133 @@
     } from '@sveltestrap/sveltestrap';
 </script>
 
-<main>
-    <div id="userinfoContainer">
-        <div id="userinfo-id">
-            <p>User Info</p>
-        </div>
 
-        <div id="email-id">
-            <p>Email:</p>
-            <p>{ userData.email }</p>
-        </div>
-        
-        <div id="createdTime-id">
-            <p>Created:</p>
-            <p>{ userData.created_at }</p>
-        </div>
 
-        <div id="updatedTime-id">
-            <p>Last Update:</p>
-            <p>{ userData.last_update }</p>
-        </div>
+<div>
+    <fieldset>
+        <legend>User Info</legend>
+        <div id="container">
 
-        <div id="access-id">
-            <p>Access:</p>
-            <p>{ userData.access }</p>
-        </div>
+            {#snippet item(name, label, value, htmlType)}
+                <div id="{name}-id" class="container-cell">
+                    <div class="userdata-label">
+                        {label}
+                    <!--    <span use:clickToCopy={name}-userdata-value" id="copy-span">
+                            <Icon name="copy"/>
+                        </span> -->
+                    </div>
+                    <div id="{name}-userdata-value" class="userdata-value">
+                        {#if htmlType == "textarea"}
+                            <textarea>{ value }</textarea>
+                        {:else}
+                            <span>{ value }</span>
+                        {/if}
+                    </div>
+                </div>
+            {/snippet}
 
-        <div id="roles-id">
-            <p>Roles:</p>
-            <p>{ userData.roles }</p>
+            {@render item("email", "Email", userData.email)}
+            {@render item("createdTime", "Created", userData.created_at)}
+            {@render item("updatedTime", "Last Updated", userData.last_update)}
+            {@render item("ipAddress", "IP Address", userData.ip_address)}
+            {@render item("ipCountry", "IP Country", userData.ip_country)}
+            {@render item("roles", "Roles", userData.roles)}
+            {@render item("access", "Access", userData.access)}
+            {@render item("comments", "Comments", userData.comments, "textarea")}
+
         </div>
-    </div>
-</main>
+    </fieldset>
+</div>
 
 <style>
-    #userinfoContainer {
+
+    #copy-span {
+        display: table-cell;
+        padding-left: 1rem;
+    }
+
+    fieldset {
+        padding: 2rem;
         border: 1px solid grey;
         border-radius: 1rem;
+    }
+
+    fieldset legend {
+        border-bottom: 1px solid black;
+        text-align: left;
+    }
+
+    #container {
+        margin: 1rem;
+        padding-top: 1rem;
         display: grid;
-        row-gap: 10px;
+        row-gap: 2rem;
         column-gap: 10px;
-        grid-template-rows: auto auto auto auto auto auto;
-        grid-template-columns: auto auto auto;
+        grid-template-rows: repeat(5, minmax(4rem, auto));
+        grid-template-columns: auto auto;
         grid-template-areas:
-            "userinfo . ."
-            "email . ."
-            "createdTime updatedTime ."
-            "ipAddr ipCountry ."
+            "email ."
+            "createdTime updatedTime"
+            "ipAddr ipCountry"
             "access roles"
-            "comments comments .";
+            "comments comments";
+    }
+
+    .container-cell {
+        text-align: start;
+        width: 100%;
+        height: 100%;
+
+    }
+
+    .container-cell > div {
+        padding: 0.2rem;
+    }
+
+    .userdata-label {
+        color: grey;
+    }
+
+    .userdata-value {
+        color: inherit;
     }
 
     #createdTime-id {
         grid-area: createdTime;
-        justify-self: left;
     }
 
     #updatedTime-id {
         grid-area: updatedTime;
-        justify-self: left;
+    }
+
+    #ipAddress-id {
+        grid-area: ipAddr;
+    }
+
+    #ipCountry-id {
+        grid-area: ipCountry;
     }
 
     #email-id {
         grid-area: email;
-        justify-self: left;
     }
 
     #access-id {
         grid-area: access;
-        justify-self: left;
     }
 
     #roles-id {
         grid-area: roles;
-        justify-self: left;
+    }
+
+    #comments-id {
+        grid-area: comments;
+    }
+
+    #comments-id textarea {
+        width: 100%;
+        height: 10rem;
+        border-radius: 0.5rem;
+        background-color: #f8f8f8;
     }
 </style>

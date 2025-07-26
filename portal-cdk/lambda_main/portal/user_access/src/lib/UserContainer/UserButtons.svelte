@@ -14,7 +14,7 @@
     }
 </script>
 
-<main>
+<div>
     <div>
         {#if userData.is_locked == true }
             <Button color="warning" onclick={doUnlockUser}>Unlock User</Button>
@@ -24,7 +24,7 @@
 
         <Button color="danger" disabled>Delete User</Button>
     </div>
-</main>
+</div>
 
 <style>
 </style>

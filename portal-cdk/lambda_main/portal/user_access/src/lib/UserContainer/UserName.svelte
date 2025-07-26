@@ -2,36 +2,19 @@
     let { username, userData } = $props();
 
     import { Button, Icon } from '@sveltestrap/sveltestrap';
-    import { showToast } from '../utils/toast/toast.js'
     import { clickToCopy } from "../utils/clickToCopy.js"
 
     let text = $state('Hello');
-	
-	function copySuccess(event){
-        showToast({
-            "type": "success",
-            "text": "Copied text: " + event.detail
-        })
-	}
-	
-	function copyError(event){
-        showToast({
-            "type": "success",
-            "text": "Error! " + event.detail
-        })
-	}
 
 </script>
 
-<svelte:window on:copysuccess={copySuccess} on:copyerror={copyError}/>
-
-<main>
+<div>
     <div id="div-id">
         <div id="username-id" class="ellipsis"> 
             { username }
         </div>
         <div class="icons no-wrap">
-            <span use:clickToCopy={'#username-id'}>
+            <span use:clickToCopy={'#username-id'} id="copy-span">
                 <Icon name="copy"/>
             </span>
 
@@ -44,11 +27,21 @@
             {/if}
         </div>
     </div>
-</main>
+</div>
 
 <style>
-    .ellipsis {
+    #username-id {
+        font-weight: bold;
+        padding-left: 1rem;
         font-size: 2rem;
+    }
+
+    #copy-span {
+        display: table-cell;
+        padding-left: 1rem;
+    }
+
+    .ellipsis {
         text-overflow: ellipsis;
         overflow: hidden;
         white-space: nowrap;

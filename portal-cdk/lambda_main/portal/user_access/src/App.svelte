@@ -7,6 +7,7 @@
   import { onMount } from 'svelte';
   import UserContainer from './lib/UserContainer.svelte'
   import ToastContainer from './lib/utils/toast/Toast.svelte'
+  import { showToast } from './lib/utils/toast/toast.js'
   import { Button, Icon, Input, ListGroup, ListGroupItem, Spinner } from '@sveltestrap/sveltestrap';
 
   let usernames = $state([]);
@@ -15,8 +16,8 @@
   let selectedUsername = $state("");
 
   function getUsernames() {
-    const url = '/portal/users/all/usernames'
-    //const url = 'https://dq3yyi71b8t6w.cloudfront.net/portal/users/all/usernames'
+    //const url = '/portal/users/all/usernames'
+    const url = 'https://dq3yyi71b8t6w.cloudfront.net/portal/users/all/usernames'
 
     fetch(url, {
           method: 'GET',
@@ -33,63 +34,78 @@
   onMount(async () => {
       getUsernames();
   });
+
+  // Copy handlers
+  function copySuccess(event){
+        showToast({
+            "type": "success",
+            "text": "Copied text: " + event.detail
+        })
+	}
+	
+	function copyError(event){
+        showToast({
+            "type": "success",
+            "text": "Error! " + event.detail
+        })
+	}
 </script>
 
-<header>
+<svelte:window on:copysuccess={copySuccess} on:copyerror={copyError}/>
+
+<div>
   <ToastContainer/>
-</header>
+</div>
 
-<main>
-
-  <div class="container">
-    <div id="add-users-buttons-div">
-      <Button color="primary" disabled>+ Add Users</Button>
-      <Button color="primary" disabled>+ Bulk Add Users</Button>
-    </div>
-
-    <div id="search-bar-div">
-      <Input type="search" placeholder="search usernames" bind:value={searchTerm}/>
-    </div>
-
-    <div id="scrollarea-div">
-      <!--{#key filteredUsernames}-->
-        {#if filteredUsernames == [] || filteredUsernames == '' }
-          <div id="filtered-username-id">
-            <Spinner type="border" size="" color="primary"/>
-          </div>
-        {:else}
-          <ListGroup>
-            {#each filteredUsernames as username (username)}
-              <ListGroupItem onclick={() => selectedUsername = username}> 
-                <p class="scrollarea-p" id="scrollarea-p-{ username }"> 
-                  <span> { username } </span>
-                </p>
-              </ListGroupItem>
-            {/each}
-          </ListGroup>
-        {/if}
-      <!--{/key}-->
-    </div>
-
-    <div id="usercontainer-div">
-      <!--{#key selectedUsername}-->
-        {#if selectedUsername }
-          <UserContainer username={ selectedUsername } />
-        {:else}
-          <h3>Please select username</h3>
-        {/if}
-      <!--{/key}-->
-    </div>
-
+<div class="container">
+  <div id="add-users-buttons-div">
+    <Button color="primary" disabled>+ Add Users</Button>
+    <Button color="primary" disabled>+ Bulk Add Users</Button>
   </div>
-</main>
+
+  <div id="search-bar-div">
+    <Input type="search" placeholder="search usernames" bind:value={searchTerm}/>
+  </div>
+
+  <div id="scrollarea-div">
+    <!--{#key filteredUsernames}-->
+      {#if filteredUsernames == [] || filteredUsernames == '' }
+        <div id="filtered-username-id">
+          <Spinner type="border" size="" color="primary"/>
+        </div>
+      {:else}
+        <ListGroup>
+          {#each filteredUsernames as username (username)}
+            <ListGroupItem onclick={() => selectedUsername = username}> 
+              <p class="scrollarea-p" id="scrollarea-p-{ username }"> 
+                <span> { username } </span>
+              </p>
+            </ListGroupItem>
+          {/each}
+        </ListGroup>
+      {/if}
+    <!--{/key}-->
+  </div>
+
+  <div id="usercontainer-div">
+    <!--{#key selectedUsername}-->
+      {#if selectedUsername }
+        <UserContainer username={ selectedUsername } />
+      {:else}
+        <h3>Please select username</h3>
+      {/if}
+    <!--{/key}-->
+  </div>
+
+</div>
+
 
 <style>
   .container {
     display: grid;
     align-items: center;
-    row-gap: 20px;
-    column-gap: 50px;
+    row-gap: 1rem;
+    column-gap: 1rem;
     grid-template-columns: 300px auto;
     grid-template-rows: 2rem 2rem minmax(20rem, 100%) auto;
     grid-template-areas: 

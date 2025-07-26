@@ -21,7 +21,7 @@
 
 <svelte:window on:giveAToast={giveAToast}/>
 
-<main id="toast-container">
+<div id="toast-container">
     <Toast isOpen={isToastOpen} autohide=true delay={toastDelay}>
         {#if toastType == "success"}
             <ToastHeader icon="success">
@@ -38,7 +38,7 @@
             </p>
         </ToastBody>
     </Toast>
-</main>
+</div>
 
 <style>
     #toast-container {
