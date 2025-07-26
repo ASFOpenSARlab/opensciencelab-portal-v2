@@ -10,8 +10,8 @@
     let userData = $state()
 
     async function getUserData() {
-        const url = 'https://dq3yyi71b8t6w.cloudfront.net/portal/users/get/'+username;
-        //const url = '/portal/users/get/'+username;
+        //const url = 'https://dq3yyi71b8t6w.cloudfront.net/portal/users/get/'+username;
+        const url = '/portal/users/get/'+username;
 
         return await fetch(url, {
             method: 'GET',

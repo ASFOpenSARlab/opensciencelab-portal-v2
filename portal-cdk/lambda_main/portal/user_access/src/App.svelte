@@ -16,8 +16,8 @@
   let selectedUsername = $state("");
 
   function getUsernames() {
-    //const url = '/portal/users/all/usernames'
-    const url = 'https://dq3yyi71b8t6w.cloudfront.net/portal/users/all/usernames'
+    const url = '/portal/users/all/usernames'
+    //const url = 'https://dq3yyi71b8t6w.cloudfront.net/portal/users/all/usernames'
 
     fetch(url, {
           method: 'GET',
