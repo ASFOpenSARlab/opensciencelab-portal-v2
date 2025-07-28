@@ -46,7 +46,7 @@ class TestPortalIntegrations:
         assert ret["headers"].get("Content-Type") == "text/css"
 
     def test_user_home_page(self, monkeypatch, lambda_context, helpers, fake_auth):
-        user = helpers.FakeUser(labs=["testlab"])
+        user = helpers.FakeUser()
         monkeypatch.setattr("portal.User", lambda *args, **kwargs: user)
         monkeypatch.setattr("util.auth.User", lambda *args, **kwargs: user)
 

@@ -201,7 +201,7 @@ class TestPortalAuth:
         assert ret["headers"].get("Content-Type") == "text/html"
 
     def test_logged_in(self, lambda_context, fake_auth, helpers, monkeypatch):
-        user = helpers.FakeUser(labs=["testlab"])
+        user = helpers.FakeUser()
         monkeypatch.setattr("portal.User", lambda *args, **kwargs: user)
         monkeypatch.setattr("util.auth.User", lambda *args, **kwargs: user)
 
