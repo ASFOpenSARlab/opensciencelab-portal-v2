@@ -17,12 +17,19 @@
         {% for user in users %}<p>{{ user }}</p>{% endfor %}
     </div>
     <div class="right-align margin-right-30">
-        <div>
+        <div class="vertical-div">
             <h4>Tools</h4>
             <form method="post" action="{{ lab.short_lab_name }}/edituser">
                 <fieldset class="fieldset-border">
                     <legend class="legend-border-text font-20">Manage Users</legend>
                     <input type="text" name="username" placeholder="username">
+                    <input type="text" name="lab_profiles" placeholder="lab_profiles">
+                    <input type="text" name="time_quota" placeholder="time_quota">
+                    <input type="text" name="lab_country_status" placeholder="lab_country_status">
+                    <label for="can_user_access_lab">See Lab</label>
+                    <input type="checkbox" name="can_user_see_lab_card" id="can_user_see_lab_card">
+                    <label for="can_user_access_lab">Access Lab</label>
+                    <input type="checkbox" name="can_user_access_lab" id="can_user_access_lab">
                     <button type="submit" name="action" value="add">Add</button>
                     <button type="submit" name="action" value="remove">Remove</button>
                 </fieldset>

@@ -77,18 +77,26 @@ class User:
             "%Y-%m-%d %H:%M:%S"
         )
 
-    def add_lab(self, lab_short_name: str) -> None:
-        new_lab_list = []
-        for lab in self.labs:
-            new_lab_list.append(lab)
-        new_lab_list.append(lab_short_name)
+    def add_lab(self, lab_short_name: str, lab_profiles: list[str], time_quota, 
+                lab_country_status: str, can_user_access_lab:bool, can_user_see_lab_card:bool) -> None:
+        new_lab_list = {}
+        for lab in self.labs.keys():
+            new_lab_list[lab] = self.labs[lab]
+            
+        new_lab_list[lab_short_name] = {
+            "lab_profiles": lab_profiles,
+            "time_quota": time_quota,
+            "lab_country_status": lab_country_status,
+            "can_user_access_lab": can_user_access_lab,
+            "can_user_see_lab_card": can_user_see_lab_card,
+        }
         self.labs = new_lab_list
 
     def remove_lab(self, lab_short_name: str) -> None:
-        new_lab_list = []
-        for lab in self.labs:
+        new_lab_list = {}
+        for lab in self.labs.keys():
             if lab != lab_short_name:
-                new_lab_list.append(lab)
+                new_lab_list[lab] = self.labs[lab]
         self.labs = new_lab_list
 
     # Convenience methods
