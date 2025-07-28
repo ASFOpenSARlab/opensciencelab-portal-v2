@@ -56,15 +56,17 @@ def edit_user(shortname):
     body = form_body_to_dict(body)
 
     # Validate request
-    if "action" not in body:
-        return ValueError("Action not provided to edit_user")
-    if "username" not in body:
-        return ValueError("Username not provided to edit_user")
+    keys = ["action", "username", "lab_profiles", "time_quota", "lab_country_status", "can_user_access_lab", "can_user_see_lab_card"]
+    for key in keys:
+        if key not in body:
+            return ValueError(f"{key} not provided to edit_user")
 
     # Edit user
     if body["action"] == "add":
         user = User(body["username"])
-        user.add_lab(shortname)
+        user.add_lab(lab_short_name=shortname, lab_profiles=body["lab_profiles"], time_quota=body["time_quota"],
+                     lab_country_status=body["lab_country_status"], can_user_access_lab=body["can_user_access_lab"],
+                     can_user_see_lab_card=body["can_user_see_lab_card"])
     elif body["action"] == "remove":
         user = User(body["username"])
         user.remove_lab(shortname)

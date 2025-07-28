@@ -6,10 +6,12 @@ from util.format import portal_template, jinja_template
 from util.auth import require_access
 from util.session import current_session
 from util.user import User
-from labs import labs_dict
+from labs import labs_dict, BaseLab
 
 from aws_lambda_powertools.event_handler.api_gateway import Router
 from aws_lambda_powertools import Logger
+
+from dataclasses import dataclass
 
 logger = Logger(child=True)
 
@@ -34,6 +36,11 @@ for route in (portal_route, profile_route, access_route, hub_route, users_route)
 # portal_router.app doesn't exist _yet_, but will later. And we'll need access.
 require_access.router = portal_router
 
+@dataclass
+class LabAccessInfo:
+    lab: BaseLab
+    can_user_access_lab: bool
+    can_user_see_lab_card: bool
 
 @portal_router.get("")
 @require_access()
@@ -44,17 +51,22 @@ def portal_root():
     username = current_session.auth.cognito.username
     user = User(username=username)
 
-    # Get all labs as a list
-    labs = list(labs_dict.values())
-
     # Filter by labs the user has access to
-    filtered_labs = []
-    for lab in labs:
-        if lab.short_lab_name in user.labs:
-            filtered_labs.append(lab)
+    lab_access_info: list[LabAccessInfo] = []
+    if user.is_admin():
+        # Admin access to all labs
+        for labname in labs_dict:
+            lab_access_info.append(LabAccessInfo(lab=labs_dict[labname], can_user_access_lab=True, can_user_see_lab_card=True))
+    else:
+        for labname in labs_dict:
+            shortname = labs_dict[labname].short_lab_name
+            if shortname in user.labs:
+                can_user_access_lab = user.labs[shortname]["can_user_see_lab_card"]
+                can_user_see_lab_card = user.labs[shortname]["can_user_see_lab_card"]
+                lab_access_info.append(LabAccessInfo(lab=labs_dict[labname], can_user_access_lab=can_user_access_lab, can_user_see_lab_card=can_user_see_lab_card))
 
     # Add labs to page_dict
-    template_input["labs"] = filtered_labs
+    template_input["labs"] = lab_access_info
 
     ## Curently missing ##
     ## Lab ordering
@@ -63,4 +75,5 @@ def portal_root():
 
     # Add admin check to formatting
     template_input["admin"] = user.is_admin()
+    
     return jinja_template(template_input, "portal.j2")
