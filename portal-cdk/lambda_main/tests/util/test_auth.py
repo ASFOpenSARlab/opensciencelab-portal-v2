@@ -213,6 +213,8 @@ class TestPortalAuth:
 
         assert ret["statusCode"] == 200
         assert ret["body"].find('<div id="lab-choices">') != -1
+        assert ret["body"].find('Test Lab') != -1
+        assert ret["body"].find('No Access Lab') == -1
         assert ret["headers"].get("Location") is None
         assert ret["headers"].get("Content-Type") == "text/html"
 
