@@ -157,6 +157,13 @@ class Helpers:
                     "lab_country_status": None,
                     "can_user_see_lab_card": True,
                     "can_user_access_lab": True,
+                },
+                "noaccess": {
+                    "time_quota": None,
+                    "lab_profiles": None,
+                    "lab_country_status": None,
+                    "can_user_see_lab_card": False,
+                    "can_user_access_lab": False,
                 }
             }
         )
@@ -175,7 +182,10 @@ class Helpers:
         def remove_user(self) -> bool:
             return True
 
-    LABS = {"testlab": BaseLab(friendly_name="Test Lab", short_lab_name="testlab")}
+    LABS = {
+        "testlab": BaseLab(friendly_name="Test Lab", short_lab_name="testlab"),
+        "noaccess": BaseLab(friendly_name="No Access Lab", short_lab_name="noaccess"),
+        }
 
 
 @pytest.fixture
