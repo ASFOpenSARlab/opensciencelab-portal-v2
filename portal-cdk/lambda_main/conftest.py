@@ -149,7 +149,17 @@ class Helpers:
         last_cookie_assignment: str = None
         access: list = field(default_factory=lambda: ["user"])
         require_profile_update: bool = False
-        labs: list = field(default_factory=lambda: [])
+        labs: dict = field(
+            default_factory=lambda: {
+                "testlab": {
+                    "time_quota": None,
+                    "lab_profiles": None,
+                    "lab_country_status": None,
+                    "can_user_see_lab_card": True,
+                    "can_user_access_lab": True,
+                }
+            }
+        )
         email: str = field(default_factory=lambda: "fakeemail@email.com")
         _rec_counter: int = field(default_factory=lambda: 1)
         is_locked: bool = False
