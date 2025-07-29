@@ -52,26 +52,46 @@ def edit_user(shortname):
     # Parse request
     body = access_router.current_event.body
     if body is None:
-        return ValueError("Body not provided to edit_user")
+        error="Body not provided to edit_user"
+        print(error)
+        return ValueError(error)
     body = form_body_to_dict(body)
 
     # Validate request
-    keys = ["action", "username", "lab_profiles", "time_quota", "lab_country_status", "can_user_access_lab", "can_user_see_lab_card"]
+    # do not add checkboxs here, handle them in Edit user section
+    keys = ["action", "username", "lab_profiles", "time_quota", "lab_country_status"]
     for key in keys:
         if key not in body:
-            return ValueError(f"{key} not provided to edit_user")
+            error=f"{key} not provided to edit_user"
+            print(error)
+            return ValueError(error)
 
     # Edit user
     if body["action"] == "add":
+        # Map checkboxes to True and False
+        try:
+            body["can_user_see_lab_card"]
+            can_user_see_lab_card = True
+        except KeyError:
+            can_user_see_lab_card = False
+            
+        try:
+            body["can_user_access_lab"]
+            can_user_access_lab = True
+        except KeyError:
+            can_user_access_lab = False
+        
         user = User(body["username"])
         user.add_lab(lab_short_name=shortname, lab_profiles=body["lab_profiles"], time_quota=body["time_quota"],
-                     lab_country_status=body["lab_country_status"], can_user_access_lab=body["can_user_access_lab"],
-                     can_user_see_lab_card=body["can_user_see_lab_card"])
+                     lab_country_status=body["lab_country_status"], can_user_access_lab=can_user_access_lab,
+                     can_user_see_lab_card=can_user_see_lab_card)
     elif body["action"] == "remove":
         user = User(body["username"])
         user.remove_lab(shortname)
     else:
-        return ValueError(f"Invalid edit_user action {body['action']}")
+        error=f"Invalid edit_user action {body['action']}"
+        print(error)
+        return ValueError(error)
 
     # Send the user to the management page
     next_url = f"/portal/access/manage/{shortname}"
