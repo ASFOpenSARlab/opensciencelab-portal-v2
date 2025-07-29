@@ -3,7 +3,7 @@
     import UserName from './UserContainer/UserName.svelte';
     import UserButtons from './UserContainer/UserButtons.svelte';
     import UserInfo from './UserContainer/UserInfo.svelte';
-    import UserLabs from './UserContainer/UserLabs.svelte';
+    import UserLabsContainer from './UserContainer/UserLabsContainer.svelte';
     import UserProfile from './UserContainer/UserProfile.svelte';
     
     let { username } = $props()
@@ -50,7 +50,7 @@
                 <UserProfile username={ username } bind:userData={ userData }/>
             </div>
             <div id="userlabs-cell">
-                <UserLabs username={ username } bind:userData={ userData }/>
+                <UserLabsContainer username={ username } bind:userData={ userData }/>
             </div>
         </div>
     {:catch error}
