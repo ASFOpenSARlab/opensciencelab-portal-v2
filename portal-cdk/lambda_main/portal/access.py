@@ -51,6 +51,7 @@ def manage_lab(shortname):
 def edit_user(shortname):
     # Parse request
     body = access_router.current_event.body
+    
     if body is None:
         error="Body not provided to edit_user"
         print(error)

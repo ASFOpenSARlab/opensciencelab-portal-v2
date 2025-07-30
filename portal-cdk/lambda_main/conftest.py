@@ -181,6 +181,19 @@ class Helpers:
 
         def remove_user(self) -> bool:
             return True
+        
+        def add_lab(self, lab_short_name: str, lab_profiles: list[str], time_quota, 
+                lab_country_status: str, can_user_access_lab:bool, can_user_see_lab_card:bool):
+            self.labs[lab_short_name] = {
+                "lab_profiles": lab_profiles,
+                "time_quota": time_quota,
+                "lab_country_status": lab_country_status,
+                "can_user_access_lab": can_user_access_lab,
+                "can_user_see_lab_card": can_user_see_lab_card,
+            }
+            
+        def remove_lab(self, lab_short_name: str):
+            self.labs[lab_short_name] = None
 
     LABS = {
         "testlab": BaseLab(friendly_name="Test Lab", short_lab_name="testlab"),
