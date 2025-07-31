@@ -54,40 +54,42 @@ class TestAccessPages:
             > -1
         )
         assert ret["headers"].get("Content-Type") == "text/html"
-        
+
     def test_edituser(self, monkeypatch, lambda_context, helpers, fake_auth):
         user = helpers.FakeUser(access=["user", "admin"])
         monkeypatch.setattr("portal.access.User", lambda *args, **kwargs: user)
         monkeypatch.setattr("util.auth.User", lambda *args, **kwargs: user)
-        
+
         bodystr = {
-                'username': 'test_user',
-                'lab_profiles': '',
-                'time_quota': '',
-                'lab_country_status': '',
-                'can_user_see_lab_card': 'on',
-                'can_user_access_lab': 'on',
-                'action': 'add'
-            }
-        monkeypatch.setattr("portal.access.form_body_to_dict", lambda *args, **kwargs: bodystr)
-        
+            "username": "test_user",
+            "lab_profiles": "",
+            "time_quota": "",
+            "lab_country_status": "",
+            "can_user_see_lab_card": "on",
+            "can_user_access_lab": "on",
+            "action": "add",
+        }
+        monkeypatch.setattr(
+            "portal.access.form_body_to_dict", lambda *args, **kwargs: bodystr
+        )
+
         event = helpers.get_event(
             path="/portal/access/manage/testlab2/edituser",
             cookies=fake_auth,
             body="placeholder",
-            method="POST"
+            method="POST",
         )
         ret = main.lambda_handler(event, lambda_context)
-        
+
         assert "testlab2" in user.labs
         assert user.labs["testlab2"] == {
-            'lab_profiles': '',
-            'time_quota': '',
-            'lab_country_status': '',
-            'can_user_access_lab': True,
-            'can_user_see_lab_card': True
-            }
-        
+            "lab_profiles": "",
+            "time_quota": "",
+            "lab_country_status": "",
+            "can_user_access_lab": True,
+            "can_user_see_lab_card": True,
+        }
+
         assert ret["statusCode"] == 302
         assert ret["headers"].get("Location") == "/portal/access/manage/testlab2"
         assert ret["headers"].get("Content-Type") == "text/html"

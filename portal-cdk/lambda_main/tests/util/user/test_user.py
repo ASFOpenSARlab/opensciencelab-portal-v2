@@ -150,13 +150,13 @@ class TestUserClass:
         from util.user.dynamo_db import list_users_with_lab
 
         user1 = User(username="test_user1")
-        user1.labs = {"testlab":{}}
+        user1.labs = {"testlab": {}}
 
         user2 = User(username="test_user2")
-        user2.labs = {"testlab":{}, "differentlab":{}}
+        user2.labs = {"testlab": {}, "differentlab": {}}
 
         user3 = User(username="test_user3")
-        user3.labs = {"differentlab":{}}
+        user3.labs = {"differentlab": {}}
 
         assert list_users_with_lab("testlab") == ["test_user1", "test_user2"]
 
