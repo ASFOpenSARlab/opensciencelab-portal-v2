@@ -77,12 +77,19 @@ class User:
             "%Y-%m-%d %H:%M:%S"
         )
 
-    def add_lab(self, lab_short_name: str, lab_profiles: list[str], time_quota, 
-                lab_country_status: str, can_user_access_lab:bool, can_user_see_lab_card:bool) -> None:
+    def add_lab(
+        self,
+        lab_short_name: str,
+        lab_profiles: list[str],
+        time_quota,
+        lab_country_status: str,
+        can_user_access_lab: bool,
+        can_user_see_lab_card: bool,
+    ) -> None:
         new_lab_list = {}
         for lab in self.labs.keys():
             new_lab_list[lab] = self.labs[lab]
-            
+
         new_lab_list[lab_short_name] = {
             "lab_profiles": lab_profiles,
             "time_quota": time_quota,

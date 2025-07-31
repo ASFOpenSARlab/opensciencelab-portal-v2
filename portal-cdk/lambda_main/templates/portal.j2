@@ -15,7 +15,6 @@
     </i>
 </p>
 {% for currentlab in labs -%}
-
     {% if currentlab.can_user_see_lab_card %}
         <div class="container margin-top-10">
             <div class="row">
@@ -28,7 +27,7 @@
                                     You do not have access to this lab. <a href="/user/request/lab/{{ currentlab.lab.short_lab_name }}">Request access here</a>
                                     <br />
                                 </p>
-                            {# {% elif currentlab.lab.is_lab_deployment_healthy is defined and not currentlab.lab.is_lab_deployment_healthy -%}
+                                {# {% elif currentlab.lab.is_lab_deployment_healthy is defined and not currentlab.lab.is_lab_deployment_healthy -%}
                                 <p class="alert alert-danger show">
                                     The lab url is either unhealthy or no longer exists. Please contact the <a href="mailto:uaf-jupyterhub-asf+help@alaska.edu">OpenScienceLab Team</a>.
                                     <br />
@@ -38,8 +37,8 @@
                                 <span>
                                     {% if currentlab.lab.logo is defined and currentlab.lab.logo != None -%}
                                         <img class="lab-logo-img"
-                                            src="/portal-cdk/lambda_main/static/img/{{ currentlab.lab.logo }}"
-                                            alt="logo for {{ currentlab.lab.friendly_name }}" />
+                                             src="/portal-cdk/lambda_main/static/img/{{ currentlab.lab.logo }}"
+                                             alt="logo for {{ currentlab.lab.friendly_name }}" />
                                     {% endif %}
                                 </span>
                             </div>
@@ -52,32 +51,32 @@
                                         role="button"
                                         class="btn btn-lg btn-primary go-to-lab-btn"
                                         {% if not currentlab.can_user_access_lab -%}
-                                        href="javascript:void(0)"
-                                        title="You do not have access to the lab"
-                                        disabled
-                                        {# {% elif currentlab.lab.is_lab_deployment_healthy is defined and not currentlab.lab.is_lab_deployment_healthy -%}
-                                        h #}ref="javascript:void(0)"
-                                        title="The lab url is either unhealthy or the lab no longer exists"
-                                        disabled
+                                            href="#"
+                                            title="You do not have access to the lab"
+                                            disabled
+                                            {# {% elif currentlab.lab.is_lab_deployment_healthy is defined and not currentlab.lab.is_lab_deployment_healthy -%}
+                                            href="#"
+                                            title="The lab url is either unhealthy or the lab no longer exists"
+                                            disabled
                                         {% else -%} #}
-                                        href="/lab/{{ currentlab.lab.short_lab_name }}/hub/login"
-                                        title="Click to go to the lab {{ currentlab.lab.short_lab_name }}"
+                                            href="/lab/{{ currentlab.lab.short_lab_name }}/hub/login"
+                                            title="Click to go to the lab {{ currentlab.lab.short_lab_name }}"
                                         {% endif %}
                                         >
                                         <i>Go to lab</i>
                                     </a>
                                     {% if currentlab.lab.about_page_url is defined and currentlab.lab.about_page_url != None -%}
                                         <a id="about-{{ currentlab.lab.short_lab_name }}"
-                                        role="button"
-                                        class="btn btn-lg btn-primary go-to-about-btn"
-                                        target="_blank"
-                                        href="{{ currentlab.lab.about_page_url }}">{{ currentlab.lab.about_page_button_label }}</a>
+                                           role="button"
+                                           class="btn btn-lg btn-primary go-to-about-btn"
+                                           target="_blank"
+                                           href="{{ currentlab.lab.about_page_url }}">{{ currentlab.lab.about_page_button_label }}</a>
                                     {% endif %}
                                     {% if admin %}
                                         <a id="about-{{ currentlab.lab.short_lab_name }}"
-                                        role="button"
-                                        class="btn btn-lg btn-primary go-to-about-btn"
-                                        href="/portal/access/manage/{{ currentlab.lab.short_lab_name }}">Manage</a>
+                                           role="button"
+                                           class="btn btn-lg btn-primary go-to-about-btn"
+                                           href="/portal/access/manage/{{ currentlab.lab.short_lab_name }}">Manage</a>
                                     {% endif %}
                                 </div>
                             </div>
