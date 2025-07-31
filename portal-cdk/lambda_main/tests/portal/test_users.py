@@ -213,3 +213,46 @@ class TestUsersPages:
         ret = main.lambda_handler(event, lambda_context)
         assert ret["statusCode"] == 302
         assert ret["headers"].get("Location", "").find("success=True") != -1
+
+    def test_lock_invalid_admin_user(
+        self, lambda_context, monkeypatch, fake_auth, helpers
+    ):
+        user = helpers.FakeUser(access=["admin", "user"])
+        lock_user = "AdminUser"
+
+        monkeypatch.setattr("portal.users.User", lambda *args, **kwargs: user)
+        monkeypatch.setattr("util.auth.User", lambda *args, **kwargs: user)
+        monkeypatch.setattr("portal.users.get_all_items", lambda: USER_TABLE_DATA)
+        monkeypatch.setattr(
+            "util.cognito.delete_user_from_user_pool", lambda *args, **kwargs: True
+        )
+
+        event = helpers.get_event(
+            path=f"/portal/users/lock/{lock_user}",
+            cookies=fake_auth,
+            method="post",
+        )
+
+        ret = main.lambda_handler(event, lambda_context)
+        assert ret["statusCode"] == 302
+        assert ret["headers"].get("Location", "").find("success=False") != -1
+        assert not user.is_locked, "Admin user should not be locked"
+
+    def test_lock_valid_user(self, lambda_context, monkeypatch, fake_auth, helpers):
+        acting_user = helpers.FakeUser(access=["admin", "user"])
+        lock_user = helpers.FakeUser(username="GeneralUser")
+
+        monkeypatch.setattr("portal.users.User", lambda *args, **kwargs: lock_user)
+        monkeypatch.setattr("util.auth.User", lambda *args, **kwargs: acting_user)
+        monkeypatch.setattr("portal.users.get_all_items", lambda: USER_TABLE_DATA)
+
+        event = helpers.get_event(
+            path=f"/portal/users/lock/{lock_user.username}",
+            cookies=fake_auth,
+            method="post",
+        )
+
+        ret = main.lambda_handler(event, lambda_context)
+        assert ret["statusCode"] == 302
+        assert ret["headers"].get("Location", "").find("success=True") != -1
+        assert lock_user.is_locked, "User should be locked"

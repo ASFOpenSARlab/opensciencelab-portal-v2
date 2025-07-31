@@ -47,6 +47,22 @@ def _delete_user(username) -> bool:
     return True
 
 
+def _toggle_lock_user(username, lock: bool) -> bool:
+    current_username = current_session.auth.cognito.username
+    user_to_toggle = User(username=username)
+
+    if user_to_toggle.is_admin():
+        logger.warning(
+            "%s attempted to %s admin user %s",
+            current_username,
+            "lock" if lock else "unlock",
+            user_to_toggle.username,
+        )
+        return False
+    user_to_toggle.is_locked = lock
+    return True
+
+
 @users_router.get("")
 @require_access("admin")
 @portal_template()
@@ -68,6 +84,42 @@ def users_root():
 
     # Generate an HTML table
     return jinja_template(template_input, "user-table.j2")
+
+
+@users_router.post("/unlock/<username>")
+@require_access("admin")
+def unlock_user(username):
+    success = _toggle_lock_user(username, False)
+
+    get_params = [
+        f"username={username}",
+        "message=unlocked",
+        f"success={success}",
+    ]
+
+    return wrap_response(
+        body="Post Unlock redirect",
+        headers={"Location": f"/portal/users?{'&'.join(get_params)}"},
+        code=302,
+    )
+
+
+@users_router.post("/lock/<username>")
+@require_access("admin")
+def lock_user(username):
+    success = _toggle_lock_user(username, True)
+
+    get_params = [
+        f"username={username}",
+        "message=locked",
+        f"success={success}",
+    ]
+
+    return wrap_response(
+        body="Post Lock redirect",
+        headers={"Location": f"/portal/users?{'&'.join(get_params)}"},
+        code=302,
+    )
 
 
 @users_router.post("/delete/<username>")
