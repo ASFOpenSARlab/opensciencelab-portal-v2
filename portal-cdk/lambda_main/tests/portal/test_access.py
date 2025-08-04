@@ -7,9 +7,6 @@ class TestAccessPages:
         monkeypatch.setattr("portal.User", lambda *args, **kwargs: user)
         monkeypatch.setattr("util.auth.User", lambda *args, **kwargs: user)
 
-        labs = helpers.LABS
-        monkeypatch.setattr("portal.access.labs_dict", labs)
-
         event = helpers.get_event(
             path="/portal/access/manage/testlab", cookies=fake_auth
         )
@@ -25,8 +22,8 @@ class TestAccessPages:
         monkeypatch.setattr("portal.User", lambda *args, **kwargs: user)
         monkeypatch.setattr("util.auth.User", lambda *args, **kwargs: user)
 
-        labs = helpers.LABS
-        monkeypatch.setattr("portal.access.labs_dict", labs)
+        labs = helpers.FAKE_ALL_LABS
+        monkeypatch.setattr("portal.access.all_labs", labs)
 
         def lab_users_static(*args, **kwargs):
             return ["test_user"]

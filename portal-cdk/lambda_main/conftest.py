@@ -16,7 +16,8 @@ os.environ["STACK_REGION"] = "us-west-2"
 os.environ["COGNITO_CLIENT_ID"] = "fake-cognito-id"
 os.environ["COGNITO_POOL_ID"] = "fake-pool-id"
 from util.auth import PORTAL_USER_COOKIE, COGNITO_JWT_COOKIE
-from labs import BaseLab
+from util.labs import BaseLab, LabAccessInfo
+from util.user.user import filter_lab_access
 
 
 def MockedRequestsPost(*args, **kwargs):
@@ -201,12 +202,14 @@ class Helpers:
 
         def remove_lab(self, lab_short_name: str):
             self.labs[lab_short_name] = None
+        
+        def get_lab_access(self) -> list[LabAccessInfo]:
+            return filter_lab_access(is_admin=self.is_admin(), all_labs_in=Helpers.FAKE_ALL_LABS, labs=self.labs)
 
-    LABS = {
+    FAKE_ALL_LABS = {
         "testlab": BaseLab(friendly_name="Test Lab", short_lab_name="testlab"),
         "noaccess": BaseLab(friendly_name="No Access Lab", short_lab_name="noaccess"),
     }
-
 
 @pytest.fixture
 def helpers():

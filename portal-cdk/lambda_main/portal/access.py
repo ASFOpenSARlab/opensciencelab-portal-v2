@@ -3,7 +3,7 @@ from util.auth import require_access
 from util.user.dynamo_db import list_users_with_lab
 from util.user import User
 from util.responses import wrap_response, form_body_to_dict
-from labs import labs_dict
+from util.labs import all_labs
 
 from aws_lambda_powertools.event_handler.api_gateway import Router
 
@@ -37,7 +37,7 @@ def add_lab():
 def manage_lab(shortname):
     template_input = {}
 
-    lab = labs_dict[shortname]
+    lab = all_labs[shortname]
     template_input["lab"] = lab
 
     users = list_users_with_lab(lab.short_lab_name)
