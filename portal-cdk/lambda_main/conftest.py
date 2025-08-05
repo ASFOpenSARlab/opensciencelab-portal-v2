@@ -207,7 +207,7 @@ class Helpers:
             return filter_lab_access(
                 is_admin=self.is_admin(),
                 all_labs_in=Helpers.FAKE_ALL_LABS,
-                labs=self.labs
+                labs=self.labs,
             )
 
     FAKE_ALL_LABS = {
