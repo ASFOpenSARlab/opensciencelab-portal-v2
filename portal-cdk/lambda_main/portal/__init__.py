@@ -33,6 +33,7 @@ for route in (portal_route, profile_route, access_route, hub_route, users_route)
 # portal_router.app doesn't exist _yet_, but will later. And we'll need access.
 require_access.router = portal_router
 
+
 @portal_router.get("")
 @require_access()
 @portal_template()

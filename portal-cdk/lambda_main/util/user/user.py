@@ -13,7 +13,9 @@ from .dynamo_db import get_item, create_item, update_item, delete_item
 from .defaults import defaults
 from .validator_map import validator_map, validate
 
-def filter_lab_access(is_admin:bool, all_labs_in: dict[str, BaseLab], labs: dict) -> list[LabAccessInfo]:
+def filter_lab_access(
+    is_admin:bool, all_labs_in: dict[str, BaseLab], labs: dict
+) -> list[LabAccessInfo]:
     lab_access_info: list[LabAccessInfo] = []
     if is_admin:
         # Admin access to all labs
@@ -40,6 +42,7 @@ def filter_lab_access(is_admin:bool, all_labs_in: dict[str, BaseLab], labs: dict
                     )
                 )
     return lab_access_info
+
 
 class User:
     def __init__(self, username: str):
@@ -136,7 +139,9 @@ class User:
         self.labs = new_lab_list
     
     def get_lab_access(self) -> list[LabAccessInfo]:
-        return filter_lab_access(is_admin=self.is_admin(), all_labs_in=all_labs, labs=self.labs)
+        return filter_lab_access(
+            is_admin=self.is_admin(), all_labs_in=all_labs, labs=self.labs
+        )
 
     # Convenience methods
     def is_admin(self) -> bool:

@@ -202,14 +202,19 @@ class Helpers:
 
         def remove_lab(self, lab_short_name: str):
             self.labs[lab_short_name] = None
-        
+
         def get_lab_access(self) -> list[LabAccessInfo]:
-            return filter_lab_access(is_admin=self.is_admin(), all_labs_in=Helpers.FAKE_ALL_LABS, labs=self.labs)
+            return filter_lab_access(
+                is_admin=self.is_admin(),
+                all_labs_in=Helpers.FAKE_ALL_LABS,
+                labs=self.labs
+            )
 
     FAKE_ALL_LABS = {
         "testlab": BaseLab(friendly_name="Test Lab", short_lab_name="testlab"),
         "noaccess": BaseLab(friendly_name="No Access Lab", short_lab_name="noaccess"),
     }
+
 
 @pytest.fixture
 def helpers():
