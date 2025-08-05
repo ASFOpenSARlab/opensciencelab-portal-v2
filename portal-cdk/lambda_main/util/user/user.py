@@ -13,6 +13,7 @@ from .dynamo_db import get_item, create_item, update_item, delete_item
 from .defaults import defaults
 from .validator_map import validator_map, validate
 
+
 def filter_lab_access(
     is_admin: bool, all_labs_in: dict[str, BaseLab], labs: dict
 ) -> list[LabAccessInfo]:
