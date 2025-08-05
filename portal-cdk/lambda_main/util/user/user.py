@@ -14,7 +14,7 @@ from .defaults import defaults
 from .validator_map import validator_map, validate
 
 def filter_lab_access(
-    is_admin:bool, all_labs_in: dict[str, BaseLab], labs: dict
+    is_admin: bool, all_labs_in: dict[str, BaseLab], labs: dict
 ) -> list[LabAccessInfo]:
     lab_access_info: list[LabAccessInfo] = []
     if is_admin:
@@ -137,7 +137,7 @@ class User:
             if lab != lab_short_name:
                 new_lab_list[lab] = self.labs[lab]
         self.labs = new_lab_list
-    
+
     def get_lab_access(self) -> list[LabAccessInfo]:
         return filter_lab_access(
             is_admin=self.is_admin(), all_labs_in=all_labs, labs=self.labs
