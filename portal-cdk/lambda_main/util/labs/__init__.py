@@ -3,9 +3,9 @@ from .base_lab import BaseLab
 from dataclasses import dataclass
 
 all_labs = {
-    "shortname": BaseLab(
+    "smce-test-opensarlab": BaseLab(
         friendly_name="testlab",
-        short_lab_name="shortname",
+        short_lab_name="smce-test-opensarlab",
         description="A test lab for testing",
         logo="favicon.ico",
         about_page_url="https://google.com",
