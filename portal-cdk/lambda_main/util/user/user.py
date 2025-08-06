@@ -61,6 +61,7 @@ def create_lab_structure(
         "can_user_see_lab_card": can_user_see_lab_card,
     }
 
+
 class User:
     def __init__(self, username: str):
         ## Using super to avoid setattr validation. 'username'
