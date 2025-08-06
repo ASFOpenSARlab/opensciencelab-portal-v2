@@ -77,11 +77,11 @@ class TestAccessPages:
             method="POST",
         )
         ret = main.lambda_handler(event, lambda_context)
-
+        
         assert "testlab2" in user.labs
         assert user.labs["testlab2"] == {
-            "lab_profiles": "",
-            "time_quota": "",
+            "lab_profiles": [""],
+            "time_quota": None,
             "lab_country_status": "",
             "can_user_access_lab": True,
             "can_user_see_lab_card": True,
