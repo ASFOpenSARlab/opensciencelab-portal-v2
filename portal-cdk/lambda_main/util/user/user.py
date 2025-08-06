@@ -46,20 +46,20 @@ def filter_lab_access(
 
 
 def create_lab_structure(
-        lab_profiles: list[str],
-        time_quota,
-        lab_country_status: str,
-        can_user_access_lab: bool,
-        can_user_see_lab_card: bool,
-        **kwargs,
-    ) -> dict[str, Any]:
+    lab_profiles: list[str],
+    time_quota,
+    lab_country_status: str,
+    can_user_access_lab: bool,
+    can_user_see_lab_card: bool,
+    **kwargs,
+) -> dict[str, Any]:
     return {
-            "lab_profiles": lab_profiles,
-            "time_quota": time_quota,
-            "lab_country_status": lab_country_status,
-            "can_user_access_lab": can_user_access_lab,
-            "can_user_see_lab_card": can_user_see_lab_card,
-        }
+        "lab_profiles": lab_profiles,
+        "time_quota": time_quota,
+        "lab_country_status": lab_country_status,
+        "can_user_access_lab": can_user_access_lab,
+        "can_user_see_lab_card": can_user_see_lab_card,
+    }
 
 class User:
     def __init__(self, username: str):
@@ -132,7 +132,7 @@ class User:
             new_lab_list[lab] = self.labs[lab]
 
         new_lab_list[kwargs["lab_short_name"]] = create_lab_structure(**kwargs)
-        
+
         self.labs = new_lab_list
 
     def remove_lab(self, lab_short_name: str) -> None:
