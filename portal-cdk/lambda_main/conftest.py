@@ -183,8 +183,7 @@ class Helpers:
         def remove_user(self) -> bool:
             return True
 
-        def add_lab(
-            self, **kwargs):
+        def add_lab(self, **kwargs):
             self.labs[kwargs["lab_short_name"]] = create_lab_structure(**kwargs)
 
         def remove_lab(self, lab_short_name: str):
