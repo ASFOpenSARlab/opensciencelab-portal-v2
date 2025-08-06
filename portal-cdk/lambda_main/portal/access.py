@@ -85,7 +85,7 @@ def edit_user(shortname):
         user = User(body["username"])
         user.add_lab(
             lab_short_name=shortname,
-            lab_profiles=[s.strip() for s in body["lab_profiles"].split(',')],
+            lab_profiles=[s.strip() for s in body["lab_profiles"].split(",")],
             time_quota=body["time_quota"].strip() or None,
             lab_country_status=body["lab_country_status"],
             can_user_access_lab=can_user_access_lab,
