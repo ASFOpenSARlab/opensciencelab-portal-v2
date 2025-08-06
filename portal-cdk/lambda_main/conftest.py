@@ -17,7 +17,7 @@ os.environ["COGNITO_CLIENT_ID"] = "fake-cognito-id"
 os.environ["COGNITO_POOL_ID"] = "fake-pool-id"
 from util.auth import PORTAL_USER_COOKIE, COGNITO_JWT_COOKIE
 from util.labs import BaseLab, LabAccessInfo
-from util.user.user import filter_lab_access
+from util.user.user import filter_lab_access, create_lab_structure
 
 
 def MockedRequestsPost(*args, **kwargs):
@@ -184,21 +184,8 @@ class Helpers:
             return True
 
         def add_lab(
-            self,
-            lab_short_name: str,
-            lab_profiles: list[str],
-            time_quota,
-            lab_country_status: str,
-            can_user_access_lab: bool,
-            can_user_see_lab_card: bool,
-        ):
-            self.labs[lab_short_name] = {
-                "lab_profiles": lab_profiles,
-                "time_quota": time_quota,
-                "lab_country_status": lab_country_status,
-                "can_user_access_lab": can_user_access_lab,
-                "can_user_see_lab_card": can_user_see_lab_card,
-            }
+            self, **kwargs):
+            self.labs[kwargs["lab_short_name"]] = create_lab_structure(**kwargs)
 
         def remove_lab(self, lab_short_name: str):
             self.labs[lab_short_name] = None

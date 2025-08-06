@@ -2,8 +2,8 @@
 
 import json
 import datetime
-
 import frozendict
+from typing import Any
 
 from util.exceptions import DbError, CognitoError
 from util.cognito import delete_user_from_user_pool
@@ -44,6 +44,22 @@ def filter_lab_access(
                 )
     return lab_access_info
 
+
+def create_lab_structure(
+        lab_short_name: str,
+        lab_profiles: list[str],
+        time_quota,
+        lab_country_status: str,
+        can_user_access_lab: bool,
+        can_user_see_lab_card: bool,
+    ) -> dict[str, Any]:
+    return {
+            "lab_profiles": lab_profiles,
+            "time_quota": time_quota,
+            "lab_country_status": lab_country_status,
+            "can_user_access_lab": can_user_access_lab,
+            "can_user_see_lab_card": can_user_see_lab_card,
+        }
 
 class User:
     def __init__(self, username: str):
@@ -110,26 +126,13 @@ class User:
         )
 
     # Lab manipulation methods
-    def add_lab(
-        self,
-        lab_short_name: str,
-        lab_profiles: list[str],
-        time_quota,
-        lab_country_status: str,
-        can_user_access_lab: bool,
-        can_user_see_lab_card: bool,
-    ) -> None:
+    def add_lab(self, **kwargs) -> None:
         new_lab_list = {}
         for lab in self.labs.keys():
             new_lab_list[lab] = self.labs[lab]
 
-        new_lab_list[lab_short_name] = {
-            "lab_profiles": lab_profiles,
-            "time_quota": time_quota,
-            "lab_country_status": lab_country_status,
-            "can_user_access_lab": can_user_access_lab,
-            "can_user_see_lab_card": can_user_see_lab_card,
-        }
+        new_lab_list[kwargs["lab_short_name"]] = create_lab_structure(**kwargs)
+        
         self.labs = new_lab_list
 
     def remove_lab(self, lab_short_name: str) -> None:
