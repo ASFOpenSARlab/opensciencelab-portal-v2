@@ -46,12 +46,12 @@ def filter_lab_access(
 
 
 def create_lab_structure(
-        lab_short_name: str,
         lab_profiles: list[str],
         time_quota,
         lab_country_status: str,
         can_user_access_lab: bool,
         can_user_see_lab_card: bool,
+        **kwargs,
     ) -> dict[str, Any]:
     return {
             "lab_profiles": lab_profiles,
