@@ -10,6 +10,7 @@ USER_TABLE_DATA = [
         "access": ["user"],
         "username": "GeneralUser",
         "require_profile_update": False,
+        "is_locked": False,
     },
     {
         # Admin User
@@ -20,6 +21,7 @@ USER_TABLE_DATA = [
         "access": ["user", "admin"],
         "username": "AdminUser",
         "require_profile_update": False,
+        "is_locked": False,
     },
     {
         # New, incomplete User
@@ -30,6 +32,18 @@ USER_TABLE_DATA = [
         "access": ["user"],
         "username": "NewUser",
         "require_profile_update": True,
+        "is_locked": False,
+    },
+    {
+        # Locked User
+        "last_cookie_assignment": "2025-06-24 19:02:25",
+        "created_at": "2025-06-09 20:49:22",
+        "last_update": "2025-06-24 19:02:25",
+        "profile": {},  # Not used for now
+        "access": ["user"],
+        "username": "TotallyNotCryptoMiner",
+        "require_profile_update": False,
+        "is_locked": True,
     },
 ]
 
@@ -72,6 +86,31 @@ class TestUsersPages:
         assert ret["body"].find("<b>YES</b>") != -1
         assert ret["body"].find("<b>GeneralUser</b>") != -1
         assert ret["headers"].get("Content-Type") == "text/html"
+
+    def test_user_is_locked(self, lambda_context, monkeypatch, fake_auth, helpers):
+        user = helpers.FakeUser(access=["admin", "user"])
+
+        monkeypatch.setattr("portal.users.User", lambda *args, **kwargs: user)
+        monkeypatch.setattr("util.auth.User", lambda *args, **kwargs: user)
+        monkeypatch.setattr("portal.users.get_all_items", lambda: USER_TABLE_DATA)
+
+        event = helpers.get_event(path="/portal/users", cookies=fake_auth)
+
+        ret = main.lambda_handler(event, lambda_context)
+        assert ret["statusCode"] == 200
+        assert ret["headers"].get("Content-Type") == "text/html"
+
+        # Since the message is asking to unlock, this user is LOCKED here:
+        assert (
+            ret["body"].find("Do you really want to unlock `TotallyNotCryptoMiner`?")
+            != -1
+        )
+        assert ret["body"].find("<b>TotallyNotCryptoMiner</b>") != -1
+        assert ret["body"].find("<b>Locked</b>") != -1
+
+        # And same thing for a UNLOCKED User:
+        assert ret["body"].find("Do you really want to lock `GeneralUser`?") != -1
+        assert ret["body"].find("<b>GeneralUser</b>") != -1
 
     def test_delete_invalid_cognito_user(
         self, lambda_context, monkeypatch, fake_auth, helpers
