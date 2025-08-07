@@ -46,12 +46,9 @@ class TestPortalIntegrations:
         assert ret["headers"].get("Content-Type") == "text/css"
 
     def test_user_home_page(self, monkeypatch, lambda_context, helpers, fake_auth):
-        user = helpers.FakeUser(labs=["testlab"])
+        user = helpers.FakeUser()
         monkeypatch.setattr("portal.User", lambda *args, **kwargs: user)
         monkeypatch.setattr("util.auth.User", lambda *args, **kwargs: user)
-
-        labs = helpers.LABS
-        monkeypatch.setattr("portal.labs_dict", labs)
 
         event = helpers.get_event(path="/portal", cookies=fake_auth)
         ret = main.lambda_handler(event, lambda_context)
@@ -66,9 +63,6 @@ class TestPortalIntegrations:
         user = helpers.FakeUser(access=["admin", "user"], labs=["testlab"])
         monkeypatch.setattr("portal.User", lambda *args, **kwargs: user)
         monkeypatch.setattr("util.auth.User", lambda *args, **kwargs: user)
-
-        labs = helpers.LABS
-        monkeypatch.setattr("portal.labs_dict", labs)
 
         event = helpers.get_event(path="/portal", cookies=fake_auth)
         ret = main.lambda_handler(event, lambda_context)
