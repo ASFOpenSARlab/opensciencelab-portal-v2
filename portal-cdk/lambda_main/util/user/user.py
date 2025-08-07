@@ -2,15 +2,64 @@
 
 import json
 import datetime
-
 import frozendict
+from typing import Any
 
 from util.exceptions import DbError, CognitoError
 from util.cognito import delete_user_from_user_pool
+from util.labs import all_labs, LabAccessInfo, BaseLab
 
 from .dynamo_db import get_item, create_item, update_item, delete_item
 from .defaults import defaults
 from .validator_map import validator_map, validate
+
+
+def filter_lab_access(
+    is_admin: bool, all_labs_in: dict[str, BaseLab], labs: dict
+) -> list[LabAccessInfo]:
+    lab_access_info: list[LabAccessInfo] = []
+    if is_admin:
+        # Admin access to all labs
+        for labname in all_labs_in:
+            lab_access_info.append(
+                LabAccessInfo(
+                    lab=all_labs_in[labname],
+                    can_user_access_lab=True,
+                    can_user_see_lab_card=True,
+                )
+            )
+    else:
+        # Determine access from self.labs
+        for labname in all_labs_in:
+            shortname = all_labs_in[labname].short_lab_name
+            if shortname in labs:
+                can_user_access_lab = labs[shortname]["can_user_see_lab_card"]
+                can_user_see_lab_card = labs[shortname]["can_user_see_lab_card"]
+                lab_access_info.append(
+                    LabAccessInfo(
+                        lab=all_labs_in[labname],
+                        can_user_access_lab=can_user_access_lab,
+                        can_user_see_lab_card=can_user_see_lab_card,
+                    )
+                )
+    return lab_access_info
+
+
+def create_lab_structure(
+    lab_profiles: list[str],
+    time_quota,
+    lab_country_status: str,
+    can_user_access_lab: bool,
+    can_user_see_lab_card: bool,
+    **kwargs,
+) -> dict[str, Any]:
+    return {
+        "lab_profiles": lab_profiles,
+        "time_quota": time_quota,
+        "lab_country_status": lab_country_status,
+        "can_user_access_lab": can_user_access_lab,
+        "can_user_see_lab_card": can_user_see_lab_card,
+    }
 
 
 class User:
@@ -77,19 +126,27 @@ class User:
             "%Y-%m-%d %H:%M:%S"
         )
 
-    def add_lab(self, lab_short_name: str) -> None:
-        new_lab_list = []
-        for lab in self.labs:
-            new_lab_list.append(lab)
-        new_lab_list.append(lab_short_name)
+    # Lab manipulation methods
+    def add_lab(self, **kwargs) -> None:
+        new_lab_list = {}
+        for lab in self.labs.keys():
+            new_lab_list[lab] = self.labs[lab]
+
+        new_lab_list[kwargs["lab_short_name"]] = create_lab_structure(**kwargs)
+
         self.labs = new_lab_list
 
     def remove_lab(self, lab_short_name: str) -> None:
-        new_lab_list = []
-        for lab in self.labs:
+        new_lab_list = {}
+        for lab in self.labs.keys():
             if lab != lab_short_name:
-                new_lab_list.append(lab)
+                new_lab_list[lab] = self.labs[lab]
         self.labs = new_lab_list
+
+    def get_lab_access(self) -> list[LabAccessInfo]:
+        return filter_lab_access(
+            is_admin=self.is_admin(), all_labs_in=all_labs, labs=self.labs
+        )
 
     # Convenience methods
     def is_admin(self) -> bool:

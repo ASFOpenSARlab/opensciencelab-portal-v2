@@ -1,9 +1,11 @@
 from .base_lab import BaseLab
 
-labs_dict = {
-    "shortname": BaseLab(
+from dataclasses import dataclass
+
+all_labs = {
+    "smce-test-opensarlab": BaseLab(
         friendly_name="testlab",
-        short_lab_name="shortname",
+        short_lab_name="smce-test-opensarlab",
         description="A test lab for testing",
         logo="favicon.ico",
         about_page_url="https://google.com",
@@ -35,3 +37,10 @@ labs_dict = {
         accessibility="protected",
     ),
 }
+
+
+@dataclass
+class LabAccessInfo:
+    lab: BaseLab
+    can_user_access_lab: bool
+    can_user_see_lab_card: bool

@@ -160,6 +160,7 @@ class TestPortalAuth:
     ):
         # Create FakeUser instance to be monkeypatched in and inspected after modified
         user = helpers.FakeUser()
+        monkeypatch.setattr("portal.hub.User", lambda *args, **kwargs: user)
         monkeypatch.setattr("util.auth.User", lambda *args, **kwargs: user)
 
         body_payload = json.dumps({"username": "test_user"})
@@ -169,7 +170,9 @@ class TestPortalAuth:
             body=b64encode(body_payload.encode("ascii")),
             cookies=fake_auth,
         )
+
         ret = main.lambda_handler(event, lambda_context)
+
         assert ret["statusCode"] == 200
         assert ret["headers"].get("Content-Type") == "application/json"
         json_payload = json.loads(ret["body"])
@@ -198,18 +201,17 @@ class TestPortalAuth:
         assert ret["headers"].get("Content-Type") == "text/html"
 
     def test_logged_in(self, lambda_context, fake_auth, helpers, monkeypatch):
-        user = helpers.FakeUser(labs=["testlab"])
+        user = helpers.FakeUser()
         monkeypatch.setattr("portal.User", lambda *args, **kwargs: user)
         monkeypatch.setattr("util.auth.User", lambda *args, **kwargs: user)
-
-        labs = helpers.LABS
-        monkeypatch.setattr("portal.labs_dict", labs)
 
         event = helpers.get_event(path="/portal", cookies=fake_auth)
         ret = main.lambda_handler(event, lambda_context)
 
         assert ret["statusCode"] == 200
         assert ret["body"].find('<div id="lab-choices">') != -1
+        assert ret["body"].find("Test Lab") != -1
+        assert ret["body"].find("No Access Lab") == -1
         assert ret["headers"].get("Location") is None
         assert ret["headers"].get("Content-Type") == "text/html"
 

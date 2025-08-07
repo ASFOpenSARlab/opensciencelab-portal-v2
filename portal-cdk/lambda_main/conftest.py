@@ -16,7 +16,8 @@ os.environ["STACK_REGION"] = "us-west-2"
 os.environ["COGNITO_CLIENT_ID"] = "fake-cognito-id"
 os.environ["COGNITO_POOL_ID"] = "fake-pool-id"
 from util.auth import PORTAL_USER_COOKIE, COGNITO_JWT_COOKIE
-from labs import BaseLab
+from util.labs import BaseLab, LabAccessInfo
+from util.user.user import filter_lab_access, create_lab_structure
 
 
 def MockedRequestsPost(*args, **kwargs):
@@ -129,12 +130,45 @@ class Helpers:
     @dataclass
     class FakeUser:
         username: str = field(default_factory=lambda: "test_user")
-        profile: dict = None
+        profile: dict = field(
+            default_factory=lambda: {
+                "country_of_residence": "US",
+                "faculty_member_affliated_with_university": False,
+                "graduate_student_affliated_with_university": False,
+                "is_affiliated_with_nasa": "no",
+                "is_affiliated_with_us_gov_research": "no",
+                "is_affliated_with_isro_research": "no",
+                "is_affliated_with_university": "no",
+                "pi_affliated_with_nasa_research_email": "",
+                "research_member_affliated_with_university": False,
+                "user_affliated_with_gov_research_email": "",
+                "user_affliated_with_isro_research_email": "",
+                "user_affliated_with_nasa_research_email": "",
+                "user_or_pi_nasa_email": "default",
+            }
+        )
         last_cookie_assignment: str = None
         access: list = field(default_factory=lambda: ["user"])
         require_profile_update: bool = False
-        labs: list = field(default_factory=lambda: [])
-        email: str = None
+        labs: dict = field(
+            default_factory=lambda: {
+                "testlab": {
+                    "time_quota": None,
+                    "lab_profiles": None,
+                    "lab_country_status": None,
+                    "can_user_see_lab_card": True,
+                    "can_user_access_lab": True,
+                },
+                "noaccess": {
+                    "time_quota": None,
+                    "lab_profiles": None,
+                    "lab_country_status": None,
+                    "can_user_see_lab_card": False,
+                    "can_user_access_lab": False,
+                },
+            }
+        )
+        email: str = field(default_factory=lambda: "fakeemail@email.com")
         _rec_counter: int = field(default_factory=lambda: 1)
         is_locked: bool = False
 
@@ -149,7 +183,23 @@ class Helpers:
         def remove_user(self) -> bool:
             return True
 
-    LABS = {"testlab": BaseLab(friendly_name="Test Lab", short_lab_name="testlab")}
+        def add_lab(self, **kwargs):
+            self.labs[kwargs["lab_short_name"]] = create_lab_structure(**kwargs)
+
+        def remove_lab(self, lab_short_name: str):
+            self.labs[lab_short_name] = None
+
+        def get_lab_access(self) -> list[LabAccessInfo]:
+            return filter_lab_access(
+                is_admin=self.is_admin(),
+                all_labs_in=Helpers.FAKE_ALL_LABS,
+                labs=self.labs,
+            )
+
+    FAKE_ALL_LABS = {
+        "testlab": BaseLab(friendly_name="Test Lab", short_lab_name="testlab"),
+        "noaccess": BaseLab(friendly_name="No Access Lab", short_lab_name="noaccess"),
+    }
 
 
 @pytest.fixture

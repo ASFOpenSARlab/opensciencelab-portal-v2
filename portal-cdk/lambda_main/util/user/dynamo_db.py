@@ -225,7 +225,7 @@ def update_username(old_username: str, new_username: str) -> bool:
 # Returns a list of users usernames that have access to a given lab
 def list_users_with_lab(lab_short_name: str) -> list[str]:
     _client, _db, table = _get_dynamo()
-    filterexpr = Attr("labs").contains(lab_short_name)
+    filterexpr = Attr(f"labs.{lab_short_name}").exists()
     response = table.scan(FilterExpression=filterexpr)
 
     users = []

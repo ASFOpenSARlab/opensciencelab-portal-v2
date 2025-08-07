@@ -3,7 +3,7 @@ from util.auth import require_access
 from util.user.dynamo_db import list_users_with_lab
 from util.user import User
 from util.responses import wrap_response, form_body_to_dict
-from labs import labs_dict
+from util.labs import all_labs
 
 from aws_lambda_powertools.event_handler.api_gateway import Router
 
@@ -37,7 +37,7 @@ def add_lab():
 def manage_lab(shortname):
     template_input = {}
 
-    lab = labs_dict[shortname]
+    lab = all_labs[shortname]
     template_input["lab"] = lab
 
     users = list_users_with_lab(lab.short_lab_name)
@@ -51,25 +51,53 @@ def manage_lab(shortname):
 def edit_user(shortname):
     # Parse request
     body = access_router.current_event.body
+
     if body is None:
-        return ValueError("Body not provided to edit_user")
+        error = "Body not provided to edit_user"
+        print(error)
+        return ValueError(error)
     body = form_body_to_dict(body)
 
     # Validate request
-    if "action" not in body:
-        return ValueError("Action not provided to edit_user")
-    if "username" not in body:
-        return ValueError("Username not provided to edit_user")
+    # do not add checkboxs here, handle them in Edit user section
+    keys = ["action", "username", "lab_profiles", "time_quota", "lab_country_status"]
+    for key in keys:
+        if key not in body:
+            error = f"{key} not provided to edit_user"
+            print(error)
+            return ValueError(error)
 
     # Edit user
     if body["action"] == "add":
+        # Map checkboxes to True and False
+        try:
+            body["can_user_see_lab_card"]
+            can_user_see_lab_card = True
+        except KeyError:
+            can_user_see_lab_card = False
+
+        try:
+            body["can_user_access_lab"]
+            can_user_access_lab = True
+        except KeyError:
+            can_user_access_lab = False
+
         user = User(body["username"])
-        user.add_lab(shortname)
+        user.add_lab(
+            lab_short_name=shortname,
+            lab_profiles=[s.strip() for s in body["lab_profiles"].split(",")],
+            time_quota=body["time_quota"].strip() or None,
+            lab_country_status=body["lab_country_status"],
+            can_user_access_lab=can_user_access_lab,
+            can_user_see_lab_card=can_user_see_lab_card,
+        )
     elif body["action"] == "remove":
         user = User(body["username"])
         user.remove_lab(shortname)
     else:
-        return ValueError(f"Invalid edit_user action {body['action']}")
+        error = f"Invalid edit_user action {body['action']}"
+        print(error)
+        return ValueError(error)
 
     # Send the user to the management page
     next_url = f"/portal/access/manage/{shortname}"

@@ -20,11 +20,40 @@
         <div>
             <h4>Tools</h4>
             <form method="post" action="{{ lab.short_lab_name }}/edituser">
-                <fieldset class="fieldset-border">
+                <fieldset class="fieldset-border vertical-div">
                     <legend class="legend-border-text font-20">Manage Users</legend>
-                    <input type="text" name="username" placeholder="username">
-                    <button type="submit" name="action" value="add">Add</button>
-                    <button type="submit" name="action" value="remove">Remove</button>
+                    <div>
+                        <label for="username">Username</label>
+                        <input type="text" name="username" placeholder="username">
+                    </div>
+                    <div>
+                        <label for="lab_profiles">Lab Profiles</label>
+                        <input type="text" name="lab_profiles" placeholder="m6a.large, m6a.small">
+                    </div>
+                    <div>
+                        <label for="time_quota">Time Quota</label>
+                        <input type="text" name="time_quota" placeholder="time_quota">
+                    </div>
+                    <div>
+                        <label for="lab_country_status">Lab Country Status</label>
+                        <input type="text"
+                               name="lab_country_status"
+                               placeholder="lab_country_status">
+                    </div>
+                    <div>
+                        <label for="can_user_access_lab">See Lab</label>
+                        <input type="checkbox"
+                               name="can_user_see_lab_card"
+                               id="can_user_see_lab_card">
+                    </div>
+                    <div>
+                        <label for="can_user_access_lab">Access Lab</label>
+                        <input type="checkbox" name="can_user_access_lab" id="can_user_access_lab">
+                    </div>
+                    <div>
+                        <button type="submit" name="action" value="add">Add</button>
+                        <button type="submit" name="action" value="remove">Remove</button>
+                    </div>
                 </fieldset>
             </form>
         </div>
