@@ -179,6 +179,32 @@ class TestPortalAuth:
         assert json_payload.get("message") == "OK"
         assert json_payload.get("data")
 
+    def test_post_portal_hub_auth_no_user(
+        self, lambda_context, fake_auth, helpers, monkeypatch
+    ):
+        username="NotRealUser"
+        # Create FakeUser instance to be monkeypatched in and inspected after modified
+        user = helpers.FakeUser(username=username)
+        monkeypatch.setattr("portal.hub.User", lambda *args, **kwargs: user)
+        monkeypatch.setattr("util.auth.User", lambda *args, **kwargs: user)
+
+        body_payload = json.dumps({"username": username})
+        event = helpers.get_event(
+            path="/portal/hub/auth",
+            method="POST",
+            body=b64encode(body_payload.encode("ascii")),
+            cookies=fake_auth,
+        )
+
+        ret = main.lambda_handler(event, lambda_context)
+
+        assert False
+        assert ret["statusCode"] == 200
+        assert ret["headers"].get("Content-Type") == "application/json"
+        json_payload = json.loads(ret["body"])
+        assert json_payload.get("message") == "OK"
+        assert json_payload.get("data")
+
     def test_get_portal_hub_auth(self, lambda_context, fake_auth, helpers, monkeypatch):
         # Create FakeUser instance to be monkeypatched in and inspected after modified
         user = helpers.FakeUser()
