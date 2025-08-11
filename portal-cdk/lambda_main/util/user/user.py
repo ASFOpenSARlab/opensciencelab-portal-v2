@@ -5,7 +5,7 @@ import datetime
 import frozendict
 from typing import Any
 
-from util.exceptions import DbError, CognitoError, UserCreationError
+from util.exceptions import DbError, CognitoError, UserNotFound
 from util.cognito import delete_user_from_user_pool
 from util.labs import all_labs, LabAccessInfo, BaseLab
 
@@ -72,7 +72,7 @@ class User:
         db_info = get_item(self.username)
 
         if not db_info and not create_if_missing:
-            raise UserCreationError(
+            raise UserNotFound(
                 f"User {self.username} does not exist and was not created"
             )
 

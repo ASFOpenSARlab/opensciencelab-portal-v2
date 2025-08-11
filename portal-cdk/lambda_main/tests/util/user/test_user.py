@@ -5,7 +5,7 @@ import boto3
 
 ## This is here just to fix a weird import timing issue with importing utils directly
 from util.user import dynamo_db as _  # noqa: F401 # pylint: disable=unused-import,import-error
-from util.exceptions import UserCreationError
+from util.exceptions import UserNotFound
 
 import pytest
 
@@ -229,7 +229,7 @@ class TestUserClass:
     def test_user_create_if_missing_false(self):
         from util.user.user import User
 
-        with pytest.raises(UserCreationError) as exc_info:
+        with pytest.raises(UserNotFound) as exc_info:
             User(username="NotRealUser", create_if_missing=False)
         assert (
             exc_info.value.args[0]
