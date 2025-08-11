@@ -258,7 +258,9 @@ class TestUsersPages:
         assert ret["headers"].get("Location", "").find("success=True") != -1
         assert lock_user.is_locked, "User should be locked"
 
-    def test_locking_a_locked_user(self, lambda_context, monkeypatch, fake_auth, helpers):
+    def test_locking_a_locked_user(
+        self, lambda_context, monkeypatch, fake_auth, helpers
+    ):
         acting_user = helpers.FakeUser(access=["admin", "user"])
         locked_user = helpers.FakeUser(username="GeneralUser", is_locked=True)
         assert locked_user.is_locked, "User should be locked"
@@ -278,7 +280,9 @@ class TestUsersPages:
         assert ret["headers"].get("Location", "").find("success=True") != -1
         assert locked_user.is_locked, "User should be locked"
 
-    def test_unlocking_a_locked_user(self, lambda_context, monkeypatch, fake_auth, helpers):
+    def test_unlocking_a_locked_user(
+        self, lambda_context, monkeypatch, fake_auth, helpers
+    ):
         acting_user = helpers.FakeUser(access=["admin", "user"])
         locked_user = helpers.FakeUser(username="GeneralUser", is_locked=True)
         assert locked_user.is_locked, "User should be locked"
