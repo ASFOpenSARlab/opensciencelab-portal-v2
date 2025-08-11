@@ -47,7 +47,7 @@ def _delete_user(username) -> bool:
     return True
 
 
-def _toggle_lock_user(username, lock: bool) -> bool:
+def _user_set_lock(username, lock: bool) -> bool:
     current_username = current_session.auth.cognito.username
     user_to_toggle = User(username=username)
 
@@ -89,7 +89,7 @@ def users_root():
 @users_router.post("/unlock/<username>")
 @require_access("admin")
 def unlock_user(username):
-    success = _toggle_lock_user(username, False)
+    success = _user_set_lock(username, False)
 
     get_params = [
         f"username={username}",
@@ -107,7 +107,7 @@ def unlock_user(username):
 @users_router.post("/lock/<username>")
 @require_access("admin")
 def lock_user(username):
-    success = _toggle_lock_user(username, True)
+    success = _user_set_lock(username, True)
 
     get_params = [
         f"username={username}",
