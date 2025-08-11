@@ -241,6 +241,7 @@ class TestUsersPages:
     def test_lock_valid_user(self, lambda_context, monkeypatch, fake_auth, helpers):
         acting_user = helpers.FakeUser(access=["admin", "user"])
         lock_user = helpers.FakeUser(username="GeneralUser")
+        assert not lock_user.is_locked, "User should not be locked yet"
 
         monkeypatch.setattr("portal.users.User", lambda *args, **kwargs: lock_user)
         monkeypatch.setattr("util.auth.User", lambda *args, **kwargs: acting_user)
@@ -256,3 +257,43 @@ class TestUsersPages:
         assert ret["statusCode"] == 302
         assert ret["headers"].get("Location", "").find("success=True") != -1
         assert lock_user.is_locked, "User should be locked"
+
+    def test_locking_a_locked_user(self, lambda_context, monkeypatch, fake_auth, helpers):
+        acting_user = helpers.FakeUser(access=["admin", "user"])
+        locked_user = helpers.FakeUser(username="GeneralUser", is_locked=True)
+        assert locked_user.is_locked, "User should be locked"
+
+        monkeypatch.setattr("portal.users.User", lambda *args, **kwargs: locked_user)
+        monkeypatch.setattr("util.auth.User", lambda *args, **kwargs: acting_user)
+        monkeypatch.setattr("portal.users.get_all_items", lambda: USER_TABLE_DATA)
+
+        event = helpers.get_event(
+            path=f"/portal/users/lock/{locked_user.username}",
+            cookies=fake_auth,
+            method="post",
+        )
+
+        ret = main.lambda_handler(event, lambda_context)
+        assert ret["statusCode"] == 302
+        assert ret["headers"].get("Location", "").find("success=True") != -1
+        assert locked_user.is_locked, "User should be locked"
+
+    def test_unlocking_a_locked_user(self, lambda_context, monkeypatch, fake_auth, helpers):
+        acting_user = helpers.FakeUser(access=["admin", "user"])
+        locked_user = helpers.FakeUser(username="GeneralUser", is_locked=True)
+        assert locked_user.is_locked, "User should be locked"
+
+        monkeypatch.setattr("portal.users.User", lambda *args, **kwargs: locked_user)
+        monkeypatch.setattr("util.auth.User", lambda *args, **kwargs: acting_user)
+        monkeypatch.setattr("portal.users.get_all_items", lambda: USER_TABLE_DATA)
+
+        event = helpers.get_event(
+            path=f"/portal/users/unlock/{locked_user.username}",
+            cookies=fake_auth,
+            method="post",
+        )
+
+        ret = main.lambda_handler(event, lambda_context)
+        assert ret["statusCode"] == 302
+        assert ret["headers"].get("Location", "").find("success=True") != -1
+        assert not locked_user.is_locked, "User should not be locked"
