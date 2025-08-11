@@ -75,23 +75,16 @@ def post_portal_hub_auth():
     # Eventually, here, we'll need to instantiate a user object and
     # derive access here dynamically. BUT, for now, assume they have
     # access to the lab!
-    print(f"USERNAME: {username}")
-    with open("test2.txt", "a") as f:
-        f.write("aaa ")
-    user = User(username=username, create_if_missing=False)
-    # try:
-    #     print("MAKING")
-    #     user = User(username=username, create_if_missing=False)
-    # except UserCreationError:
-    #     # User does not exist and is not being created
-    #     return wrap_response(
-    #         body="Redirecting to Portal",
-    #         headers={"Location": "/portal"},
-    #         code=302,
-    #     )
-    # except Exception:
-    #     print("NOT EXPECTED EXCEPTION")
-    print(user)
+
+    try:
+        user = User(username=username, create_if_missing=False)
+    except UserCreationError:
+        # User does not exist and is not being created
+        return wrap_response(
+            body="Redirecting to Portal",
+            headers={"Location": "/portal"},
+            code=302,
+        )
 
     data = {
         "admin": user.is_admin(),
