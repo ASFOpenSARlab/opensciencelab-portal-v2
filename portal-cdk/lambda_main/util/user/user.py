@@ -63,7 +63,7 @@ def create_lab_structure(
 
 
 class User:
-    def __init__(self, username: str, create_if_missing: bool= True):
+    def __init__(self, username: str, create_if_missing: bool = True):
         ## Using super to avoid setattr validation. 'username'
         #  should NOT be modified like the other attributes.
         super().__setattr__("username", username)
@@ -75,7 +75,7 @@ class User:
             raise UserCreationError(
                 f"User {self.username} does not exist and was not created"
             )
-        
+
         ## If it doesn't exist, create it with the defaults:
         if not db_info:
             create_item(self.username, defaults)
