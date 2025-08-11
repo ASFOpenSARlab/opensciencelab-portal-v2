@@ -91,6 +91,9 @@ class User:
                 self.__setattr__(key, None)
 
     def __setattr__(self, key, value, _save=True):
+        # If it's already that value, do nothing:
+        if hasattr(self, key) and self.__getattribute__(key) == value:
+            return
         # NOTE: If you use self.__setattr__ here, it will be infinite recursion.
         if key not in validator_map:
             raise DbError(
