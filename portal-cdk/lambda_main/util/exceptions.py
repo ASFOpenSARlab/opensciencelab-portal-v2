@@ -60,7 +60,7 @@ class CognitoError(GenericFatalError):
     pass  # pylint: disable=unnecessary-pass
 
 
-class UserCreationError(GenericFatalError):
+class UserNotFound(GenericFatalError):
     """
     Raised if there is a problem with creating a User.
     """
