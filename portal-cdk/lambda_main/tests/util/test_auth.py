@@ -168,7 +168,6 @@ class TestPortalAuth:
             path="/portal/hub/auth",
             method="POST",
             body=b64encode(body_payload.encode("ascii")),
-            cookies=fake_auth,
         )
 
         ret = main.lambda_handler(event, lambda_context)

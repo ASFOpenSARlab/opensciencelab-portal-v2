@@ -5,7 +5,7 @@ import datetime
 import frozendict
 from typing import Any
 
-from util.exceptions import DbError, CognitoError
+from util.exceptions import DbError, CognitoError, UserNotFound
 from util.cognito import delete_user_from_user_pool
 from util.labs import all_labs, LabAccessInfo, BaseLab
 
@@ -63,13 +63,19 @@ def create_lab_structure(
 
 
 class User:
-    def __init__(self, username: str):
+    def __init__(self, username: str, create_if_missing: bool = True):
         ## Using super to avoid setattr validation. 'username'
         #  should NOT be modified like the other attributes.
         super().__setattr__("username", username)
 
         ## Apply anything in the DB:
         db_info = get_item(self.username)
+
+        if not db_info and not create_if_missing:
+            raise UserNotFound(
+                f"User {self.username} does not exist and was not created"
+            )
+
         ## If it doesn't exist, create it with the defaults:
         if not db_info:
             create_item(self.username, defaults)
