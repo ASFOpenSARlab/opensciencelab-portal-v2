@@ -225,10 +225,13 @@ class TestUserClass:
         assert not user.is_locked, "User shouldn't be locked yet."
         user.is_locked = True
         assert user.is_locked, "User should be locked now."
-        
+
     def test_user_create_if_missing_false(self):
         from util.user.user import User
-        
-        with pytest.raises(UserCreationError) as exc_info:   
+
+        with pytest.raises(UserCreationError) as exc_info:
             User(username="NotRealUser", create_if_missing=False)
-        assert exc_info.value.args[0] == 'User NotRealUser does not exist and was not created'
+        assert (
+            exc_info.value.args[0]
+            == "User NotRealUser does not exist and was not created"
+        )
