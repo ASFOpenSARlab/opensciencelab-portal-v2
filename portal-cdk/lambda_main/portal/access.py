@@ -2,10 +2,14 @@ from util.format import portal_template, jinja_template
 from util.auth import require_access
 from util.user.dynamo_db import list_users_with_lab
 from util.user import User
+from util.exceptions import UserNotFound
 from util.responses import wrap_response, form_body_to_dict
 from util.labs import all_labs
 
+import json
+
 from aws_lambda_powertools.event_handler.api_gateway import Router
+from aws_lambda_powertools.event_handler import content_types
 
 access_router = Router()
 
@@ -113,3 +117,26 @@ def edit_user(shortname):
 @portal_template()
 def view_lab(lab):
     return f"inspect lab {lab}"
+
+
+@access_router.get("/labs/<username>")
+@require_access("admin")
+@portal_template()
+def get_user_labs(username):
+    # Find user in db
+    try:
+        user = User(username=username, create_if_missing=False)
+    except UserNotFound:
+        return wrap_response(
+            body="User Not Found",
+            code=404,
+            content_type=content_types.APPLICATION_JSON,
+        )
+
+    # Return user labs
+    user = User(username=username)
+    return wrap_response(
+            body=json.dumps({"labs": user.labs, "message": "OK"}),
+            code=200,
+            content_type=content_types.APPLICATION_JSON,
+        )
