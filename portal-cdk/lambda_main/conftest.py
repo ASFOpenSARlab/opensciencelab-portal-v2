@@ -202,6 +202,11 @@ class Helpers:
         "noaccess": BaseLab(friendly_name="No Access Lab", short_lab_name="noaccess"),
     }
 
+    # Raises a given error, used for monkeypatching
+    # set kwarg "error" to your error
+    def raise_error(*args, **kwargs):
+        raise kwargs.get("error", Exception("Cannot get error from kwargs"))
+
 
 @pytest.fixture
 def helpers():
