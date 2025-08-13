@@ -90,3 +90,18 @@ class TestAccessPages:
         assert ret["statusCode"] == 302
         assert ret["headers"].get("Location") == "/portal/access/manage/testlab2"
         assert ret["headers"].get("Content-Type") == "text/html"
+
+    def test_get_user_labs_correct(self, monkeypatch,lambda_context, helpers, fake_auth):
+        user = helpers.FakeUser(access=["user", "admin"])
+        monkeypatch.setattr("portal.access.User", lambda *args, **kwargs: user)
+        monkeypatch.setattr("util.auth.User", lambda *args, **kwargs: user)
+        
+        event = helpers.get_event(
+            path="/portal/access/labs/test_user",
+            cookies=fake_auth,
+            method="GET",
+        )
+        ret = main.lambda_handler(event, lambda_context)
+
+        assert ret["statusCode"] == 200
+        assert False
