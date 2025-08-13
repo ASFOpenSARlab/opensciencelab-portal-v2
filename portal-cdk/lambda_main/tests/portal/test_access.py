@@ -110,7 +110,6 @@ class TestAccessPages:
         assert ret["body"].find('{"labs": {"testlab":') != -1
         assert ret["headers"].get("Content-Type") == "application/json"
 
-
     def test_get_user_labs_no_user(
         self, monkeypatch, lambda_context, helpers, fake_auth
     ):
