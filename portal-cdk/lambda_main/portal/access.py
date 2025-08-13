@@ -121,7 +121,6 @@ def view_lab(lab):
 
 @access_router.get("/labs/<username>")
 @require_access("admin")
-@portal_template()
 def get_user_labs(username):
     # Find user in db
     try:
