@@ -91,7 +91,9 @@ class TestAccessPages:
         assert ret["headers"].get("Location") == "/portal/access/manage/testlab2"
         assert ret["headers"].get("Content-Type") == "text/html"
 
-    def test_get_user_labs_correct(self, monkeypatch,lambda_context, helpers, fake_auth):
+    def test_get_user_labs_correct(
+        self, monkeypatch,lambda_context, helpers, fake_auth
+    ):
         user = helpers.FakeUser(access=["user", "admin"])
         monkeypatch.setattr("portal.access.User", lambda *args, **kwargs: user)
         monkeypatch.setattr("util.auth.User", lambda *args, **kwargs: user)
@@ -107,11 +109,19 @@ class TestAccessPages:
         assert ret["body"].find("{\"labs\": {\"testlab\":") != -1
         assert ret["headers"].get("Content-Type") == "application/json"
 
-    def test_get_user_labs_no_user(self, monkeypatch,lambda_context, helpers, fake_auth):
+
+    def test_get_user_labs_no_user(
+        self, monkeypatch,lambda_context, helpers, fake_auth
+    ):
         user = helpers.FakeUser(access=["user", "admin"])
         monkeypatch.setattr("util.auth.User", lambda *args, **kwargs: user)
 
-        monkeypatch.setattr("portal.access.User", lambda *args, **kwargs: helpers.raise_error(error=UserNotFound(message="User not found")))
+        monkeypatch.setattr(
+            "portal.access.User",
+            lambda *args, **kwargs: helpers.raise_error(
+                error=UserNotFound(message="User not found")
+            ),
+        )
 
         event = helpers.get_event(
             path="/portal/access/labs/test_user2",

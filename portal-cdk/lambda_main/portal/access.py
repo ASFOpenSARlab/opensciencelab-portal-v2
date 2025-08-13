@@ -135,7 +135,7 @@ def get_user_labs(username):
     # Return user labs
     user = User(username=username)
     return wrap_response(
-            body=json.dumps({"labs": user.labs, "message": "OK"}),
-            code=200,
-            content_type=content_types.APPLICATION_JSON,
-        )
+        body=json.dumps({"labs": user.labs, "message": "OK"}),
+        code=200,
+        content_type=content_types.APPLICATION_JSON,
+    )
