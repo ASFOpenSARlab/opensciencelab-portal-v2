@@ -171,6 +171,7 @@ class Helpers:
         email: str = field(default_factory=lambda: "fakeemail@email.com")
         _rec_counter: int = field(default_factory=lambda: 1)
         is_locked: bool = False
+        create_if_missing: bool = True
 
         def update_last_cookie_assignment(self) -> None:
             self.last_cookie_assignment = datetime.datetime(
