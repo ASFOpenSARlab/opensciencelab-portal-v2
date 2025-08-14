@@ -198,7 +198,7 @@ class TestPortalAuth:
         ret = main.lambda_handler(event, lambda_context)
 
         assert ret["statusCode"] == 404
-        assert ret["body"] == "User Not Found"
+        assert ret["body"] == "User not found"
         assert ret["headers"].get("Content-Type") == content_types.APPLICATION_JSON
 
     def test_get_portal_hub_auth(self, lambda_context, fake_auth, helpers, monkeypatch):
