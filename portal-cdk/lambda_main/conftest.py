@@ -199,6 +199,7 @@ class Helpers:
 
     FAKE_ALL_LABS = {
         "testlab": BaseLab(friendly_name="Test Lab", short_lab_name="testlab"),
+        "differentlab": BaseLab(friendly_name="Different Lab", short_lab_name="differentlab"),
         "noaccess": BaseLab(friendly_name="No Access Lab", short_lab_name="noaccess"),
     }
 

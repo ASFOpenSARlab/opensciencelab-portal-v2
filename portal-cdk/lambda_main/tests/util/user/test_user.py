@@ -146,9 +146,11 @@ class TestUserClass:
             "Access should be updated in the DB too"
         )
 
-    def test_list_users_with_lab(self):
+    def test_list_users_with_lab(self, monkeypatch, helpers):
         from util.user.user import User
         from util.user.dynamo_db import list_users_with_lab
+        
+        monkeypatch.setattr("util.user.dynamo_db.all_labs", helpers.FAKE_ALL_LABS)
 
         user1 = User(username="test_user1")
         user1.labs = {"testlab": {}}

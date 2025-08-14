@@ -131,13 +131,26 @@ class TestAccessPages:
         ret = main.lambda_handler(event, lambda_context)
 
         assert ret["statusCode"] == 404
-        assert ret["body"] == "User Not Found"
+        assert ret["body"] == "User not found"
         assert ret["headers"].get("Content-Type") == "application/json"
 
     def test_get_labs_users(self, monkeypatch, lambda_context, helpers, fake_auth):
         user = helpers.FakeUser(access=["user", "admin"])
         monkeypatch.setattr("util.auth.User", lambda *args, **kwargs: user)
 
+        # Test lab doesn't exist
+        event = helpers.get_event(
+            path="/portal/access/users/testlab",
+            cookies=fake_auth,
+            method="GET",
+        )
+        ret = main.lambda_handler(event, lambda_context)
+
+        assert ret["statusCode"] == 404
+        assert ret["body"] == '"testlab" lab does not exist'
+        assert ret["headers"].get("Content-Type") == "application/json"
+
+        # Test lab does exist
         def lab_users_static(*args, **kwargs):
             return ["test_user"]
 
