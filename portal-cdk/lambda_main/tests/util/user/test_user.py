@@ -146,9 +146,9 @@ class TestUserClass:
             "Access should be updated in the DB too"
         )
 
-    def test_list_users_with_lab(self, monkeypatch, helpers):
+    def test_get_users_of_lab(self, monkeypatch, helpers):
         from util.user.user import User
-        from util.user.dynamo_db import list_users_with_lab
+        from util.user.dynamo_db import get_users_of_lab
         
         monkeypatch.setattr("util.user.dynamo_db.all_labs", helpers.FAKE_ALL_LABS)
 
@@ -161,7 +161,7 @@ class TestUserClass:
         user3 = User(username="test_user3")
         user3.labs = {"differentlab": {}}
 
-        assert list_users_with_lab("testlab") == ["test_user1", "test_user2"]
+        assert get_users_of_lab("testlab") == {"test_user1": {}, "test_user2": {}}
 
     def test_delete_user(self, monkeypatch):
         from util.user.user import User

@@ -1,6 +1,6 @@
 from util.format import portal_template, jinja_template
 from util.auth import require_access
-from util.user.dynamo_db import list_users_with_lab
+from util.user.dynamo_db import get_users_of_lab
 from util.user import User
 from util.responses import wrap_response, form_body_to_dict
 from util.labs import all_labs
@@ -43,8 +43,8 @@ def manage_lab(shortname):
     lab = all_labs[shortname]
     template_input["lab"] = lab
 
-    users = list_users_with_lab(lab.short_lab_name)
-    template_input["users"] = users
+    users = get_users_of_lab(lab.short_lab_name)
+    template_input["users"] = users.keys()
 
     return jinja_template(template_input, "manage.j2")
 
@@ -136,7 +136,7 @@ def get_user_labs(username):
 @access_router.get("/users/<shortname>")
 @require_access("admin")
 def get_labs_users(shortname):
-    users = list_users_with_lab(shortname)
+    users = get_users_of_lab(shortname)
 
     return wrap_response(
         body=json.dumps({"users": users, "message": "OK"}),

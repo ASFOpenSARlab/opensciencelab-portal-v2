@@ -224,18 +224,18 @@ def update_username(old_username: str, new_username: str) -> bool:
     return False
 
 
-# Returns a list of users usernames that have access to a given lab
-def list_users_with_lab(lab_short_name: str) -> list[str]:
+# Returns a dict mapping usernames to lab access info for a given lab
+def get_users_of_lab(lab_short_name: str) -> dict[str, dict]:
     # Check if lab exists
     if lab_short_name not in all_labs:
         raise LabDoesNotExist(message=f'"{lab_short_name}" lab does not exist')
 
-    # Get users
+    # Get users info
     _client, _db, table = _get_dynamo()
     filterexpr = Attr(f"labs.{lab_short_name}").exists()
     response = table.scan(FilterExpression=filterexpr)
 
-    users = []
+    users = {}
     for item in response["Items"]:
-        users.append(item["username"])
+        users[item["username"]] = item["labs"][lab_short_name]
     return users

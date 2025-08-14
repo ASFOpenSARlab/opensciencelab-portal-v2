@@ -27,9 +27,9 @@ class TestAccessPages:
         monkeypatch.setattr("portal.access.all_labs", labs)
 
         def lab_users_static(*args, **kwargs):
-            return ["test_user"]
+            return {"test_user": {}}
 
-        monkeypatch.setattr("portal.access.list_users_with_lab", lab_users_static)
+        monkeypatch.setattr("portal.access.get_users_of_lab", lab_users_static)
 
         event = helpers.get_event(
             path="/portal/access/manage/testlab", cookies=fake_auth
@@ -152,9 +152,9 @@ class TestAccessPages:
 
         # Test lab does exist
         def lab_users_static(*args, **kwargs):
-            return ["test_user"]
+            return {"test_user": {}}
 
-        monkeypatch.setattr("portal.access.list_users_with_lab", lab_users_static)
+        monkeypatch.setattr("portal.access.get_users_of_lab", lab_users_static)
 
         event = helpers.get_event(
             path="/portal/access/users/testlab",
@@ -164,5 +164,5 @@ class TestAccessPages:
         ret = main.lambda_handler(event, lambda_context)
 
         assert ret["statusCode"] == 200
-        assert ret["body"] == '{"users": ["test_user"], "message": "OK"}'
+        assert ret["body"] == '{"users": {"test_user": {}}, "message": "OK"}'
         assert ret["headers"].get("Content-Type") == "application/json"
