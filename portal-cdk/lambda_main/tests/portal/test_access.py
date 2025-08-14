@@ -134,14 +134,13 @@ class TestAccessPages:
         assert ret["body"] == "User Not Found"
         assert ret["headers"].get("Content-Type") == "application/json"
 
-    def test_get_labs_users(
-        self, monkeypatch, lambda_context, helpers, fake_auth
-    ):
+    def test_get_labs_users(self, monkeypatch, lambda_context, helpers, fake_auth):
         user = helpers.FakeUser(access=["user", "admin"])
         monkeypatch.setattr("util.auth.User", lambda *args, **kwargs: user)
 
         def lab_users_static(*args, **kwargs):
             return ["test_user"]
+
         monkeypatch.setattr("portal.access.list_users_with_lab", lab_users_static)
 
         event = helpers.get_event(
