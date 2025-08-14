@@ -131,3 +131,15 @@ def get_user_labs(username):
         code=200,
         content_type=content_types.APPLICATION_JSON,
     )
+
+
+@access_router.get("/users/<shortname>")
+@require_access("admin")
+def get_labs_users(shortname):
+    users = list_users_with_lab(shortname)
+
+    return wrap_response(
+        body=json.dumps({"users": users, "message": "OK"}),
+        code=200,
+        content_type=content_types.APPLICATION_JSON,
+    )
