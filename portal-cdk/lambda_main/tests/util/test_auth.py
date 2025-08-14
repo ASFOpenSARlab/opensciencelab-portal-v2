@@ -8,6 +8,9 @@ from jwt.algorithms import RSAAlgorithm
 
 import main
 from util.auth import PORTAL_USER_COOKIE, COGNITO_JWT_COOKIE
+from util.exceptions import UserNotFound
+
+from aws_lambda_powertools.event_handler import content_types
 
 
 BAD_JWT = (
@@ -177,6 +180,26 @@ class TestPortalAuth:
         json_payload = json.loads(ret["body"])
         assert json_payload.get("message") == "OK"
         assert json_payload.get("data")
+
+        # User does not exist case
+        monkeypatch.setattr(
+            "portal.hub.User",
+            lambda *args, **kwargs: helpers.raise_error(
+                error=UserNotFound(message="User not found")
+            ),
+        )
+
+        event = helpers.get_event(
+            path="/portal/hub/auth",
+            method="POST",
+            body=b64encode(body_payload.encode("ascii")),
+        )
+
+        ret = main.lambda_handler(event, lambda_context)
+
+        assert ret["statusCode"] == 404
+        assert ret["body"] == "User Not Found"
+        assert ret["headers"].get("Content-Type") == content_types.APPLICATION_JSON
 
     def test_get_portal_hub_auth(self, lambda_context, fake_auth, helpers, monkeypatch):
         # Create FakeUser instance to be monkeypatched in and inspected after modified

@@ -17,7 +17,7 @@ from util.auth import (
     revoke_refresh_token,
     refresh_map_del,
 )
-from util.exceptions import GenericFatalError
+from util.exceptions import GenericFatalError, UserNotFound
 from util.session import current_session
 from util.user import User
 
@@ -26,6 +26,7 @@ from static import get_static_object
 from aws_lambda_powertools import Logger
 from aws_lambda_powertools.event_handler import APIGatewayHttpResolver
 from aws_lambda_powertools.logging import correlation_paths
+from aws_lambda_powertools.event_handler import content_types
 
 
 should_debug = os.getenv("DEBUG", "false").lower() == "true"
@@ -147,6 +148,15 @@ def handle_generic_fatal_error(exception):
     return wrap_response(
         render_template(content=exception.message),
         code=exception.error_code,
+    )
+
+
+@app.exception_handler(UserNotFound)
+def handle_user_not_found_error(exception):
+    return wrap_response(
+        body="User Not Found",
+        code=404,
+        content_type=content_types.APPLICATION_JSON,
     )
 
 
