@@ -2,7 +2,6 @@ from util.format import portal_template, jinja_template
 from util.auth import require_access
 from util.user.dynamo_db import list_users_with_lab
 from util.user import User
-from util.exceptions import UserNotFound
 from util.responses import wrap_response, form_body_to_dict
 from util.labs import all_labs
 
@@ -123,17 +122,10 @@ def view_lab(lab):
 @require_access("admin")
 def get_user_labs(username):
     # Find user in db
-    try:
-        user = User(username=username, create_if_missing=False)
-    except UserNotFound:
-        return wrap_response(
-            body="User Not Found",
-            code=404,
-            content_type=content_types.APPLICATION_JSON,
-        )
+
+    user = User(username=username, create_if_missing=False)
 
     # Return user labs
-    user = User(username=username)
     return wrap_response(
         body=json.dumps({"labs": user.labs, "message": "OK"}),
         code=200,

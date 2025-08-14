@@ -8,7 +8,6 @@ from util.format import portal_template, request_context_string
 from util.auth import encrypt_data, require_access
 from util.session import current_session
 from util.user import User
-from util.exceptions import UserNotFound
 
 from aws_lambda_powertools import Logger
 from aws_lambda_powertools.event_handler.api_gateway import Router
@@ -76,15 +75,7 @@ def post_portal_hub_auth():
     # derive access here dynamically. BUT, for now, assume they have
     # access to the lab!
 
-    try:
-        user = User(username=username, create_if_missing=False)
-    except UserNotFound:
-        # User does not exist and is not being created
-        return wrap_response(
-            body="Redirecting to Portal",
-            headers={"Location": "/portal"},
-            code=302,
-        )
+    user = User(username=username, create_if_missing=False)
 
     data = {
         "admin": user.is_admin(),
