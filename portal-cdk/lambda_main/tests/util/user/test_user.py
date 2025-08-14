@@ -149,7 +149,7 @@ class TestUserClass:
     def test_get_users_of_lab(self, monkeypatch, helpers):
         from util.user.user import User
         from util.user.dynamo_db import get_users_of_lab
-        
+
         monkeypatch.setattr("util.user.dynamo_db.all_labs", helpers.FAKE_ALL_LABS)
 
         user1 = User(username="test_user1")
