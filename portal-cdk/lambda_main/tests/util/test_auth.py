@@ -188,8 +188,7 @@ class TestPortalAuth:
                 error=UserNotFound(message="User not found")
             ),
         )
-        
-        body_payload = json.dumps({"username": "test_user_does_not_exist"})
+
         event = helpers.get_event(
             path="/portal/hub/auth",
             method="POST",
