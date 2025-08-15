@@ -131,3 +131,73 @@ def get_user_labs(username):
         code=200,
         content_type=content_types.APPLICATION_JSON,
     )
+
+
+def validate_put_lab_access(put_lab_access: dict, all_labs_in: dict) -> tuple[bool, str]:
+    # Validate input is correct type
+    if put_lab_access is not dict:
+        return False, "Body is not correct type"
+
+    # Validate input has key "labs"
+    if put_lab_access.get("labs") == -1:
+        return False, 'Does not contain "labs" key'
+
+    # Ensure all labs exist
+    for lab_name in put_lab_access["labs"].keys():
+        if lab_name not in all_labs_in:
+            return False, f"Lab does not exist: {lab_name}"
+
+        # Check all lab fields exist and are correct type
+        all_fields = {
+            "lab_profiles": list,
+            "can_user_access_lab": bool,
+            "can_user_see_lab_card": bool,
+            "time_quota": str,
+            "lab_country_status": str,
+        }
+        for field in all_fields.keys():
+            if put_lab_access["labs"][lab_name].get(field) == -1:
+                return False, f"Field {field} not provided for lab {lab_name}"
+
+            if put_lab_access["labs"][lab_name][field] is not all_fields[field]:
+                return False, f"Field {field} not of type {all_fields[field]}"
+
+        # NOT IMPLEMENTED YET
+        # # Ensure all profiles exist for a given lab
+        # for profile in put_lab_access["labs"][lab_name]["lab_profiles"]:
+        #     pass
+        return True, "Success"
+
+
+@access_router.put("/labs/<username>")
+@require_access("admin")
+def set_user_labs(username):
+    # Check user exists
+    User(username=username)
+
+    # Parse request body
+    body = access_router.current_event.body
+    
+    try:
+        body = json.loads(body)
+    except json.JSONDecodeError:
+        return wrap_response(
+            body=json.dumps({"result": "Malformed JSON"}),
+            code=400,
+            content_type=content_types.APPLICATION_JSON,
+        )
+
+    # Validated payload
+    success, result = validate_put_lab_access(put_lab_access=body ,all_labs_in=all_labs)
+    if success:
+        return wrap_response(
+            body=json.dumps({"labs": body["labs"], "result": "Success"}),
+            code=200,
+            content_type=content_types.APPLICATION_JSON,
+        )
+    else:
+        return wrap_response(
+            body=json.dumps({"labs": body["labs"], "result": result}),
+            code=422,
+            content_type=content_types.APPLICATION_JSON,
+        )
