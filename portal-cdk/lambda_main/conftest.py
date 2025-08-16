@@ -184,6 +184,9 @@ class Helpers:
         def remove_user(self) -> bool:
             return True
 
+        def set_labs(self, formatted_labs: dict) -> None:
+            self.labs = formatted_labs
+
         def add_lab(self, **kwargs):
             self.labs[kwargs["lab_short_name"]] = create_lab_structure(**kwargs)
 

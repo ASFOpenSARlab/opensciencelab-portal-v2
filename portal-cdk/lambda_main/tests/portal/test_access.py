@@ -169,6 +169,15 @@ class TestAccessPages:
         assert ret["statusCode"] == 200
         assert ret["body"].find('"labs": {') != -1
         assert ret["headers"].get("Content-Type") == "application/json"
+        assert user.labs == {
+                    "testlab": {
+                        "lab_profiles": ["m6a.large"],
+                        "can_user_access_lab": True,
+                        "can_user_see_lab_card": True,
+                        "time_quota": "",
+                        "lab_country_status": "protected"
+                    }
+                }
 
     def test_set_user_labs_no_user(
         self, monkeypatch, lambda_context, helpers, fake_auth
