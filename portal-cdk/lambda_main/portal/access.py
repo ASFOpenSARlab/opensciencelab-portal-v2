@@ -135,15 +135,15 @@ def get_user_labs(username):
 
 def validate_put_lab_access(put_lab_access: dict, all_labs_in: dict) -> tuple[bool, str]:
     # Validate input is correct type
-    if put_lab_access is not dict:
+    if not isinstance(put_lab_access, dict):
         return False, "Body is not correct type"
 
     # Validate input has key "labs"
-    if put_lab_access.get("labs") == -1:
-        return False, 'Does not contain "labs" key'
+    if put_lab_access.get("labs") is None:
+        return False, "Does not contain 'labs' key"
 
-    # Ensure all labs exist
     for lab_name in put_lab_access["labs"].keys():
+        # Ensure lab exist
         if lab_name not in all_labs_in:
             return False, f"Lab does not exist: {lab_name}"
 
@@ -156,17 +156,17 @@ def validate_put_lab_access(put_lab_access: dict, all_labs_in: dict) -> tuple[bo
             "lab_country_status": str,
         }
         for field in all_fields.keys():
-            if put_lab_access["labs"][lab_name].get(field) == -1:
-                return False, f"Field {field} not provided for lab {lab_name}"
+            if put_lab_access["labs"][lab_name].get(field) is None:
+                return False, f"Field '{field}' not provided for lab {lab_name}"
 
-            if put_lab_access["labs"][lab_name][field] is not all_fields[field]:
-                return False, f"Field {field} not of type {all_fields[field]}"
+            if not isinstance(put_lab_access["labs"][lab_name][field], all_fields[field]):
+                return False, f"Field '{field}' not of type {all_fields[field]}"
 
         # NOT IMPLEMENTED YET
         # # Ensure all profiles exist for a given lab
         # for profile in put_lab_access["labs"][lab_name]["lab_profiles"]:
         #     pass
-        return True, "Success"
+    return True, "Success"
 
 
 @access_router.put("/labs/<username>")
@@ -177,7 +177,7 @@ def set_user_labs(username):
 
     # Parse request body
     body = access_router.current_event.body
-    
+
     try:
         body = json.loads(body)
     except json.JSONDecodeError:
@@ -197,7 +197,7 @@ def set_user_labs(username):
         )
     else:
         return wrap_response(
-            body=json.dumps({"labs": body["labs"], "result": result}),
+            body=json.dumps({"result": result}),
             code=422,
             content_type=content_types.APPLICATION_JSON,
         )
