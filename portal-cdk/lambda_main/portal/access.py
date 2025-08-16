@@ -173,7 +173,7 @@ def validate_put_lab_access(put_lab_access: dict, all_labs_in: dict) -> tuple[bo
 @require_access("admin")
 def set_user_labs(username):
     # Check user exists
-    User(username=username)
+    user = User(username=username)
 
     # Parse request body
     body = access_router.current_event.body
@@ -190,6 +190,8 @@ def set_user_labs(username):
     # Validated payload
     success, result = validate_put_lab_access(put_lab_access=body ,all_labs_in=all_labs)
     if success:
+        # Set users labs
+        user.set_labs(formatted_labs=body["labs"])
         return wrap_response(
             body=json.dumps({"labs": body["labs"], "result": "Success"}),
             code=200,

@@ -137,6 +137,9 @@ class User:
         )
 
     # Lab manipulation methods
+    def set_labs(self, formatted_labs: dict) -> None:
+        self.labs = formatted_labs
+
     def add_lab(self, **kwargs) -> None:
         new_lab_list = {}
         for lab in self.labs.keys():
