@@ -154,9 +154,16 @@ class User:
         self.labs = new_lab_list
 
     def get_lab_access(self) -> list[LabAccessInfo]:
+        """Returns ALL labs the user has access to."""
         return filter_lab_access(
             is_admin=self.is_admin(), all_labs_in=all_labs, labs=self.labs
         )
+
+    def is_authorized_lab(self, lab_short_name: str) -> bool:
+        """Check if the user has access to a specific lab."""
+        if "admin" in self.access:
+            return True
+        return lab_short_name in self.labs
 
     # Convenience methods
     def is_admin(self) -> bool:
