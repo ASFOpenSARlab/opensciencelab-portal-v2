@@ -133,13 +133,77 @@ def get_user_labs(username):
     )
 
 
-@access_router.get("/users/<shortname>")
-@require_access("admin")
-def get_labs_users(shortname):
-    users = get_users_of_lab(shortname)
+def validate_set_lab_access(
+    put_lab_access: dict, all_labs_in: dict
+) -> tuple[bool, str]:
+    # Validate input is correct type
+    if not isinstance(put_lab_access, dict):
+        return False, "Body is not correct type"
 
-    return wrap_response(
-        body=json.dumps({"users": users, "message": "OK"}),
-        code=200,
-        content_type=content_types.APPLICATION_JSON,
-    )
+    # Validate input has key "labs"
+    if put_lab_access.get("labs") is None:
+        return False, "Does not contain 'labs' key"
+
+    for lab_name in put_lab_access["labs"].keys():
+        # Ensure lab exist
+        if lab_name not in all_labs_in:
+            return False, f"Lab does not exist: {lab_name}"
+
+        # Check all lab fields exist and are correct type
+        all_fields = {
+            "lab_profiles": list,
+            "can_user_access_lab": bool,
+            "can_user_see_lab_card": bool,
+            "time_quota": str,
+            "lab_country_status": str,
+        }
+        for field in all_fields.keys():
+            if put_lab_access["labs"][lab_name].get(field) is None:
+                return False, f"Field '{field}' not provided for lab {lab_name}"
+
+            if not isinstance(
+                put_lab_access["labs"][lab_name][field], all_fields[field]
+            ):
+                return False, f"Field '{field}' not of type {all_fields[field]}"
+
+        # NOT IMPLEMENTED YET
+        # # Ensure all profiles exist for a given lab
+        # for profile in put_lab_access["labs"][lab_name]["lab_profiles"]:
+        #     pass
+    return True, "Success"
+
+
+@access_router.put("/labs/<username>")
+@require_access("admin")
+def set_user_labs(username):
+    # Check user exists
+    user = User(username=username, create_if_missing=False)
+
+    # Parse request body
+    body = access_router.current_event.body
+
+    try:
+        body = json.loads(body)
+    except json.JSONDecodeError:
+        return wrap_response(
+            body=json.dumps({"result": "Malformed JSON"}),
+            code=400,
+            content_type=content_types.APPLICATION_JSON,
+        )
+
+    # Validated payload
+    success, result = validate_set_lab_access(put_lab_access=body, all_labs_in=all_labs)
+    if success:
+        # Set users labs
+        user.set_labs(formatted_labs=body["labs"])
+        return wrap_response(
+            body=json.dumps({"labs": body["labs"], "result": "Success"}),
+            code=200,
+            content_type=content_types.APPLICATION_JSON,
+        )
+    else:
+        return wrap_response(
+            body=json.dumps({"result": result}),
+            code=422,
+            content_type=content_types.APPLICATION_JSON,
+        )
