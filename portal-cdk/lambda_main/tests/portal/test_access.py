@@ -175,7 +175,7 @@ class TestAccessPages:
                 "can_user_access_lab": True,
                 "can_user_see_lab_card": True,
                 "time_quota": "",
-                "lab_country_status": "protected"
+                "lab_country_status": "protected",
             }
         }
 
@@ -322,8 +322,8 @@ class TestAccessPages:
 
         assert ret["statusCode"] == 422
         assert (
-            ret["body"] ==
-            '{"result": "Field \'lab_country_status\' not provided for lab testlab"}'
+            ret["body"]
+            == '{"result": "Field \'lab_country_status\' not provided for lab testlab"}'
         )
         assert ret["headers"].get("Content-Type") == "application/json"
 
@@ -352,8 +352,8 @@ class TestAccessPages:
 
         assert ret["statusCode"] == 422
         assert (
-            ret["body"] ==
-            '{"result": "Field \'can_user_access_lab\' not of type <class \'bool\'>"}'
+            ret["body"]
+            == '{"result": "Field \'can_user_access_lab\' not of type <class \'bool\'>"}'
         )
         assert ret["headers"].get("Content-Type") == "application/json"
 
