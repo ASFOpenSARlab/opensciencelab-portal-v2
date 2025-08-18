@@ -353,7 +353,7 @@ class TestAccessPages:
         assert ret["statusCode"] == 422
         assert (
             ret["body"]
-            == '{"result": "Field \'can_user_access_lab\' not of type <class \'bool\'>"}'
+            == "{\"result\": \"Field 'can_user_access_lab' not of type <class 'bool'>\"}"
         )
         assert ret["headers"].get("Content-Type") == "application/json"
 
