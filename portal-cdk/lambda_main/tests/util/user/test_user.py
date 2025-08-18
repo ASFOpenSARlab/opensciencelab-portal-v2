@@ -235,3 +235,27 @@ class TestUserClass:
             exc_info.value.args[0]
             == "User NotRealUser does not exist and was not created"
         )
+
+    def test_user_is_authorized_lab(self):
+        from util.user.user import User
+
+        user = User(username="test_user")
+        user.labs = {"testlab": {}}
+
+        assert user.is_authorized_lab("testlab"), (
+            "User should be authorized for testlab"
+        )
+
+        assert not user.is_authorized_lab("random-lab"), (
+            "User should NOT be authorized for random-lab"
+        )
+
+    def test_user_is_authorized_lab_admin(self):
+        from util.user.user import User
+
+        user = User(username="test_user")
+        user.access = list(user.access) + ["admin"]
+
+        assert user.is_authorized_lab("testlab"), (
+            "Admin should be authorized for testlab"
+        )
