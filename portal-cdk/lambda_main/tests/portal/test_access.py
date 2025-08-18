@@ -144,7 +144,7 @@ class TestAccessPages:
 
         monkeypatch.setattr("portal.access.all_labs", helpers.FAKE_ALL_LABS)
 
-        body="""
+        body = """
             {
                 "labs": {
                     "testlab": {
@@ -170,14 +170,14 @@ class TestAccessPages:
         assert ret["body"].find('"labs": {') != -1
         assert ret["headers"].get("Content-Type") == "application/json"
         assert user.labs == {
-                    "testlab": {
-                        "lab_profiles": ["m6a.large"],
-                        "can_user_access_lab": True,
-                        "can_user_see_lab_card": True,
-                        "time_quota": "",
-                        "lab_country_status": "protected"
-                    }
-                }
+            "testlab": {
+                "lab_profiles": ["m6a.large"],
+                "can_user_access_lab": True,
+                "can_user_see_lab_card": True,
+                "time_quota": "",
+                "lab_country_status": "protected"
+            }
+        }
 
     def test_set_user_labs_no_user(
         self, monkeypatch, lambda_context, helpers, fake_auth
@@ -194,7 +194,7 @@ class TestAccessPages:
 
         monkeypatch.setattr("portal.access.all_labs", helpers.FAKE_ALL_LABS)
 
-        body="""
+        body = """
             {
                 "labs": {
                     "testlab": {
@@ -230,7 +230,7 @@ class TestAccessPages:
 
         monkeypatch.setattr("portal.access.all_labs", helpers.FAKE_ALL_LABS)
 
-        body="""
+        body = """
             gadhahaafsdfsa
             """
 
@@ -257,7 +257,7 @@ class TestAccessPages:
         monkeypatch.setattr("portal.access.all_labs", helpers.FAKE_ALL_LABS)
 
         # Missing "labs" key
-        body="{}"
+        body = "{}"
 
         event = helpers.get_event(
             body=body,
@@ -272,7 +272,7 @@ class TestAccessPages:
         assert ret["headers"].get("Content-Type") == "application/json"
 
         # Lab does not exist
-        body="""
+        body = """
             {
                 "labs": {
                     "lab_does_not_exist": {
@@ -299,7 +299,7 @@ class TestAccessPages:
         assert ret["headers"].get("Content-Type") == "application/json"
 
         # Missing field
-        body="""
+        body = """
             {
                 "labs": {
                     "testlab": {
@@ -321,11 +321,14 @@ class TestAccessPages:
         ret = main.lambda_handler(event, lambda_context)
 
         assert ret["statusCode"] == 422
-        assert ret["body"] == '{"result": "Field \'lab_country_status\' not provided for lab testlab"}'
+        assert (
+            ret["body"] ==
+            '{"result": "Field \'lab_country_status\' not provided for lab testlab"}'
+        )
         assert ret["headers"].get("Content-Type") == "application/json"
 
         # Field incorrect type
-        body="""
+        body = """
             {
                 "labs": {
                     "testlab": {
@@ -348,7 +351,10 @@ class TestAccessPages:
         ret = main.lambda_handler(event, lambda_context)
 
         assert ret["statusCode"] == 422
-        assert ret["body"] == '{"result": "Field \'can_user_access_lab\' not of type <class \'bool\'>"}'
+        assert (
+            ret["body"] ==
+            '{"result": "Field \'can_user_access_lab\' not of type <class \'bool\'>"}'
+        )
         assert ret["headers"].get("Content-Type") == "application/json"
 
         # Lab profile does not exist

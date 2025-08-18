@@ -133,7 +133,9 @@ def get_user_labs(username):
     )
 
 
-def validate_put_lab_access(put_lab_access: dict, all_labs_in: dict) -> tuple[bool, str]:
+def validate_put_lab_access(
+    put_lab_access: dict, all_labs_in: dict
+) -> tuple[bool, str]:
     # Validate input is correct type
     if not isinstance(put_lab_access, dict):
         return False, "Body is not correct type"
@@ -159,7 +161,9 @@ def validate_put_lab_access(put_lab_access: dict, all_labs_in: dict) -> tuple[bo
             if put_lab_access["labs"][lab_name].get(field) is None:
                 return False, f"Field '{field}' not provided for lab {lab_name}"
 
-            if not isinstance(put_lab_access["labs"][lab_name][field], all_fields[field]):
+            if not isinstance(
+                put_lab_access["labs"][lab_name][field], all_fields[field]
+            ):
                 return False, f"Field '{field}' not of type {all_fields[field]}"
 
         # NOT IMPLEMENTED YET
@@ -188,7 +192,7 @@ def set_user_labs(username):
         )
 
     # Validated payload
-    success, result = validate_put_lab_access(put_lab_access=body ,all_labs_in=all_labs)
+    success, result = validate_put_lab_access(put_lab_access=body, all_labs_in=all_labs)
     if success:
         # Set users labs
         user.set_labs(formatted_labs=body["labs"])
