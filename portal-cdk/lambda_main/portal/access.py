@@ -133,7 +133,7 @@ def get_user_labs(username):
     )
 
 
-def validate_put_lab_access(
+def validate_set_lab_access(
     put_lab_access: dict, all_labs_in: dict
 ) -> tuple[bool, str]:
     # Validate input is correct type
@@ -192,7 +192,7 @@ def set_user_labs(username):
         )
 
     # Validated payload
-    success, result = validate_put_lab_access(put_lab_access=body, all_labs_in=all_labs)
+    success, result = validate_set_lab_access(put_lab_access=body, all_labs_in=all_labs)
     if success:
         # Set users labs
         user.set_labs(formatted_labs=body["labs"])
