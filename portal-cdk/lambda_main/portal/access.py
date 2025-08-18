@@ -177,7 +177,7 @@ def validate_set_lab_access(
 @require_access("admin")
 def set_user_labs(username):
     # Check user exists
-    user = User(username=username)
+    user = User(username=username, create_if_missing=False)
 
     # Parse request body
     body = access_router.current_event.body
