@@ -250,7 +250,7 @@ class TestAccessPages:
         ret = main.lambda_handler(event, lambda_context)
 
         assert ret["statusCode"] == 404
-        assert ret["body"] == "User Not Found"
+        assert ret["body"] == "User not found"
         assert ret["headers"].get("Content-Type") == "application/json"
 
     def test_set_user_labs_malformed_json(

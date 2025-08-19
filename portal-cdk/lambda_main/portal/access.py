@@ -133,6 +133,18 @@ def get_user_labs(username):
     )
 
 
+@access_router.get("/users/<shortname>")
+@require_access("admin")
+def get_labs_users(shortname):
+    users = get_users_of_lab(shortname)
+
+    return wrap_response(
+        body=json.dumps({"users": users, "message": "OK"}),
+        code=200,
+        content_type=content_types.APPLICATION_JSON,
+    )
+
+
 def validate_set_lab_access(
     put_lab_access: dict, all_labs_in: dict
 ) -> tuple[bool, str]:
