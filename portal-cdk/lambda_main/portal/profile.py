@@ -5,6 +5,7 @@ from util.auth import require_access
 from util.session import current_session
 from util.user import User
 from util.responses import wrap_response, form_body_to_dict
+from util.labs import all_labs
 from pathlib import Path
 import json
 from urllib.parse import urlencode
@@ -27,8 +28,10 @@ profile_route = {
 def enforce_profile_access():
     def inner(func):
         def wrapper(*args, **kwargs):
-            username = current_session.auth.cognito.username
-            user = User(username=username)
+            # username = current_session.auth.cognito.username
+            # user = User(username=username)
+            user = current_session.user
+            username = user.username
 
             if "admin" in user.access:
                 # If admin, continue to return normally
@@ -92,17 +95,21 @@ def profile_bob():
 @enforce_profile_access()
 @portal_template(name="profile.j2")
 def profile_user(username: str):
+    user_logged_in = current_session.user
+    user_profile = User(username=username, create_if_missing=False)
     page_dict = {
-        "content": f"Profile for user {username}",
+        "content": f"Profile for user {user_profile.username}",
         "input": {
-            "username": username,
+            "user_logged_in": user_logged_in,
+            "user_profile": user_profile,
+            "labs": all_labs,
             "default_value": "Choose...",
             "warning_missing": "Value is missing",
         },
     }
 
     CWD = Path(__file__).parent.resolve().absolute()
-    with open(CWD / "../data/countries.json", "r") as f:
+    with open(CWD / "../data/countries.json", "r", encoding="utf-8") as f:
         page_dict["input"]["countries"] = json.loads(f.read())
 
     # Get query string if present
@@ -237,7 +244,7 @@ def profile_user_filled(username: str):
     if success:
         # query_dict must be profile values at this point
         # Update user profile
-        user = User(username)
+        user = User(username, create_if_missing=False)
         user.profile = query_dict
         # Update require user access if it had been required
         if user.require_profile_update:

@@ -123,6 +123,7 @@ class User:
 
     def __iter__(self):
         """Used when casting to a dict, what keys to show."""
+        yield "username", self.username
         for key in validator_map:
             yield key, self.__getattribute__(key)
 
@@ -164,15 +165,13 @@ class User:
 
     def is_authorized_lab(self, lab_short_name: str) -> bool:
         """Check if the user has access to a specific lab."""
-        if "admin" in self.access:
+        if self.is_admin():
             return True
         return lab_short_name in self.labs
 
     # Convenience methods
     def is_admin(self) -> bool:
-        if "admin" in self.access:
-            return True
-        return False
+        return "admin" in self.access
 
     def remove_user(self) -> bool:
         # Delete user from Cognito
