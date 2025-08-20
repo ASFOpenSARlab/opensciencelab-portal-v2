@@ -28,19 +28,16 @@ profile_route = {
 def enforce_profile_access():
     def inner(func):
         def wrapper(*args, **kwargs):
-            # username = current_session.auth.cognito.username
-            # user = User(username=username)
             user = current_session.user
-            username = user.username
 
             if "admin" in user.access:
                 # If admin, continue to return normally
                 return func(*args, **kwargs)
             elif "user" in user.access:
                 # If user role, check if username is their own
-                if kwargs["username"] != username:
+                if kwargs["username"] != user.username:
                     # If username not filled correctly, redirect to matching username
-                    next_url = f"/portal/profile/form/{username}"
+                    next_url = f"/portal/profile/form/{user.username}"
                     return wrap_response(
                         body={f"Redirect to {next_url}"},
                         code=302,
@@ -51,7 +48,7 @@ def enforce_profile_access():
             else:
                 # Log error if user does not have a covered access type
                 logger.error(
-                    f"{username} does not have covered access type. User access: {user.access}"
+                    f"{user.username} does not have covered access type. User access: {user.access}"
                 )
 
             next_url = "/portal"
@@ -116,14 +113,12 @@ def profile_user(username: str):
     query_params = profile_router.current_event.query_string_parameters
 
     # Set profile based on saved user profile or query_params if present
-    profile = None
     if query_params:
         profile = query_params
+    elif hasattr(user_profile, "profile"):
+        profile = user_profile.profile
     else:
-        user_class = User(username=username)
-        if user_class:
-            if hasattr(user_class, "profile"):
-                profile = user_class.profile
+        profile = None
 
     # Append profile to page_dict and return
     if profile:
