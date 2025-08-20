@@ -27,9 +27,18 @@ class TestAccessPages:
         monkeypatch.setattr("portal.access.all_labs", labs)
 
         def lab_users_static(*args, **kwargs):
-            return ["test_user"]
+            return [
+                {
+                    "username": "test_user",
+                    "labs": {
+                        "testlab": {
+                            "lab_profiles": ["m6a.large"],
+                        },
+                    },
+                }
+            ]
 
-        monkeypatch.setattr("portal.access.list_users_with_lab", lab_users_static)
+        monkeypatch.setattr("portal.access.get_users_with_lab", lab_users_static)
 
         event = helpers.get_event(
             path="/portal/access/manage/testlab", cookies=fake_auth
@@ -41,13 +50,13 @@ class TestAccessPages:
         # Add/refactor more asserts after manage page layout is figured out more
         assert (
             ret["body"].find(
-                '<button type="submit" name="action" value="add">Add</button>'
+                '<button type="submit" name="action" value="add_user">Add</button>'
             )
             > -1
         )
         assert (
             ret["body"].find(
-                '<button type="submit" name="action" value="remove">Remove</button>'
+                '<button type="submit" name="action" value="remove_user">Remove</button>'
             )
             > -1
         )
@@ -65,7 +74,7 @@ class TestAccessPages:
             "lab_country_status": "",
             "can_user_see_lab_card": "on",
             "can_user_access_lab": "on",
-            "action": "add",
+            "action": "add_user",
         }
         monkeypatch.setattr(
             "portal.access.form_body_to_dict", lambda *args, **kwargs: bodystr
