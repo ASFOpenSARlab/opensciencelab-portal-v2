@@ -63,24 +63,24 @@ def validate_edit_user_request(body: dict) -> tuple[bool, str]:
             if key not in body:
                 return False, f"{key} not provided to edit_user"
         return True, "Read to add user"
-    
+
     elif body["action"] == "remove_user":
         # check removing user fields provided
         return True, "Ready to remove user"
-    
+
     # elif body["action"] == "toggle_can_user_see_lab_card":
     #     if "can_user_see_lab_card" not in body:
     #         return False, "can_user_see_lab_card not provided"
     #     return True, "Ready to toggle can_user_see_lab_card"
-    
+
     # elif body["action"] == "toggle_can_user_access_lab":
     #     if "can_user_access_lab" not in body:
     #         return False, "can_user_access_lab not provided"
     #     return True, "Ready to toggle can_user_access_lab"
-    
+
     else:
         return False, "Invalid action"
-        
+
 
 @access_router.post("/manage/<shortname>/edituser")
 @require_access("admin")
@@ -102,7 +102,7 @@ def edit_user(shortname):
 
     # Edit user
     user = User(body["username"])
-    
+
     if body["action"] == "add_user":
         # Map checkboxes to True and False
         try:
@@ -138,7 +138,7 @@ def edit_user(shortname):
     #     labs = user.labs
     #     labs[shortname]["can_user_access_lab"] = not user.labs[shortname]["can_user_access_lab"]
     #     user.labs = labs
-    
+
     else:
         error = f"Invalid edit_user action {body['action']}"
         print(error)

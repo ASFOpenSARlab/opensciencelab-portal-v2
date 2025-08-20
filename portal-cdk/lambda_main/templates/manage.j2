@@ -26,7 +26,7 @@
                 <th>{{ user["username"] }}</th>
                 <th>{{ user["labs"][lab.short_lab_name]["lab_profiles"] }}</th>
                 {# <th>
-                    <form method="POST" action="{{ lab.short_lab_name }}/edituser">
+                    <form method="post" action="{{ lab.short_lab_name }}/edituser">
                         <input type="hidden" name="username" value={{ user["username"] }}>
                         <input type="hidden" name="action" value="toggle_can_user_see_lab_card">
                         <input type="checkbox"
@@ -39,7 +39,7 @@
                     </form>
                 </th>
                 <th>
-                    <form method="POST" action="{{ lab.short_lab_name }}/edituser">
+                    <form method="post" action="{{ lab.short_lab_name }}/edituser">
                         <input type="hidden" name="username" value={{ user["username"] }}>
                         <input type="hidden" name="action" value="toggle_can_user_access_lab">
                         <input type="checkbox"
@@ -52,7 +52,7 @@
                     </form>
                 </th> #}
                 <th>
-                    <form method="POST" action="{{ lab.short_lab_name }}/edituser">
+                    <form method="post" action="{{ lab.short_lab_name }}/edituser">
                         <input type="hidden" name="username" value="{{ user['username'] }}">
                         <button type="submit" name="action" value="remove_user">Remove</button>
                     </form>
