@@ -98,7 +98,7 @@ def edit_user(shortname):
     success, message = validate_edit_user_request(body=body)
     if not success:
         print(message)
-        return ValueError(message)
+        raise ValueError(message)
 
     # Edit user
     user = User(body["username"])
