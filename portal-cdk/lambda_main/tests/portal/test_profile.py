@@ -69,22 +69,6 @@ class TestProfilePages:
         assert ret["headers"].get("Content-Type") == "text/html"
         assert ret["headers"].get("Location") == "/portal/profile/form/test_user"
 
-    def test_admin_access_other_profile(
-        self, lambda_context, monkeypatch, fake_auth, helpers
-    ):
-        user = helpers.FakeUser(access=["admin", "user"])
-        monkeypatch.setattr("portal.profile.User", lambda *args, **kwargs: user)
-        monkeypatch.setattr("util.auth.User", lambda *args, **kwargs: user)
-
-        event = helpers.get_event(
-            path="/portal/profile/form/not_my_username", cookies=fake_auth
-        )
-        ret = main.lambda_handler(event, lambda_context)
-
-        assert ret["statusCode"] == 200
-        assert ret["body"].find("Hello <i>not_my_username</i>") != -1
-        assert ret["headers"].get("Content-Type") == "text/html"
-
     def test_no_user_access(self, lambda_context, monkeypatch, fake_auth, helpers):
         user = helpers.FakeUser(access=[])
         monkeypatch.setattr("portal.profile.User", lambda *args, **kwargs: user)
@@ -570,9 +554,11 @@ class TestProfileAccess:
     def test_admin_access_other_profile(
         self, monkeypatch, lambda_context, fake_auth, helpers
     ):
-        user = helpers.FakeUser(access=["admin", "user"])
-        monkeypatch.setattr("portal.profile.User", lambda *args, **kwargs: user)
-        monkeypatch.setattr("util.auth.User", lambda *args, **kwargs: user)
+        admin_user = helpers.FakeUser(username="admin_user", access=["admin", "user"])
+        profile_user = helpers.FakeUser(username="other_user", access=["user"])
+
+        monkeypatch.setattr("util.auth.User", lambda *args, **kwargs: admin_user)
+        monkeypatch.setattr("portal.profile.User", lambda *args, **kwargs: profile_user)
 
         path = "/portal/profile/form/other_user"
         event = helpers.get_event(path=path, cookies=fake_auth)
@@ -581,6 +567,8 @@ class TestProfileAccess:
         assert ret["statusCode"] == 200
         assert ret["body"].find("Hello <i>other_user</i>") != -1
         assert ret["headers"].get("Content-Type") == "text/html"
+        # Admin should see settings for other_user:
+        assert ret["body"].find('Admin Settings') > -1
 
     # Test admin redirect for required profile filling
     def test_admin_profile_redirect_flag(
@@ -613,3 +601,32 @@ class TestProfileAccess:
         assert ret["statusCode"] == 302
         assert ret["body"] == "User must update profile"
         assert ret["headers"].get("Location") == "/portal/profile/form/test_user"
+
+    def test_normal_user_no_table(
+        self, monkeypatch, lambda_context, fake_auth, helpers
+    ):
+        user = helpers.FakeUser()
+
+        monkeypatch.setattr("portal.profile.User", lambda *args, **kwargs: user)
+        monkeypatch.setattr("util.auth.User", lambda *args, **kwargs: user)
+
+        event = helpers.get_event(path="/portal/profile/form/test_user", cookies=fake_auth)
+        ret = main.lambda_handler(event, lambda_context)
+        assert ret["statusCode"] == 200
+        assert not ret["headers"].get("Location")
+        assert ret["body"].find('Admin Settings') == -1
+
+    def test_admin_user_with_table(
+        self, monkeypatch, lambda_context, fake_auth, helpers
+    ):
+        user = helpers.FakeUser(access=["user", "admin"])
+
+        monkeypatch.setattr("portal.profile.User", lambda *args, **kwargs: user)
+        monkeypatch.setattr("util.auth.User", lambda *args, **kwargs: user)
+
+        event = helpers.get_event(path="/portal/profile/form/test_user", cookies=fake_auth)
+        ret = main.lambda_handler(event, lambda_context)
+        assert ret["statusCode"] == 200
+        assert ret["body"].find('Admin Settings') > -1
+
+
