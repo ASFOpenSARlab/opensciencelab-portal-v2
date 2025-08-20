@@ -133,7 +133,7 @@ def edit_user(shortname):
     #     labs = user.labs
     #     labs[shortname]["can_user_see_lab_card"] = not user.labs[shortname]["can_user_see_lab_card"]
     #     user.labs = labs
-    
+
     # elif body["action"] == "toggle_can_user_access_lab":
     #     labs = user.labs
     #     labs[shortname]["can_user_access_lab"] = not user.labs[shortname]["can_user_access_lab"]
