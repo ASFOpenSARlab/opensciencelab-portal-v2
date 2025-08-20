@@ -146,9 +146,9 @@ class TestUserClass:
             "Access should be updated in the DB too"
         )
 
-    def test_list_users_with_lab(self):
+    def test_get_users_with_lab(self):
         from util.user.user import User
-        from util.user.dynamo_db import list_users_with_lab
+        from util.user.dynamo_db import get_users_with_lab
 
         user1 = User(username="test_user1")
         user1.labs = {"testlab": {}}
@@ -159,7 +159,11 @@ class TestUserClass:
         user3 = User(username="test_user3")
         user3.labs = {"differentlab": {}}
 
-        assert list_users_with_lab("testlab") == ["test_user1", "test_user2"]
+        output = get_users_with_lab("testlab")
+
+        assert len(output) == 2
+        assert output[0]["username"] == "test_user1"
+        assert output[1]["username"] == "test_user2"
 
     def test_delete_user(self, monkeypatch):
         from util.user.user import User

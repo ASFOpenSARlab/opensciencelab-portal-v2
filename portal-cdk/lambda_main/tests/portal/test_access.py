@@ -27,9 +27,18 @@ class TestAccessPages:
         monkeypatch.setattr("portal.access.all_labs", labs)
 
         def lab_users_static(*args, **kwargs):
-            return ["test_user"]
+            return [
+                {
+                    "username": "test_user",
+                    "labs": {
+                        "testlab": {
+                            "lab_profiles": ["m6a.large"],
+                        },
+                    },
+                }
+            ]
 
-        monkeypatch.setattr("portal.access.list_users_with_lab", lab_users_static)
+        monkeypatch.setattr("portal.access.get_users_with_lab", lab_users_static)
 
         event = helpers.get_event(
             path="/portal/access/manage/testlab", cookies=fake_auth
