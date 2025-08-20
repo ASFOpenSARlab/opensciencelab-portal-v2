@@ -13,8 +13,53 @@
 </div>
 <div class="horizontal-div screen-width">
     <div class="margin-left-30">
-        <h4>Users</h4>
-        {% for user in users %}<p>{{ user }}</p>{% endfor %}
+        <table>
+            <tr>
+                <th>Username</th>
+                <th>Profiles</th>
+                {# <th>See Lab</th>
+                <th>Access Lab</th> #}
+                <th>Tools</th>
+            </tr>
+            {% for user in users %}
+            <tr>
+                <th>{{ user["username"] }}</th>
+                <th>{{ user["labs"][lab.short_lab_name]["lab_profiles"] }}</th>
+                {# <th>
+                    <form method="POST" action="{{ lab.short_lab_name }}/edituser">
+                        <input type="hidden" name="username" value={{ user["username"] }}>
+                        <input type="hidden" name="action" value="toggle_can_user_see_lab_card">
+                        <input type="checkbox"
+                               name="can_user_see_lab_card"
+                               onchange="this.form.submit()"
+                               {% if user["labs"][lab.short_lab_name]["can_user_see_lab_card"] %}
+                                checked
+                               {% endif %}
+                               >
+                    </form>
+                </th>
+                <th>
+                    <form method="POST" action="{{ lab.short_lab_name }}/edituser">
+                        <input type="hidden" name="username" value={{ user["username"] }}>
+                        <input type="hidden" name="action" value="toggle_can_user_access_lab">
+                        <input type="checkbox"
+                               name="can_user_access_lab"
+                               onchange="this.form.submit()"
+                                {% if user["labs"][lab.short_lab_name]["can_user_access_lab"] %}
+                                    checked
+                                {% endif %}
+                                >
+                    </form>
+                </th> #}
+                <th>
+                    <form method="POST" action="{{ lab.short_lab_name }}/edituser">
+                        <input type="hidden" name="username" value="{{ user['username'] }}">
+                        <button type="submit" name="action" value="remove_user">Remove</button>
+                    </form>
+                </th>
+            </tr>
+            {% endfor %}
+        </table>
     </div>
     <div class="right-align margin-right-30">
         <div>
@@ -51,8 +96,8 @@
                         <input type="checkbox" name="can_user_access_lab" id="can_user_access_lab">
                     </div>
                     <div>
-                        <button type="submit" name="action" value="add">Add</button>
-                        <button type="submit" name="action" value="remove">Remove</button>
+                        <button type="submit" name="action" value="add_user">Add</button>
+                        <button type="submit" name="action" value="remove_user">Remove</button>
                     </div>
                 </fieldset>
             </form>
