@@ -186,8 +186,8 @@ class TestAccessPages:
         assert ret["statusCode"] == 200
         assert body["users"] == [
             {
-                'username': 'test_user',
-                'labs': {'testlab': {'lab_profiles': ['m6a.large']}}
+                "username": "test_user",
+                "labs": {"testlab": {"lab_profiles": ["m6a.large"]}},
             }
         ]
         assert body["message"] == "OK"
