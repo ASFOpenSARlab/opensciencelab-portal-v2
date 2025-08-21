@@ -152,6 +152,11 @@ def edit_user(shortname):
         headers={"Location": next_url},
     )
 
+@access_router.get("/lab")
+@require_access()
+@portal_template()
+def view_all_labs():
+    return f"inspect ALL labs"
 
 @access_router.get("/lab/<lab>")
 @require_access()
@@ -161,7 +166,7 @@ def view_lab(lab):
 
 
 @access_router.get("/labs/<username>")
-@require_access("admin")
+# @require_access("admin")
 def get_user_labs(username):
     # Find user in db
 
@@ -170,6 +175,25 @@ def get_user_labs(username):
     # Return user labs
     return wrap_response(
         body=json.dumps({"labs": user.labs, "message": "OK"}),
+        code=200,
+        content_type=content_types.APPLICATION_JSON,
+    )
+
+@access_router.post("/labs/<username>")
+# @require_access("admin")
+def add_lab_to_user(username):
+
+    # Request payload should contain JSON structure of all labs a user has access to, eg:
+    # { "labs": { "lab-short-name": { ... }, "lab-name-2": { ... } }
+    # Return should contain the labs payload:  ( {"result": "Success", labs = { ... } }) & 200/0K  
+
+    # Edge Case:
+    # User does not exist: { "result": "User Not Found" } & 404/Not Found )
+    # User is not Admin { "result": "Cannot fulfill Request" } & 403/Unauthorized )
+    # JSON is malformed { "result": "Malformed JSON" } & 400/Malformed )
+    # JSON is good, but cannot be processed (lab does not exist, profile does not exist, etc) { "result": "Lab XXX does not exist" } & 422/Unprocessable )
+    return wrap_response(
+        body=json.dumps({"Result": "Success", "labs": {}}),
         code=200,
         content_type=content_types.APPLICATION_JSON,
     )
