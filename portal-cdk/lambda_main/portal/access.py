@@ -68,15 +68,15 @@ def validate_edit_user_request(body: dict) -> tuple[bool, str]:
         # check removing user fields provided
         return True, "Ready to remove user"
 
-    # elif body["action"] == "toggle_can_user_see_lab_card":
-    #     if "can_user_see_lab_card" not in body:
-    #         return False, "can_user_see_lab_card not provided"
-    #     return True, "Ready to toggle can_user_see_lab_card"
+    elif body["action"] == "toggle_can_user_see_lab_card":
+        if "can_user_see_lab_card" not in body:
+            return False, "can_user_see_lab_card not provided"
+        return True, "Ready to toggle can_user_see_lab_card"
 
-    # elif body["action"] == "toggle_can_user_access_lab":
-    #     if "can_user_access_lab" not in body:
-    #         return False, "can_user_access_lab not provided"
-    #     return True, "Ready to toggle can_user_access_lab"
+    elif body["action"] == "toggle_can_user_access_lab":
+        if "can_user_access_lab" not in body:
+            return False, "can_user_access_lab not provided"
+        return True, "Ready to toggle can_user_access_lab"
 
     else:
         return False, "Invalid action"
@@ -85,8 +85,13 @@ def validate_edit_user_request(body: dict) -> tuple[bool, str]:
 @access_router.post("/manage/<shortname>/edituser")
 @require_access("admin")
 def edit_user(shortname):
+    
+    print("OOBLE")
     # Parse request
     body = access_router.current_event.body
+    
+    print("BODY")
+    print(body)
 
     if body is None:
         error = "Body not provided to edit_user"
@@ -129,15 +134,17 @@ def edit_user(shortname):
     elif body["action"] == "remove_user":
         user.remove_lab(shortname)
 
-    # elif body["action"] == "toggle_can_user_see_lab_card":
-    #     labs = user.labs
-    #     labs[shortname]["can_user_see_lab_card"] = not user.labs[shortname]["can_user_see_lab_card"]
-    #     user.labs = labs
+    elif body["action"] == "toggle_can_user_see_lab_card":
+        labs = dict(user.labs)
+        labs[shortname] = dict(labs[shortname])
+        labs[shortname]["can_user_see_lab_card"] = not user.labs[shortname]["can_user_see_lab_card"]
+        user.labs = labs
 
-    # elif body["action"] == "toggle_can_user_access_lab":
-    #     labs = user.labs
-    #     labs[shortname]["can_user_access_lab"] = not user.labs[shortname]["can_user_access_lab"]
-    #     user.labs = labs
+    elif body["action"] == "toggle_can_user_access_lab":
+        labs = dict(user.labs)
+        labs[shortname] = dict(labs[shortname])
+        labs[shortname]["can_user_access_lab"] = not user.labs[shortname]["can_user_access_lab"]
+        user.labs = labs
 
     else:
         error = f"Invalid edit_user action {body['action']}"
