@@ -17,7 +17,7 @@ from util.auth import (
     revoke_refresh_token,
     refresh_map_del,
 )
-from util.exceptions import GenericFatalError, UserNotFound
+from util.exceptions import GenericFatalError, UserNotFound, LabDoesNotExist
 from util.session import current_session
 from util.user import User
 
@@ -154,7 +154,16 @@ def handle_generic_fatal_error(exception):
 @app.exception_handler(UserNotFound)
 def handle_user_not_found_error(exception):
     return wrap_response(
-        body="User Not Found",
+        body=exception.message,
+        code=404,
+        content_type=content_types.APPLICATION_JSON,
+    )
+
+
+@app.exception_handler(LabDoesNotExist)
+def handle_lab_does_not_exist_error(exception):
+    return wrap_response(
+        body=exception.message,
         code=404,
         content_type=content_types.APPLICATION_JSON,
     )
