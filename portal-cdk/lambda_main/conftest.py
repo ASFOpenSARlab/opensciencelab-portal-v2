@@ -200,12 +200,15 @@ class Helpers:
                 labs=self.labs,
             )
 
+    # differentlab not initialized in FakeUser.labs
+    # this is to allow labs to test against a lab the user does not have access too
+    # unless used for other purpose in a given test
     FAKE_ALL_LABS = {
         "testlab": BaseLab(friendly_name="Test Lab", short_lab_name="testlab"),
+        "noaccess": BaseLab(friendly_name="No Access Lab", short_lab_name="noaccess"),
         "differentlab": BaseLab(
             friendly_name="Different Lab", short_lab_name="differentlab"
         ),
-        "noaccess": BaseLab(friendly_name="No Access Lab", short_lab_name="noaccess"),
     }
 
     # Raises a given error, used for monkeypatching
