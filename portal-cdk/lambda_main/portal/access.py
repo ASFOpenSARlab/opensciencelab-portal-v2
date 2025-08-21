@@ -1,6 +1,6 @@
 from util.format import portal_template, jinja_template
 from util.auth import require_access
-from util.user.dynamo_db import get_users_of_lab
+from util.user.dynamo_db import get_users_with_lab
 from util.user import User
 from util.responses import wrap_response, form_body_to_dict
 from util.labs import all_labs
@@ -40,13 +40,47 @@ def add_lab():
 def manage_lab(shortname):
     template_input = {}
 
+    # Get users of lab, check if lab exists
+    users = get_users_with_lab(shortname)
+    template_input["users"] = users
+
     lab = all_labs[shortname]
     template_input["lab"] = lab
 
-    users = get_users_of_lab(lab.short_lab_name)
-    template_input["users"] = users.keys()
-
     return jinja_template(template_input, "manage.j2")
+
+
+def validate_edit_user_request(body: dict) -> tuple[bool, str]:
+    # check always required keys are provided
+    keys = ["username", "action"]
+    for key in keys:
+        if key not in body:
+            return False, f"{key} not provided to edit_user"
+
+    if body["action"] == "add_user":
+        # check adding user fields provided
+        keys = ["lab_profiles", "time_quota", "lab_country_status"]
+        for key in keys:
+            if key not in body:
+                return False, f"{key} not provided to edit_user"
+        return True, "Read to add user"
+
+    elif body["action"] == "remove_user":
+        # check removing user fields provided
+        return True, "Ready to remove user"
+
+    # elif body["action"] == "toggle_can_user_see_lab_card":
+    #     if "can_user_see_lab_card" not in body:
+    #         return False, "can_user_see_lab_card not provided"
+    #     return True, "Ready to toggle can_user_see_lab_card"
+
+    # elif body["action"] == "toggle_can_user_access_lab":
+    #     if "can_user_access_lab" not in body:
+    #         return False, "can_user_access_lab not provided"
+    #     return True, "Ready to toggle can_user_access_lab"
+
+    else:
+        return False, "Invalid action"
 
 
 @access_router.post("/manage/<shortname>/edituser")
@@ -58,20 +92,19 @@ def edit_user(shortname):
     if body is None:
         error = "Body not provided to edit_user"
         print(error)
-        return ValueError(error)
+        raise ValueError(error)
     body = form_body_to_dict(body)
 
     # Validate request
-    # do not add checkboxs here, handle them in Edit user section
-    keys = ["action", "username", "lab_profiles", "time_quota", "lab_country_status"]
-    for key in keys:
-        if key not in body:
-            error = f"{key} not provided to edit_user"
-            print(error)
-            return ValueError(error)
+    success, message = validate_edit_user_request(body=body)
+    if not success:
+        print(message)
+        raise ValueError(message)
 
     # Edit user
-    if body["action"] == "add":
+    user = User(body["username"])
+
+    if body["action"] == "add_user":
         # Map checkboxes to True and False
         try:
             body["can_user_see_lab_card"]
@@ -85,7 +118,6 @@ def edit_user(shortname):
         except KeyError:
             can_user_access_lab = False
 
-        user = User(body["username"])
         user.add_lab(
             lab_short_name=shortname,
             lab_profiles=[s.strip() for s in body["lab_profiles"].split(",")],
@@ -94,13 +126,24 @@ def edit_user(shortname):
             can_user_access_lab=can_user_access_lab,
             can_user_see_lab_card=can_user_see_lab_card,
         )
-    elif body["action"] == "remove":
-        user = User(body["username"])
+
+    elif body["action"] == "remove_user":
         user.remove_lab(shortname)
+
+    # elif body["action"] == "toggle_can_user_see_lab_card":
+    #     labs = user.labs
+    #     labs[shortname]["can_user_see_lab_card"] = not user.labs[shortname]["can_user_see_lab_card"]
+    #     user.labs = labs
+
+    # elif body["action"] == "toggle_can_user_access_lab":
+    #     labs = user.labs
+    #     labs[shortname]["can_user_access_lab"] = not user.labs[shortname]["can_user_access_lab"]
+    #     user.labs = labs
+
     else:
         error = f"Invalid edit_user action {body['action']}"
         print(error)
-        return ValueError(error)
+        raise ValueError(error)
 
     # Send the user to the management page
     next_url = f"/portal/access/manage/{shortname}"
@@ -136,7 +179,7 @@ def get_user_labs(username):
 @access_router.get("/users/<shortname>")
 @require_access("admin")
 def get_labs_users(shortname):
-    users = get_users_of_lab(shortname)
+    users = get_users_with_lab(shortname)
 
     return wrap_response(
         body=json.dumps({"users": users, "message": "OK"}),
