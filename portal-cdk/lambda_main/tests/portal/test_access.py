@@ -2,6 +2,7 @@ import main
 from util.exceptions import UserNotFound
 import json
 
+
 class TestAccessPages:
     def test_user_manage_page(self, monkeypatch, lambda_context, helpers, fake_auth):
         user = helpers.FakeUser()
@@ -184,12 +185,12 @@ class TestAccessPages:
 
         assert ret["statusCode"] == 200
         assert body["users"] == [
-                {
-                    'username': 'test_user',
-                    'labs': {'testlab': {'lab_profiles': ['m6a.large']}}
-                }
-            ]
-        assert body["message"] == 'OK'
+            {
+                'username': 'test_user',
+                'labs': {'testlab': {'lab_profiles': ['m6a.large']}}
+            }
+        ]
+        assert body["message"] == "OK"
         assert ret["headers"].get("Content-Type") == "application/json"
 
     def test_set_user_labs_correct(
