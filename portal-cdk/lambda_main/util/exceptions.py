@@ -66,3 +66,11 @@ class UserNotFound(GenericFatalError):
     """
 
     pass  # pylint: disable=unnecessary-pass
+
+
+class LabDoesNotExist(GenericFatalError):
+    """
+    Raised if a given lab does not exist.
+    """
+
+    pass  # pylint: disable=unnecessary-pass
