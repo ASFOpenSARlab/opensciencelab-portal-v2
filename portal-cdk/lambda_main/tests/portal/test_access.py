@@ -4,7 +4,9 @@ import json
 
 
 class TestAccessPages:
-    def test_user_accessing_manage_page(self, monkeypatch, lambda_context, helpers, fake_auth):
+    def test_user_accessing_manage_page(
+        self, monkeypatch, lambda_context, helpers, fake_auth
+    ):
         user = helpers.FakeUser()
         monkeypatch.setattr("portal.User", lambda *args, **kwargs: user)
         monkeypatch.setattr("util.auth.User", lambda *args, **kwargs: user)
@@ -19,7 +21,9 @@ class TestAccessPages:
         assert ret["headers"].get("Location") == "/portal"
         assert ret["headers"].get("Content-Type") == "text/html"
 
-    def test_admin_accessing_manage_page(self, monkeypatch, lambda_context, helpers, fake_auth):
+    def test_admin_accessing_manage_page(
+        self, monkeypatch, lambda_context, helpers, fake_auth
+    ):
         user = helpers.FakeUser(access=["user", "admin"])
         monkeypatch.setattr("portal.User", lambda *args, **kwargs: user)
         monkeypatch.setattr("util.auth.User", lambda *args, **kwargs: user)
@@ -63,7 +67,9 @@ class TestAccessPages:
         )
         assert ret["headers"].get("Content-Type") == "text/html"
 
-    def test_admin_adding_lab_to_user(self, monkeypatch, lambda_context, helpers, fake_auth):
+    def test_admin_adding_lab_to_user(
+        self, monkeypatch, lambda_context, helpers, fake_auth
+    ):
         user = helpers.FakeUser(access=["user", "admin"])
         monkeypatch.setattr("portal.access.User", lambda *args, **kwargs: user)
         monkeypatch.setattr("util.auth.User", lambda *args, **kwargs: user)
@@ -144,7 +150,9 @@ class TestAccessPages:
         assert ret["body"] == "User not found"
         assert ret["headers"].get("Content-Type") == "application/json"
 
-    def test_get_all_users_of_a_lab(self, monkeypatch, lambda_context, helpers, fake_auth):
+    def test_get_all_users_of_a_lab(
+        self, monkeypatch, lambda_context, helpers, fake_auth
+    ):
         user = helpers.FakeUser(access=["user", "admin"])
         monkeypatch.setattr("util.auth.User", lambda *args, **kwargs: user)
 
