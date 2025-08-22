@@ -99,7 +99,7 @@ def edit_user(shortname):
 
     # Edit user
     user = User(body["username"])
-    
+
     # Map checkboxes to True and False
     try:
         body["can_user_see_lab_card"]
