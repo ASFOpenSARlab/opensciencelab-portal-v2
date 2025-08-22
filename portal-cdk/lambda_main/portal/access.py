@@ -129,13 +129,17 @@ def edit_user(shortname):
     elif body["action"] == "toggle_can_user_see_lab_card":
         labs = dict(user.labs)
         labs[shortname] = dict(labs[shortname])
-        labs[shortname]["can_user_see_lab_card"] = not user.labs[shortname]["can_user_see_lab_card"]
+        labs[shortname]["can_user_see_lab_card"] = not user.labs[shortname][
+            "can_user_see_lab_card"
+        ]
         user.labs = labs
 
     elif body["action"] == "toggle_can_user_access_lab":
         labs = dict(user.labs)
         labs[shortname] = dict(labs[shortname])
-        labs[shortname]["can_user_access_lab"] = not user.labs[shortname]["can_user_access_lab"]
+        labs[shortname]["can_user_access_lab"] = not user.labs[shortname][
+            "can_user_access_lab"
+        ]
         user.labs = labs
 
     else:
