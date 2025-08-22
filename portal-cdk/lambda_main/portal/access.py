@@ -101,17 +101,8 @@ def edit_user(shortname):
     user = User(body["username"])
 
     # Map checkboxes to True and False
-    try:
-        body["can_user_see_lab_card"]
-        can_user_see_lab_card = True
-    except KeyError:
-        can_user_see_lab_card = False
-
-    try:
-        body["can_user_access_lab"]
-        can_user_access_lab = True
-    except KeyError:
-        can_user_access_lab = False
+    can_user_see_lab_card = "can_user_see_lab_card" in body
+    can_user_access_lab = "can_user_access_lab" in body
 
     if body["action"] == "add_user":
         user.add_lab(
