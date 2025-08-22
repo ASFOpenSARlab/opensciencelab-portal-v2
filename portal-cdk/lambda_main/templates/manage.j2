@@ -11,96 +11,83 @@
         </span>
     </div>
 </div>
-<div class="horizontal-div screen-width">
-    <div class="margin-left-30">
-        <table>
-            <tr>
-                <th>Username</th>
-                <th>Profiles</th>
-                <th>See Lab</th>
-                <th>Access Lab</th>
-                <th>Tools</th>
-            </tr>
-            {% for user in users %}
-            <tr>
-                <th>{{ user["username"] }}</th>
-                <th>{{ user["labs"][lab.short_lab_name]["lab_profiles"] }}</th>
-                <th>
-                    <form method="post" action="{{ lab.short_lab_name }}/edituser">
-                        <input type="hidden" name="username" value={{ user["username"] }}>
-                        <input type="hidden" name="action" value="toggle_can_user_see_lab_card">
-                        <input type="checkbox"
-                               name="can_user_see_lab_card"
-                               onchange="this.form.submit()"
-                               {% if user["labs"][lab.short_lab_name]["can_user_see_lab_card"] %}
+<div class="margin-left-30">
+    <table>
+        <tr class="tr-highlight">
+            <th>Username</th>
+            <th>Profiles</th>
+            <th>See Lab</th>
+            <th>Access Lab</th>
+            <th>Tools</th>
+        </tr>
+        {% for user in users %}
+        <tr>
+            <th>{{ user["username"] }}</th>
+            <th>{{ user["labs"][lab.short_lab_name]["lab_profiles"] }}</th>
+            <th>
+                <form method="post" action="{{ lab.short_lab_name }}/edituser">
+                    <input type="hidden" name="username" value={{ user["username"] }}>
+                    <input type="hidden" name="action" value="toggle_can_user_see_lab_card">
+                    <input type="checkbox"
+                            name="can_user_see_lab_card"
+                            onchange="this.form.submit()"
+                            {% if user["labs"][lab.short_lab_name]["can_user_see_lab_card"] %}
+                            checked
+                            {% endif %}
+                            >
+                </form>
+            </th>
+            <th>
+                <form method="post" action="{{ lab.short_lab_name }}/edituser">
+                    <input type="hidden" name="username" value={{ user["username"] }}>
+                    <input type="hidden" name="action" value="toggle_can_user_access_lab">
+                    <input type="checkbox"
+                            name="can_user_access_lab"
+                            onchange="this.form.submit()"
+                            {% if user["labs"][lab.short_lab_name]["can_user_access_lab"] %}
                                 checked
-                               {% endif %}
-                               >
-                    </form>
-                </th>
-                <th>
-                    <form method="post" action="{{ lab.short_lab_name }}/edituser">
-                        <input type="hidden" name="username" value={{ user["username"] }}>
-                        <input type="hidden" name="action" value="toggle_can_user_access_lab">
-                        <input type="checkbox"
-                               name="can_user_access_lab"
-                               onchange="this.form.submit()"
-                                {% if user["labs"][lab.short_lab_name]["can_user_access_lab"] %}
-                                    checked
-                                {% endif %}
-                                >
-                    </form>
-                </th>
-                <th>
-                    <form method="post" action="{{ lab.short_lab_name }}/edituser">
-                        <input type="hidden" name="username" value="{{ user['username'] }}">
-                        <button type="submit" name="action" value="remove_user">Remove</button>
-                    </form>
-                </th>
-            </tr>
-            {% endfor %}
-        </table>
-    </div>
-    <div class="right-align margin-right-30">
-        <div>
-            <h4>Tools</h4>
+                            {% endif %}
+                            >
+                </form>
+            </th>
+            <th>
+                <form method="post" action="{{ lab.short_lab_name }}/edituser">
+                    <input type="hidden" name="username" value="{{ user['username'] }}">
+                    <button type="submit" name="action" value="remove_user">Remove</button>
+                </form>
+            </th>
+        </tr>
+        {% endfor %}
+        <tr>
             <form method="post" action="{{ lab.short_lab_name }}/edituser">
-                <fieldset class="fieldset-border vertical-div">
-                    <legend class="legend-border-text font-20">Manage Users</legend>
-                    <div>
-                        <label for="username">Username</label>
-                        <input type="text" name="username" placeholder="username">
-                    </div>
-                    <div>
-                        <label for="lab_profiles">Lab Profiles</label>
-                        <input type="text" name="lab_profiles" placeholder="m6a.large, m6a.small">
-                    </div>
-                    <div>
-                        <label for="time_quota">Time Quota</label>
-                        <input type="text" name="time_quota" placeholder="time_quota">
-                    </div>
-                    <div>
-                        <label for="lab_country_status">Lab Country Status</label>
-                        <input type="text"
-                               name="lab_country_status"
-                               placeholder="lab_country_status">
-                    </div>
-                    <div>
-                        <label for="can_user_access_lab">See Lab</label>
-                        <input type="checkbox"
-                               name="can_user_see_lab_card"
-                               id="can_user_see_lab_card">
-                    </div>
-                    <div>
-                        <label for="can_user_access_lab">Access Lab</label>
-                        <input type="checkbox" name="can_user_access_lab" id="can_user_access_lab">
-                    </div>
-                    <div>
-                        <button type="submit" name="action" value="add_user">Add</button>
-                        <button type="submit" name="action" value="remove_user">Remove</button>
-                    </div>
-                </fieldset>
+                <th>
+                    <input type="text" name="username" placeholder="username">
+                </th>
+                <th>
+                    <input type="text" name="lab_profiles" placeholder="m6a.large, m6a.small">
+                </th>
+                <input type="hidden" name="time_quota" placeholder="time_quota" value="">
+                <input type="hidden"
+                        name="lab_country_status"
+                        placeholder="protected"
+                        value="unrestricted">
+                {# <th>
+                    <input type="text"
+                            name="lab_country_status"
+                            placeholder="protected">
+                </th> #}
+                <th>
+                    <input type="checkbox"
+                            name="can_user_see_lab_card"
+                            id="can_user_see_lab_card">
+                </th>
+                <th>
+                    <input type="checkbox" name="can_user_access_lab" id="can_user_access_lab">
+                </th>
+                <th>
+                    <button type="submit" name="action" value="add_user">Add</button>
+                </th>
             </form>
-        </div>
-    </div>
+        </tr>
+    </table>
 </div>
