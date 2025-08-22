@@ -38,6 +38,8 @@ class TestAccessPages:
                     "labs": {
                         "testlab": {
                             "lab_profiles": ["m6a.large"],
+                            "can_user_see_lab_card": True,
+                            "can_user_access_lab": True,
                         },
                     },
                 }
