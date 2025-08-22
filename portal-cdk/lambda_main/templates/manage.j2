@@ -17,15 +17,15 @@
             <tr>
                 <th>Username</th>
                 <th>Profiles</th>
-                {# <th>See Lab</th>
-                <th>Access Lab</th> #}
+                <th>See Lab</th>
+                <th>Access Lab</th>
                 <th>Tools</th>
             </tr>
             {% for user in users %}
             <tr>
                 <th>{{ user["username"] }}</th>
                 <th>{{ user["labs"][lab.short_lab_name]["lab_profiles"] }}</th>
-                {# <th>
+                <th>
                     <form method="post" action="{{ lab.short_lab_name }}/edituser">
                         <input type="hidden" name="username" value={{ user["username"] }}>
                         <input type="hidden" name="action" value="toggle_can_user_see_lab_card">
@@ -50,7 +50,7 @@
                                 {% endif %}
                                 >
                     </form>
-                </th> #}
+                </th>
                 <th>
                     <form method="post" action="{{ lab.short_lab_name }}/edituser">
                         <input type="hidden" name="username" value="{{ user['username'] }}">
