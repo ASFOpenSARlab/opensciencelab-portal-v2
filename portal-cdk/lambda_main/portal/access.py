@@ -70,13 +70,9 @@ def validate_edit_user_request(body: dict) -> tuple[bool, str]:
         return True, "Ready to remove user"
 
     elif body["action"] == "toggle_can_user_see_lab_card":
-        if "can_user_see_lab_card" not in body:
-            return False, "can_user_see_lab_card not provided"
         return True, "Ready to toggle can_user_see_lab_card"
 
     elif body["action"] == "toggle_can_user_access_lab":
-        if "can_user_access_lab" not in body:
-            return False, "can_user_access_lab not provided"
         return True, "Ready to toggle can_user_access_lab"
 
     else:
@@ -86,13 +82,8 @@ def validate_edit_user_request(body: dict) -> tuple[bool, str]:
 @access_router.post("/manage/<shortname>/edituser")
 @require_access("admin")
 def edit_user(shortname):
-    
-    print("OOBLE")
     # Parse request
     body = access_router.current_event.body
-    
-    print("BODY")
-    print(body)
 
     if body is None:
         error = "Body not provided to edit_user"
@@ -108,21 +99,21 @@ def edit_user(shortname):
 
     # Edit user
     user = User(body["username"])
+    
+    # Map checkboxes to True and False
+    try:
+        body["can_user_see_lab_card"]
+        can_user_see_lab_card = True
+    except KeyError:
+        can_user_see_lab_card = False
+
+    try:
+        body["can_user_access_lab"]
+        can_user_access_lab = True
+    except KeyError:
+        can_user_access_lab = False
 
     if body["action"] == "add_user":
-        # Map checkboxes to True and False
-        try:
-            body["can_user_see_lab_card"]
-            can_user_see_lab_card = True
-        except KeyError:
-            can_user_see_lab_card = False
-
-        try:
-            body["can_user_access_lab"]
-            can_user_access_lab = True
-        except KeyError:
-            can_user_access_lab = False
-
         user.add_lab(
             lab_short_name=shortname,
             lab_profiles=[s.strip() for s in body["lab_profiles"].split(",")],
