@@ -191,7 +191,7 @@ class Helpers:
             self.labs[kwargs["lab_short_name"]] = create_lab_structure(**kwargs)
 
         def remove_lab(self, lab_short_name: str):
-            self.labs[lab_short_name] = None
+            self.labs.pop(lab_short_name, None)
 
         def get_lab_access(self) -> list[LabAccessInfo]:
             return filter_lab_access(
