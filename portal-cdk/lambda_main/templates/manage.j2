@@ -23,7 +23,7 @@
         {% for user in users %}
         <tr>
             <th>{{ user["username"] }}</th>
-            <th>{{ user["labs"][lab.short_lab_name]["lab_profiles"] }}</th>
+            <th>{{ ", ".join(user["labs"][lab.short_lab_name]["lab_profiles"]) }}</th>
             <th>
                 <form method="post" action="{{ lab.short_lab_name }}/edituser">
                     <input type="hidden" name="username" value={{ user["username"] }}>
