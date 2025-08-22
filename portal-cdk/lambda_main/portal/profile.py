@@ -5,6 +5,7 @@ from util.auth import require_access
 from util.session import current_session
 from util.user import User
 from util.responses import wrap_response, form_body_to_dict
+from util.labs import all_labs
 from pathlib import Path
 import json
 from urllib.parse import urlencode
@@ -27,17 +28,16 @@ profile_route = {
 def enforce_profile_access():
     def inner(func):
         def wrapper(*args, **kwargs):
-            username = current_session.auth.cognito.username
-            user = User(username=username)
+            user = current_session.user
 
             if "admin" in user.access:
                 # If admin, continue to return normally
                 return func(*args, **kwargs)
             elif "user" in user.access:
                 # If user role, check if username is their own
-                if kwargs["username"] != username:
+                if kwargs["username"] != user.username:
                     # If username not filled correctly, redirect to matching username
-                    next_url = f"/portal/profile/form/{username}"
+                    next_url = f"/portal/profile/form/{user.username}"
                     return wrap_response(
                         body={f"Redirect to {next_url}"},
                         code=302,
@@ -48,7 +48,7 @@ def enforce_profile_access():
             else:
                 # Log error if user does not have a covered access type
                 logger.error(
-                    f"{username} does not have covered access type. User access: {user.access}"
+                    f"{user.username} does not have covered access type. User access: {user.access}"
                 )
 
             next_url = "/portal"
@@ -92,31 +92,33 @@ def profile_bob():
 @enforce_profile_access()
 @portal_template(name="profile.j2")
 def profile_user(username: str):
+    user_logged_in = current_session.user
+    user_profile = User(username=username, create_if_missing=False)
     page_dict = {
-        "content": f"Profile for user {username}",
+        "content": f"Profile for user {user_profile.username}",
         "input": {
-            "username": username,
+            "user_logged_in": user_logged_in,
+            "user_profile": user_profile,
+            "labs": all_labs,
             "default_value": "Choose...",
             "warning_missing": "Value is missing",
         },
     }
 
     CWD = Path(__file__).parent.resolve().absolute()
-    with open(CWD / "../data/countries.json", "r") as f:
+    with open(CWD / "../data/countries.json", "r", encoding="utf-8") as f:
         page_dict["input"]["countries"] = json.loads(f.read())
 
     # Get query string if present
     query_params = profile_router.current_event.query_string_parameters
 
     # Set profile based on saved user profile or query_params if present
-    profile = None
     if query_params:
         profile = query_params
+    elif hasattr(user_profile, "profile"):
+        profile = user_profile.profile
     else:
-        user_class = User(username=username)
-        if user_class:
-            if hasattr(user_class, "profile"):
-                profile = user_class.profile
+        profile = None
 
     # Append profile to page_dict and return
     if profile:
@@ -237,7 +239,7 @@ def profile_user_filled(username: str):
     if success:
         # query_dict must be profile values at this point
         # Update user profile
-        user = User(username)
+        user = User(username, create_if_missing=False)
         user.profile = query_dict
         # Update require user access if it had been required
         if user.require_profile_update:
