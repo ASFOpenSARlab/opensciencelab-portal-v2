@@ -70,9 +70,7 @@ class TestAccessPages:
         )
         assert ret["headers"].get("Content-Type") == "text/html"
 
-    def test_admin_editing_user(
-        self, monkeypatch, lambda_context, helpers, fake_auth
-    ):
+    def test_admin_editing_user(self, monkeypatch, lambda_context, helpers, fake_auth):
         user = helpers.FakeUser(access=["user", "admin"])
         monkeypatch.setattr("portal.access.User", lambda *args, **kwargs: user)
         monkeypatch.setattr("util.auth.User", lambda *args, **kwargs: user)
