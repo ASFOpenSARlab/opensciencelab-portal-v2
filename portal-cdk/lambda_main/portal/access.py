@@ -18,6 +18,15 @@ access_route = {
     "name": "Access",
 }
 
+def _parse_body(body) -> dict:
+    # Parse request
+    body = access_router.current_event.body
+
+    if body is None:
+        error = "Body not provided in post request."
+        raise ValueError(error)
+    return form_body_to_dict(body)
+
 
 # This catches "/portal/access"
 @access_router.get("")
@@ -88,12 +97,7 @@ def validate_edit_user_request(body: dict) -> tuple[bool, str]:
 def edit_user(shortname):
     # Parse request
     body = access_router.current_event.body
-
-    if body is None:
-        error = "Body not provided to edit_user"
-        print(error)
-        raise ValueError(error)
-    body = form_body_to_dict(body)
+    body = _parse_body(body)
 
     # Validate request
     success, message = validate_edit_user_request(body=body)
@@ -167,7 +171,7 @@ def view_lab(lab):
 
 
 @access_router.get("/labs/<username>")
-# @require_access("admin")
+@require_access("admin")
 def get_user_labs(username):
     # Find user in db
 
@@ -181,8 +185,28 @@ def get_user_labs(username):
     )
 
 @access_router.post("/labs/<username>")
-# @require_access("admin")
+@require_access("admin")
 def add_lab_to_user(username):
+    # Parse request
+    body = access_router.current_event.body
+    try:
+        body = _parse_body(body)["labs"]
+    except (KeyError, ValueError) as e:
+        return wrap_response(
+            body=json.dumps({"result": "Malformed JSON", "error": str(e)}),
+            code=400,
+            content_type=content_types.APPLICATION_JSON,
+        )
+    # Get the labs
+    for lab_name, lab_info in body.items():
+        if lab_name not in all_labs:
+            return wrap_response(
+                body=json.dumps({"result": "Unknown Lab", "error":f"Lab '{lab_name}' does not exist"}),
+                code=422,
+                content_type=content_types.APPLICATION_JSON,
+            )
+        pass
+
 
     # Request payload should contain JSON structure of all labs a user has access to, eg:
     # { "labs": { "lab-short-name": { ... }, "lab-name-2": { ... } }
@@ -193,8 +217,17 @@ def add_lab_to_user(username):
     # User is not Admin { "result": "Cannot fulfill Request" } & 403/Unauthorized )
     # JSON is malformed { "result": "Malformed JSON" } & 400/Malformed )
     # JSON is good, but cannot be processed (lab does not exist, profile does not exist, etc) { "result": "Lab XXX does not exist" } & 422/Unprocessable )
+
+    # {
+    #     "labs": {
+    #         "lab1-short-name": {},
+    #         "lab2-short-name": {},
+    #     }
+    # }
+
     return wrap_response(
-        body=json.dumps({"Result": "Success", "labs": {}}),
+        # body=json.dumps({"Result": "Success", "labs": {}}),
+        body=json.dumps({"body": body, "type": type(body)}, default=str),
         code=200,
         content_type=content_types.APPLICATION_JSON,
     )
