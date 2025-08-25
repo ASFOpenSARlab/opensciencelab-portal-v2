@@ -1,4 +1,4 @@
-{# djlint:off H016,H030,H031 #}
+{# djlint:off H016,H021,H030,H031 #}
 <!DOCTYPE html>
 <html lang="en">
     {% include 'head.j2' %}
@@ -7,7 +7,7 @@
         {% include './navbar.j2' %}
         <div class="margin-left-50">
             <h2>
-                Hello <i>{{ username }}</i>
+                Hello <i>{{ user_profile.username }}</i>
             </h2>
             <form method="post">
                 <fieldset>
@@ -296,5 +296,39 @@
             selectElement.dataset.idToHide = idToShow;
         }
         </script>
+
+        {% if user_logged_in.is_admin() %}
+            <h3>Admin Settings</h3>
+            <table style="width:100%" border=1>
+                <tr>
+                    <th>Lab Short Name</th>
+                    <th>Access</th>
+                    <th>Available Profiles</th>
+                </tr>
+                {% for lab in labs.values() %}
+                    <tr>
+                        <td>
+                            <b>{{ lab.short_lab_name }}</b>
+                        </td>
+                        <td>
+                            {% if user_profile.is_admin() %}
+                                <b>ADMIN</b>
+                            {% elif lab.short_lab_name in user_profile.labs %}
+                                <b>YES</b>
+                            {% else %}
+                                No
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if lab.short_lab_name in user_profile.labs %}
+                                {{ user_profile.labs[lab.short_lab_name].lab_profiles }}
+                            {% elif user_profile.is_admin() %}
+                                Admin not in Lab...
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% endfor %}
+            </table>
+        {% endif %}
     </body>
 </html>
