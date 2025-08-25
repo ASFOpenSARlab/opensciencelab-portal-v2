@@ -1,6 +1,7 @@
 import main
 from util.exceptions import UserNotFound
 import json
+import pytest
 
 
 class TestAccessPages:
@@ -38,6 +39,8 @@ class TestAccessPages:
                     "labs": {
                         "testlab": {
                             "lab_profiles": ["m6a.large"],
+                            "can_user_see_lab_card": True,
+                            "can_user_access_lab": True,
                         },
                     },
                 }
@@ -67,13 +70,12 @@ class TestAccessPages:
         )
         assert ret["headers"].get("Content-Type") == "text/html"
 
-    def test_admin_adding_lab_to_user(
-        self, monkeypatch, lambda_context, helpers, fake_auth
-    ):
+    def test_admin_editing_user(self, monkeypatch, lambda_context, helpers, fake_auth):
         user = helpers.FakeUser(access=["user", "admin"])
         monkeypatch.setattr("portal.access.User", lambda *args, **kwargs: user)
         monkeypatch.setattr("util.auth.User", lambda *args, **kwargs: user)
 
+        # Adding lab
         bodystr = {
             "username": "test_user",
             "lab_profiles": "",
@@ -107,6 +109,110 @@ class TestAccessPages:
         assert ret["statusCode"] == 302
         assert ret["headers"].get("Location") == "/portal/access/manage/testlab2"
         assert ret["headers"].get("Content-Type") == "text/html"
+
+        # Remove user seeing lab card
+        bodystr = {
+            "username": "test_user",
+            "action": "toggle_can_user_see_lab_card",
+        }
+        monkeypatch.setattr(
+            "portal.access.form_body_to_dict", lambda *args, **kwargs: bodystr
+        )
+
+        event = helpers.get_event(
+            path="/portal/access/manage/testlab2/edituser",
+            cookies=fake_auth,
+            body="placeholder",
+            method="POST",
+        )
+        ret = main.lambda_handler(event, lambda_context)
+
+        assert "testlab2" in user.labs
+        assert user.labs["testlab2"] == {
+            "lab_profiles": [""],
+            "time_quota": None,
+            "lab_country_status": "",
+            "can_user_access_lab": True,
+            "can_user_see_lab_card": False,
+        }
+
+        assert ret["statusCode"] == 302
+        assert ret["headers"].get("Location") == "/portal/access/manage/testlab2"
+        assert ret["headers"].get("Content-Type") == "text/html"
+
+        # Remove user lab access
+        bodystr = {
+            "username": "test_user",
+            "action": "toggle_can_user_access_lab",
+        }
+        monkeypatch.setattr(
+            "portal.access.form_body_to_dict", lambda *args, **kwargs: bodystr
+        )
+
+        event = helpers.get_event(
+            path="/portal/access/manage/testlab2/edituser",
+            cookies=fake_auth,
+            body="placeholder",
+            method="POST",
+        )
+        ret = main.lambda_handler(event, lambda_context)
+
+        assert "testlab2" in user.labs
+        assert user.labs["testlab2"] == {
+            "lab_profiles": [""],
+            "time_quota": None,
+            "lab_country_status": "",
+            "can_user_access_lab": False,
+            "can_user_see_lab_card": False,
+        }
+
+        assert ret["statusCode"] == 302
+        assert ret["headers"].get("Location") == "/portal/access/manage/testlab2"
+        assert ret["headers"].get("Content-Type") == "text/html"
+
+        # Remove user
+        bodystr = {
+            "username": "test_user",
+            "action": "remove_user",
+        }
+        monkeypatch.setattr(
+            "portal.access.form_body_to_dict", lambda *args, **kwargs: bodystr
+        )
+
+        event = helpers.get_event(
+            path="/portal/access/manage/testlab2/edituser",
+            cookies=fake_auth,
+            body="placeholder",
+            method="POST",
+        )
+        ret = main.lambda_handler(event, lambda_context)
+
+        assert "testlab2" not in user.labs
+
+        assert ret["statusCode"] == 302
+        assert ret["headers"].get("Location") == "/portal/access/manage/testlab2"
+        assert ret["headers"].get("Content-Type") == "text/html"
+
+        # Invalid action
+        bodystr = {
+            "username": "test_user",
+            "action": "steal_the_moon",
+        }
+        monkeypatch.setattr(
+            "portal.access.form_body_to_dict", lambda *args, **kwargs: bodystr
+        )
+
+        event = helpers.get_event(
+            path="/portal/access/manage/testlab2/edituser",
+            cookies=fake_auth,
+            body="placeholder",
+            method="POST",
+        )
+
+        with pytest.raises(ValueError) as exc_info:
+            ret = main.lambda_handler(event, lambda_context)
+
+        assert str(exc_info.value) == "Invalid action"
 
     def test_get_labs_of_a_user_correct(
         self, monkeypatch, lambda_context, helpers, fake_auth
