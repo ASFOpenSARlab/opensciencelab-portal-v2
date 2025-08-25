@@ -426,3 +426,67 @@ class TestAccessPages:
 
         # Lab profile does not exist
         ## To be implemented
+
+    def test_add_user_to_lab_LabNotFound(
+        self, monkeypatch, lambda_context, helpers, fake_auth
+    ):
+        admin_user = helpers.FakeUser(access=["user", "admin"])
+        basic_user = helpers.FakeUser(username="basic_user",access=["user"])
+        monkeypatch.setattr("portal.access.User", lambda *args, **kwargs: admin_user)
+        monkeypatch.setattr("util.auth.User", lambda *args, **kwargs: admin_user)
+
+        body_str = {
+            "labs": {
+                "test-lab": {
+                    "username": basic_user.username,
+                },
+            },
+        }
+        monkeypatch.setattr(
+            "portal.access.form_body_to_dict", lambda *args, **kwargs: body_str
+        )
+
+        event = helpers.get_event(
+            path=f"/portal/access/labs/{basic_user.username}",
+            cookies=fake_auth,
+            body="placeholder",
+            method="POST",
+        )
+        ret = main.lambda_handler(event, lambda_context)
+
+        assert ret["body"] == '{"result": "Unknown Lab", "error": "Lab \'test-lab\' does not exist"}'
+        assert ret["statusCode"] == 422
+        assert ret["headers"].get("Content-Type") == "application/json"
+
+    def test_add_user_to_lab_BasicRequest(
+        self, monkeypatch, lambda_context, helpers, fake_auth
+    ):
+        labs = helpers.FAKE_ALL_LABS
+        monkeypatch.setattr("portal.access.all_labs", labs)
+
+        admin_user = helpers.FakeUser(access=["user", "admin"])
+        basic_user = helpers.FakeUser(username="basic_user",access=["user"])
+        monkeypatch.setattr("portal.access.User", lambda *args, **kwargs: admin_user)
+        monkeypatch.setattr("util.auth.User", lambda *args, **kwargs: admin_user)
+
+        body_str = {
+            "labs": {
+                "testlab": {
+                    "username": basic_user.username,
+                },
+            },
+        }
+        monkeypatch.setattr(
+            "portal.access.form_body_to_dict", lambda *args, **kwargs: body_str
+        )
+
+        event = helpers.get_event(
+            path=f"/portal/access/labs/{basic_user.username}",
+            cookies=fake_auth,
+            body="placeholder",
+            method="POST",
+        )
+        ret = main.lambda_handler(event, lambda_context)
+
+        assert ret["statusCode"] == 200
+        assert ret["headers"].get("Content-Type") == "application/json"
