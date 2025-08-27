@@ -32,6 +32,7 @@ class BadSsoToken(GenericFatalError):
     """
     Raised if the SSO Token isn't changed after deploying.
     """
+
     def __init__(self, message, error_code=403, extra_info=None):
         super().__init__(message, error_code, extra_info)
 
@@ -40,6 +41,7 @@ class DbError(GenericFatalError):
     """
     Raised if there is a problem with the DB.
     """
+
     # pylint: disable-next=useless-parent-delegation
     def __init__(self, message, error_code=500, extra_info=None):
         super().__init__(message, error_code, extra_info)
@@ -49,6 +51,7 @@ class CognitoError(GenericFatalError):
     """
     Raised if there is a problem with the DB.
     """
+
     # pylint: disable-next=useless-parent-delegation
     def __init__(self, message, error_code=500, extra_info=None):
         super().__init__(message, error_code, extra_info)
@@ -57,6 +60,7 @@ class UserNotFound(GenericFatalError):
     """
     Raised if there is a problem with creating a User.
     """
+
     def __init__(self, message, error_code=404, extra_info=None):
         super().__init__(message, error_code, extra_info)
 
@@ -64,5 +68,6 @@ class LabDoesNotExist(GenericFatalError):
     """
     Raised if a given lab does not exist.
     """
+
     def __init__(self, message, error_code=404, extra_info=None):
         super().__init__(message, error_code, extra_info)
