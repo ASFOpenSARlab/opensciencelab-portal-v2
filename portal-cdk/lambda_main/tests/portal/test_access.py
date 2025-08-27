@@ -370,13 +370,12 @@ class TestAccessPages:
                     "lab_profiles": ["m6a.large"],
                     "can_user_access_lab": True,
                     "can_user_see_lab_card": True,
-                        "time_quota": "",
-                        "lab_country_status": "protected",
+                    "time_quota": "",
+                    "lab_country_status": "protected",
                 }
             }
         }
             
-
         event = helpers.get_event(
             body=json.dumps(body),
             path="/portal/access/labs/test_user",
