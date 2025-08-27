@@ -555,7 +555,6 @@ class TestAccessPages:
         )
         ret = main.lambda_handler(event, lambda_context)
 
-        assert 'User does not have required access' in ret["body"]
+        assert "User does not have required access" in ret["body"]
         assert ret["statusCode"] == 302
         assert ret["headers"].get("Content-Type") == "text/html"
-
