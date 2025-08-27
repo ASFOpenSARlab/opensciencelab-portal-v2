@@ -213,6 +213,7 @@ class Helpers:
 
     # Raises a given error, used for monkeypatching
     # set kwarg "error" to your error
+    @staticmethod
     def raise_error(*args, **kwargs):
         raise kwargs.get("error", Exception("Cannot get error from kwargs"))
 
