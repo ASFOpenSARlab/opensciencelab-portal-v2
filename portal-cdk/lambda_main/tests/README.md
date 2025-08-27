@@ -41,15 +41,16 @@ cookies = {
     "portal-jwt": os.environ.get("PORTAL_JWT"),
     "portal-username": os.environ.get("PORTAL_USERNAME"),
 }
+url = "https://abc123def456.cloudfront.net"
 
 # Make a GET request:
-response = requests.get("https://abc123def456.cloudfront.net/endpoint", cookies=cookies)
+response = requests.get(f"{url}/endpoint", cookies=cookies)
 
 # Or PUT:
-response = requests.put("https://abc123def456.cloudfront.net/endpoint", cookies=cookies, json={"key": "value"})
+response = requests.put(f"{url}/endpoint", cookies=cookies, json={"key": "value"})
 
 # For Example:
-r = requests.put("https://abc123def456.cloudfront.net/portal/access/labs/basic_user", cookies=cookies, json={'labs':{'shortname2':{"lab_profiles":["m6a.large"],"can_user_access_lab":True, "can_user_see_lab_card":True, "time_quota":"","lab_country_status":"protected"}}})
+r = requests.put(f"{url}/portal/access/labs/basic_user", cookies=cookies, json={'labs':{'shortname2':{"lab_profiles":["m6a.large"],"can_user_access_lab":True, "can_user_see_lab_card":True, "time_quota":"","lab_country_status":"protected"}}})
 >>> r.content
 b'{"result": "Success", "body": {"labs": {"shortname2": {"lab_profiles": ["m6a.large"], "can_user_access_lab": true, "can_user_see_lab_card": true, "time_quota": "", "lab_country_status": "protected"}}}}'
 ```
