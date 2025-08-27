@@ -18,6 +18,7 @@ access_route = {
     "name": "Access",
 }
 
+
 # This catches "/portal/access"
 @access_router.get("")
 @require_access()
@@ -145,11 +146,13 @@ def edit_user(shortname):
         headers={"Location": next_url},
     )
 
+
 @access_router.get("/lab")
 @require_access()
 @portal_template()
 def view_all_labs():
     return "inspect ALL labs"
+
 
 @access_router.get("/lab/<lab>")
 @require_access()
