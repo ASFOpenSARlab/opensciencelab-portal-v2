@@ -312,34 +312,31 @@ class TestAccessPages:
     ):
         user = helpers.FakeUser(access=["user", "admin"])
         monkeypatch.setattr("util.auth.User", lambda *args, **kwargs: user)
-
         monkeypatch.setattr("portal.access.User", lambda *args, **kwargs: user)
 
         monkeypatch.setattr("portal.access.all_labs", helpers.FAKE_ALL_LABS)
 
-        body = """
-            {
-                "labs": {
-                    "testlab": {
-                        "lab_profiles": ["m6a.large"],
-                        "can_user_access_lab": true,
-                        "can_user_see_lab_card": true,
-                        "time_quota": "",
-                        "lab_country_status": "protected"
-                    }
+        body = {
+            "labs": {
+                "testlab": {
+                    "lab_profiles": ["m6a.large"],
+                    "can_user_access_lab": True,
+                    "can_user_see_lab_card": True,
+                    "time_quota": "",
+                    "lab_country_status": "protected"
                 }
             }
-            """
+        }
 
         event = helpers.get_event(
-            body=body,
+            body=json.dumps(body),
             path="/portal/access/labs/test_user",
             cookies=fake_auth,
             method="PUT",
         )
         ret = main.lambda_handler(event, lambda_context)
 
-        assert ret["statusCode"] == 200
+        assert ret["statusCode"] == 200, ret
         assert ret["body"].find('"labs": {') != -1
         assert ret["headers"].get("Content-Type") == "application/json"
         assert user.labs == {
@@ -367,22 +364,21 @@ class TestAccessPages:
 
         monkeypatch.setattr("portal.access.all_labs", helpers.FAKE_ALL_LABS)
 
-        body = """
-            {
-                "labs": {
-                    "testlab": {
-                        "lab_profiles": ["m6a.large"],
-                        "can_user_access_lab": true,
-                        "can_user_see_lab_card": true,
+        body = {
+            "labs": {
+                "testlab": {
+                    "lab_profiles": ["m6a.large"],
+                    "can_user_access_lab": True,
+                    "can_user_see_lab_card": True,
                         "time_quota": "",
                         "lab_country_status": "protected"
-                    }
                 }
             }
-            """
+        }
+            
 
         event = helpers.get_event(
-            body=body,
+            body=json.dumps(body),
             path="/portal/access/labs/test_user",
             cookies=fake_auth,
             method="PUT",
@@ -403,9 +399,7 @@ class TestAccessPages:
 
         monkeypatch.setattr("portal.access.all_labs", helpers.FAKE_ALL_LABS)
 
-        body = """
-            gadhahaafsdfsa
-            """
+        body = "gadhahaafsdfsa"
 
         event = helpers.get_event(
             body=body,
@@ -416,7 +410,7 @@ class TestAccessPages:
         ret = main.lambda_handler(event, lambda_context)
 
         assert ret["statusCode"] == 400
-        assert ret["body"] == '{"result": "Malformed JSON"}'
+        assert '"result": "Malformed JSON"' in ret["body"]
         assert ret["headers"].get("Content-Type") == "application/json"
 
     def test_set_user_labs_validate_payload(
@@ -430,10 +424,10 @@ class TestAccessPages:
         monkeypatch.setattr("portal.access.all_labs", helpers.FAKE_ALL_LABS)
 
         # Missing "labs" key
-        body = "{}"
+        body = {}
 
         event = helpers.get_event(
-            body=body,
+            body=json.dumps(body),
             path="/portal/access/labs/test_user",
             cookies=fake_auth,
             method="PUT",
@@ -441,26 +435,39 @@ class TestAccessPages:
         ret = main.lambda_handler(event, lambda_context)
 
         assert ret["statusCode"] == 422
-        assert ret["body"] == '{"result": "Does not contain \'labs\' key"}'
+        assert '"result": "Does not contain \'labs\' key"' in ret["body"]
+        assert ret["headers"].get("Content-Type") == "application/json"
+
+        # No "Labs" to add:
+        body = {"labs": {}}
+
+        event = helpers.get_event(
+            body=json.dumps(body),
+            path="/portal/access/labs/test_user",
+            cookies=fake_auth,
+            method="PUT",
+        )
+        ret = main.lambda_handler(event, lambda_context)
+
+        assert ret["statusCode"] == 200
+        assert '"result": "Success"' in ret["body"]
         assert ret["headers"].get("Content-Type") == "application/json"
 
         # Lab does not exist
-        body = """
-            {
-                "labs": {
-                    "lab_does_not_exist": {
-                        "lab_profiles": ["m6a.large"],
-                        "can_user_access_lab": true,
-                        "can_user_see_lab_card": true,
-                        "time_quota": "",
-                        "lab_country_status": "protected"
-                    }
+        body = {
+            "labs": {
+                "lab_does_not_exist": {
+                    "lab_profiles": ["m6a.large"],
+                    "can_user_access_lab": True,
+                    "can_user_see_lab_card": True,
+                    "time_quota": "",
+                    "lab_country_status": "protected"
                 }
             }
-        """
+        }
 
         event = helpers.get_event(
-            body=body,
+            body=json.dumps(body),
             path="/portal/access/labs/test_user",
             cookies=fake_auth,
             method="PUT",
@@ -468,25 +475,23 @@ class TestAccessPages:
         ret = main.lambda_handler(event, lambda_context)
 
         assert ret["statusCode"] == 422
-        assert ret["body"] == '{"result": "Lab does not exist: lab_does_not_exist"}'
+        assert '"result": "Lab does not exist: lab_does_not_exist"' in ret["body"]
         assert ret["headers"].get("Content-Type") == "application/json"
 
-        # Missing field
-        body = """
-            {
-                "labs": {
-                    "testlab": {
-                        "lab_profiles": ["m6a.large"],
-                        "can_user_access_lab": true,
-                        "can_user_see_lab_card": true,
-                        "time_quota": ""
-                    }
+        # Missing field "lab_country_status"
+        body = {
+            "labs": {
+                "testlab": {
+                    "lab_profiles": ["m6a.large"],
+                    "can_user_access_lab": True,
+                    "can_user_see_lab_card": True,
+                    "time_quota": "",
                 }
             }
-        """
+        }
 
         event = helpers.get_event(
-            body=body,
+            body=json.dumps(body),
             path="/portal/access/labs/test_user",
             cookies=fake_auth,
             method="PUT",
@@ -495,28 +500,26 @@ class TestAccessPages:
 
         assert ret["statusCode"] == 422
         assert (
-            ret["body"]
-            == '{"result": "Field \'lab_country_status\' not provided for lab testlab"}'
+            '"result": "Field \'lab_country_status\' not provided for lab testlab"'
+            in ret["body"]
         )
         assert ret["headers"].get("Content-Type") == "application/json"
 
         # Field incorrect type
-        body = """
-            {
-                "labs": {
-                    "testlab": {
-                        "lab_profiles": ["m6a.large"],
-                        "can_user_access_lab": [true],
-                        "can_user_see_lab_card": true,
-                        "time_quota": "",
-                        "lab_country_status": "protected"
-                    }
+        body = {
+            "labs": {
+                "testlab": {
+                    "lab_profiles": ["m6a.large"],
+                    "can_user_access_lab": [True],
+                    "can_user_see_lab_card": True,
+                    "time_quota": "",
+                    "lab_country_status": "protected"
                 }
             }
-        """
+        }
 
         event = helpers.get_event(
-            body=body,
+            body=json.dumps(body),
             path="/portal/access/labs/test_user",
             cookies=fake_auth,
             method="PUT",
@@ -525,74 +528,10 @@ class TestAccessPages:
 
         assert ret["statusCode"] == 422
         assert (
-            ret["body"]
-            == "{\"result\": \"Field 'can_user_access_lab' not of type <class 'bool'>\"}"
+            "\"result\": \"Field 'can_user_access_lab' not of type <class 'bool'>\""
+            in ret["body"]
         )
         assert ret["headers"].get("Content-Type") == "application/json"
 
         # Lab profile does not exist
         ## To be implemented
-
-    def test_add_user_to_lab_LabNotFound(
-        self, monkeypatch, lambda_context, helpers, fake_auth
-    ):
-        admin_user = helpers.FakeUser(access=["user", "admin"])
-        basic_user = helpers.FakeUser(username="basic_user",access=["user"])
-        monkeypatch.setattr("portal.access.User", lambda *args, **kwargs: admin_user)
-        monkeypatch.setattr("util.auth.User", lambda *args, **kwargs: admin_user)
-
-        body_str = {
-            "labs": {
-                "test-lab": {
-                    "username": basic_user.username,
-                },
-            },
-        }
-        monkeypatch.setattr(
-            "portal.access.form_body_to_dict", lambda *args, **kwargs: body_str
-        )
-
-        event = helpers.get_event(
-            path=f"/portal/access/labs/{basic_user.username}",
-            cookies=fake_auth,
-            body="placeholder",
-            method="POST",
-        )
-        ret = main.lambda_handler(event, lambda_context)
-
-        assert ret["body"] == '{"result": "Unknown Lab", "error": "Lab \'test-lab\' does not exist"}'
-        assert ret["statusCode"] == 422
-        assert ret["headers"].get("Content-Type") == "application/json"
-
-    def test_add_user_to_lab_BasicRequest(
-        self, monkeypatch, lambda_context, helpers, fake_auth
-    ):
-        labs = helpers.FAKE_ALL_LABS
-        monkeypatch.setattr("portal.access.all_labs", labs)
-
-        admin_user = helpers.FakeUser(access=["user", "admin"])
-        basic_user = helpers.FakeUser(username="basic_user",access=["user"])
-        monkeypatch.setattr("portal.access.User", lambda *args, **kwargs: admin_user)
-        monkeypatch.setattr("util.auth.User", lambda *args, **kwargs: admin_user)
-
-        body_str = {
-            "labs": {
-                "testlab": {
-                    "username": basic_user.username,
-                },
-            },
-        }
-        monkeypatch.setattr(
-            "portal.access.form_body_to_dict", lambda *args, **kwargs: body_str
-        )
-
-        event = helpers.get_event(
-            path=f"/portal/access/labs/{basic_user.username}",
-            cookies=fake_auth,
-            body="placeholder",
-            method="POST",
-        )
-        ret = main.lambda_handler(event, lambda_context)
-
-        assert ret["statusCode"] == 200
-        assert ret["headers"].get("Content-Type") == "application/json"

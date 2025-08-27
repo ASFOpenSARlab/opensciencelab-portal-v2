@@ -1,11 +1,12 @@
+from base64 import b64decode
+import json
+
 from util.format import portal_template, jinja_template
 from util.auth import require_access
 from util.user.dynamo_db import get_users_with_lab
 from util.user import User
 from util.responses import wrap_response, form_body_to_dict
 from util.labs import all_labs
-
-import json
 
 from aws_lambda_powertools.event_handler.api_gateway import Router
 from aws_lambda_powertools.event_handler import content_types
@@ -177,54 +178,6 @@ def get_user_labs(username):
         content_type=content_types.APPLICATION_JSON,
     )
 
-@access_router.post("/labs/<username>")
-@require_access("admin")
-def add_lab_to_user(username):
-    # Parse request
-    body = access_router.current_event.body
-    try:
-        body = _parse_body(body)["labs"]
-    except (KeyError, ValueError) as e:
-        return wrap_response(
-            body=json.dumps({"result": "Malformed JSON", "error": str(e)}),
-            code=400,
-            content_type=content_types.APPLICATION_JSON,
-        )
-    # Get the labs
-    for lab_name, lab_info in body.items():
-        if lab_name not in all_labs:
-            return wrap_response(
-                body=json.dumps({"result": "Unknown Lab", "error":f"Lab '{lab_name}' does not exist"}),
-                code=422,
-                content_type=content_types.APPLICATION_JSON,
-            )
-        pass
-
-
-    # Request payload should contain JSON structure of all labs a user has access to, eg:
-    # { "labs": { "lab-short-name": { ... }, "lab-name-2": { ... } }
-    # Return should contain the labs payload:  ( {"result": "Success", labs = { ... } }) & 200/0K  
-
-    # Edge Case:
-    # User does not exist: { "result": "User Not Found" } & 404/Not Found )
-    # User is not Admin { "result": "Cannot fulfill Request" } & 403/Unauthorized )
-    # JSON is malformed { "result": "Malformed JSON" } & 400/Malformed )
-    # JSON is good, but cannot be processed (lab does not exist, profile does not exist, etc) { "result": "Lab XXX does not exist" } & 422/Unprocessable )
-
-    # {
-    #     "labs": {
-    #         "lab1-short-name": {},
-    #         "lab2-short-name": {},
-    #     }
-    # }
-
-    return wrap_response(
-        # body=json.dumps({"Result": "Success", "labs": {}}),
-        body=json.dumps({"body": body, "type": type(body)}, default=str),
-        code=200,
-        content_type=content_types.APPLICATION_JSON,
-    )
-
 
 @access_router.get("/users/<shortname>")
 @require_access("admin")
@@ -262,7 +215,7 @@ def validate_set_lab_access(
             "time_quota": str,
             "lab_country_status": str,
         }
-        for field in all_fields.keys():
+        for field, _ in all_fields.items():
             if put_lab_access["labs"][lab_name].get(field) is None:
                 return False, f"Field '{field}' not provided for lab {lab_name}"
 
@@ -289,9 +242,13 @@ def set_user_labs(username):
 
     try:
         body = json.loads(body)
-    except json.JSONDecodeError:
+    except json.JSONDecodeError as e:
         return wrap_response(
-            body=json.dumps({"result": "Malformed JSON"}),
+            body=json.dumps({
+                "result": "Malformed JSON",
+                "error": str(e),
+                "body": body
+            }),
             code=400,
             content_type=content_types.APPLICATION_JSON,
         )
@@ -299,16 +256,9 @@ def set_user_labs(username):
     # Validated payload
     success, result = validate_set_lab_access(put_lab_access=body, all_labs_in=all_labs)
     if success:
-        # Set users labs
         user.set_labs(formatted_labs=body["labs"])
-        return wrap_response(
-            body=json.dumps({"labs": body["labs"], "result": "Success"}),
-            code=200,
-            content_type=content_types.APPLICATION_JSON,
-        )
-    else:
-        return wrap_response(
-            body=json.dumps({"result": result}),
-            code=422,
-            content_type=content_types.APPLICATION_JSON,
-        )
+    return wrap_response(
+        body=json.dumps({"result": result, "body": body}),
+        code=200 if success else 422,
+        content_type=content_types.APPLICATION_JSON,
+    )
