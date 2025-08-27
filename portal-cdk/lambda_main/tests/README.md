@@ -50,7 +50,7 @@ response = requests.get(f"{url}/endpoint", cookies=cookies)
 response = requests.put(f"{url}/endpoint", cookies=cookies, json={"key": "value"})
 
 # For Example:
-r = requests.put(f"{url}/portal/access/labs/basic_user", cookies=cookies, json={'labs':{'shortname2':{"lab_profiles":["m6a.large"],"can_user_access_lab":True, "can_user_see_lab_card":True, "time_quota":"","lab_country_status":"protected"}}})
+>>> r = requests.put(f"{url}/portal/access/labs/basic_user", cookies=cookies, json={'labs':{'shortname2':{"lab_profiles":["m6a.large"],"can_user_access_lab":True, "can_user_see_lab_card":True, "time_quota":"","lab_country_status":"protected"}}})
 >>> r.content
 b'{"result": "Success", "body": {"labs": {"shortname2": {"lab_profiles": ["m6a.large"], "can_user_access_lab": true, "can_user_see_lab_card": true, "time_quota": "", "lab_country_status": "protected"}}}}'
 ```
