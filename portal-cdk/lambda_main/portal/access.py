@@ -238,11 +238,9 @@ def set_user_labs(username):
         body = json.loads(body)
     except json.JSONDecodeError as e:
         return wrap_response(
-            body=json.dumps({
-                "result": "Malformed JSON",
-                "error": str(e),
-                "body": body
-            }),
+            body=json.dumps(
+                {"result": "Malformed JSON", "error": str(e), "body": body}
+            ),
             code=400,
             content_type=content_types.APPLICATION_JSON,
         )
