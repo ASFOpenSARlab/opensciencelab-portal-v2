@@ -19,16 +19,6 @@ access_route = {
     "name": "Access",
 }
 
-def _parse_body(body) -> dict:
-    # Parse request
-    body = access_router.current_event.body
-
-    if body is None:
-        error = "Body not provided in post request."
-        raise ValueError(error)
-    return form_body_to_dict(body)
-
-
 # This catches "/portal/access"
 @access_router.get("")
 @require_access()
@@ -94,7 +84,12 @@ def validate_edit_user_request(body: dict) -> tuple[bool, str]:
 def edit_user(shortname):
     # Parse request
     body = access_router.current_event.body
-    body = _parse_body(body)
+
+    if body is None:
+        error = "Body not provided to edit_user"
+        print(error)
+        raise ValueError(error)
+    body = form_body_to_dict(body)
 
     # Validate request
     success, message = validate_edit_user_request(body=body)
