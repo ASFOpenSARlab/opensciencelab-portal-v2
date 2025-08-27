@@ -56,6 +56,7 @@ class CognitoError(GenericFatalError):
     def __init__(self, message, error_code=500, extra_info=None):
         super().__init__(message, error_code, extra_info)
 
+
 class UserNotFound(GenericFatalError):
     """
     Raised if there is a problem with creating a User.
@@ -63,6 +64,7 @@ class UserNotFound(GenericFatalError):
 
     def __init__(self, message, error_code=404, extra_info=None):
         super().__init__(message, error_code, extra_info)
+
 
 class LabDoesNotExist(GenericFatalError):
     """
