@@ -375,7 +375,7 @@ class TestAccessPages:
                 }
             }
         }
-            
+
         event = helpers.get_event(
             body=json.dumps(body),
             path="/portal/access/labs/test_user",
