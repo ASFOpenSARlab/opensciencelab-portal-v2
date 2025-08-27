@@ -32,45 +32,37 @@ class BadSsoToken(GenericFatalError):
     """
     Raised if the SSO Token isn't changed after deploying.
     """
-
-    pass  # pylint: disable=unnecessary-pass
+    def __init__(self, message, error_code=403, extra_info=None):
+        super().__init__(message, error_code, extra_info)
 
 
 class DbError(GenericFatalError):
     """
     Raised if there is a problem with the DB.
     """
-
-    pass  # pylint: disable=unnecessary-pass
-
-
-class UnknownUser(GenericFatalError):
-    """
-    Raised if the user is unknown.
-    """
-
-    pass  # pylint: disable=unnecessary-pass
+    # pylint: disable-next=useless-parent-delegation
+    def __init__(self, message, error_code=500, extra_info=None):
+        super().__init__(message, error_code, extra_info)
 
 
 class CognitoError(GenericFatalError):
     """
     Raised if there is a problem with the DB.
     """
-
-    pass  # pylint: disable=unnecessary-pass
-
+    # pylint: disable-next=useless-parent-delegation
+    def __init__(self, message, error_code=500, extra_info=None):
+        super().__init__(message, error_code, extra_info)
 
 class UserNotFound(GenericFatalError):
     """
     Raised if there is a problem with creating a User.
     """
-
-    pass  # pylint: disable=unnecessary-pass
-
+    def __init__(self, message, error_code=404, extra_info=None):
+        super().__init__(message, error_code, extra_info)
 
 class LabDoesNotExist(GenericFatalError):
     """
     Raised if a given lab does not exist.
     """
-
-    pass  # pylint: disable=unnecessary-pass
+    def __init__(self, message, error_code=404, extra_info=None):
+        super().__init__(message, error_code, extra_info)

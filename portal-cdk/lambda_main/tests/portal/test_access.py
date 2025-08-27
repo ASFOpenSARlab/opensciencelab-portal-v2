@@ -253,7 +253,7 @@ class TestAccessPages:
         ret = main.lambda_handler(event, lambda_context)
 
         assert ret["statusCode"] == 404
-        assert ret["body"] == "User not found"
+        assert '"error": "User not found"' in ret["body"]
         assert ret["headers"].get("Content-Type") == "application/json"
 
     def test_get_all_users_of_a_lab(
@@ -271,7 +271,7 @@ class TestAccessPages:
         ret = main.lambda_handler(event, lambda_context)
 
         assert ret["statusCode"] == 404
-        assert ret["body"] == '"testlab" lab does not exist'
+        assert '"error": "\\"testlab\\" lab does not exist"' in ret["body"]
         assert ret["headers"].get("Content-Type") == "application/json"
 
         # Test lab does exist
@@ -385,7 +385,7 @@ class TestAccessPages:
         ret = main.lambda_handler(event, lambda_context)
 
         assert ret["statusCode"] == 404
-        assert ret["body"] == "User not found"
+        assert '"error": "User not found"' in ret["body"]
         assert ret["headers"].get("Content-Type") == "application/json"
 
     def test_set_user_labs_malformed_json(
@@ -534,3 +534,28 @@ class TestAccessPages:
 
         # Lab profile does not exist
         ## To be implemented
+
+    def test_set_user_labs_not_admin(
+        self, monkeypatch, lambda_context, helpers, fake_auth
+    ):
+        user = helpers.FakeUser(access=["user"])
+        monkeypatch.setattr("util.auth.User", lambda *args, **kwargs: user)
+
+        monkeypatch.setattr("portal.access.User", lambda *args, **kwargs: user)
+
+        monkeypatch.setattr("portal.access.all_labs", helpers.FAKE_ALL_LABS)
+
+        body = {"labs": {}}
+
+        event = helpers.get_event(
+            body=json.dumps(body),
+            path="/portal/access/labs/test_user",
+            cookies=fake_auth,
+            method="PUT",
+        )
+        ret = main.lambda_handler(event, lambda_context)
+
+        assert 'User does not have required access' in ret["body"]
+        assert ret["statusCode"] == 302
+        assert ret["headers"].get("Content-Type") == "text/html"
+
