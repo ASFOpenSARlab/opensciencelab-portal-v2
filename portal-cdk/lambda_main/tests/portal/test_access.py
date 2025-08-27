@@ -323,7 +323,7 @@ class TestAccessPages:
                     "can_user_access_lab": True,
                     "can_user_see_lab_card": True,
                     "time_quota": "",
-                    "lab_country_status": "protected"
+                    "lab_country_status": "protected",
                 }
             }
         }
@@ -371,7 +371,7 @@ class TestAccessPages:
                     "can_user_access_lab": True,
                     "can_user_see_lab_card": True,
                         "time_quota": "",
-                        "lab_country_status": "protected"
+                        "lab_country_status": "protected",
                 }
             }
         }
@@ -461,7 +461,7 @@ class TestAccessPages:
                     "can_user_access_lab": True,
                     "can_user_see_lab_card": True,
                     "time_quota": "",
-                    "lab_country_status": "protected"
+                    "lab_country_status": "protected",
                 }
             }
         }
@@ -513,7 +513,7 @@ class TestAccessPages:
                     "can_user_access_lab": [True],
                     "can_user_see_lab_card": True,
                     "time_quota": "",
-                    "lab_country_status": "protected"
+                    "lab_country_status": "protected",
                 }
             }
         }

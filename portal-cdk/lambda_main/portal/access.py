@@ -1,4 +1,3 @@
-from base64 import b64decode
 import json
 
 from util.format import portal_template, jinja_template
@@ -150,7 +149,7 @@ def edit_user(shortname):
 @require_access()
 @portal_template()
 def view_all_labs():
-    return f"inspect ALL labs"
+    return "inspect ALL labs"
 
 @access_router.get("/lab/<lab>")
 @require_access()
