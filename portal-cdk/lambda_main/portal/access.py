@@ -1,11 +1,11 @@
+import json
+
 from util.format import portal_template, jinja_template
 from util.auth import require_access
 from util.user.dynamo_db import get_users_with_lab
 from util.user import User
 from util.responses import wrap_response, form_body_to_dict
 from util.labs import all_labs
-
-import json
 
 from aws_lambda_powertools.event_handler.api_gateway import Router
 from aws_lambda_powertools.event_handler import content_types
@@ -147,6 +147,13 @@ def edit_user(shortname):
     )
 
 
+@access_router.get("/lab")
+@require_access()
+@portal_template()
+def view_all_labs():
+    return "inspect ALL labs"
+
+
 @access_router.get("/lab/<lab>")
 @require_access()
 @portal_template()
@@ -205,7 +212,7 @@ def validate_set_lab_access(
             "time_quota": str,
             "lab_country_status": str,
         }
-        for field in all_fields.keys():
+        for field, _ in all_fields.items():
             if put_lab_access["labs"][lab_name].get(field) is None:
                 return False, f"Field '{field}' not provided for lab {lab_name}"
 
@@ -232,9 +239,11 @@ def set_user_labs(username):
 
     try:
         body = json.loads(body)
-    except json.JSONDecodeError:
+    except json.JSONDecodeError as e:
         return wrap_response(
-            body=json.dumps({"result": "Malformed JSON"}),
+            body=json.dumps(
+                {"result": "Malformed JSON", "error": str(e), "body": body}
+            ),
             code=400,
             content_type=content_types.APPLICATION_JSON,
         )
@@ -242,16 +251,9 @@ def set_user_labs(username):
     # Validated payload
     success, result = validate_set_lab_access(put_lab_access=body, all_labs_in=all_labs)
     if success:
-        # Set users labs
         user.set_labs(formatted_labs=body["labs"])
-        return wrap_response(
-            body=json.dumps({"labs": body["labs"], "result": "Success"}),
-            code=200,
-            content_type=content_types.APPLICATION_JSON,
-        )
-    else:
-        return wrap_response(
-            body=json.dumps({"result": result}),
-            code=422,
-            content_type=content_types.APPLICATION_JSON,
-        )
+    return wrap_response(
+        body=json.dumps({"result": result, "body": body}),
+        code=200 if success else 422,
+        content_type=content_types.APPLICATION_JSON,
+    )

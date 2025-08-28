@@ -1,6 +1,7 @@
 """AWS Lambda function to handle HTTP requests and return formatted HTML responses."""
 
 import os
+import json
 
 from portal import routes
 from util.format import (
@@ -17,7 +18,7 @@ from util.auth import (
     revoke_refresh_token,
     refresh_map_del,
 )
-from util.exceptions import GenericFatalError, UserNotFound, LabDoesNotExist
+from util.exceptions import GenericFatalError
 from util.session import current_session
 from util.user import User
 
@@ -143,28 +144,12 @@ def handle_not_found(error):
 
 
 # https://docs.powertools.aws.dev/lambda/python/1.25.3/core/event_handler/api_gateway/#exception-handling
+# THIS SHOULD BE THE ONLY ONE! Other exceptions inherit from this one:
 @app.exception_handler(GenericFatalError)
 def handle_generic_fatal_error(exception):
     return wrap_response(
-        render_template(content=exception.message),
+        json.dumps({"error": exception.message}),
         code=exception.error_code,
-    )
-
-
-@app.exception_handler(UserNotFound)
-def handle_user_not_found_error(exception):
-    return wrap_response(
-        body=exception.message,
-        code=404,
-        content_type=content_types.APPLICATION_JSON,
-    )
-
-
-@app.exception_handler(LabDoesNotExist)
-def handle_lab_does_not_exist_error(exception):
-    return wrap_response(
-        body=exception.message,
-        code=404,
         content_type=content_types.APPLICATION_JSON,
     )
 
