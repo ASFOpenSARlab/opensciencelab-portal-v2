@@ -567,7 +567,9 @@ class TestAccessPages:
         monkeypatch.setattr("portal.access.User", lambda *args, **kwargs: user)
 
         monkeypatch.setattr("portal.access.all_labs", helpers.FAKE_ALL_LABS)
-        assert "testlab" in user.labs, "Default lab should be in the user object already."
+        assert "testlab" in user.labs, (
+            "Default lab should be in the user object already."
+        )
 
         body = {
             "labs": {
@@ -587,7 +589,6 @@ class TestAccessPages:
         assert ret["body"].find('"labs": {') != -1
         assert ret["headers"].get("Content-Type") == "application/json"
         assert "testlab" not in user.labs, "Lab should be deleted after request."
-
 
     def test_delete_user_labs_malformed_json(
         self, monkeypatch, lambda_context, helpers, fake_auth
@@ -671,7 +672,6 @@ class TestAccessPages:
         assert ret["statusCode"] == 422
         assert '"result": "Lab does not exist: lab_does_not_exist"' in ret["body"]
         assert ret["headers"].get("Content-Type") == "application/json"
-
 
     def test_delete_user_labs_not_admin(
         self, monkeypatch, lambda_context, helpers, fake_auth
