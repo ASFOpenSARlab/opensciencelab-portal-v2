@@ -13,6 +13,7 @@ from aws_cdk import (
     aws_cloudfront as cloudfront,
     aws_cloudfront_origins as origins,
     aws_iam as iam,
+    aws_s3 as s3,
     aws_secretsmanager as secretsmanager,
     SecretValue,
 )
@@ -165,7 +166,41 @@ class PortalCdkStack(Stack):
                 viewer_protocol_policy=cloudfront.ViewerProtocolPolicy.ALLOW_ALL,
             )
 
-        # Hub endpoint
+        ## Svelte frontend out of S3
+        frontend_bucket = s3.Bucket(
+            self,
+            "FrontendSvelteBucket",  # Logical ID within the stack
+            bucket_name=f"frontend-svelte-{construct_id.lower()}",
+            versioned=True,
+            removal_policy=RemovalPolicy.DESTROY,
+            block_public_access=s3.BlockPublicAccess.BLOCK_ALL,
+            public_read_access=False,
+        )
+
+        portal_cloudfront.add_behavior(
+            path_pattern="/frontend/*",
+            # https://docs.aws.amazon.com/cdk/api/v2/python/aws_cdk.aws_cloudfront_origins/README.html
+            origin=origins.S3BucketOrigin.with_origin_access_control(
+                frontend_bucket,
+                origin_access_levels=[
+                    cloudfront.AccessLevel.READ,
+                    cloudfront.AccessLevel.READ_VERSIONED,
+                    cloudfront.AccessLevel.WRITE,
+                    cloudfront.AccessLevel.DELETE,
+                    cloudfront.AccessLevel.LIST,
+                ],
+                custom_headers={"Hello": "World"},
+            ),
+            compress=True,
+            # origin_request_policy=cloudfront.OriginRequestPolicy.CORS,
+            # allowed_methods=cloudfront.AllowedMethods.ALLOW_ALL,
+            # cache_policy=cloudfront.CachePolicy.CACHING_DISABLED,
+            response_headers_policy=cloudfront.ResponseHeadersPolicy.CORS_ALLOW_ALL_ORIGINS_WITH_PREFLIGHT,
+            viewer_protocol_policy=cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
+            # viewer_protocol_policy=cloudfront.ViewerProtocolPolicy.ALLOW_ALL,
+        )
+
+        ## Hub endpoint
         http_api.add_routes(
             path="/portal",
             methods=[apigwv2.HttpMethod.ANY],

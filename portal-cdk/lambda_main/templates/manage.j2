@@ -21,42 +21,36 @@
             <th>Tools</th>
         </tr>
         {% for user in users %}
-        <tr>
-            <th>{{ user["username"] }}</th>
-            <th>{{ ", ".join(user["labs"][lab.short_lab_name]["lab_profiles"]) }}</th>
-            <th>
-                <form method="post" action="{{ lab.short_lab_name }}/edituser">
-                    <input type="hidden" name="username" value={{ user["username"] }}>
-                    <input type="hidden" name="action" value="toggle_can_user_see_lab_card">
-                    <input type="checkbox"
-                            name="can_user_see_lab_card"
-                            onchange="this.form.submit()"
-                            {% if user["labs"][lab.short_lab_name]["can_user_see_lab_card"] %}
-                            checked
-                            {% endif %}
-                            >
-                </form>
-            </th>
-            <th>
-                <form method="post" action="{{ lab.short_lab_name }}/edituser">
-                    <input type="hidden" name="username" value={{ user["username"] }}>
-                    <input type="hidden" name="action" value="toggle_can_user_access_lab">
-                    <input type="checkbox"
-                            name="can_user_access_lab"
-                            onchange="this.form.submit()"
-                            {% if user["labs"][lab.short_lab_name]["can_user_access_lab"] %}
-                                checked
-                            {% endif %}
-                            >
-                </form>
-            </th>
-            <th>
-                <form method="post" action="{{ lab.short_lab_name }}/edituser">
-                    <input type="hidden" name="username" value="{{ user['username'] }}">
-                    <button type="submit" name="action" value="remove_user">Remove</button>
-                </form>
-            </th>
-        </tr>
+            <tr>
+                <th>{{ user["username"] }}</th>
+                <th>{{ ", ".join(user["labs"][lab.short_lab_name]["lab_profiles"]) }}</th>
+                <th>
+                    <form method="post" action="{{ lab.short_lab_name }}/edituser">
+                        <input type="hidden" name="username" value={{ user["username"] }}>
+                        <input type="hidden" name="action" value="toggle_can_user_see_lab_card">
+                        <input type="checkbox"
+                               name="can_user_see_lab_card"
+                               onchange="this.form.submit()"
+                               {% if user["labs"][lab.short_lab_name]["can_user_see_lab_card"] %}checked{% endif %}>
+                    </form>
+                </th>
+                <th>
+                    <form method="post" action="{{ lab.short_lab_name }}/edituser">
+                        <input type="hidden" name="username" value={{ user["username"] }}>
+                        <input type="hidden" name="action" value="toggle_can_user_access_lab">
+                        <input type="checkbox"
+                               name="can_user_access_lab"
+                               onchange="this.form.submit()"
+                               {% if user["labs"][lab.short_lab_name]["can_user_access_lab"] %}checked{% endif %}>
+                    </form>
+                </th>
+                <th>
+                    <form method="post" action="{{ lab.short_lab_name }}/edituser">
+                        <input type="hidden" name="username" value="{{ user['username'] }}">
+                        <button type="submit" name="action" value="remove_user">Remove</button>
+                    </form>
+                </th>
+            </tr>
         {% endfor %}
         <tr>
             <form method="post" action="{{ lab.short_lab_name }}/edituser">
@@ -68,13 +62,13 @@
                 </th>
                 <input type="hidden" name="time_quota" placeholder="time_quota" value="">
                 <input type="hidden"
-                        name="lab_country_status"
-                        placeholder="protected"
-                        value="unrestricted">
+                       name="lab_country_status"
+                       placeholder="protected"
+                       value="unrestricted">
                 <th>
                     <input type="checkbox"
-                            name="can_user_see_lab_card"
-                            id="can_user_see_lab_card">
+                           name="can_user_see_lab_card"
+                           id="can_user_see_lab_card">
                 </th>
                 <th>
                     <input type="checkbox" name="can_user_access_lab" id="can_user_access_lab">
