@@ -225,7 +225,9 @@ def validate_set_lab_access(put_lab_request: dict) -> tuple[bool, str]:
         #     pass
     return True, "Success"
 
-def validate_delete_lab_access(delete_lab_request: dict, user: User) -> tuple[bool, str]:
+def validate_delete_lab_access(
+    delete_lab_request: dict, user: User
+) -> tuple[bool, str]:
     # Validate input is correct type
     if not isinstance(delete_lab_request, dict):
         return False, "Body is not correct type"
@@ -238,17 +240,23 @@ def validate_delete_lab_access(delete_lab_request: dict, user: User) -> tuple[bo
         # Ensure lab exist
         if lab_name not in all_labs:
             return False, f"Lab does not exist: {lab_name}"
-    
+
         if not isinstance(lab_data, dict):
             return False, f"Lab data for {lab_name} is not a dict"
     ## Get all the keys from delete_lab_request, that are NOT in user labs:
     # (Need to do this last, since lab A might fail linting above
     #  and you'd want error that first)
-    already_removed_labs = [key for key in delete_lab_request["labs"] if key not in user.labs]
+    already_removed_labs = [
+        key for key in delete_lab_request["labs"] if key not in user.labs
+    ]
     if already_removed_labs:
         # Still return 200, but change the message:
-        return True, f"User isn't already apart of labs: {', '.join(already_removed_labs)}"
+        return (
+            True,
+            f"User isn't already apart of labs: {', '.join(already_removed_labs)}",
+        )
     return True, "Success"
+
 
 @access_router.put("/labs/<username>")
 @require_access("admin")
@@ -279,6 +287,7 @@ def set_user_labs(username):
         code=200 if success else 422,
         content_type=content_types.APPLICATION_JSON,
     )
+
 
 @access_router.delete("/labs/<username>")
 @require_access("admin")
