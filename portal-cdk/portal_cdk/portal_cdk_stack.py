@@ -177,6 +177,29 @@ class PortalCdkStack(Stack):
             public_read_access=False,
         )
 
+        # Define the CloudFront Function code inline
+        frontend_function_code = """
+            function handler(event) {
+                var request = event.request;
+                var uri = request.uri;
+
+                // Check whether the URI is missing a file name.
+                if (uri.endsWith('/')) {
+                    request.uri += 'index.html';
+                }
+
+                return request;
+            }
+        """
+
+        frontend_function = cloudfront.Function(
+            self,
+            "FrontendFunction",
+            code=cloudfront.FunctionCode.from_inline(frontend_function_code),
+            runtime=cloudfront.FunctionRuntime.JS_2_0,
+        )
+
+        # Add frontend endpoint
         portal_cloudfront.add_behavior(
             path_pattern="/frontend/*",
             # https://docs.aws.amazon.com/cdk/api/v2/python/aws_cdk.aws_cloudfront_origins/README.html
@@ -185,12 +208,18 @@ class PortalCdkStack(Stack):
                 origin_access_levels=[
                     cloudfront.AccessLevel.READ,
                     cloudfront.AccessLevel.READ_VERSIONED,
-                    cloudfront.AccessLevel.WRITE,
-                    cloudfront.AccessLevel.DELETE,
-                    cloudfront.AccessLevel.LIST,
+                    # cloudfront.AccessLevel.WRITE,
+                    # cloudfront.AccessLevel.DELETE,
+                    # cloudfront.AccessLevel.LIST,
                 ],
                 custom_headers={"Hello": "World"},
             ),
+            function_associations=[
+                cloudfront.FunctionAssociation(
+                    function=frontend_function,
+                    event_type=cloudfront.FunctionEventType.VIEWER_REQUEST,
+                )
+            ],
             compress=True,
             # origin_request_policy=cloudfront.OriginRequestPolicy.CORS,
             # allowed_methods=cloudfront.AllowedMethods.ALLOW_ALL,
