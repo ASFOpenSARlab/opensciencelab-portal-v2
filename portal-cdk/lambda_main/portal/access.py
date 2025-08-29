@@ -225,6 +225,7 @@ def validate_set_lab_access(put_lab_request: dict) -> tuple[bool, str]:
         #     pass
     return True, "Success"
 
+
 def validate_delete_lab_access(
     delete_lab_request: dict, user: User
 ) -> tuple[bool, str]:
