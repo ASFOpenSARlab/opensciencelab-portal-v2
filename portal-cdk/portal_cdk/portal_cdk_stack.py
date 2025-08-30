@@ -14,6 +14,7 @@ from aws_cdk import (
     aws_cloudfront_origins as origins,
     aws_iam as iam,
     aws_s3 as s3,
+    aws_s3_deployment as s3deploy,
     aws_secretsmanager as secretsmanager,
     SecretValue,
 )
@@ -177,20 +178,23 @@ class PortalCdkStack(Stack):
             public_read_access=False,
         )
 
+        # Prefix key within bucket. This needs to be the prefix path for the endpoint.
+        FRONTEND_PREFIX = "ui"
+
         # Define the CloudFront Function code inline
         frontend_function_code = """
-            function handler(event) {
+            function handler(event) {{
                 var request = event.request;
                 var uri = request.uri;
 
                 // Check whether the URI is missing a file name.
-                if (uri.endsWith('/')) {
-                    request.uri += 'index.html';
-                }
+                if (uri.endsWith("{frontend_prefix}")) {{
+                    request.uri += '/index.html';
+                }}
 
                 return request;
-            }
-        """
+            }}
+        """.format(frontend_prefix=FRONTEND_PREFIX)
 
         frontend_function = cloudfront.Function(
             self,
@@ -201,7 +205,7 @@ class PortalCdkStack(Stack):
 
         # Add frontend endpoint
         portal_cloudfront.add_behavior(
-            path_pattern="/frontend/*",
+            path_pattern=f"/{FRONTEND_PREFIX}*",
             # https://docs.aws.amazon.com/cdk/api/v2/python/aws_cdk.aws_cloudfront_origins/README.html
             origin=origins.S3BucketOrigin.with_origin_access_control(
                 frontend_bucket,
@@ -227,6 +231,18 @@ class PortalCdkStack(Stack):
             response_headers_policy=cloudfront.ResponseHeadersPolicy.CORS_ALLOW_ALL_ORIGINS_WITH_PREFLIGHT,
             viewer_protocol_policy=cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
             # viewer_protocol_policy=cloudfront.ViewerProtocolPolicy.ALLOW_ALL,
+        )
+
+        # Deploy content from a local directory to the S3 bucket
+        s3deploy.BucketDeployment(
+            self,
+            "DeployFrontendContentInvalidateCache",
+            sources=[s3deploy.Source.asset("svelte/build")],
+            destination_bucket=frontend_bucket,
+            destination_key_prefix=f"{FRONTEND_PREFIX}/",
+            # Optional: Invalidate CloudFront cache if using CloudFront distribution
+            distribution=portal_cloudfront,
+            distribution_paths=[f"/{FRONTEND_PREFIX}*"],
         )
 
         ## Hub endpoint
