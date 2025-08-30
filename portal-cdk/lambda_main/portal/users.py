@@ -1,3 +1,6 @@
+import json
+from decimal import Decimal
+
 from util.format import (
     portal_template,
 )
@@ -21,6 +24,14 @@ users_route = {
     "prefix": "/portal/users",
     "name": "Users",
 }
+
+
+# Json dumps does not natively handle decimals
+class DecimalEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, Decimal):
+            return str(obj)
+        return super().default(obj)
 
 
 def _delete_user(username) -> bool:
@@ -138,3 +149,15 @@ def delete_user(username):
         headers={"Location": f"/portal/users?{'&'.join(get_params)}"},
         code=302,
     )
+
+
+@users_router.get("/all/usernames")
+# require_access() is broken due to assumptions with jinja
+# @require_access("admin")
+def users_all_usernames():
+    # Fetch all users
+    all_users: list[dict] = get_all_items()
+    all_usernames = [u["username"] for u in all_users]
+    all_usernames_sorted = sorted(all_usernames)
+
+    return json.dumps(all_usernames_sorted)
