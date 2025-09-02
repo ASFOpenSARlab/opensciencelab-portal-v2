@@ -234,16 +234,20 @@ class PortalCdkStack(Stack):
         )
 
         # Deploy content from a local directory to the S3 bucket
-        s3deploy.BucketDeployment(
-            self,
-            "DeployFrontendContentInvalidateCache",
-            sources=[s3deploy.Source.asset("svelte/build")],
-            destination_bucket=frontend_bucket,
-            destination_key_prefix=f"{FRONTEND_PREFIX}/",
-            # Optional: Invalidate CloudFront cache if using CloudFront distribution
-            distribution=portal_cloudfront,
-            distribution_paths=[f"/{FRONTEND_PREFIX}*"],
-        )
+        # Check to see if /code/portal-cdk/svelte/build exists.
+        # If it does not, then there is no artifacts to push to the s3 bucket.
+        # In that case, don't deploy content
+        if os.path.exists("svelte/build"):
+            s3deploy.BucketDeployment(
+                self,
+                "DeployFrontendContentInvalidateCache",
+                sources=[s3deploy.Source.asset("svelte/build")],
+                destination_bucket=frontend_bucket,
+                destination_key_prefix=f"{FRONTEND_PREFIX}/",
+                # Optional: Invalidate CloudFront cache if using CloudFront distribution
+                distribution=portal_cloudfront,
+                distribution_paths=[f"/{FRONTEND_PREFIX}*"],
+            )
 
         ## Hub endpoint
         http_api.add_routes(
