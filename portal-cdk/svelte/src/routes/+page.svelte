@@ -2,11 +2,11 @@
   import { username } from "$lib/utils";
   import { page } from "$app/state";
 
-  let domain = page.url.host;
+  let origin = page.url.origin;
   let usernames = $state([]);
 
   async function getUsernames() {
-    const url = domain + "/portal/users/all/usernames";
+    const url = origin + "/portal/users/all/usernames";
 
     await fetch(url, {
       method: "GET",
