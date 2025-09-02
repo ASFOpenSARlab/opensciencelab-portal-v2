@@ -30,6 +30,12 @@ LABS = (
     },
 )
 
+# Prefix key within frontend artifact bucket
+# This is also used as the cloudfront prefix path for frontend
+# If this is changed also update svelte.config.js#7
+# Do not include root slash and any possible trailing slashes.
+FRONTEND_PREFIX = "ui"
+
 
 class PortalCdkStack(Stack):
     def __init__(
@@ -177,9 +183,6 @@ class PortalCdkStack(Stack):
             block_public_access=s3.BlockPublicAccess.BLOCK_ALL,
             public_read_access=False,
         )
-
-        # Prefix key within bucket. This needs to be the prefix path for the endpoint.
-        FRONTEND_PREFIX = "ui"
 
         # Define the CloudFront Function code inline
         frontend_function_code = """
