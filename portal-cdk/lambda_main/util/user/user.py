@@ -74,7 +74,7 @@ class User:
 
         if not db_info and not create_if_missing:
             raise UserNotFound(
-                f"User {self.username} does not exist and was not created"
+                f"User {self.username} does not exist and was not created",
             )
 
         ## If it doesn't exist, create it with the defaults:
