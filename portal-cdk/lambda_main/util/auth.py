@@ -5,7 +5,7 @@ from cachetools import TTLCache
 
 from util.user import User
 from util.responses import wrap_response
-from util.exceptions import BadSsoToken, UnknownUser
+from util.exceptions import BadSsoToken, UserNotFound
 from util.session import current_session, PortalAuth
 from util.format import render_template
 import util.cognito
@@ -47,7 +47,7 @@ def encrypt_data(data: dict | str) -> str:
                 "(In Secrets: retrieve the value, then the edit button will appear).",
             ]
         )
-        raise BadSsoToken(msg, error_code=401) from e
+        raise BadSsoToken(msg) from e
 
 
 def decrypt_data(data):
@@ -217,7 +217,7 @@ def parse_token(token):
     # Grab the username from access_token JWT, and encode it
     username = access_token_decoded.get("username", "Unknown")
     if username == "Unknown":
-        raise (UnknownUser("Unknown user from decoded access token"))
+        raise (UserNotFound("Unknown user from decoded access token"))
 
     username_cookie_value = encrypt_data(username)
 
