@@ -54,3 +54,9 @@ response = requests.put(f"{url}/endpoint", cookies=cookies, json={"key": "value"
 >>> r.content
 b'{"result": "Success", "body": {"labs": {"shortname2": {"lab_profiles": ["m6a.large"], "can_user_access_lab": true, "can_user_see_lab_card": true, "time_quota": "", "lab_country_status": "protected"}}}}'
 ```
+
+- If you have to test with MALFORMED json, you can't use the `json=asdf` or it'll fix the json for you (and string is technically valid json btw). Craft the json yourself like this (use `data` instead of `json`, and add the content-type header). The error here is using `'` instead of `"` to wrap the `a`.
+
+```python
+>>> r = requests.delete(f"{url}/portal/access/labs/basic_user", data="{'a':1}", cookies=cookies, headers={"Content-Type": "application/json"})
+```
