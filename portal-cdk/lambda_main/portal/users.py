@@ -161,3 +161,10 @@ def users_all_usernames():
     all_usernames_sorted = sorted(all_usernames)
 
     return json.dumps(all_usernames_sorted)
+
+
+@users_router.get("/whoami")
+def users_whoami():
+    username: str = current_session.auth.cognito.username
+
+    return json.dumps({"username": username})
