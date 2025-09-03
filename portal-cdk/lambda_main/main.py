@@ -148,7 +148,12 @@ def handle_not_found(error):
 @app.exception_handler(GenericFatalError)
 def handle_generic_fatal_error(exception):
     return wrap_response(
-        json.dumps({"error": exception.message}),
+        json.dumps(
+            {
+                "error": exception.message,
+                "extra_info": exception.extra_info,
+            }
+        ),
         code=exception.error_code,
         content_type=content_types.APPLICATION_JSON,
     )
