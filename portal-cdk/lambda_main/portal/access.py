@@ -284,6 +284,7 @@ def set_user_labs(username):
     success, result = validate_set_lab_access(put_lab_request=body)
     if success:
         user.set_labs(formatted_labs=body["labs"])
+
     return wrap_response(
         body=json.dumps({"result": result, "body": body}),
         code=200 if success else 422,
@@ -307,6 +308,7 @@ def delete_user_labs(username):
         for lab_name in body["labs"].keys():
             if lab_name in user.labs:
                 user.remove_lab(lab_name)
+
     return wrap_response(
         body=json.dumps({"result": result, "body": body}),
         code=200 if success else 422,
