@@ -6,6 +6,7 @@ from util.user.dynamo_db import get_users_with_lab
 from util.user import User
 from util.responses import wrap_response, form_body_to_dict
 from util.labs import all_labs
+from util.exceptions import MalformedRequest
 
 from aws_lambda_powertools.event_handler.api_gateway import Router
 from aws_lambda_powertools.event_handler import content_types
@@ -17,6 +18,16 @@ access_route = {
     "prefix": "/portal/access",
     "name": "Access",
 }
+
+
+def _load_json(body: str) -> dict:
+    try:
+        return json.loads(body)
+    except json.JSONDecodeError as e:
+        raise MalformedRequest(
+            message="Malformed JSON",
+            extra_info={"error": str(e), "body": body},
+        ) from e
 
 
 # This catches "/portal/access"
@@ -267,17 +278,7 @@ def set_user_labs(username):
 
     # Parse request body
     body = access_router.current_event.body
-
-    try:
-        body = json.loads(body)
-    except json.JSONDecodeError as e:
-        return wrap_response(
-            body=json.dumps(
-                {"result": "Malformed JSON", "error": str(e), "body": body}
-            ),
-            code=400,
-            content_type=content_types.APPLICATION_JSON,
-        )
+    body = _load_json(body)
 
     # Validated payload
     success, result = validate_set_lab_access(put_lab_request=body)
@@ -298,17 +299,8 @@ def delete_user_labs(username):
 
     # Parse request body
     body = access_router.current_event.body
+    body = _load_json(body)
 
-    try:
-        body = json.loads(body)
-    except json.JSONDecodeError as e:
-        return wrap_response(
-            body=json.dumps(
-                {"result": "Malformed JSON", "error": str(e), "body": body}
-            ),
-            code=400,
-            content_type=content_types.APPLICATION_JSON,
-        )
     # Validated payload
     success, result = validate_delete_lab_access(delete_lab_request=body, user=user)
     if success:

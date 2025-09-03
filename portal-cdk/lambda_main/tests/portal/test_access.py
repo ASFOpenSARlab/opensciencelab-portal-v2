@@ -409,7 +409,7 @@ class TestAccessPages:
         ret = main.lambda_handler(event, lambda_context)
 
         assert ret["statusCode"] == 400
-        assert '"result": "Malformed JSON"' in ret["body"]
+        assert '"error": "Malformed JSON"' in ret["body"]
         assert ret["headers"].get("Content-Type") == "application/json"
 
     def test_set_user_labs_validate_payload(
@@ -611,7 +611,7 @@ class TestAccessPages:
         ret = main.lambda_handler(event, lambda_context)
 
         assert ret["statusCode"] == 400
-        assert '"result": "Malformed JSON"' in ret["body"]
+        assert '"error": "Malformed JSON"' in ret["body"]
         assert ret["headers"].get("Content-Type") == "application/json"
 
     def test_delete_user_labs_validate_payload(
