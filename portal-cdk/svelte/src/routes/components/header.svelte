@@ -1,5 +1,11 @@
+<script>
+  import { getContext } from "svelte";
+
+  let myUsername = getContext("myUsername");
+</script>
+
 <div>
-  <h1>This is a header</h1>
+  <h1>This is a header for <i>{myUsername}</i></h1>
 </div>
 
 <style>
