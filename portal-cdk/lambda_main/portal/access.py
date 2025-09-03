@@ -6,6 +6,7 @@ from util.user.dynamo_db import get_users_with_lab
 from util.user import User
 from util.responses import wrap_response, form_body_to_dict
 from util.labs import all_labs
+from util.exceptions import MalformedRequest
 
 from aws_lambda_powertools.event_handler.api_gateway import Router
 from aws_lambda_powertools.event_handler import content_types
@@ -17,6 +18,16 @@ access_route = {
     "prefix": "/portal/access",
     "name": "Access",
 }
+
+
+def _load_json(body: str) -> dict:
+    try:
+        return json.loads(body)
+    except json.JSONDecodeError as e:
+        raise MalformedRequest(
+            message="Malformed JSON",
+            extra_info={"error": str(e), "body": body},
+        ) from e
 
 
 # This catches "/portal/access"
@@ -188,20 +199,18 @@ def get_labs_users(shortname):
     )
 
 
-def validate_set_lab_access(
-    put_lab_access: dict, all_labs_in: dict
-) -> tuple[bool, str]:
+def validate_set_lab_access(put_lab_request: dict) -> tuple[bool, str]:
     # Validate input is correct type
-    if not isinstance(put_lab_access, dict):
+    if not isinstance(put_lab_request, dict):
         return False, "Body is not correct type"
 
     # Validate input has key "labs"
-    if put_lab_access.get("labs") is None:
+    if "labs" not in put_lab_request:
         return False, "Does not contain 'labs' key"
 
-    for lab_name in put_lab_access["labs"].keys():
+    for lab_name in put_lab_request["labs"].keys():
         # Ensure lab exist
-        if lab_name not in all_labs_in:
+        if lab_name not in all_labs:
             return False, f"Lab does not exist: {lab_name}"
 
         # Check all lab fields exist and are correct type
@@ -213,18 +222,51 @@ def validate_set_lab_access(
             "lab_country_status": str,
         }
         for field, _ in all_fields.items():
-            if put_lab_access["labs"][lab_name].get(field) is None:
+            if put_lab_request["labs"][lab_name].get(field) is None:
                 return False, f"Field '{field}' not provided for lab {lab_name}"
 
             if not isinstance(
-                put_lab_access["labs"][lab_name][field], all_fields[field]
+                put_lab_request["labs"][lab_name][field], all_fields[field]
             ):
                 return False, f"Field '{field}' not of type {all_fields[field]}"
 
         # NOT IMPLEMENTED YET
         # # Ensure all profiles exist for a given lab
-        # for profile in put_lab_access["labs"][lab_name]["lab_profiles"]:
+        # for profile in put_lab_request["labs"][lab_name]["lab_profiles"]:
         #     pass
+    return True, "Success"
+
+
+def validate_delete_lab_access(
+    delete_lab_request: dict, user: User
+) -> tuple[bool, str]:
+    # Validate input is correct type
+    if not isinstance(delete_lab_request, dict):
+        return False, "Body is not correct type"
+
+    # Validate input has key "labs"
+    if "labs" not in delete_lab_request:
+        return False, "Does not contain 'labs' key"
+
+    for lab_name, lab_data in delete_lab_request["labs"].items():
+        # Ensure lab exist
+        if lab_name not in all_labs:
+            return False, f"Lab does not exist: {lab_name}"
+
+        if not isinstance(lab_data, dict):
+            return False, f"Lab data for {lab_name} is not a dict"
+    ## Get all the keys from delete_lab_request, that are NOT in user labs:
+    # (Need to do this last, since lab A might fail linting above
+    #  and you'd want error that first)
+    already_removed_labs = [
+        key for key in delete_lab_request["labs"] if key not in user.labs
+    ]
+    if already_removed_labs:
+        # Still return 200, but change the message:
+        return (
+            True,
+            f"User isn't already apart of labs: {', '.join(already_removed_labs)}",
+        )
     return True, "Success"
 
 
@@ -236,22 +278,37 @@ def set_user_labs(username):
 
     # Parse request body
     body = access_router.current_event.body
-
-    try:
-        body = json.loads(body)
-    except json.JSONDecodeError as e:
-        return wrap_response(
-            body=json.dumps(
-                {"result": "Malformed JSON", "error": str(e), "body": body}
-            ),
-            code=400,
-            content_type=content_types.APPLICATION_JSON,
-        )
+    body = _load_json(body)
 
     # Validated payload
-    success, result = validate_set_lab_access(put_lab_access=body, all_labs_in=all_labs)
+    success, result = validate_set_lab_access(put_lab_request=body)
     if success:
         user.set_labs(formatted_labs=body["labs"])
+
+    return wrap_response(
+        body=json.dumps({"result": result, "body": body}),
+        code=200 if success else 422,
+        content_type=content_types.APPLICATION_JSON,
+    )
+
+
+@access_router.delete("/labs/<username>")
+@require_access("admin")
+def delete_user_labs(username):
+    # Check user exists
+    user = User(username=username, create_if_missing=False)
+
+    # Parse request body
+    body = access_router.current_event.body
+    body = _load_json(body)
+
+    # Validated payload
+    success, result = validate_delete_lab_access(delete_lab_request=body, user=user)
+    if success:
+        for lab_name in body["labs"].keys():
+            if lab_name in user.labs:
+                user.remove_lab(lab_name)
+
     return wrap_response(
         body=json.dumps({"result": result, "body": body}),
         code=200 if success else 422,
