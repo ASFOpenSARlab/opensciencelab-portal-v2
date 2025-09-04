@@ -12,6 +12,8 @@ Makefile commands:
 
     build-npm:              Build NPM packages for frontend
 
+	run-npm-dev:            Run locally built frontend for development. Some things might be broken.
+
     test:                   Run PyTest tests
 
     synth-portal:           Synth portal CDK project
@@ -136,6 +138,11 @@ bundle-deps:
 build-npm:
 	echo "Building and compiling npm packages..." && \
 	cd ./portal-cdk/svelte/ && npm install . && npm run build
+
+.PHONY := run-npm-dev
+run-npm-dev:
+	echo "Running locally frontend..." && \
+	cd ./portal-cdk/svelte/ && npm run dev
 
 .PHONE := test
 test: install-reqs bundle-deps

@@ -1,13 +1,11 @@
 <script>
   import { page } from "$app/state";
-  import { getContext } from "svelte";
 
-  const myUsername = getContext("myUsername");
+  import { userInfo } from "$lib/store.js";
+  const username = $userInfo.username;
+  console.log("page.svelete/userInfo ", username);
 
-  console.log("page.svelete/myUsename ", myUsername);
-
-  //let origin = page.url.origin;
-  let origin = "https://dq3yyi71b8t6w.cloudfront.net";
+  let origin = page.url.origin;
   let usernames = $state([]);
 
   async function getUsernames() {
@@ -34,7 +32,7 @@
 </script>
 
 <div>
-  <h1>Welcome {myUsername}</h1>
+  <h1>Welcome {username}</h1>
 
   <p>Here's a list of all usernames:</p>
 
