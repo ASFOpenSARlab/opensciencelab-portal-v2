@@ -167,4 +167,6 @@ def users_all_usernames():
 def users_whoami():
     username: str = current_session.auth.cognito.username
 
+    username = "emlundell"
+
     return json.dumps({"username": username})
