@@ -23,7 +23,7 @@
         {% for user in users %}
         <tr>
             <th>
-                <b><a href="{{ '/portal/profile/form/%s'%user["username"] }}">{{ user["username"] }}</a></b>
+                <b><a href="/portal/profile/form/{{user["username"]}}">{{ user["username"] }}</a></b>
             </th>
             <th>
                 {% for profile in lab.allowed_profiles %}
