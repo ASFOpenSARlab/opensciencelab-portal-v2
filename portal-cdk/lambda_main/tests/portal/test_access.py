@@ -380,11 +380,10 @@ class TestAccessPages:
 
         assert ret["statusCode"] == 422, ret
         assert (
-            ret["body"].find('"Profile \'m6a.large\' not allowed for lab noaccess"')
+            ret["body"].find("\"Profile 'm6a.large' not allowed for lab noaccess\"")
             != -1
         )
         assert ret["headers"].get("Content-Type") == "application/json"
-
 
     def test_set_user_labs_no_user(
         self, monkeypatch, lambda_context, helpers, fake_auth
