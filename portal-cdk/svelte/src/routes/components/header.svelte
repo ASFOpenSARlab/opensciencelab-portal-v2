@@ -1,9 +1,9 @@
 <script>
-  import { userInfo } from "$lib/store.js";
+  import { userInfo } from "$lib/store.svelte.js";
 </script>
 
 <div>
-  <h1>This is a header for <i>{$userInfo.username}</i></h1>
+  <h1>This is a header for <i>{userInfo.username}</i></h1>
 </div>
 
 <style>

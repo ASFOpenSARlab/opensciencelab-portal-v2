@@ -1,9 +1,6 @@
 <script>
   import { page } from "$app/state";
-
-  import { userInfo } from "$lib/store.js";
-  const username = $userInfo.username;
-  console.log("page.svelete/userInfo ", username);
+  import { userInfo } from "$lib/store.svelte.js";
 
   let origin = page.url.origin;
   let usernames = $state([]);
@@ -15,11 +12,9 @@
       method: "GET",
     })
       .then((response) => {
-        console.log("Response: ", response);
         return response.json();
       })
       .then((data) => {
-        console.log("Data: ", data);
         if (Object.keys(data).length === 0) {
           throw "No data";
         }
@@ -32,7 +27,7 @@
 </script>
 
 <div>
-  <h1>Welcome {username}</h1>
+  <h1>Welcome {userInfo.username}</h1>
 
   <p>Here's a list of all usernames:</p>
 
