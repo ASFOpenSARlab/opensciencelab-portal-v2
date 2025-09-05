@@ -308,7 +308,7 @@
                 {% for lab in labs.values() %}
                     <tr>
                         <td>
-                            <b><a href="{{ '/portal/access/manage/%s'%lab.short_lab_name }}">{{ lab.short_lab_name }}</a></b>
+                            <b><a href="/portal/access/manage/{{lab.short_lab_name}}">{{ lab.short_lab_name }}</a></b>
                         </td>
                         <td>
                             {% if user_profile.is_admin() %}

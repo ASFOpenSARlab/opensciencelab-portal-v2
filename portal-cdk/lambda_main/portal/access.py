@@ -232,8 +232,10 @@ def validate_set_lab_access(put_lab_request: dict) -> tuple[bool, str]:
 
         # Ensure all profiles exist for a given lab
         for profile in put_lab_request["labs"][lab_name]["lab_profiles"]:
+            # If the lab doesn't have the profile you're trying to set:
             if profile not in all_labs[lab_name].allowed_profiles:
                 return False, f"Profile '{profile}' not allowed for lab {lab_name}"
+
     return True, "Success"
 
 
