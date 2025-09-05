@@ -230,10 +230,10 @@ def validate_set_lab_access(put_lab_request: dict) -> tuple[bool, str]:
             ):
                 return False, f"Field '{field}' not of type {all_fields[field]}"
 
-        # NOT IMPLEMENTED YET
-        # # Ensure all profiles exist for a given lab
-        # for profile in put_lab_request["labs"][lab_name]["lab_profiles"]:
-        #     pass
+        # Ensure all profiles exist for a given lab
+        for profile in put_lab_request["labs"][lab_name]["lab_profiles"]:
+            if profile not in all_labs[lab_name].allowed_profiles:
+                return False, f"Profile '{profile}' not allowed for lab {lab_name}"
     return True, "Success"
 
 
