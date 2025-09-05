@@ -308,7 +308,7 @@
                 {% for lab in labs.values() %}
                     <tr>
                         <td>
-                            <b>{{ lab.short_lab_name }}</b>
+                            <b><a href="/portal/access/manage/{{lab.short_lab_name}}">{{ lab.short_lab_name }}</a></b>
                         </td>
                         <td>
                             {% if user_profile.is_admin() %}
@@ -321,7 +321,13 @@
                         </td>
                         <td>
                             {% if lab.short_lab_name in user_profile.labs %}
-                                {{ user_profile.labs[lab.short_lab_name].lab_profiles }}
+                                {% for profile in lab.allowed_profiles %}
+                                    {% if profile in user_profile.labs[lab.short_lab_name]["lab_profiles"] %}
+                                        <span style="color: green;">{{ profile }}</span>
+                                    {% else %}
+                                        <span style="color: red;">{{ profile }}</span>
+                                    {% endif %}
+                                {% endfor %}
                             {% elif user_profile.is_admin() %}
                                 Admin not in Lab...
                             {% endif %}

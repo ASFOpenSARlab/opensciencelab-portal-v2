@@ -1,4 +1,4 @@
-{# djlint:off H006 #}
+{# djlint:off H006,H021 #}
 <div>
     <legend>{{ lab.friendly_name }}</legend>
     <div class="lab-logo">
@@ -22,8 +22,18 @@
         </tr>
         {% for user in users %}
         <tr>
-            <th>{{ user["username"] }}</th>
-            <th>{{ ", ".join(user["labs"][lab.short_lab_name]["lab_profiles"]) }}</th>
+            <th>
+                <b><a href="/portal/profile/form/{{user["username"]}}">{{ user["username"] }}</a></b>
+            </th>
+            <th>
+                {% for profile in lab.allowed_profiles %}
+                    {% if profile in user["labs"][lab.short_lab_name]["lab_profiles"] %}
+                        <span style="color: green;">{{ profile }}</span>
+                    {% else %}
+                        <span style="color: red;">{{ profile }}</span>
+                    {% endif %}
+                {% endfor %}
+            </th>
             <th>
                 <form method="post" action="{{ lab.short_lab_name }}/edituser">
                     <input type="hidden" name="username" value={{ user["username"] }}>
@@ -64,7 +74,7 @@
                     <input type="text" name="username" placeholder="username">
                 </th>
                 <th>
-                    <input type="text" name="lab_profiles" placeholder="m6a.large, m6a.small">
+                    <input type="text" name="lab_profiles" value="{{ ', '.join(lab.allowed_profiles) }}">
                 </th>
                 <input type="hidden" name="time_quota" placeholder="time_quota" value="">
                 <input type="hidden"
