@@ -12,7 +12,7 @@ const config = {
       // these options are set automatically — see below
       pages: "build",
       assets: "build",
-      fallback: "200.html",
+      fallback: "index.html", // Static sites use this page if not pre-rendered
       precompress: false,
       strict: true,
     }),

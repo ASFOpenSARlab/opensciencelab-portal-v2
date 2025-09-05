@@ -185,13 +185,16 @@ class PortalCdkStack(Stack):
         )
 
         # Define the CloudFront Function code inline
+        # Note that javascript curly brackets need to be escaped due to python's format
         frontend_function_code = """
             function handler(event) {{
                 var request = event.request;
                 var uri = request.uri;
 
-                // Check whether the URI is missing a file name.
-                if (uri.endsWith("{frontend_prefix}")) {{
+                if (uri.endsWith("{frontend_prefix}/")) {{
+                    request.uri += 'index.html';
+                }}
+                else if (uri.endsWith("{frontend_prefix}")) {{
                     request.uri += '/index.html';
                 }}
 
@@ -215,9 +218,9 @@ class PortalCdkStack(Stack):
                 origin_access_levels=[
                     cloudfront.AccessLevel.READ,
                     cloudfront.AccessLevel.READ_VERSIONED,
+                    cloudfront.AccessLevel.LIST,
                     # cloudfront.AccessLevel.WRITE,
                     # cloudfront.AccessLevel.DELETE,
-                    # cloudfront.AccessLevel.LIST,
                 ],
                 custom_headers={"Hello": "World"},
             ),
