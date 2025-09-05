@@ -3,6 +3,8 @@
 </script>
 
 <div>
+  <a href="/">Go to Portal Home</a>
+  &emsp;&emsp;
   <h1>This is a header for <i>{userInfo.username}</i></h1>
 </div>
 
