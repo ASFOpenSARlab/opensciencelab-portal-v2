@@ -13,6 +13,7 @@ all_labs = {
         deployment_url="labdeployment.com",
         enabled=True,
         accessibility="protected",
+        allowed_profiles=["m6a.xlarge", "m6a.large"]
     ),
     "shortname2": BaseLab(
         friendly_name="testlab2",
@@ -24,6 +25,7 @@ all_labs = {
         deployment_url="labdeployment.com",
         enabled=True,
         accessibility="protected",
+        allowed_profiles=["m6a.xlarge", "m6a.large"]
     ),
     "secret-lab": BaseLab(
         friendly_name="Secret Lab",
@@ -35,6 +37,7 @@ all_labs = {
         deployment_url="labdeployment.com",
         enabled=True,
         accessibility="protected",
+        allowed_profiles=["m6a.xlarge", "m6a.large"]
     ),
 }
 
