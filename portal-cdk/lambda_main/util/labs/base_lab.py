@@ -10,7 +10,7 @@ class BaseLab:
     about_page_url: str = None
     about_page_button_label: str = None
     deployment_url: str = None
-    allowed_profiles: list = [],
+    allowed_profiles: list = field(default_factory=list)
     ip_country_status: dict = field(
         default_factory=lambda: {
             "limited": [

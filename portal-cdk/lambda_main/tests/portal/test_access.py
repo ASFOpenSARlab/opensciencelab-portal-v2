@@ -379,7 +379,10 @@ class TestAccessPages:
         ret = main.lambda_handler(event, lambda_context)
 
         assert ret["statusCode"] == 422, ret
-        assert ret["body"].find('"Profile \'m6a.large\' not allowed for lab noaccess"') != -1
+        assert (
+            ret["body"].find('"Profile \'m6a.large\' not allowed for lab noaccess"')
+            != -1
+        )
         assert ret["headers"].get("Content-Type") == "application/json"
 
 
