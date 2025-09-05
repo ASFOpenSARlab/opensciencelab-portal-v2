@@ -1,5 +1,6 @@
 <script>
   import { page } from "$app/state";
+  import { Spinner } from "@sveltestrap/sveltestrap";
   import { userInfo } from "$lib/store.svelte.js";
 
   let origin = page.url.origin;
@@ -24,17 +25,22 @@
         throw error;
       });
   }
+
+  let myUsername = userInfo.username;
 </script>
 
 <div>
-  <h1>Welcome {userInfo.username}</h1>
+  {#if !userInfo.username}
+    <h1>Welcome, Friend</h1>
+  {:else}
+    <h1>Welcome, {userInfo.username}</h1>
+  {/if}
 
   <p>Here's a list of all usernames:</p>
 
   <div class="container">
     {#await getUsernames()}
-      <!--Spinner type="border" size="" color="primary" /-->
-      Loading...
+      <Spinner type="border" size="" color="primary" />
     {:then data}
       {#each Object.entries(usernames) as [key, username]}
         <p>{username}</p>

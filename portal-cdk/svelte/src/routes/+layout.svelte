@@ -10,9 +10,9 @@
 
   onMount(async () => {
     const getUserInfo = async () => {
-      const userInfoUrl = page.url.origin + "/portal/users/whoami";
-      //const userInfoUrl =
-      //  "https://dq3yyi71b8t6w.cloudfront.net/portal/users/whoami";
+      //const userInfoUrl = page.url.origin + "/portal/users/whoami";
+      const userInfoUrl =
+        "https://dq3yyi71b8t6w.cloudfront.net/portal/users/whoami";
 
       fetch(userInfoUrl, { method: "GET" })
         .then((response) => {
@@ -23,16 +23,15 @@
         })
         .then((jsonResponse) => {
           console.log("OnMount Get UsrInfo Json ", jsonResponse);
-          return jsonResponse;
+          userInfo.username = jsonResponse.username;
         })
         .catch((error) => {
           console.error(error);
-          return { username: "unknown" };
+          userInfo.username = "unknown";
         });
     };
 
-    let updatedUserInfo = await getUserInfo();
-    userInfo.username = updatedUserInfo.username;
+    await getUserInfo();
   });
 </script>
 
@@ -40,7 +39,6 @@
   <link rel="icon" href={favicon} />
 </svelte:head>
 
-Hello, {userInfo.username}
 <Header />
 
 {@render children?.()}

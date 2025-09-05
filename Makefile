@@ -10,9 +10,9 @@ Makefile commands:
 
     manual-cdk-bootstrap:   Bootstrap an account for CDK
 
-    build-npm:              Build NPM packages for frontend
+    build-frontend:         Build NPM packages for frontend
 
-	run-npm-dev:            Run locally built frontend for development. Some things might be broken.
+    local-run-frontend:     Run locally built frontend for development. Some things might be broken.
 
     test:                   Run PyTest tests
 
@@ -134,13 +134,13 @@ bundle-deps:
 		echo "Skipping deps bundled in ${BUILD_DEPS}. Remove to rebuild."; \
 	fi
 
-.PHONY := build-npm
-build-npm:
+.PHONY := build-frontend
+build-frontend:
 	echo "Building and compiling npm packages..." && \
 	cd ./portal-cdk/svelte/ && npm install . && npm run build
 
-.PHONY := run-npm-dev
-run-npm-dev:
+.PHONY := local-run-frontend
+local-run-frontend:
 	echo "Running locally frontend..." && \
 	cd ./portal-cdk/svelte/ && npm run dev
 
@@ -158,7 +158,7 @@ synth-portal: install-reqs bundle-deps
 	cd ./portal-cdk && cdk synth
 
 .PHONY := deploy-portal
-deploy-portal: install-reqs bundle-deps build-npm
+deploy-portal: install-reqs bundle-deps build-frontend
 	@echo "Deploying ${DEPLOY_PREFIX}/portal-cdk"
 	cd ./portal-cdk && \
 	cdk --require-approval never deploy
