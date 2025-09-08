@@ -5,6 +5,7 @@
   import Footer from "./components/footer.svelte";
   import favicon from "$lib/assets/favicon.svg";
   import { userInfo } from "$lib/store.svelte.js";
+  import { Spinner } from "@sveltestrap/sveltestrap";
 
   let { children } = $props();
 
@@ -41,6 +42,10 @@
 
 <Header />
 
-{@render children?.()}
+{#if userInfo.username == "unknown"}
+  <Spinner type="border" size="" color="primary" />
+{:else}
+  {@render children?.()}
+{/if}
 
 <Footer />
