@@ -189,10 +189,25 @@ class PortalCdkStack(Stack):
         # See https://repost.aws/questions/QUYAUeLI2FSoSTR4TygAMBOQ/specifying-different-error-behaviors-for-different-s3-origins-on-cloudfront#AN7rsXLi4iQzOl2EZth3sSYA
         # Serve all traffic through /ui/index.html so that SvelteKit routing will determine where to go.
         frontend_function_code = """
-            function handler(event, context, callback) {{
+            function handler(event) {{
                 const request = event.request;
-                request.uri = "/{frontend_prefix}/index.html"
+                console.log("{frontend_prefix}")
                 return request;
+
+                /*
+                const request = event.request;
+
+                let uri = request.uri;
+                
+                let last_seg = uri.substring(uri.lastIndexOf('/') + 1)
+                let has_period = last_seg.includes(".")
+                
+                if(last_seg && !has_period) {{
+                    uri = uri + "/index.html"
+                }}
+
+                return request;
+                */
             }}
         """.format(frontend_prefix=FRONTEND_PREFIX)
 

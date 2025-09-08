@@ -1,9 +1,10 @@
 <script>
+  import { base } from "$app/paths";
   import { userInfo } from "$lib/store.svelte.js";
 </script>
 
 <div>
-  <a href="/">Go to Portal Home</a>
+  <a href="{base}/">Go to Portal Home</a>
   &emsp;&emsp;
   <h1>This is a header for <i>{userInfo.username}</i></h1>
 </div>

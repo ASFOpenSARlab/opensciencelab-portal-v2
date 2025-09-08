@@ -12,10 +12,17 @@ const config = {
       // these options are set automatically — see below
       pages: "build",
       assets: "build",
-      fallback: "index.html", // Static sites use this page if not pre-rendered
+      //fallback: "index.html", // Static sites use this page if not pre-rendered
       precompress: false,
       strict: true,
     }),
+    prerender: {
+      handleHttpError: ({ path, referrer, message }) => {
+        throw new Error(
+          `Prerender Failed!! path: '${path}', referrer: '${referrer}', message: '${message}'`
+        );
+      },
+    },
   },
 };
 

@@ -11,9 +11,9 @@
 
   onMount(async () => {
     const getUserInfo = async () => {
-      //const userInfoUrl = page.url.origin + "/portal/users/whoami";
-      const userInfoUrl =
-        "https://dq3yyi71b8t6w.cloudfront.net/portal/users/whoami";
+      const userInfoUrl = page.url.origin + "/portal/users/whoami";
+      //const userInfoUrl =
+      //  "https://dq3yyi71b8t6w.cloudfront.net/portal/users/whoami";
 
       fetch(userInfoUrl, { method: "GET" })
         .then((response) => {
