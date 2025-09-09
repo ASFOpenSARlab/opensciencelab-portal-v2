@@ -3,4 +3,4 @@
   let { data } = $props();
 </script>
 
-<h1>hub authorization</h1>
+<h1>Future Calculator</h1>

@@ -23,6 +23,9 @@ const config = {
         );
       },
     },
+    alias: {
+      $components: "./src/components", // Alias for components
+    },
   },
 };
 

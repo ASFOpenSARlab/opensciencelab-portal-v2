@@ -191,23 +191,26 @@ class PortalCdkStack(Stack):
         frontend_function_code = """
             function handler(event) {{
                 const request = event.request;
-                console.log("{frontend_prefix}")
-                return request;
-
-                /*
-                const request = event.request;
 
                 let uri = request.uri;
                 
-                let last_seg = uri.substring(uri.lastIndexOf('/') + 1)
-                let has_period = last_seg.includes(".")
+                // Full paths that will be appended with a "/index.html". This is to make the urls much more readable.
+                // Thses should match the general file path within SvelteKit (sans any prefix).
+                // Any other files will pass-through as expected. 
+                const shortEndings = [
+                    '/{frontend_prefix}',
+                    '/{frontend_prefix}/home',
+                    '/{frontend_prefix}/login',
+                    '/{frontend_prefix}/users',
+                    '/{frontend_prefix}/labs',
+                    '/{frontend_prefix}/calculator'
+                ]
                 
-                if(last_seg && !has_period) {{
-                    uri = uri + "/index.html"
+                if( shortEndings.some(shortEnding => uri.endsWith(shortEnding)) ){{
+                    request.uri = uri + "/index.html"
                 }}
 
                 return request;
-                */
             }}
         """.format(frontend_prefix=FRONTEND_PREFIX)
 

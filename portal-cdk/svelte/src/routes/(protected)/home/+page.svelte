@@ -3,4 +3,4 @@
   let { data } = $props();
 </script>
 
-<h1>setup-mfa</h1>
+<h1>Future Home Page</h1>
