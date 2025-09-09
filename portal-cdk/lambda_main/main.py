@@ -38,7 +38,25 @@ logger = Logger(log_uncaught_exceptions=should_debug)
 
 
 # Rest is V1, HTTP is V2
-app = APIGatewayHttpResolver()
+# debug: https://docs.powertools.aws.dev/lambda/python/latest/core/event_handler/api_gateway/#debug-mode
+app = APIGatewayHttpResolver(debug=should_debug, enable_validation=True)
+app = APIGatewayHttpResolver(debug=should_debug)
+
+#####################
+### OpenAPI Stuff ###
+#####################
+# # Debug is based on the maturity, use that to enable open_api:
+if should_debug:
+    ## All the params can be found at:
+    # https://docs.powertools.aws.dev/lambda/python/latest/core/event_handler/api_gateway/#enabling-swaggerui
+    # https://docs.powertools.aws.dev/lambda/python/latest/core/event_handler/api_gateway/#customizing-swagger-ui
+    app.enable_swagger(
+        # title="OpenScienceLab API",
+        path="/api",
+        # version="0.0.1",
+        # description="API documentation for OpenScienceLab's portal",
+    )
+
 
 ##############
 ### Routes ###
