@@ -34,7 +34,7 @@ for route in (portal_route, profile_route, access_route, hub_route, users_route)
 require_access.router = portal_router
 
 
-@portal_router.get("")
+@portal_router.get("", include_in_schema=False)
 @require_access()
 @portal_template()
 def portal_root():
