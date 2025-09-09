@@ -29,18 +29,31 @@ from aws_lambda_powertools.event_handler import APIGatewayHttpResolver
 from aws_lambda_powertools.logging import correlation_paths
 from aws_lambda_powertools.event_handler import content_types
 
-
-should_debug = os.getenv("DEBUG", "false").lower() == "true"
+# If IS_PROD is somehow set to "asdf" or something, default to being locked down (False)
+is_not_prod = os.getenv("IS_PROD", "true").lower() == "false"
 
 ## Root logger, others will inherit from this:
 # https://docs.powertools.aws.dev/lambda/python/latest/core/logger/#child-loggers
-logger = Logger(log_uncaught_exceptions=should_debug)
-
+logger = Logger(log_uncaught_exceptions=is_not_prod)
 
 # Rest is V1, HTTP is V2
-app = APIGatewayHttpResolver()
+# debug: https://docs.powertools.aws.dev/lambda/python/latest/core/event_handler/api_gateway/#debug-mode
+app = APIGatewayHttpResolver(debug=is_not_prod)
 
-app.enable_swagger(path="/api", title="Swagger API docs")
+#####################
+### Swagger Stuff ###
+#####################
+# # Debug is based on the maturity, use that to enable open_api:
+if is_not_prod:
+    ## All the params can be found at:
+    # https://docs.powertools.aws.dev/lambda/python/latest/core/event_handler/api_gateway/#enabling-swaggerui
+    # https://docs.powertools.aws.dev/lambda/python/latest/core/event_handler/api_gateway/#customizing-swagger-ui
+    app.enable_swagger(
+        title="OpenScienceLab Portal - API docs",
+        path="/api",
+        description="API documentation for OpenScienceLab's portal",
+        version="0.0.1",
+    )
 
 ##############
 ### Routes ###
@@ -166,7 +179,7 @@ def handle_generic_fatal_error(exception):
 ############
 @logger.inject_lambda_context(
     correlation_id_path=correlation_paths.API_GATEWAY_HTTP,
-    log_event=should_debug,
+    log_event=is_not_prod,
 )
 @process_auth
 def lambda_handler(event, context):
