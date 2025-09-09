@@ -58,6 +58,8 @@ if should_debug:
     )
 
 
+app.enable_swagger(path="/api", title="Swagger API docs")
+
 ##############
 ### Routes ###
 ##############
@@ -67,7 +69,7 @@ for prefix, router in routes.items():
     app.include_router(router, prefix=prefix)
 
 
-@app.get("/")
+@app.get("/", include_in_schema=False)
 def root():
     # Forward to portal if they are logged in
     if current_session.user:
@@ -86,7 +88,7 @@ def root():
     )
 
 
-@app.get("/logout")
+@app.get("/logout", include_in_schema=False)
 def logout():
     # Revoke this refresh token, kill session
     if current_session.auth.cognito.raw:
@@ -101,13 +103,13 @@ def logout():
     )
 
 
-@app.get("/register")
+@app.get("/register", include_in_schema=False)
 @portal_template(title="Register New User", name="logged-out.j2")
 def register():
     return "Register a new user here"
 
 
-@app.get("/auth")
+@app.get("/auth", include_in_schema=False)
 def auth_code():
     code = app.current_event.query_string_parameters.get("code")
     if not code:
@@ -139,7 +141,7 @@ def auth_code():
     )
 
 
-@app.get("/static/.+")
+@app.get("/static/.+", include_in_schema=False)
 def static():
     logger.debug("Path is %s", app.current_event.path)
     return get_static_object(app.current_event)
