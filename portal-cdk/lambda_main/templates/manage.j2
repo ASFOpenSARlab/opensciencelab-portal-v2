@@ -21,52 +21,46 @@
             <th>Tools</th>
         </tr>
         {% for user in users %}
-        <tr>
-            <th>
-                <b><a href="/portal/profile/form/{{user["username"]}}">{{ user["username"] }}</a></b>
-            </th>
-            <th>
-                {% for profile in lab.allowed_profiles %}
-                    {% if profile in user["labs"][lab.short_lab_name]["lab_profiles"] %}
-                        <span style="color: green;">{{ profile }}</span>
-                    {% else %}
-                        <span style="color: red;">{{ profile }}</span>
-                    {% endif %}
-                {% endfor %}
-            </th>
-            <th>
-                <form method="post" action="{{ lab.short_lab_name }}/edituser">
-                    <input type="hidden" name="username" value={{ user["username"] }}>
-                    <input type="hidden" name="action" value="toggle_can_user_see_lab_card">
-                    <input type="checkbox"
-                            name="can_user_see_lab_card"
-                            onchange="this.form.submit()"
-                            {% if user["labs"][lab.short_lab_name]["can_user_see_lab_card"] %}
-                            checked
-                            {% endif %}
-                            >
-                </form>
-            </th>
-            <th>
-                <form method="post" action="{{ lab.short_lab_name }}/edituser">
-                    <input type="hidden" name="username" value={{ user["username"] }}>
-                    <input type="hidden" name="action" value="toggle_can_user_access_lab">
-                    <input type="checkbox"
-                            name="can_user_access_lab"
-                            onchange="this.form.submit()"
-                            {% if user["labs"][lab.short_lab_name]["can_user_access_lab"] %}
-                                checked
-                            {% endif %}
-                            >
-                </form>
-            </th>
-            <th>
-                <form method="post" action="{{ lab.short_lab_name }}/edituser">
-                    <input type="hidden" name="username" value="{{ user['username'] }}">
-                    <button type="submit" name="action" value="remove_user">Remove</button>
-                </form>
-            </th>
-        </tr>
+            <tr>
+                <th>
+                    <b><a href="/portal/profile/form/{{ user["username"] }}">{{ user["username"] }}</a></b>
+                </th>
+                <th>
+                    {% for profile in lab.allowed_profiles %}
+                        {% if profile in user["labs"][lab.short_lab_name]["lab_profiles"] %}
+                            <span style="color: green;">{{ profile }}</span>
+                        {% else %}
+                            <span style="color: red;">{{ profile }}</span>
+                        {% endif %}
+                    {% endfor %}
+                </th>
+                <th>
+                    <form method="post" action="{{ lab.short_lab_name }}/edituser">
+                        <input type="hidden" name="username" value={{ user["username"] }}>
+                        <input type="hidden" name="action" value="toggle_can_user_see_lab_card">
+                        <input type="checkbox"
+                               name="can_user_see_lab_card"
+                               onchange="this.form.submit()"
+                               {% if user["labs"][lab.short_lab_name]["can_user_see_lab_card"] %}checked{% endif %}>
+                    </form>
+                </th>
+                <th>
+                    <form method="post" action="{{ lab.short_lab_name }}/edituser">
+                        <input type="hidden" name="username" value={{ user["username"] }}>
+                        <input type="hidden" name="action" value="toggle_can_user_access_lab">
+                        <input type="checkbox"
+                               name="can_user_access_lab"
+                               onchange="this.form.submit()"
+                               {% if user["labs"][lab.short_lab_name]["can_user_access_lab"] %}checked{% endif %}>
+                    </form>
+                </th>
+                <th>
+                    <form method="post" action="{{ lab.short_lab_name }}/edituser">
+                        <input type="hidden" name="username" value="{{ user['username'] }}">
+                        <button type="submit" name="action" value="remove_user">Remove</button>
+                    </form>
+                </th>
+            </tr>
         {% endfor %}
         <tr>
             <form method="post" action="{{ lab.short_lab_name }}/edituser">
@@ -74,17 +68,19 @@
                     <input type="text" name="username" placeholder="username">
                 </th>
                 <th>
-                    <input type="text" name="lab_profiles" value="{{ ', '.join(lab.allowed_profiles) }}">
+                    <input type="text"
+                           name="lab_profiles"
+                           value="{{ ', '.join(lab.allowed_profiles) }}">
                 </th>
                 <input type="hidden" name="time_quota" placeholder="time_quota" value="">
                 <input type="hidden"
-                        name="lab_country_status"
-                        placeholder="protected"
-                        value="unrestricted">
+                       name="lab_country_status"
+                       placeholder="protected"
+                       value="unrestricted">
                 <th>
                     <input type="checkbox"
-                            name="can_user_see_lab_card"
-                            id="can_user_see_lab_card">
+                           name="can_user_see_lab_card"
+                           id="can_user_see_lab_card">
                 </th>
                 <th>
                     <input type="checkbox" name="can_user_access_lab" id="can_user_access_lab">
