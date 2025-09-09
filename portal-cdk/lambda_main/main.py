@@ -29,16 +29,18 @@ from aws_lambda_powertools.event_handler import APIGatewayHttpResolver
 from aws_lambda_powertools.logging import correlation_paths
 from aws_lambda_powertools.event_handler import content_types
 
-# If IS_PROD is somehow set to "asdf" or something, default to being locked down (False)
-is_not_prod = os.getenv("IS_PROD", "true").lower() == "false"
+# If IS_PROD is somehow set to "asdf" or something, default to non-prod (True)
+is_not_prod = os.getenv("IS_PROD", "false").lower() != "true"
+# If DEBUG is somehow set to "asdf" or something, default to False (lock-down)
+should_debug = os.getenv("DEBUG", "false").lower() == "true"
 
 ## Root logger, others will inherit from this:
 # https://docs.powertools.aws.dev/lambda/python/latest/core/logger/#child-loggers
-logger = Logger(log_uncaught_exceptions=is_not_prod)
+logger = Logger(log_uncaught_exceptions=should_debug)
 
 # Rest is V1, HTTP is V2
 # debug: https://docs.powertools.aws.dev/lambda/python/latest/core/event_handler/api_gateway/#debug-mode
-app = APIGatewayHttpResolver(debug=is_not_prod)
+app = APIGatewayHttpResolver(debug=should_debug)
 
 #####################
 ### Swagger Stuff ###
@@ -179,7 +181,7 @@ def handle_generic_fatal_error(exception):
 ############
 @logger.inject_lambda_context(
     correlation_id_path=correlation_paths.API_GATEWAY_HTTP,
-    log_event=is_not_prod,
+    log_event=should_debug,
 )
 @process_auth
 def lambda_handler(event, context):
