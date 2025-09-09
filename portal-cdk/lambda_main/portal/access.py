@@ -51,7 +51,7 @@ def add_lab():
 def manage_lab(shortname):
     template_input = {}
 
-    # Get users of lab, check if lab exists``
+    # Get users of lab, check if lab exists
     users = get_users_with_lab(shortname)
     template_input["users"] = users
 
