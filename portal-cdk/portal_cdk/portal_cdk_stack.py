@@ -75,7 +75,7 @@ class PortalCdkStack(Stack):
                 memory_size=1024,
                 environment={
                     "POWERTOOLS_SERVICE_NAME": "APP",
-                    "DEBUG": str(deploy_prefix != "prod").lower(),
+                    "IS_PROD": str(deploy_prefix == "prod").lower(),
                     "SES_EMAIL": str(os.getenv("SES_EMAIL")),
                 },
             ),
