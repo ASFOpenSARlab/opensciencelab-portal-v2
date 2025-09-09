@@ -30,6 +30,7 @@ SWAGGER_INCLUDED_ENDPOINTS = {
     ],
 }
 
+
 class TestPortalAuth:
     def test_excluded_endpoints_in_swagger_ai(self, helpers, lambda_context):
         event = helpers.get_event(path="/api")
