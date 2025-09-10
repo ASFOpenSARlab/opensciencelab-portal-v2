@@ -30,11 +30,20 @@ def _load_json(body: str) -> dict:
         ) from e
 
 
-# This catches "/portal/access"
-@access_router.get("", tags=[access_route["name"]])
+@access_router.get(
+    # This catches "/portal/access" (this routers 'root'):
+    "",
+    summary="Returns who can access each lab.",
+    description="This endpoint returns a list of users and their access levels for each lab.",
+    response_description="A dict containing the users access levels.",
+    responses={
+        200: {"description": "A list of users and their access levels for each lab."}
+    },
+    tags=[access_route["name"]],
+)
 @require_access()
 @portal_template()
-def access_root():
+def access_root() -> str:
     return "Access Labs"
 
 
@@ -272,7 +281,40 @@ def validate_delete_lab_access(
     return True, "Success"
 
 
-@access_router.put("/labs/<username>", tags=[access_route["name"]])
+@access_router.put(
+    "/labs/<username>",
+    summary="Sets user's labs to exactly what's provided.",
+    description="Sets what labs a user can access. Can be used to both add/remove labs.",
+    response_description="A dict containing if it's successful.",
+    responses={
+        # Swagger Dict example: https://swagger.io/docs/specification/v3_0/data-models/dictionaries/#fixed-keys
+        # Swagger objects: https://swagger.io/docs/specification/v3_0/data-models/data-types/#objects
+        200: {
+                "description": "Returns a dict saying it was successful.",
+                "content": {
+                    "application/json": {
+                        "example": {
+                            "result": "Success",
+                        },
+                        "schema": {
+                            "type": "object",
+                            "description": "A dict saying the request was successful.",
+                            "properties": {
+                                "result": {
+                                    "type": "string",
+                                    "description": "Just 'Success' for 200.",
+                                },
+                            },
+                            "required": ["result"],
+                        },
+                    },
+                },
+            },
+        400: {"description": "Bad Request - the data provided was not json."},
+        422: {"description": "Unprocessable Entity - the dict provided didn't pass validation."},
+    },
+    tags=[access_route["name"]],
+)
 @require_access("admin")
 def set_user_labs(username):
     # Check user exists
@@ -288,7 +330,7 @@ def set_user_labs(username):
         user.set_labs(formatted_labs=body["labs"])
 
     return wrap_response(
-        body=json.dumps({"result": result, "body": body}),
+        body=json.dumps({"result": result}),
         code=200 if success else 422,
         content_type=content_types.APPLICATION_JSON,
     )
