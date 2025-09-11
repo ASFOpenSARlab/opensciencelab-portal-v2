@@ -22,19 +22,20 @@ COOKIE_NAME = "portal-username"
 hub_route = {
     "router": hub_router,
     "prefix": "/portal/hub",
+    "name": "Hub",
 }
 
 logger = Logger(child=True)
 
 
-@hub_router.get("/")
+@hub_router.get("/", include_in_schema=False)
 @require_access(human=True)
 @portal_template()
 def portal_hub_root():
     return "<h4>Hello</h4>"
 
 
-@hub_router.get("/home")
+@hub_router.get("/home", include_in_schema=False)
 def portal_hub_home():
     home_root = "/portal"
     return wrap_response(
@@ -45,7 +46,7 @@ def portal_hub_home():
     )
 
 
-@hub_router.get("/auth")
+@hub_router.get("/auth", include_in_schema=False)
 @require_access(human=True)
 def get_portal_hub_auth():
     # /portal/hub/auth?next_url=%2Flab%2Fsmce-test-opensarlab%2Fhub%2Fhome
@@ -64,7 +65,7 @@ def get_portal_hub_auth():
     )
 
 
-@hub_router.post("/auth")
+@hub_router.post("/auth", tags=[hub_route["name"]])
 def post_portal_hub_auth():
     post_data = hub_router.current_event.body
     post_data_decoded = json.loads(base64.b64decode(post_data).decode("utf-8"))
@@ -96,7 +97,7 @@ def post_portal_hub_auth():
     )
 
 
-@hub_router.get("/login")
+@hub_router.get("/login", include_in_schema=False)
 @require_access(human=True)
 def portal_hub_login():
     try:
