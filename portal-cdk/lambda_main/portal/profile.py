@@ -64,7 +64,7 @@ def enforce_profile_access():
 
 
 # This catches "/portal/profile", but "/portal/profile" is uncatchable
-@profile_router.get("")
+@profile_router.get("", include_in_schema=False)
 @require_access(human=True)
 def profile_root():
     username = current_session.user.username
@@ -75,7 +75,7 @@ def profile_root():
     )
 
 
-@profile_router.get("/form/bob")
+@profile_router.get("/form/bob", include_in_schema=False)
 @require_access(human=True)
 @portal_template()
 def profile_bob():
@@ -87,7 +87,7 @@ def profile_bob():
     return page_components
 
 
-@profile_router.get("/form/<username>")
+@profile_router.get("/form/<username>", include_in_schema=False)
 @require_access(human=True)
 @enforce_profile_access()
 @portal_template(name="profile.j2")
@@ -227,7 +227,7 @@ def process_profile_form(request_body: str) -> tuple[bool, dict[str, Any]]:
     return True, query_dict
 
 
-@profile_router.post("/form/<username>")
+@profile_router.post("/form/<username>", include_in_schema=False)
 @require_access(human=True)
 @enforce_profile_access()
 def profile_user_filled(username: str):
