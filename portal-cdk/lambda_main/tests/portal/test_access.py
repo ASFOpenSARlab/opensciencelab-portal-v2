@@ -592,8 +592,8 @@ class TestAccessPages:
         ret = main.lambda_handler(event, lambda_context)
 
         assert "User does not have required access" in ret["body"]
-        assert ret["statusCode"] == 302
-        assert ret["headers"].get("Content-Type") == "text/html"
+        assert ret["statusCode"] == 403
+        assert ret["headers"].get("Content-Type") == "application/json"
 
     def test_delete_user_labs_correct(
         self, monkeypatch, lambda_context, helpers, fake_auth
@@ -730,5 +730,5 @@ class TestAccessPages:
         ret = main.lambda_handler(event, lambda_context)
 
         assert "User does not have required access" in ret["body"]
-        assert ret["statusCode"] == 302
-        assert ret["headers"].get("Content-Type") == "text/html"
+        assert ret["statusCode"] == 403
+        assert ret["headers"].get("Content-Type") == "application/json"
