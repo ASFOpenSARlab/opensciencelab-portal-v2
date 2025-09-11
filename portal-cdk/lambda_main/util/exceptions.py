@@ -58,6 +58,33 @@ class CognitoError(GenericFatalError):
         super().__init__(message, error_code, extra_info)
 
 
+class UserNotLoggedIn(GenericFatalError):
+    """
+    Raised if when does not have a valid JWT session cookie.
+    """
+
+    def __init__(self, message, error_code=401, extra_info=None):
+        super().__init__(message, error_code, extra_info)
+
+
+class UserIsNotAuthorized(GenericFatalError):
+    """
+    Raised if user cannot access resource.
+    """
+
+    def __init__(self, message, error_code=403, extra_info=None):
+        super().__init__(message, error_code, extra_info)
+
+
+class UserProfileIncomplete(GenericFatalError):
+    """
+    Raised if user must complete their profile
+    """
+
+    def __init__(self, message, error_code=409, extra_info=None):
+        super().__init__(message, error_code, extra_info)
+
+
 class UserNotFound(GenericFatalError):
     """
     Raised if there is a problem with creating a User.
