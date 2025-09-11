@@ -64,7 +64,7 @@ def _user_set_lock(username, lock: bool) -> bool:
 
 
 @users_router.get("")
-@require_access("admin")
+@require_access("admin", human=True)
 @portal_template()
 def users_root():
     # See if we were redirected with a message:
@@ -87,7 +87,7 @@ def users_root():
 
 
 @users_router.post("/unlock/<username>")
-@require_access("admin")
+@require_access("admin", human=True)
 def unlock_user(username):
     success = _user_set_lock(username, False)
 
@@ -105,7 +105,7 @@ def unlock_user(username):
 
 
 @users_router.post("/lock/<username>")
-@require_access("admin")
+@require_access("admin", human=True)
 def lock_user(username):
     success = _user_set_lock(username, True)
 
@@ -123,7 +123,7 @@ def lock_user(username):
 
 
 @users_router.post("/delete/<username>")
-@require_access("admin")
+@require_access("admin", human=True)
 def delete_user(username):
     success = _delete_user(username)
 

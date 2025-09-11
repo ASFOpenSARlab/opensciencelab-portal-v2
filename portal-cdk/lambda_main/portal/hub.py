@@ -28,7 +28,7 @@ logger = Logger(child=True)
 
 
 @hub_router.get("/")
-@require_access()
+@require_access(human=True)
 @portal_template()
 def portal_hub_root():
     return "<h4>Hello</h4>"
@@ -46,7 +46,7 @@ def portal_hub_home():
 
 
 @hub_router.get("/auth")
-@require_access()
+@require_access(human=True)
 def get_portal_hub_auth():
     # /portal/hub/auth?next_url=%2Flab%2Fsmce-test-opensarlab%2Fhub%2Fhome
     next_url = hub_router.current_event.query_string_parameters.get("next_url", None)
@@ -97,7 +97,7 @@ def post_portal_hub_auth():
 
 
 @hub_router.get("/login")
-@require_access()
+@require_access(human=True)
 def portal_hub_login():
     try:
         logger.info("Log in user")
