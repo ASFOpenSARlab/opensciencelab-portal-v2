@@ -32,21 +32,21 @@ def _load_json(body: str) -> dict:
 
 # This catches "/portal/access"
 @access_router.get("", tags=[access_route["name"]])
-@require_access()
+@require_access(human=True)
 @portal_template()
 def access_root():
     return "Access Labs"
 
 
 @access_router.get("/add_lab", tags=[access_route["name"]])
-@require_access()
+@require_access(human=True)
 @portal_template()
 def add_lab():
     return "Create New Lab"
 
 
 @access_router.get("/manage/<shortname>", include_in_schema=False)
-@require_access("admin")
+@require_access("admin", human=True)
 @portal_template()
 def manage_lab(shortname):
     template_input = {}
@@ -91,7 +91,7 @@ def validate_edit_user_request(body: dict) -> tuple[bool, str]:
 
 
 @access_router.post("/manage/<shortname>/edituser", include_in_schema=False)
-@require_access("admin")
+@require_access("admin", human=True)
 def edit_user(shortname):
     # Parse request
     body = access_router.current_event.body
@@ -159,21 +159,21 @@ def edit_user(shortname):
 
 
 @access_router.get("/lab", tags=[access_route["name"]])
-@require_access()
+@require_access(human=True)
 @portal_template()
 def view_all_labs():
     return "inspect ALL labs"
 
 
 @access_router.get("/lab/<lab>", tags=[access_route["name"]])
-@require_access()
+@require_access(human=True)
 @portal_template()
 def view_lab(lab):
     return f"inspect lab {lab}"
 
 
 @access_router.get("/labs/<username>", tags=[access_route["name"]])
-@require_access("admin")
+@require_access("admin", human=False)
 def get_user_labs(username):
     # Find user in db
 
@@ -188,7 +188,7 @@ def get_user_labs(username):
 
 
 @access_router.get("/users/<shortname>", tags=[access_route["name"]])
-@require_access("admin")
+@require_access("admin", human=False)
 def get_labs_users(shortname):
     users = get_users_with_lab(shortname)
 
@@ -273,7 +273,7 @@ def validate_delete_lab_access(
 
 
 @access_router.put("/labs/<username>", tags=[access_route["name"]])
-@require_access("admin")
+@require_access("admin", human=False)
 def set_user_labs(username):
     # Check user exists
     user = User(username=username, create_if_missing=False)
@@ -295,7 +295,7 @@ def set_user_labs(username):
 
 
 @access_router.delete("/labs/<username>", tags=[access_route["name"]])
-@require_access("admin")
+@require_access("admin", human=False)
 def delete_user_labs(username):
     # Check user exists
     user = User(username=username, create_if_missing=False)

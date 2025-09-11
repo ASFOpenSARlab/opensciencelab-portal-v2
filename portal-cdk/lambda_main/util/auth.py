@@ -5,7 +5,13 @@ from cachetools import TTLCache
 
 from util.user import User
 from util.responses import wrap_response
-from util.exceptions import BadSsoToken, UserNotFound
+from util.exceptions import (
+    BadSsoToken,
+    UserNotFound,
+    UserNotLoggedIn,
+    UserIsNotAuthorized,
+    UserProfileIncomplete,
+)
 from util.session import current_session, PortalAuth
 from util.format import render_template
 import util.cognito
@@ -316,7 +322,7 @@ def process_auth(handler, event, context):
     return handler(event, context)
 
 
-def require_access(access="user"):
+def require_access(access="user", human: bool = False):
     def inner(func):
         def wrapper(*args, **kwargs):
             # app is pulled in from outer scope via a function attribute
@@ -325,6 +331,12 @@ def require_access(access="user"):
             username = current_session.auth.cognito.username
 
             if not username:
+                if not human:
+                    if current_session.auth.cognito.raw:
+                        raise UserNotLoggedIn(message="Session is invalid or expired")
+                    else:
+                        raise UserNotLoggedIn(message="User not logged in")
+
                 return_path = (
                     current_session.app.current_event.request_context.http.path
                 )
@@ -345,6 +357,8 @@ def require_access(access="user"):
             # Check if user is disabled:
             if current_session.user.is_locked:
                 logger.warning("User %s is locked", username)
+                if not human:
+                    raise UserIsNotAuthorized(message="User is locked")
                 return wrap_response(
                     body=render_template(
                         content=(
@@ -365,6 +379,11 @@ def require_access(access="user"):
                     ", ".join(current_session.user.access),
                 )
 
+                if not human:
+                    raise UserIsNotAuthorized(
+                        message="User does not have required access"
+                    )
+
                 # Send the user back to home base
                 return wrap_response(
                     body="User does not have required access",
@@ -379,6 +398,9 @@ def require_access(access="user"):
                 current_session.user.require_profile_update
                 and requested_url != profile_form_url
             ):
+                if not human:
+                    raise UserProfileIncomplete(message="User must update profile")
+
                 requested_url = profile_form_url
                 return wrap_response(
                     body="User must update profile",
