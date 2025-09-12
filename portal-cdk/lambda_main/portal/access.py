@@ -180,13 +180,15 @@ def view_lab(lab):
         **swagger.format_response(
             example={
                 "labs": [
-                    {"<lab_name>": {
-                        "lab_profiles": ["profile1", "profile2"],
-                        "can_user_access_lab": True,
-                        "can_user_see_lab_card": False,
-                        "time_quota": "1h",
-                        "lab_country_status": "active",
-                    }},
+                    {
+                        "<lab_name>": {
+                            "lab_profiles": ["profile1", "profile2"],
+                            "can_user_access_lab": True,
+                            "can_user_see_lab_card": False,
+                            "time_quota": "1h",
+                            "lab_country_status": "active",
+                        },
+                    },
                 ],
                 "message": "OK",
             },
