@@ -12,20 +12,21 @@ SWAGGER_EXCLUDED_ENDPOINTS = {
         ("GET", "/portal"),
     ],
     "access": [
+        ("GET", "/portal/access"),
+        ("GET", "/portal/access/add_lab"),
         ("GET", "/portal/access/manage/{shortname}"),
+        ("GET", "/portal/access/manage/{shortname}/edituser"),
+        ("GET", "/portal/access/lab"),
+        ("GET", "/portal/access/lab/{lab}"),
     ],
 }
 
 
 SWAGGER_INCLUDED_ENDPOINTS = {
     "access": [
-        ("GET", "/portal/access"),
-        ("GET", "/portal/access/add_lab"),
-        ("GET", "/portal/access/lab"),
-        ("GET", "/portal/access/lab/{lab}"),
-        ("GET", "/portal/access/labs/{username}"),
         ("GET", "/portal/access/users/{shortname}"),
-        ("PUT", "/portal/access/labs/{username}"),
+        ("GET",    "/portal/access/labs/{username}"),
+        ("PUT",    "/portal/access/labs/{username}"),
         ("DELETE", "/portal/access/labs/{username}"),
     ],
 }
