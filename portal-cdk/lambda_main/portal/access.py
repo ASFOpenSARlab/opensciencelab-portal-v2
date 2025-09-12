@@ -19,6 +19,80 @@ access_route = {
     "name": "Access",
 }
 
+# Swagger Dict example: https://swagger.io/docs/specification/v3_0/data-models/dictionaries/#fixed-keys
+# Swagger objects: https://swagger.io/docs/specification/v3_0/data-models/data-types/#objects
+swagger_200_result_success = {
+    200: {
+        "description": "Returns a dict saying it was successful.",
+        "content": {
+            "application/json": {
+                "example": {
+                    "result": "Success",
+                },
+            },
+        },
+    },
+}
+swagger_400_json = {
+    400: {
+        "description": "Bad Request - the data provided was not json.",
+        "content": {
+            "application/json": {
+                "example": {
+                    "result": "Does not contain 'labs' key",
+                },
+            },
+        },
+    },
+}
+swagger_403 = {
+    403: {
+        "description": "Forbidden - the caller doesn't have admin access.",
+        "content": {
+            "application/json": {
+                "example": {
+                    "error": "User not logged in",
+                },
+            },
+        },
+    },
+}
+swagger_404_lab_not_found = {
+    404: {
+        "description": "Lab not found.",
+        "content": {
+            "application/json": {
+                "example": {
+                    "error": "Lab not found",
+                },
+            },
+        },
+    },
+}
+swagger_404_user_not_found = {
+    404: {
+        "description": "User not found.",
+        "content": {
+            "application/json": {
+                "example": {
+                    "error": "User not found",
+                },
+            },
+        },
+    },
+}
+swagger_422 = {
+    422: {
+        "description": "Unprocessable Entity - the dict provided didn't pass validation.",
+        "content": {
+            "application/json": {
+                "example": {
+                    "result": "Does not contain 'labs' key",
+                },
+            },
+        },
+    }
+}
 
 def _load_json(body: str) -> dict:
     try:
@@ -173,6 +247,32 @@ def view_lab(lab):
 
 @access_router.get(
     "/labs/<username>",
+    # summary="Get all labs a user has access to.",
+    description="Returns a list of all labs a user has access to.",
+    response_description="A dict containing a list of labs the user has access to.",
+    responses={
+        200: {
+            "description": "Returns a list of labs the user has access to.",
+            "content": {
+                "application/json": {
+                    "example": {
+                        "labs": [
+                            {"<lab_name>": {
+                                "lab_profiles": ["profile1", "profile2"],
+                                "can_user_access_lab": True,
+                                "can_user_see_lab_card": False,
+                                "time_quota": "1h",
+                                "lab_country_status": "active",
+                            }},
+                        ],
+                        "message": "OK",
+                    },
+                },
+            },
+        },
+        **swagger_403,
+        **swagger_404_user_not_found,
+    },
     tags=[access_route["name"]],
 )
 @require_access("admin", human=False)
@@ -188,55 +288,10 @@ def get_user_labs(username):
         content_type=content_types.APPLICATION_JSON,
     )
 
-@access_router.put(
-    "/labs/<username>",
-    summary="Sets user's labs to exactly what's provided.",
-    description="Sets what labs a user can access. Can be used to both add/remove labs.",
-    response_description="A dict containing if it's successful.",
-    responses={
-        # Swagger Dict example: https://swagger.io/docs/specification/v3_0/data-models/dictionaries/#fixed-keys
-        # Swagger objects: https://swagger.io/docs/specification/v3_0/data-models/data-types/#objects
-        200: {
-                "description": "Returns a dict saying it was successful.",
-                "content": {
-                    "application/json": {
-                        "example": {
-                            "result": "Success",
-                        },
-                    },
-                },
-            },
-        400: {
-                "description": "Bad Request - the data provided was not json.",
-                "content": {
-                    "application/json": {
-                        "example": {
-                            "result": "Does not contain 'labs' key",
-                        },
-                    },
-                },
-            },
-        422: {
-                "description": "Unprocessable Entity - the dict provided didn't pass validation.",
-                "content": {
-                    "application/json": {
-                        "example": {
-                            "error": "Malformed JSON",
-                            "extra_info": {
-                                "error": "Expecting value: line 1 column 1 (char 0)",
-                            }
-                        },
-                    },
-                },
-            }
-    },
-    tags=[access_route["name"]],
-)
-
 
 @access_router.get(
     "/users/<shortname>",
-    summary="Get all users with access to a given lab.",
+    # summary="Get all users with access to a given lab.",
     description="Returns a list of all users that have access to the given lab.",
     response_description="A dict containing a list of users with access to the lab.",
     responses={
@@ -252,26 +307,8 @@ def get_user_labs(username):
                     },
                 },
             },
-        403: {
-                "description": "Forbidden - the caller doesn't have admin access.",
-                "content": {
-                    "application/json": {
-                        "example": {
-                            "error": "Forbidden",
-                        },
-                    },
-                },
-            },
-        404: {
-                "description": "Lab not found.",
-                "content": {
-                    "application/json": {
-                        "example": {
-                            "error": "Lab not found",
-                        },
-                    },
-                },
-            },
+        **swagger_403,
+        **swagger_404_lab_not_found,
     },
     tags=[access_route["name"]],
 )
@@ -361,45 +398,14 @@ def validate_delete_lab_access(
 
 @access_router.put(
     "/labs/<username>",
-    summary="Sets user's labs to exactly what's provided.",
+    # summary="Sets user's labs to exactly what's provided.",
     description="Sets what labs a user can access. Can be used to both add/remove labs.",
     response_description="A dict containing if it's successful.",
     responses={
-        # Swagger Dict example: https://swagger.io/docs/specification/v3_0/data-models/dictionaries/#fixed-keys
-        # Swagger objects: https://swagger.io/docs/specification/v3_0/data-models/data-types/#objects
-        200: {
-                "description": "Returns a dict saying it was successful.",
-                "content": {
-                    "application/json": {
-                        "example": {
-                            "result": "Success",
-                        },
-                    },
-                },
-            },
-        400: {
-                "description": "Bad Request - the data provided was not json.",
-                "content": {
-                    "application/json": {
-                        "example": {
-                            "result": "Does not contain 'labs' key",
-                        },
-                    },
-                },
-            },
-        422: {
-                "description": "Unprocessable Entity - the dict provided didn't pass validation.",
-                "content": {
-                    "application/json": {
-                        "example": {
-                            "error": "Malformed JSON",
-                            "extra_info": {
-                                "error": "Expecting value: line 1 column 1 (char 0)",
-                            }
-                        },
-                    },
-                },
-            }
+        **swagger_200_result_success,
+        **swagger_400_json,
+        **swagger_403,
+        **swagger_422,
     },
     tags=[access_route["name"]],
 )
@@ -418,13 +424,25 @@ def set_user_labs(username):
         user.set_labs(formatted_labs=body["labs"])
 
     return wrap_response(
-        body=json.dumps({"result": result}),
+        body=json.dumps({"result": result, "body": body}),
         code=200 if success else 422,
         content_type=content_types.APPLICATION_JSON,
     )
 
 
-@access_router.delete("/labs/<username>", tags=[access_route["name"]])
+@access_router.delete(
+    "/labs/<username>",
+    # summary="Removes labs from a user.",
+    description="Removes labs from a user. Does not affect labs not listed.",
+    response_description="A dict containing if it's successful.",
+    responses={
+        **swagger_200_result_success,
+        **swagger_400_json,
+        **swagger_403,
+        **swagger_422,
+    },
+    tags=[access_route["name"]],
+)
 @require_access("admin", human=False)
 def delete_user_labs(username):
     # Check user exists
