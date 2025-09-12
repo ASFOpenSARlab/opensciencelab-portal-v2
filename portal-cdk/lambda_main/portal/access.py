@@ -174,7 +174,6 @@ def view_lab(lab):
 
 @access_router.get(
     "/labs/<username>",
-    # summary="Get all labs a user has access to.",
     description="Returns a list of all labs a user has access to.",
     response_description="A dict containing a list of labs the user has access to.",
     responses={
@@ -215,7 +214,6 @@ def get_user_labs(username):
 
 @access_router.get(
     "/users/<shortname>",
-    # summary="Get all users with access to a given lab.",
     description="Returns a list of all users that have access to the given lab.",
     response_description="A dict containing a list of users with access to the lab.",
     responses={
@@ -320,7 +318,6 @@ def validate_delete_lab_access(
 
 @access_router.put(
     "/labs/<username>",
-    # summary="Sets user's labs to exactly what's provided.",
     description="Sets what labs a user can access. Can be used to both add/remove labs.",
     response_description="A dict containing if it's successful.",
     responses={
@@ -354,7 +351,6 @@ def set_user_labs(username):
 
 @access_router.delete(
     "/labs/<username>",
-    # summary="Removes labs from a user.",
     description="Removes labs from a user. Does not affect labs not listed.",
     response_description="A dict containing if it's successful.",
     responses={
