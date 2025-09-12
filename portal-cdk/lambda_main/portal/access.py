@@ -1,5 +1,6 @@
 import json
 
+from util import swagger
 from util.format import portal_template, jinja_template
 from util.auth import require_access
 from util.user.dynamo_db import get_users_with_lab
@@ -30,15 +31,15 @@ def _load_json(body: str) -> dict:
         ) from e
 
 
-# This catches "/portal/access"
-@access_router.get("", tags=[access_route["name"]])
+# This catches "/portal/access" (this routers 'root'):
+@access_router.get("", include_in_schema=False)
 @require_access(human=True)
 @portal_template()
-def access_root():
+def access_root() -> str:
     return "Access Labs"
 
 
-@access_router.get("/add_lab", tags=[access_route["name"]])
+@access_router.get("/add_lab", include_in_schema=False)
 @require_access(human=True)
 @portal_template()
 def add_lab():
@@ -158,21 +159,48 @@ def edit_user(shortname):
     )
 
 
-@access_router.get("/lab", tags=[access_route["name"]])
+@access_router.get("/lab", include_in_schema=False)
 @require_access(human=True)
 @portal_template()
 def view_all_labs():
     return "inspect ALL labs"
 
 
-@access_router.get("/lab/<lab>", tags=[access_route["name"]])
+@access_router.get("/lab/<lab>", include_in_schema=False)
 @require_access(human=True)
 @portal_template()
 def view_lab(lab):
     return f"inspect lab {lab}"
 
 
-@access_router.get("/labs/<username>", tags=[access_route["name"]])
+@access_router.get(
+    "/labs/<username>",
+    description="Returns a list of all labs a user has access to.",
+    response_description="A dict containing a list of labs the user has access to.",
+    responses={
+        **swagger.format_response(
+            example={
+                "labs": [
+                    {
+                        "<lab_name>": {
+                            "lab_profiles": ["profile1", "profile2"],
+                            "can_user_access_lab": True,
+                            "can_user_see_lab_card": False,
+                            "time_quota": "1h",
+                            "lab_country_status": "active",
+                        },
+                    },
+                ],
+                "message": "OK",
+            },
+            description="Returns a list of labs the user has access to.",
+            code=200,
+        ),
+        **swagger.code_403,
+        **swagger.code_404_user_not_found,
+    },
+    tags=[access_route["name"]],
+)
 @require_access("admin", human=False)
 def get_user_labs(username):
     # Find user in db
@@ -187,7 +215,26 @@ def get_user_labs(username):
     )
 
 
-@access_router.get("/users/<shortname>", tags=[access_route["name"]])
+@access_router.get(
+    "/users/<shortname>",
+    description="Returns a list of all users that have access to the given lab.",
+    response_description="A dict containing a list of users with access to the lab.",
+    responses={
+        **swagger.format_response(
+            example={
+                "users": [
+                    {"username": "user1", "labs": {}, "access": []},
+                ],
+                "message": "OK",
+            },
+            description="Returns users that can access the lab.",
+            code=200,
+        ),
+        **swagger.code_403,
+        **swagger.code_404_lab_not_found,
+    },
+    tags=[access_route["name"]],
+)
 @require_access("admin", human=False)
 def get_labs_users(shortname):
     users = get_users_with_lab(shortname)
@@ -272,7 +319,18 @@ def validate_delete_lab_access(
     return True, "Success"
 
 
-@access_router.put("/labs/<username>", tags=[access_route["name"]])
+@access_router.put(
+    "/labs/<username>",
+    description="Sets what labs a user can access. Can be used to both add/remove labs.",
+    response_description="A dict containing if it's successful.",
+    responses={
+        **swagger.code_200_result_success,
+        **swagger.code_400_json,
+        **swagger.code_403,
+        **swagger.code_422,
+    },
+    tags=[access_route["name"]],
+)
 @require_access("admin", human=False)
 def set_user_labs(username):
     # Check user exists
@@ -294,7 +352,18 @@ def set_user_labs(username):
     )
 
 
-@access_router.delete("/labs/<username>", tags=[access_route["name"]])
+@access_router.delete(
+    "/labs/<username>",
+    description="Removes labs from a user. Does not affect labs not listed.",
+    response_description="A dict containing if it's successful.",
+    responses={
+        **swagger.code_200_result_success,
+        **swagger.code_400_json,
+        **swagger.code_403,
+        **swagger.code_422,
+    },
+    tags=[access_route["name"]],
+)
 @require_access("admin", human=False)
 def delete_user_labs(username):
     # Check user exists

@@ -1,9 +1,6 @@
 import main
 
 SWAGGER_EXCLUDED_ENDPOINTS = {
-    "access": [
-        ("GET", "/portal/access/manage/{shortname}"),
-    ],
     "hub": [
         ("GET", "/portal/hub"),
         ("GET", "/portal/hub/home"),
@@ -26,6 +23,14 @@ SWAGGER_EXCLUDED_ENDPOINTS = {
         ("GET", "/register"),
         ("GET", "/static/.+"),
     ],
+    "access": [
+        ("GET", "/portal/access"),
+        ("GET", "/portal/access/add_lab"),
+        ("GET", "/portal/access/manage/{shortname}"),
+        ("GET", "/portal/access/manage/{shortname}/edituser"),
+        ("GET", "/portal/access/lab"),
+        ("GET", "/portal/access/lab/{lab}"),
+    ],
     "user": [
         ("GET", "/portal/user"),
         ("POST", "/portal/user/delete/{username}"),
@@ -37,12 +42,8 @@ SWAGGER_EXCLUDED_ENDPOINTS = {
 
 SWAGGER_INCLUDED_ENDPOINTS = {
     "access": [
-        ("GET", "/portal/access"),
-        ("GET", "/portal/access/add_lab"),
-        ("GET", "/portal/access/lab"),
-        ("GET", "/portal/access/lab/{lab}"),
-        ("GET", "/portal/access/labs/{username}"),
         ("GET", "/portal/access/users/{shortname}"),
+        ("GET", "/portal/access/labs/{username}"),
         ("PUT", "/portal/access/labs/{username}"),
         ("DELETE", "/portal/access/labs/{username}"),
     ],
