@@ -26,6 +26,7 @@ from util import swagger
 )
 """
 
+
 # Swagger Dict example: https://swagger.io/docs/specification/v3_0/data-models/dictionaries/#fixed-keys
 # Swagger objects: https://swagger.io/docs/specification/v3_0/data-models/data-types/#objects
 def format_response(
@@ -42,7 +43,7 @@ def format_response(
     }
     if description:
         response["description"] = description
-    return { code: response }
+    return {code: response}
 
 
 code_200_result_success = format_response(
