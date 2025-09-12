@@ -3,6 +3,7 @@ import datetime
 import json
 import base64
 
+from util import swagger
 from util.responses import wrap_response
 from util.format import portal_template, request_context_string
 from util.auth import encrypt_data, require_access
@@ -65,16 +66,37 @@ def get_portal_hub_auth():
     )
 
 
-@hub_router.post("/auth", tags=[hub_route["name"]])
+@hub_router.post(
+    "/auth",
+    description="Returns an encrypted user profile, used by labs to validate users.",
+    response_description="A dict containing encrypted profile information for a user.",
+    responses={
+        **swagger.format_response(
+            example={
+                "data": {
+                    "admin": False,
+                    "roles": ["user"],
+                    "name": "<username>",
+                    "has_2fa": True,
+                    "force_user_profile_update": False,
+                    "ip_country_status": "unrestricted",
+                    "country_code": "US",
+                    "lab_access": [],
+                },
+                "message": "OK",
+            },
+            description="Returns an encrypted user profile, used by labs to validate users.",
+            code=200,
+        ),
+        **swagger.code_404_user_not_found,
+    },
+    tags=[hub_route["name"]],
+)
 def post_portal_hub_auth():
     post_data = hub_router.current_event.body
     post_data_decoded = json.loads(base64.b64decode(post_data).decode("utf-8"))
     username = post_data_decoded["username"]
     logger.info(f"Request user info = {username=}")
-
-    # Eventually, here, we'll need to instantiate a user object and
-    # derive access here dynamically. BUT, for now, assume they have
-    # access to the lab!
 
     user = User(username=username, create_if_missing=False)
 
