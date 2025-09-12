@@ -1,5 +1,6 @@
 import json
 
+from util import swagger
 from util.format import portal_template, jinja_template
 from util.auth import require_access
 from util.user.dynamo_db import get_users_with_lab
@@ -19,80 +20,6 @@ access_route = {
     "name": "Access",
 }
 
-# Swagger Dict example: https://swagger.io/docs/specification/v3_0/data-models/dictionaries/#fixed-keys
-# Swagger objects: https://swagger.io/docs/specification/v3_0/data-models/data-types/#objects
-swagger_200_result_success = {
-    200: {
-        "description": "Returns a dict saying it was successful.",
-        "content": {
-            "application/json": {
-                "example": {
-                    "result": "Success",
-                },
-            },
-        },
-    },
-}
-swagger_400_json = {
-    400: {
-        "description": "Bad Request - the data provided was not json.",
-        "content": {
-            "application/json": {
-                "example": {
-                    "result": "Does not contain 'labs' key",
-                },
-            },
-        },
-    },
-}
-swagger_403 = {
-    403: {
-        "description": "Forbidden - the caller doesn't have admin access.",
-        "content": {
-            "application/json": {
-                "example": {
-                    "error": "User not logged in",
-                },
-            },
-        },
-    },
-}
-swagger_404_lab_not_found = {
-    404: {
-        "description": "Lab not found.",
-        "content": {
-            "application/json": {
-                "example": {
-                    "error": "Lab not found",
-                },
-            },
-        },
-    },
-}
-swagger_404_user_not_found = {
-    404: {
-        "description": "User not found.",
-        "content": {
-            "application/json": {
-                "example": {
-                    "error": "User not found",
-                },
-            },
-        },
-    },
-}
-swagger_422 = {
-    422: {
-        "description": "Unprocessable Entity - the dict provided didn't pass validation.",
-        "content": {
-            "application/json": {
-                "example": {
-                    "result": "Does not contain 'labs' key",
-                },
-            },
-        },
-    }
-}
 
 def _load_json(body: str) -> dict:
     try:
@@ -251,27 +178,24 @@ def view_lab(lab):
     description="Returns a list of all labs a user has access to.",
     response_description="A dict containing a list of labs the user has access to.",
     responses={
-        200: {
-            "description": "Returns a list of labs the user has access to.",
-            "content": {
-                "application/json": {
-                    "example": {
-                        "labs": [
-                            {"<lab_name>": {
-                                "lab_profiles": ["profile1", "profile2"],
-                                "can_user_access_lab": True,
-                                "can_user_see_lab_card": False,
-                                "time_quota": "1h",
-                                "lab_country_status": "active",
-                            }},
-                        ],
-                        "message": "OK",
-                    },
-                },
+        **swagger.format_response(
+            example={
+                "labs": [
+                    {"<lab_name>": {
+                        "lab_profiles": ["profile1", "profile2"],
+                        "can_user_access_lab": True,
+                        "can_user_see_lab_card": False,
+                        "time_quota": "1h",
+                        "lab_country_status": "active",
+                    }},
+                ],
+                "message": "OK",
             },
-        },
-        **swagger_403,
-        **swagger_404_user_not_found,
+            description="Returns a list of labs the user has access to.",
+            code=200,
+        ),
+        **swagger.code_403,
+        **swagger.code_404_user_not_found,
     },
     tags=[access_route["name"]],
 )
@@ -295,20 +219,18 @@ def get_user_labs(username):
     description="Returns a list of all users that have access to the given lab.",
     response_description="A dict containing a list of users with access to the lab.",
     responses={
-        200: {
-                "description": "Returns users that can access the lab.",
-                "content": {
-                    "application/json": {
-                        "example": {
-                            "users": [
-                                {"username": "user1", "labs": {}, "access": []},
-                            ],
-                        },
-                    },
-                },
+        **swagger.format_response(
+            example={
+                "users": [
+                    {"username": "user1", "labs": {}, "access": []},
+                ],
+                "message": "OK",
             },
-        **swagger_403,
-        **swagger_404_lab_not_found,
+            description="Returns users that can access the lab.",
+            code=200,
+        ),
+        **swagger.code_403,
+        **swagger.code_404_lab_not_found,
     },
     tags=[access_route["name"]],
 )
@@ -402,10 +324,10 @@ def validate_delete_lab_access(
     description="Sets what labs a user can access. Can be used to both add/remove labs.",
     response_description="A dict containing if it's successful.",
     responses={
-        **swagger_200_result_success,
-        **swagger_400_json,
-        **swagger_403,
-        **swagger_422,
+        **swagger.code_200_result_success,
+        **swagger.code_400_json,
+        **swagger.code_403,
+        **swagger.code_422,
     },
     tags=[access_route["name"]],
 )
@@ -436,10 +358,10 @@ def set_user_labs(username):
     description="Removes labs from a user. Does not affect labs not listed.",
     response_description="A dict containing if it's successful.",
     responses={
-        **swagger_200_result_success,
-        **swagger_400_json,
-        **swagger_403,
-        **swagger_422,
+        **swagger.code_200_result_success,
+        **swagger.code_400_json,
+        **swagger.code_403,
+        **swagger.code_422,
     },
     tags=[access_route["name"]],
 )
