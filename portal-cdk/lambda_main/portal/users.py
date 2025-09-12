@@ -63,7 +63,7 @@ def _user_set_lock(username, lock: bool) -> bool:
     return True
 
 
-@users_router.get("")
+@users_router.get("", include_in_schema=False)
 @require_access("admin", human=True)
 @portal_template()
 def users_root():
@@ -86,7 +86,7 @@ def users_root():
     return jinja_template(template_input, "user-table.j2")
 
 
-@users_router.post("/unlock/<username>")
+@users_router.post("/unlock/<username>", include_in_schema=False)
 @require_access("admin", human=True)
 def unlock_user(username):
     success = _user_set_lock(username, False)
@@ -104,7 +104,7 @@ def unlock_user(username):
     )
 
 
-@users_router.post("/lock/<username>")
+@users_router.post("/lock/<username>", include_in_schema=False)
 @require_access("admin", human=True)
 def lock_user(username):
     success = _user_set_lock(username, True)
@@ -122,7 +122,7 @@ def lock_user(username):
     )
 
 
-@users_router.post("/delete/<username>")
+@users_router.post("/delete/<username>", include_in_schema=False)
 @require_access("admin", human=True)
 def delete_user(username):
     success = _delete_user(username)
