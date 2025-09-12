@@ -30,6 +30,7 @@ def _load_json(body: str) -> dict:
             extra_info={"error": str(e), "body": body},
         ) from e
 
+
 # This catches "/portal/access" (this routers 'root'):
 @access_router.get("", include_in_schema=False)
 @require_access(human=True)
