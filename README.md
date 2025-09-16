@@ -15,12 +15,12 @@ front-ended by API Gateway and CloudFront.
 | -- | -- |--------------|
 | `dev` | Non-prod | 97********89 |
 | `test` | Non-Prod | 97********89 |
-| `prod` | Prod | 16********27 |
+| `prod` | Prod | 70********05 |
 
 ### Maturities
 
 * Non-`main` branches with specified prefix/suffix (eg `ab/ticket.feature`) will deploy a matched
-prefix (ie `ab`) dev maturity ( and `dev` GitHub environment!) deployment. 
+prefix (ie `ab`) dev maturity ( and `dev` GitHub environment!) deployment.
 * Merges into `main` branch will create/update the `test` maturity deployment.
 * Symantic Tags (where `v#.#.#` is `v[Major].[Minor].[Patch]`) will deploy to Prod.
 
@@ -30,11 +30,33 @@ While development maturity can be deployment manually via [`Makefile`](./Makefil
 and more consistent to rely on the GitHub action. However, when necessary, developer deployments can
 be completed using the following steps:
 
+##### First-time AWS Account Setup
+
+One of the parameters to pass in is an existing, **VERIFIED** SES domain.
+
+- Create one first with `AWS SES` -> `Identities` -> `Create Identity` -> `Domain`. Name it `opensciencelab.asf.alaska.edu`. Accept all the defaults and create it.
+- Open a PR with Platform to add the records to ASF's DNS. There's already some examples in there to work from.
+- Wait for the domain to be verified in SES. This can take a while (Up to 24 hours).
+
 ##### Deploying a Personal Stack
 
-You can deploy a new stack without conflicting with any others, with:
+You can deploy a new stack without conflicting with any others.
+
+First create your environments file:
+
+`nano vars.env`:
 
 ```bash
+export AWS_PROFILE=<YOUR PROFILE>
+export DEPLOY_PREFIX=<YOUR INITIALS>
+export SES_DOMAIN=opensciencelab.asf.alaska.edu # SAME NAME as the SES above!!
+export SES_REPLY_TO_EMAIL=<THE TEAM EMAIL>
+```
+
+Then, to deploy your personal stack:
+
+```bash
+source vars.env
 # Just synthing locally:
 make synth-portal -e DEPLOY_PREFIX=cs
 # Or deploying:
