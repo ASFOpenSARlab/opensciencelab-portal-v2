@@ -321,7 +321,30 @@ def validate_delete_lab_access(
 
 @access_router.put(
     "/labs/<username>",
-    description="Sets what labs a user can access. Can be used to both add/remove labs.",
+    description="""
+Sets what labs a user can access. Can be used to both add/remove labs.
+
+<hr>
+
+`PUT` payload should be a json dict of labs and desired user access. <br />
+
+```json
+{
+    "labs": {
+        "<lab_name>": {
+            "lab_profiles": ["m6a.large"],
+            "can_user_access_lab": True,
+            "can_user_see_lab_card": True,
+            "time_quota": "",
+            "lab_country_status": "protected",
+        }
+    }
+}
+```
+
+`{username}` will be granted access to `<lab_name>` with profile `m6a.large`.
+
+    """,
     response_description="A dict containing if it's successful.",
     responses={
         **swagger.code_200_result_success,
@@ -354,7 +377,24 @@ def set_user_labs(username):
 
 @access_router.delete(
     "/labs/<username>",
-    description="Removes labs from a user. Does not affect labs not listed.",
+    description="""
+Removes labs from a user. Does not affect labs not listed.
+
+<hr>
+
+`PUT` payload should be a json dict of labs to be removed from a user. <br />
+
+```json
+{
+    "labs": {
+        "<remove_lab>": {},
+    }
+}
+```
+
+`{username}` will lose access to `remove_lab`.
+
+    """,
     response_description="A dict containing if it's successful.",
     responses={
         **swagger.code_200_result_success,
