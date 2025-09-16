@@ -328,8 +328,6 @@ Sets what labs a user can access. Can be used to both add/remove labs.
 
 `PUT` payload should be a json dict of labs and desired user access.
 
-<br />
-
 ```json
 {
     "labs": {
