@@ -392,7 +392,7 @@ Removes labs from a user. Does not affect labs not listed.
 }
 ```
 
-`{username}` will lose access to `remove_lab`.
+`{username}` will lose access to `<remove_lab>`.
 
     """,
     response_description="A dict containing if it's successful.",
