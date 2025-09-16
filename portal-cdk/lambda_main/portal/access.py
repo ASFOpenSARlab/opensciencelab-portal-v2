@@ -382,7 +382,7 @@ Removes labs from a user. Does not affect labs not listed.
 
 <hr>
 
-`PUT` payload should be a json dict of labs to be removed from a user. <br />
+`DELETE` payload should be a json dict of labs to be removed from a user. <br />
 
 ```json
 {
