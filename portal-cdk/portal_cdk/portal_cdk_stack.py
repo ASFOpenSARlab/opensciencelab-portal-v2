@@ -76,8 +76,8 @@ class PortalCdkStack(Stack):
                 memory_size=1024,
                 environment={
                     "POWERTOOLS_SERVICE_NAME": "APP",
-                    "DEBUG": str(vars['deploy_prefix'] != "prod").lower(),
-                    "IS_PROD": str(vars['deploy_prefix'] == "prod").lower(),
+                    "DEBUG": str(vars["deploy_prefix"] != "prod").lower(),
+                    "IS_PROD": str(vars["deploy_prefix"] == "prod").lower(),
                     "SES_EMAIL": str(os.getenv("SES_EMAIL")),
                 },
             ),
@@ -87,11 +87,11 @@ class PortalCdkStack(Stack):
                     name="username",
                     type=dynamodb.AttributeType.STRING,
                 ),
-                deletion_protection=bool(vars['deploy_prefix'] == "prod"),
+                deletion_protection=bool(vars["deploy_prefix"] == "prod"),
                 # Default removal_policy is always RETAIN:
                 removal_policy=(
                     RemovalPolicy.RETAIN
-                    if vars['deploy_prefix'] == "prod"
+                    if vars["deploy_prefix"] == "prod"
                     else RemovalPolicy.DESTROY
                 ),
             ),
@@ -179,7 +179,7 @@ class PortalCdkStack(Stack):
         ses_identity = ses.EmailIdentity.from_email_identity_name(
             self,
             "ImportedSESEmailIdentity",
-            vars['ses_domain'],
+            vars["ses_domain"],
         )
         ses_identity.grant_send_email(lambda_dynamo.lambda_function)
 
@@ -213,7 +213,7 @@ class PortalCdkStack(Stack):
             # email=cognito.UserPoolEmail.with_cognito(reply_to=None),
             email=cognito.UserPoolEmail.with_ses(
                 from_email=f"osl@{ses_identity.email_identity_name}",
-                reply_to=vars['ses_reply_to_email'],
+                reply_to=vars["ses_reply_to_email"],
                 ses_verified_domain=ses_identity.email_identity_name,
             ),
             # https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_cognito.Mfa.html
@@ -221,11 +221,11 @@ class PortalCdkStack(Stack):
             ## The different ways users can get a MFA code:
             # https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_cognito.MfaSecondFactor.html
             mfa_second_factor=cognito.MfaSecondFactor(sms=True, otp=True, email=False),
-            deletion_protection=bool(vars['deploy_prefix'] == "prod"),
+            deletion_protection=bool(vars["deploy_prefix"] == "prod"),
             # Default removal_policy is always RETAIN:
             removal_policy=(
                 RemovalPolicy.RETAIN
-                if vars['deploy_prefix'] == "prod"
+                if vars["deploy_prefix"] == "prod"
                 else RemovalPolicy.DESTROY
             ),
             ## Let users create accounts:
@@ -254,7 +254,7 @@ class PortalCdkStack(Stack):
         # https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_cognito.UserPoolClient.html
         portal_host_asf = (
             "opensciencelab"
-            + ("" if vars['deploy_prefix'] == "prod" else "-" + vars['deploy_prefix'])
+            + ("" if vars["deploy_prefix"] == "prod" else "-" + vars["deploy_prefix"])
             + ".asf.alaska.edu"
         )
         user_pool_client = user_pool.add_client(
