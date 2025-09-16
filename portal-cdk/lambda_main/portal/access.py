@@ -326,7 +326,9 @@ Sets what labs a user can access. Can be used to both add/remove labs.
 
 <hr>
 
-`PUT` payload should be a json dict of labs and desired user access. <br />
+`PUT` payload should be a json dict of labs and desired user access.
+
+<br />
 
 ```json
 {
@@ -342,8 +344,8 @@ Sets what labs a user can access. Can be used to both add/remove labs.
 }
 ```
 
-`{username}` will be granted access to `<lab_name>` with profile `m6a.large`.
-
+`{username}` will only have access to `<lab_name>` with profile `m6a.large`.
+Any previously added labs not listed in dictionary, will be removed from the user.
     """,
     response_description="A dict containing if it's successful.",
     responses={
