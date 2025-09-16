@@ -68,11 +68,14 @@ def get_portal_hub_auth():
 
 @hub_router.post(
     "/auth",
-    description=(
-        "Returns an encrypted user profile, used by labs to validate users. <hr> "
-        " `POST` payload should be a base64 encoded JSON dictionary with a `username` "
-        "key containing the username of the profile being validated."
-    ),
+    description="""
+Returns an encrypted user profile, used by labs to validate users. 
+
+<hr>
+
+`POST` payload should be a base64 encoded JSON dictionary with a `username` key 
+containing the username of the profile being validated.
+    """,
     response_description="A dict containing encrypted profile information for a user.",
     responses={
         **swagger.format_response(
