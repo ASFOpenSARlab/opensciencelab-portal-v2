@@ -4,7 +4,7 @@ import json
 import base64
 
 from util import swagger
-from util.responses import wrap_response
+from util.responses import wrap_response, json_body_to_dict
 from util.format import portal_template, request_context_string
 from util.auth import encrypt_data, require_access
 from util.session import current_session
@@ -164,3 +164,45 @@ def portal_hub_login():
         </body></html>
         """
         return wrap_response(body=body, code=400)
+
+
+swagger_email_options = {
+    "response_description": "A dict containing if it's successful.",
+    "responses": {
+        **swagger.code_200_result_success,
+        **swagger.code_403,
+        # And other codes, when actually implementing this.
+        # (If *one* user in list is invalid, do we email the others?)
+    },
+    "tags": ["Email"],
+}
+
+
+@hub_router.post(
+    "/user/email",
+    **swagger_email_options,
+    description="""
+"Forwards" emails from labs, to the user's email address on file using AWS SES.
+
+<hr>
+
+`POST` payload should be a dict of the form:
+
+```json
+{
+    "to": {"username": "osl-admin"},
+    "from": {"username": "osl-admin"},
+    "subject": "OpenScienceLab Metric Alert",
+    "html_body": "<message>",
+}
+```
+
+- `<message>` is the text of the email to send.
+
+- `username` can also be a list in the form of `{"username": ["user1", "user2"]}`
+    """,
+)
+def send_user_email():
+    body = hub_router.current_event.json_body
+    body = json_body_to_dict(body)
+    return "TODO: OSL-3713"
