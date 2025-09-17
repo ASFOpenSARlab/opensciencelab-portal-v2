@@ -27,6 +27,9 @@ const config = {
       $components: "./src/components", // Alias for components
     },
   },
+  vitePlugin: {
+    inspector: true,
+  },
 };
 
 export default config;

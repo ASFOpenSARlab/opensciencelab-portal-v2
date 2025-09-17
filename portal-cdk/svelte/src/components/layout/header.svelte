@@ -1,12 +1,17 @@
 <script>
   import { base } from "$app/paths";
-  import { userInfo } from "$lib/store.svelte.js";
+  import { UserClass } from "$lib/store.svelte.js";
+  import { onMount } from "svelte";
+
+  let user = new UserClass();
+
+  onMount(async () => {
+    user.pull();
+  });
 </script>
 
 <div>
-  <a href="{base}/">Go to Portal Home</a>
-  &emsp;&emsp;
-  <h1>This is a header for <i>{userInfo.username}</i></h1>
+  <h1>This is a header for <i>{user.data}</i></h1>
 </div>
 
 <style>
