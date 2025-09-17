@@ -182,7 +182,13 @@ class PortalCdkStack(Stack):
             vars["ses_domain"],
         )
         ses_identity.grant_send_email(lambda_dynamo.lambda_function)
-
+        ## Optional Key for Developing, to accept SES emails:
+        if os.getenv("DEV_SES_EMAIL"):
+            ses.EmailIdentity(
+                self,
+                "DevSESEmailIdentity",
+                identity=ses.Identity.email(os.getenv("DEV_SES_EMAIL")),
+            )
         ## Cognito Lambda Endpoint for Signup:
         # https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_lambda.Function.html
         lambda_cognito_signup = aws_lambda.Function(
@@ -210,10 +216,11 @@ class PortalCdkStack(Stack):
                 ),
             ),
             # https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_cognito.UserPoolEmail.html
-            # email=cognito.UserPoolEmail.with_cognito(reply_to=None),
+            # https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_cognito.UserPoolSESOptions.html
             email=cognito.UserPoolEmail.with_ses(
                 from_email=f"osl@{ses_identity.email_identity_name}",
                 reply_to=vars["ses_reply_to_email"],
+                from_name="ASF Science Enabling Services",
                 ses_verified_domain=ses_identity.email_identity_name,
             ),
             # https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_cognito.Mfa.html
