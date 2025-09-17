@@ -51,6 +51,8 @@ export AWS_PROFILE=<YOUR PROFILE>
 export DEPLOY_PREFIX=<YOUR INITIALS>
 export SES_DOMAIN=opensciencelab.asf.alaska.edu # SAME NAME as the SES above!!
 export SES_REPLY_TO_EMAIL=<THE TEAM EMAIL>
+### OPTIONAL:
+export DEV_SES_EMAIL=<YOUR EMAIL> # For testing, if you want to receive emails. You'll have to confirm a email sent to you too.
 ```
 
 Then, to deploy your personal stack:
@@ -67,17 +69,18 @@ make deploy-portal -e DEPLOY_PREFIX=cs
 
 Clone the portal repo to your local work station
 
-##### Ensure AWS credentials a present 
+##### Ensure AWS credentials a present
 
 The Makefile + Docker process will need to communicate with AWS. In actions, this is done through an
-OIDC Provider in AWS and requires no authentication. Locally however, a profile must be present in 
-`~/.aws/credentials` and the `AWS_DEFAULT_PROFILE` env var needs to be set accordingly, ***OR*** 
-`AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` must be set. Either solution works, and will get 
+OIDC Provider in AWS and requires no authentication. Locally however, a profile must be present in
+`~/.aws/credentials` and the `AWS_DEFAULT_PROFILE` env var needs to be set accordingly, ***OR***
+`AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` must be set. Either solution works, and will get
 automagically populated into the dockerized build/deploy environment.
 
-##### Start CDK Shell 
+##### Start CDK Shell
 
 From the root of the cloned repo, run `make cdk-image` to build the image:
+
 ```shell
 user@Mac-mini opensciencelab-portal-v2 % make cdk-image
 cd /Users/user/PycharmProjects/opensciencelab-portal-v2/ && pwd && docker build --pull -t cdk-env:latest -f ./build/cdk.Dockerfile .
@@ -117,11 +120,11 @@ GitHub actions.
 #### **`Test`**
 
 **`Test`** is intended to be the stable integration/validation environment. ONLY complete, tested code
-should be released to **`Test`**. `Dev` and `Test` exist in the same AWS account. 
+should be released to **`Test`**. `Dev` and `Test` exist in the same AWS account.
 
 #### **`Prod`**
 
-The **`Prod`** environment is isolated in its own AWS account to reduce blast radius. `Prod` 
+The **`Prod`** environment is isolated in its own AWS account to reduce blast radius. `Prod`
 should **never** be released by any mechanism other than GitHub actions.
 
 ### How to Test
