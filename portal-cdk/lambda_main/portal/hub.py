@@ -181,7 +181,7 @@ swagger_email_options = {
 @hub_router.post(
     "/user/email",
     **swagger_email_options,
-    description=f"""
+    description="""
 "Forwards" emails from labs, to the user's email address on file using AWS SES.
 
 <hr>
@@ -189,22 +189,17 @@ swagger_email_options = {
 `POST` payload should be a dict of the form:
 
 ```json
-    {
-        json.dumps(
-            {
-                "to": {"username": "osl-admin"},
-                "from": {"username": "osl-admin"},
-                "subject": "OpenScienceLab Metric Alert",
-                "html_body": "<message>",
-            },
-            indent=4,
-        )
-    }
+{
+    "to": {"username": "osl-admin"},
+    "from": {"username": "osl-admin"},
+    "subject": "OpenScienceLab Metric Alert",
+    "html_body": "<message>",
+}
 ```
 
 - `<message>` is the text of the email to send.
 
-- `username` can also be a list in the form of `{{"username": ["user1", "user2"]}}`
+- `username` can also be a list in the form of `{"username": ["user1", "user2"]}`
     """,
 )
 def send_user_email():
