@@ -165,6 +165,7 @@ def portal_hub_login():
         """
         return wrap_response(body=body, code=400)
 
+
 swagger_email_options = {
     "response_description": "A dict containing if it's successful.",
     "responses": {
@@ -175,6 +176,7 @@ swagger_email_options = {
     },
     "tags": ["Email"],
 }
+
 
 @hub_router.post(
     "/user/email",
@@ -187,15 +189,17 @@ swagger_email_options = {
 `POST` payload should be a dict of the form:
 
 ```json
-{json.dumps(
-    {
-        "to": {"username": "osl-admin"},
-        "from": {"username": "osl-admin"},
-        "subject": "OpenScienceLab Metric Alert",
-        "html_body": "<message>",
-    },
-    indent=4,
-)}
+{
+    json.dumps(
+        {
+            "to": {"username": "osl-admin"},
+            "from": {"username": "osl-admin"},
+            "subject": "OpenScienceLab Metric Alert",
+            "html_body": "<message>",
+        },
+        indent=4,
+    )
+}
 ```
 
 - `<message>` is the text of the email to send.

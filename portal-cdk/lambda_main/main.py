@@ -4,6 +4,7 @@ import os
 import json
 
 from portal import routes
+
 # Tmp for deprecated email endpoint:
 from portal.hub import swagger_email_options, send_user_email
 
@@ -14,7 +15,6 @@ from util.format import (
 )
 from util.responses import wrap_response
 from util.auth import (
-    require_access,
     parse_token,
     validate_code,
     process_auth,

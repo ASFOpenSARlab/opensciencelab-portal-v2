@@ -39,6 +39,7 @@ def wrap_response(body, code=200, content_type=None, headers=None, cookies=None)
 
     return Response(**response_payload)
 
+
 def json_body_to_dict(body: str) -> dict:
     """Converts a JSON body to a python dictionary
 
@@ -55,6 +56,8 @@ def json_body_to_dict(body: str) -> dict:
             message="Malformed JSON",
             extra_info={"error": str(e), "body": body},
         ) from e
+
+
 def form_body_to_dict(body: str) -> dict:
     """Converts an html form body to a python dictionary
 
