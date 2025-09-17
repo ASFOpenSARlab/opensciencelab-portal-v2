@@ -183,6 +183,7 @@ class PortalCdkStack(Stack):
         )
         ses_identity.grant_send_email(lambda_dynamo.lambda_function)
         ## Optional Key for Developing, to accept SES emails:
+        #    (Since non-prod is a sandbox, you won't receive the email otherwise)
         if os.getenv("DEV_SES_EMAIL"):
             ses.EmailIdentity(
                 self,
