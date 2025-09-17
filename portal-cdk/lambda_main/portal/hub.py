@@ -189,17 +189,17 @@ swagger_email_options = {
 `POST` payload should be a dict of the form:
 
 ```json
-{
-    json.dumps(
-        {
-            "to": {"username": "osl-admin"},
-            "from": {"username": "osl-admin"},
-            "subject": "OpenScienceLab Metric Alert",
-            "html_body": "<message>",
-        },
-        indent=4,
-    )
-}
+    {
+        json.dumps(
+            {
+                "to": {"username": "osl-admin"},
+                "from": {"username": "osl-admin"},
+                "subject": "OpenScienceLab Metric Alert",
+                "html_body": "<message>",
+            },
+            indent=4,
+        )
+    }
 ```
 
 - `<message>` is the text of the email to send.
