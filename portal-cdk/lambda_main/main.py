@@ -4,6 +4,9 @@ import os
 import json
 
 from portal import routes
+# Tmp for deprecated email endpoint:
+from portal.hub import swagger_email_options, send_user_email
+
 from util.format import (
     portal_template,
     request_context_string,
@@ -11,6 +14,7 @@ from util.format import (
 )
 from util.responses import wrap_response
 from util.auth import (
+    require_access,
     parse_token,
     validate_code,
     process_auth,
@@ -142,6 +146,16 @@ def auth_code():
 def static():
     logger.debug("Path is %s", app.current_event.path)
     return get_static_object(app.current_event)
+
+
+@app.post(
+    "/user/email/send",
+    **swagger_email_options,
+    deprecated=True,
+    description="Forwards everything to `/portal/hub/user/email`.",
+)
+def send_user_email_deprecated():
+    return send_user_email()
 
 
 ######################
