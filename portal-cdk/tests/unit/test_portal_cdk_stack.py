@@ -23,7 +23,7 @@ def portal_template():
         vars={
             "deploy_prefix": os.getenv("DEPLOY_PREFIX", "unk"),
             "ses_domain": os.getenv("SES_DOMAIN", "unk"),
-            "ses_reply_to_email": os.getenv("SES_REPLY_TO_EMAIL", "unk"),
+            "ses_email": os.getenv("SES_EMAIL", "unk"),
         },
     )
     template = assertions.Template.from_stack(stack)

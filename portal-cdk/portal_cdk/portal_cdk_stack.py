@@ -220,7 +220,7 @@ class PortalCdkStack(Stack):
             # https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_cognito.UserPoolSESOptions.html
             email=cognito.UserPoolEmail.with_ses(
                 from_email=f"osl@{ses_identity.email_identity_name}",
-                reply_to=vars["ses_reply_to_email"],
+                reply_to=vars["ses_email"],
                 from_name="ASF Science Enabling Services",
                 ses_verified_domain=ses_identity.email_identity_name,
             ),

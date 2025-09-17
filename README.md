@@ -50,7 +50,7 @@ First create your environments file:
 export AWS_PROFILE=<YOUR PROFILE>
 export DEPLOY_PREFIX=<YOUR INITIALS>
 export SES_DOMAIN=opensciencelab.asf.alaska.edu # SAME NAME as the SES above!!
-export SES_REPLY_TO_EMAIL=<THE TEAM EMAIL>
+export SES_EMAIL=<THE TEAM EMAIL>
 ### OPTIONAL:
 export DEV_SES_EMAIL=<YOUR EMAIL> # For testing, if you want to receive emails. You'll have to confirm a email sent to you too.
 ```
