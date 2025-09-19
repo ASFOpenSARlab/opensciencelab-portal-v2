@@ -171,11 +171,11 @@ def get_users_whoami():
 
 
 @users_router.post("/whoami")
-def post_users_whoami(data):
+def post_users_whoami():
     username: str = current_session.auth.cognito.username
 
     body: str = users_router.current_event.body
-    data: dict = form_body_to_dict(body)
+    data: dict = json.loads(body)
 
     logger.info(f"Post Users Whoami: My {username=} has body {data}")
 
