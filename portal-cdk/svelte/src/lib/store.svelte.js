@@ -41,20 +41,26 @@ class Common {
   };
 
   get data() {
+    console.log(
+      "get data",
+      $state.snapshot(this.store),
+      $state.snapshot(this.store[this.id])
+    );
     return this.store[this.id];
   }
 
   set data(newData) {
     this.store[this.id] = newData;
+    console.log(
+      "set data",
+      $state.snapshot(this.store),
+      $state.snapshot(this.store[this.id])
+    );
   }
 }
 
 export class UserClass extends Common {
   constructor() {
-    super(
-      Symbol("UserClass"),
-      "https://dq3yyi71b8t6w.cloudfront.net/portal/users/whoami",
-      "https://dq3yyi71b8t6w.cloudfront.net/portal/users/whoami"
-    );
+    super(Symbol("UserClass"), "/portal/users/whoami", "/portal/users/whoami");
   }
 }

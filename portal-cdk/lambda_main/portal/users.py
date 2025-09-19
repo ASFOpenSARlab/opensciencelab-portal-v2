@@ -8,7 +8,7 @@ from util.auth import require_access
 from util.session import current_session
 from util.user.dynamo_db import get_all_items
 from util.format import jinja_template
-from util.responses import wrap_response
+from util.responses import wrap_response, form_body_to_dict
 from util.exceptions import CognitoError, DbError
 from util.user import User
 
@@ -164,7 +164,19 @@ def users_all_usernames():
 
 
 @users_router.get("/whoami")
-def users_whoami():
+def get_users_whoami():
     username: str = current_session.auth.cognito.username
+
+    return json.dumps({"username": username})
+
+
+@users_router.post("/whoami")
+def post_users_whoami(data):
+    username: str = current_session.auth.cognito.username
+
+    body: str = users_router.current_event.body
+    data: dict = form_body_to_dict(body)
+
+    logger.info(f"Post Users Whoami: My {username=} has body {data}")
 
     return json.dumps({"username": username})

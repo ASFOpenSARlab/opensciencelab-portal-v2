@@ -1,12 +1,13 @@
 <script>
-  import { onMount } from "svelte";
   import favicon from "$lib/assets/favicon.svg";
-  import { UserClass } from "$lib/store.svelte.js";
+  import Spinner from "$components/Spinner.svelte";
+  import { onMount } from "svelte";
 
-  let user = new UserClass();
+  let spinner;
 
-  onMount(async () => {
-    user.pull();
+  onMount(() => {
+    // spinner is already spinning on render
+    spinner.stop();
   });
 
   let { children } = $props();
@@ -15,5 +16,7 @@
 <svelte:head>
   <link rel="icon" href={favicon} />
 </svelte:head>
+
+<Spinner bind:this={spinner} />
 
 {@render children?.()}
