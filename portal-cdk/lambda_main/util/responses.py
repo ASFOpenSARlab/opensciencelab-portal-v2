@@ -9,6 +9,9 @@ from aws_lambda_powertools.event_handler import (
     content_types,
 )
 
+from util.exceptions import MalformedRequest
+
+
 logger = Logger(child=True)
 
 
@@ -35,6 +38,24 @@ def wrap_response(body, code=200, content_type=None, headers=None, cookies=None)
     logger.info(response_payload)
 
     return Response(**response_payload)
+
+
+def json_body_to_dict(body: str) -> dict:
+    """Converts a JSON body to a python dictionary
+
+    Args:
+        body (str): Body of a JSON request
+
+    Returns:
+        dict: Python dictionary with key values provided from body
+    """
+    try:
+        return json.loads(body)
+    except json.JSONDecodeError as e:
+        raise MalformedRequest(
+            message="Malformed JSON",
+            extra_info={"error": str(e), "body": body},
+        ) from e
 
 
 def form_body_to_dict(body: str) -> dict:

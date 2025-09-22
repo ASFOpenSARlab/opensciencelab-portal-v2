@@ -9,6 +9,7 @@ from aws_cdk import (
     aws_cognito as cognito,
     aws_apigatewayv2 as apigwv2,
     aws_dynamodb as dynamodb,
+    aws_ses as ses,
     aws_apigatewayv2_integrations as apigwv2_integrations,
     aws_cloudfront as cloudfront,
     aws_cloudfront_origins as origins,
@@ -42,7 +43,7 @@ class PortalCdkStack(Stack):
         self,
         scope: Construct,
         construct_id: str,
-        deploy_prefix: str,
+        vars: dict,
         **kwargs,
     ) -> None:
         super().__init__(scope, construct_id, **kwargs)
@@ -83,7 +84,8 @@ class PortalCdkStack(Stack):
                 memory_size=1024,
                 environment={
                     "POWERTOOLS_SERVICE_NAME": "APP",
-                    "DEBUG": str(deploy_prefix != "prod").lower(),
+                    "DEBUG": str(vars["deploy_prefix"] != "prod").lower(),
+                    "IS_PROD": str(vars["deploy_prefix"] == "prod").lower(),
                     "SES_EMAIL": str(os.getenv("SES_EMAIL")),
                 },
             ),
@@ -93,11 +95,11 @@ class PortalCdkStack(Stack):
                     name="username",
                     type=dynamodb.AttributeType.STRING,
                 ),
-                deletion_protection=bool(deploy_prefix == "prod"),
+                deletion_protection=bool(vars["deploy_prefix"] == "prod"),
                 # Default removal_policy is always RETAIN:
                 removal_policy=(
                     RemovalPolicy.RETAIN
-                    if deploy_prefix == "prod"
+                    if vars["deploy_prefix"] == "prod"
                     else RemovalPolicy.DESTROY
                 ),
             ),
@@ -274,6 +276,22 @@ class PortalCdkStack(Stack):
             integration=lambda_integration,
         )
 
+        ## Our Email Identity in SES:
+        # https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_ses.EmailIdentity.html
+        ses_identity = ses.EmailIdentity.from_email_identity_name(
+            self,
+            "ImportedSESEmailIdentity",
+            vars["ses_domain"],
+        )
+        ses_identity.grant_send_email(lambda_dynamo.lambda_function)
+        ## Optional Key for Developing, to accept SES emails:
+        #    (Since non-prod is a sandbox, you won't receive the email otherwise)
+        if os.getenv("DEV_SES_EMAIL"):
+            ses.EmailIdentity(
+                self,
+                "DevSESEmailIdentity",
+                identity=ses.Identity.email(os.getenv("DEV_SES_EMAIL")),
+            )
         ## Cognito Lambda Endpoint for Signup:
         # https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_lambda.Function.html
         lambda_cognito_signup = aws_lambda.Function(
@@ -290,7 +308,7 @@ class PortalCdkStack(Stack):
         user_pool = cognito.UserPool(
             self,
             "UserPool",
-            user_pool_name=f"Portal Userpool - {deploy_prefix}",
+            user_pool_name=f"Portal Userpool - {vars['deploy_prefix']}",
             # https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_cognito.StandardAttributes.html
             standard_attributes=cognito.StandardAttributes(
                 # https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_cognito.StandardAttribute.html
@@ -301,17 +319,23 @@ class PortalCdkStack(Stack):
                 ),
             ),
             # https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_cognito.UserPoolEmail.html
-            email=cognito.UserPoolEmail.with_cognito(reply_to=None),
+            # https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_cognito.UserPoolSESOptions.html
+            email=cognito.UserPoolEmail.with_ses(
+                from_email=f"osl@{ses_identity.email_identity_name}",
+                reply_to=vars["ses_email"],
+                from_name="ASF OpenScienceLab",
+                ses_verified_domain=ses_identity.email_identity_name,
+            ),
             # https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_cognito.Mfa.html
             mfa=cognito.Mfa.REQUIRED,
             ## The different ways users can get a MFA code:
             # https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_cognito.MfaSecondFactor.html
             mfa_second_factor=cognito.MfaSecondFactor(sms=True, otp=True, email=False),
-            deletion_protection=bool(deploy_prefix == "prod"),
+            deletion_protection=bool(vars["deploy_prefix"] == "prod"),
             # Default removal_policy is always RETAIN:
             removal_policy=(
                 RemovalPolicy.RETAIN
-                if deploy_prefix == "prod"
+                if vars["deploy_prefix"] == "prod"
                 else RemovalPolicy.DESTROY
             ),
             ## Let users create accounts:
@@ -340,7 +364,7 @@ class PortalCdkStack(Stack):
         # https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_cognito.UserPoolClient.html
         portal_host_asf = (
             "opensciencelab"
-            + ("" if deploy_prefix == "prod" else "-" + deploy_prefix)
+            + ("" if vars["deploy_prefix"] == "prod" else "-" + vars["deploy_prefix"])
             + ".asf.alaska.edu"
         )
         user_pool_client = user_pool.add_client(
@@ -388,7 +412,7 @@ class PortalCdkStack(Stack):
         sso_token_secret = secretsmanager.Secret(
             self,
             # The console removes non-alpha stuff, so this'll be 'SSOTokenCs<RANDOM-HASH>' or something:
-            f"SSO-Token-{deploy_prefix.title()}",
+            f"SSO-Token-{vars['deploy_prefix'].title()}",
             secret_string_value=SecretValue.unsafe_plain_text(
                 "Change me or you will always fail"
             ),

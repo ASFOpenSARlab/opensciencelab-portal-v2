@@ -28,7 +28,7 @@
     {% for user in all_users_sorted %}
         <tr>
             <td>
-                <b>{{ user['username'] }}</b>
+                <b><a href="/portal/profile/form/{{ user["username" ] }}">{{ user["username"] }}</a></b>
             </td>
             <td>{{ user['created_at'] }}</td>
             <td>{{ user['last_cookie_assignment'] }}</td>

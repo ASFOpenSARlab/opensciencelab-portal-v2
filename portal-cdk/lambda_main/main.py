@@ -4,6 +4,10 @@ import os
 import json
 
 from portal import routes
+
+# Tmp for deprecated email endpoint:
+from portal.hub import swagger_email_options, send_user_email
+
 from util.format import (
     portal_template,
     request_context_string,
@@ -29,16 +33,33 @@ from aws_lambda_powertools.event_handler import APIGatewayHttpResolver
 from aws_lambda_powertools.logging import correlation_paths
 from aws_lambda_powertools.event_handler import content_types
 
-
+# If IS_PROD is somehow set to "asdf" or something, default to non-prod (True)
+is_not_prod = os.getenv("IS_PROD", "false").lower() != "true"
+# If DEBUG is somehow set to "asdf" or something, default to False (lock-down)
 should_debug = os.getenv("DEBUG", "false").lower() == "true"
 
 ## Root logger, others will inherit from this:
 # https://docs.powertools.aws.dev/lambda/python/latest/core/logger/#child-loggers
 logger = Logger(log_uncaught_exceptions=should_debug)
 
-
 # Rest is V1, HTTP is V2
-app = APIGatewayHttpResolver()
+# debug: https://docs.powertools.aws.dev/lambda/python/latest/core/event_handler/api_gateway/#debug-mode
+app = APIGatewayHttpResolver(debug=should_debug)
+
+#####################
+### Swagger Stuff ###
+#####################
+# # Debug is based on the maturity, use that to enable open_api:
+if is_not_prod:
+    ## All the params can be found at:
+    # https://docs.powertools.aws.dev/lambda/python/latest/core/event_handler/api_gateway/#enabling-swaggerui
+    # https://docs.powertools.aws.dev/lambda/python/latest/core/event_handler/api_gateway/#customizing-swagger-ui
+    app.enable_swagger(
+        title="OpenScienceLab Portal - API docs",
+        path="/api",
+        description="API documentation for OpenScienceLab's portal",
+        version="0.0.1",
+    )
 
 ##############
 ### Routes ###
@@ -49,7 +70,7 @@ for prefix, router in routes.items():
     app.include_router(router, prefix=prefix)
 
 
-@app.get("/")
+@app.get("/", include_in_schema=False)
 def root():
     # Forward to portal if they are logged in
     if current_session.user:
@@ -68,7 +89,7 @@ def root():
     )
 
 
-@app.get("/logout")
+@app.get("/logout", include_in_schema=False)
 def logout():
     # Revoke this refresh token, kill session
     if current_session.auth.cognito.raw:
@@ -83,13 +104,13 @@ def logout():
     )
 
 
-@app.get("/register")
+@app.get("/register", include_in_schema=False)
 @portal_template(title="Register New User", name="logged-out.j2")
 def register():
     return "Register a new user here"
 
 
-@app.get("/auth")
+@app.get("/auth", include_in_schema=False)
 def auth_code():
     code = app.current_event.query_string_parameters.get("code")
     if not code:
@@ -121,10 +142,20 @@ def auth_code():
     )
 
 
-@app.get("/static/.+")
+@app.get("/static/.+", include_in_schema=False)
 def static():
     logger.debug("Path is %s", app.current_event.path)
     return get_static_object(app.current_event)
+
+
+@app.post(
+    "/user/email/send",
+    **swagger_email_options,
+    deprecated=True,
+    description="Forwards everything to `/portal/hub/user/email`.",
+)
+def send_user_email_deprecated():
+    return send_user_email()
 
 
 ######################
@@ -148,7 +179,12 @@ def handle_not_found(error):
 @app.exception_handler(GenericFatalError)
 def handle_generic_fatal_error(exception):
     return wrap_response(
-        json.dumps({"error": exception.message}),
+        json.dumps(
+            {
+                "error": exception.message,
+                "extra_info": exception.extra_info,
+            }
+        ),
         code=exception.error_code,
         content_type=content_types.APPLICATION_JSON,
     )
