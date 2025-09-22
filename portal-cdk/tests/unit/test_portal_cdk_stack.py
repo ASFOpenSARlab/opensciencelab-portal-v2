@@ -16,7 +16,15 @@ def portal_template():
     stack = PortalCdkStack(
         app,
         "portal-cdk",
-        os.getenv("DEPLOY_PREFIX", "unk"),
+        env=core.Environment(
+            account="123456789012",
+            region="us-west-2",
+        ),
+        vars={
+            "deploy_prefix": os.getenv("DEPLOY_PREFIX", "unk"),
+            "ses_domain": os.getenv("SES_DOMAIN", "unk"),
+            "ses_email": os.getenv("SES_EMAIL", "unk"),
+        },
     )
     template = assertions.Template.from_stack(stack)
     return template

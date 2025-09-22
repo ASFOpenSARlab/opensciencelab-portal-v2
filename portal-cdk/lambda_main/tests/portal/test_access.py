@@ -349,6 +349,42 @@ class TestAccessPages:
             }
         }
 
+    def test_set_user_labs_bad_profile(
+        self, monkeypatch, lambda_context, helpers, fake_auth
+    ):
+        user = helpers.FakeUser(access=["user", "admin"])
+        monkeypatch.setattr("util.auth.User", lambda *args, **kwargs: user)
+        monkeypatch.setattr("portal.access.User", lambda *args, **kwargs: user)
+
+        monkeypatch.setattr("portal.access.all_labs", helpers.FAKE_ALL_LABS)
+
+        body = {
+            "labs": {
+                "noaccess": {
+                    "lab_profiles": ["m6a.large"],
+                    "can_user_access_lab": True,
+                    "can_user_see_lab_card": True,
+                    "time_quota": "",
+                    "lab_country_status": "protected",
+                }
+            }
+        }
+
+        event = helpers.get_event(
+            body=json.dumps(body),
+            path="/portal/access/labs/test_user",
+            cookies=fake_auth,
+            method="PUT",
+        )
+        ret = main.lambda_handler(event, lambda_context)
+
+        assert ret["statusCode"] == 422, ret
+        assert (
+            ret["body"].find("\"Profile 'm6a.large' not allowed for lab noaccess\"")
+            != -1
+        )
+        assert ret["headers"].get("Content-Type") == "application/json"
+
     def test_set_user_labs_no_user(
         self, monkeypatch, lambda_context, helpers, fake_auth
     ):
@@ -409,7 +445,7 @@ class TestAccessPages:
         ret = main.lambda_handler(event, lambda_context)
 
         assert ret["statusCode"] == 400
-        assert '"result": "Malformed JSON"' in ret["body"]
+        assert '"error": "Malformed JSON"' in ret["body"]
         assert ret["headers"].get("Content-Type") == "application/json"
 
     def test_set_user_labs_validate_payload(
@@ -556,5 +592,143 @@ class TestAccessPages:
         ret = main.lambda_handler(event, lambda_context)
 
         assert "User does not have required access" in ret["body"]
-        assert ret["statusCode"] == 302
-        assert ret["headers"].get("Content-Type") == "text/html"
+        assert ret["statusCode"] == 403
+        assert ret["headers"].get("Content-Type") == "application/json"
+
+    def test_delete_user_labs_correct(
+        self, monkeypatch, lambda_context, helpers, fake_auth
+    ):
+        user = helpers.FakeUser(access=["user", "admin"])
+        monkeypatch.setattr("util.auth.User", lambda *args, **kwargs: user)
+        monkeypatch.setattr("portal.access.User", lambda *args, **kwargs: user)
+
+        monkeypatch.setattr("portal.access.all_labs", helpers.FAKE_ALL_LABS)
+        assert "testlab" in user.labs, (
+            "Default lab should be in the user object already."
+        )
+
+        body = {
+            "labs": {
+                "testlab": {},
+            }
+        }
+
+        event = helpers.get_event(
+            body=json.dumps(body),
+            path="/portal/access/labs/test_user",
+            cookies=fake_auth,
+            method="DELETE",
+        )
+        ret = main.lambda_handler(event, lambda_context)
+
+        assert ret["statusCode"] == 200, ret
+        assert ret["body"].find('"labs": {') != -1
+        assert ret["headers"].get("Content-Type") == "application/json"
+        assert "testlab" not in user.labs, "Lab should be deleted after request."
+
+    def test_delete_user_labs_malformed_json(
+        self, monkeypatch, lambda_context, helpers, fake_auth
+    ):
+        user = helpers.FakeUser(access=["user", "admin"])
+        monkeypatch.setattr("util.auth.User", lambda *args, **kwargs: user)
+
+        monkeypatch.setattr("portal.access.User", lambda *args, **kwargs: user)
+
+        monkeypatch.setattr("portal.access.all_labs", helpers.FAKE_ALL_LABS)
+
+        body = "gadhahaafsdfsa"
+
+        event = helpers.get_event(
+            body=body,
+            path="/portal/access/labs/test_user",
+            cookies=fake_auth,
+            method="DELETE",
+        )
+        ret = main.lambda_handler(event, lambda_context)
+
+        assert ret["statusCode"] == 400
+        assert '"error": "Malformed JSON"' in ret["body"]
+        assert ret["headers"].get("Content-Type") == "application/json"
+
+    def test_delete_user_labs_validate_payload(
+        self, monkeypatch, lambda_context, helpers, fake_auth
+    ):
+        user = helpers.FakeUser(access=["user", "admin"])
+        monkeypatch.setattr("util.auth.User", lambda *args, **kwargs: user)
+
+        monkeypatch.setattr("portal.access.User", lambda *args, **kwargs: user)
+
+        monkeypatch.setattr("portal.access.all_labs", helpers.FAKE_ALL_LABS)
+
+        # Missing "labs" key
+        body = {}
+
+        event = helpers.get_event(
+            body=json.dumps(body),
+            path="/portal/access/labs/test_user",
+            cookies=fake_auth,
+            method="DELETE",
+        )
+        ret = main.lambda_handler(event, lambda_context)
+
+        assert ret["statusCode"] == 422
+        assert '"result": "Does not contain \'labs\' key"' in ret["body"]
+        assert ret["headers"].get("Content-Type") == "application/json"
+
+        # No "Labs" to delete:
+        body = {"labs": {}}
+
+        event = helpers.get_event(
+            body=json.dumps(body),
+            path="/portal/access/labs/test_user",
+            cookies=fake_auth,
+            method="DELETE",
+        )
+        ret = main.lambda_handler(event, lambda_context)
+
+        assert ret["statusCode"] == 200
+        assert '"result": "Success"' in ret["body"]
+        assert ret["headers"].get("Content-Type") == "application/json"
+
+        # Lab does not exist
+        body = {
+            "labs": {
+                "lab_does_not_exist": {},
+            }
+        }
+
+        event = helpers.get_event(
+            body=json.dumps(body),
+            path="/portal/access/labs/test_user",
+            cookies=fake_auth,
+            method="DELETE",
+        )
+        ret = main.lambda_handler(event, lambda_context)
+
+        assert ret["statusCode"] == 422
+        assert '"result": "Lab does not exist: lab_does_not_exist"' in ret["body"]
+        assert ret["headers"].get("Content-Type") == "application/json"
+
+    def test_delete_user_labs_not_admin(
+        self, monkeypatch, lambda_context, helpers, fake_auth
+    ):
+        user = helpers.FakeUser(access=["user"])
+        monkeypatch.setattr("util.auth.User", lambda *args, **kwargs: user)
+
+        monkeypatch.setattr("portal.access.User", lambda *args, **kwargs: user)
+
+        monkeypatch.setattr("portal.access.all_labs", helpers.FAKE_ALL_LABS)
+
+        body = {"labs": {"testlab": {}}}
+
+        event = helpers.get_event(
+            body=json.dumps(body),
+            path="/portal/access/labs/test_user",
+            cookies=fake_auth,
+            method="DELETE",
+        )
+        ret = main.lambda_handler(event, lambda_context)
+
+        assert "User does not have required access" in ret["body"]
+        assert ret["statusCode"] == 403
+        assert ret["headers"].get("Content-Type") == "application/json"

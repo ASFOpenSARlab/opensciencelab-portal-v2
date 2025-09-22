@@ -14,6 +14,7 @@ class GenericFatalError(Exception):
     def __init__(self, message, error_code=500, extra_info=None):
         self.error_code = error_code
         self.message = message
+        self.extra_info = extra_info
         # Initialize this exception:
         super().__init__(message)
         # And add the error + traceback to the event:
@@ -57,6 +58,33 @@ class CognitoError(GenericFatalError):
         super().__init__(message, error_code, extra_info)
 
 
+class UserNotLoggedIn(GenericFatalError):
+    """
+    Raised if when does not have a valid JWT session cookie.
+    """
+
+    def __init__(self, message, error_code=401, extra_info=None):
+        super().__init__(message, error_code, extra_info)
+
+
+class UserIsNotAuthorized(GenericFatalError):
+    """
+    Raised if user cannot access resource.
+    """
+
+    def __init__(self, message, error_code=403, extra_info=None):
+        super().__init__(message, error_code, extra_info)
+
+
+class UserProfileIncomplete(GenericFatalError):
+    """
+    Raised if user must complete their profile
+    """
+
+    def __init__(self, message, error_code=409, extra_info=None):
+        super().__init__(message, error_code, extra_info)
+
+
 class UserNotFound(GenericFatalError):
     """
     Raised if there is a problem with creating a User.
@@ -72,4 +100,13 @@ class LabDoesNotExist(GenericFatalError):
     """
 
     def __init__(self, message, error_code=404, extra_info=None):
+        super().__init__(message, error_code, extra_info)
+
+
+class MalformedRequest(GenericFatalError):
+    """
+    Raised if we cannot process a request.
+    """
+
+    def __init__(self, message, error_code=400, extra_info=None):
         super().__init__(message, error_code, extra_info)

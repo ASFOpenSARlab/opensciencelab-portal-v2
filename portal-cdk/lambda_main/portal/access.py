@@ -1,10 +1,11 @@
 import json
 
+from util import swagger
 from util.format import portal_template, jinja_template
 from util.auth import require_access
 from util.user.dynamo_db import get_users_with_lab
 from util.user import User
-from util.responses import wrap_response, form_body_to_dict
+from util.responses import wrap_response, form_body_to_dict, json_body_to_dict
 from util.labs import all_labs
 
 from aws_lambda_powertools.event_handler.api_gateway import Router
@@ -19,23 +20,23 @@ access_route = {
 }
 
 
-# This catches "/portal/access"
-@access_router.get("")
-@require_access()
+# This catches "/portal/access" (this routers 'root'):
+@access_router.get("", include_in_schema=False)
+@require_access(human=True)
 @portal_template()
-def access_root():
+def access_root() -> str:
     return "Access Labs"
 
 
-@access_router.get("/add_lab")
-@require_access()
+@access_router.get("/add_lab", include_in_schema=False)
+@require_access(human=True)
 @portal_template()
 def add_lab():
     return "Create New Lab"
 
 
-@access_router.get("/manage/<shortname>")
-@require_access("admin")
+@access_router.get("/manage/<shortname>", include_in_schema=False)
+@require_access("admin", human=True)
 @portal_template()
 def manage_lab(shortname):
     template_input = {}
@@ -79,8 +80,8 @@ def validate_edit_user_request(body: dict) -> tuple[bool, str]:
         return False, "Invalid action"
 
 
-@access_router.post("/manage/<shortname>/edituser")
-@require_access("admin")
+@access_router.post("/manage/<shortname>/edituser", include_in_schema=False)
+@require_access("admin", human=True)
 def edit_user(shortname):
     # Parse request
     body = access_router.current_event.body
@@ -147,22 +148,49 @@ def edit_user(shortname):
     )
 
 
-@access_router.get("/lab")
-@require_access()
+@access_router.get("/lab", include_in_schema=False)
+@require_access(human=True)
 @portal_template()
 def view_all_labs():
     return "inspect ALL labs"
 
 
-@access_router.get("/lab/<lab>")
-@require_access()
+@access_router.get("/lab/<lab>", include_in_schema=False)
+@require_access(human=True)
 @portal_template()
 def view_lab(lab):
     return f"inspect lab {lab}"
 
 
-@access_router.get("/labs/<username>")
-@require_access("admin")
+@access_router.get(
+    "/labs/<username>",
+    description="Returns a list of all labs a user has access to.",
+    response_description="A dict containing a list of labs the user has access to.",
+    responses={
+        **swagger.format_response(
+            example={
+                "labs": [
+                    {
+                        "<lab_name>": {
+                            "lab_profiles": ["profile1", "profile2"],
+                            "can_user_access_lab": True,
+                            "can_user_see_lab_card": False,
+                            "time_quota": "1h",
+                            "lab_country_status": "active",
+                        },
+                    },
+                ],
+                "message": "OK",
+            },
+            description="Returns a list of labs the user has access to.",
+            code=200,
+        ),
+        **swagger.code_403,
+        **swagger.code_404_user_not_found,
+    },
+    tags=[access_route["name"]],
+)
+@require_access("admin", human=False)
 def get_user_labs(username):
     # Find user in db
 
@@ -176,8 +204,27 @@ def get_user_labs(username):
     )
 
 
-@access_router.get("/users/<shortname>")
-@require_access("admin")
+@access_router.get(
+    "/users/<shortname>",
+    description="Returns a list of all users that have access to the given lab.",
+    response_description="A dict containing a list of users with access to the lab.",
+    responses={
+        **swagger.format_response(
+            example={
+                "users": [
+                    {"username": "user1", "labs": {}, "access": []},
+                ],
+                "message": "OK",
+            },
+            description="Returns users that can access the lab.",
+            code=200,
+        ),
+        **swagger.code_403,
+        **swagger.code_404_lab_not_found,
+    },
+    tags=[access_route["name"]],
+)
+@require_access("admin", human=False)
 def get_labs_users(shortname):
     users = get_users_with_lab(shortname)
 
@@ -188,20 +235,18 @@ def get_labs_users(shortname):
     )
 
 
-def validate_set_lab_access(
-    put_lab_access: dict, all_labs_in: dict
-) -> tuple[bool, str]:
+def validate_set_lab_access(put_lab_request: dict) -> tuple[bool, str]:
     # Validate input is correct type
-    if not isinstance(put_lab_access, dict):
+    if not isinstance(put_lab_request, dict):
         return False, "Body is not correct type"
 
     # Validate input has key "labs"
-    if put_lab_access.get("labs") is None:
+    if "labs" not in put_lab_request:
         return False, "Does not contain 'labs' key"
 
-    for lab_name in put_lab_access["labs"].keys():
+    for lab_name in put_lab_request["labs"].keys():
         # Ensure lab exist
-        if lab_name not in all_labs_in:
+        if lab_name not in all_labs:
             return False, f"Lab does not exist: {lab_name}"
 
         # Check all lab fields exist and are correct type
@@ -213,45 +258,157 @@ def validate_set_lab_access(
             "lab_country_status": str,
         }
         for field, _ in all_fields.items():
-            if put_lab_access["labs"][lab_name].get(field) is None:
+            if put_lab_request["labs"][lab_name].get(field) is None:
                 return False, f"Field '{field}' not provided for lab {lab_name}"
 
             if not isinstance(
-                put_lab_access["labs"][lab_name][field], all_fields[field]
+                put_lab_request["labs"][lab_name][field], all_fields[field]
             ):
                 return False, f"Field '{field}' not of type {all_fields[field]}"
 
-        # NOT IMPLEMENTED YET
-        # # Ensure all profiles exist for a given lab
-        # for profile in put_lab_access["labs"][lab_name]["lab_profiles"]:
-        #     pass
+        # Ensure all profiles exist for a given lab
+        for profile in put_lab_request["labs"][lab_name]["lab_profiles"]:
+            # If the lab doesn't have the profile you're trying to set:
+            if profile not in all_labs[lab_name].allowed_profiles:
+                return False, f"Profile '{profile}' not allowed for lab {lab_name}"
+
     return True, "Success"
 
 
-@access_router.put("/labs/<username>")
-@require_access("admin")
+def validate_delete_lab_access(
+    delete_lab_request: dict, user: User
+) -> tuple[bool, str]:
+    # Validate input is correct type
+    if not isinstance(delete_lab_request, dict):
+        return False, "Body is not correct type"
+
+    # Validate input has key "labs"
+    if "labs" not in delete_lab_request:
+        return False, "Does not contain 'labs' key"
+
+    for lab_name, lab_data in delete_lab_request["labs"].items():
+        # Ensure lab exist
+        if lab_name not in all_labs:
+            return False, f"Lab does not exist: {lab_name}"
+
+        if not isinstance(lab_data, dict):
+            return False, f"Lab data for {lab_name} is not a dict"
+    ## Get all the keys from delete_lab_request, that are NOT in user labs:
+    # (Need to do this last, since lab A might fail linting above
+    #  and you'd want error that first)
+    already_removed_labs = [
+        key for key in delete_lab_request["labs"] if key not in user.labs
+    ]
+    if already_removed_labs:
+        # Still return 200, but change the message:
+        return (
+            True,
+            f"User isn't already apart of labs: {', '.join(already_removed_labs)}",
+        )
+    return True, "Success"
+
+
+@access_router.put(
+    "/labs/<username>",
+    description="""
+Sets what labs a user can access. Can be used to both add/remove labs.
+
+<hr>
+
+`PUT` payload should be a json dict of labs and desired user access.
+
+```json
+{
+    "labs": {
+        "<lab_name>": {
+            "lab_profiles": ["m6a.large"],
+            "can_user_access_lab": True,
+            "can_user_see_lab_card": True,
+            "time_quota": "",
+            "lab_country_status": "protected",
+        }
+    }
+}
+```
+
+`{username}` will only have access to `<lab_name>` with profile `m6a.large`.
+Any previously added labs not listed in dictionary, will be removed from the user.
+    """,
+    response_description="A dict containing if it's successful.",
+    responses={
+        **swagger.code_200_result_success,
+        **swagger.code_400_json,
+        **swagger.code_403,
+        **swagger.code_422,
+    },
+    tags=[access_route["name"]],
+)
+@require_access("admin", human=False)
 def set_user_labs(username):
     # Check user exists
     user = User(username=username, create_if_missing=False)
 
     # Parse request body
     body = access_router.current_event.body
-
-    try:
-        body = json.loads(body)
-    except json.JSONDecodeError as e:
-        return wrap_response(
-            body=json.dumps(
-                {"result": "Malformed JSON", "error": str(e), "body": body}
-            ),
-            code=400,
-            content_type=content_types.APPLICATION_JSON,
-        )
+    body = json_body_to_dict(body)
 
     # Validated payload
-    success, result = validate_set_lab_access(put_lab_access=body, all_labs_in=all_labs)
+    success, result = validate_set_lab_access(put_lab_request=body)
     if success:
         user.set_labs(formatted_labs=body["labs"])
+
+    return wrap_response(
+        body=json.dumps({"result": result, "body": body}),
+        code=200 if success else 422,
+        content_type=content_types.APPLICATION_JSON,
+    )
+
+
+@access_router.delete(
+    "/labs/<username>",
+    description="""
+Removes labs from a user. Does not affect labs not listed.
+
+<hr>
+
+`DELETE` payload should be a json dict of labs to be removed from a user. <br />
+
+```json
+{
+    "labs": {
+        "<remove_lab>": {},
+    }
+}
+```
+
+`{username}` will lose access to `<remove_lab>`.
+
+    """,
+    response_description="A dict containing if it's successful.",
+    responses={
+        **swagger.code_200_result_success,
+        **swagger.code_400_json,
+        **swagger.code_403,
+        **swagger.code_422,
+    },
+    tags=[access_route["name"]],
+)
+@require_access("admin", human=False)
+def delete_user_labs(username):
+    # Check user exists
+    user = User(username=username, create_if_missing=False)
+
+    # Parse request body
+    body = access_router.current_event.body
+    body = json_body_to_dict(body)
+
+    # Validated payload
+    success, result = validate_delete_lab_access(delete_lab_request=body, user=user)
+    if success:
+        for lab_name in body["labs"].keys():
+            if lab_name in user.labs:
+                user.remove_lab(lab_name)
+
     return wrap_response(
         body=json.dumps({"result": result, "body": body}),
         code=200 if success else 422,

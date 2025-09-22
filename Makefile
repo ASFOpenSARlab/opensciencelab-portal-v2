@@ -89,6 +89,9 @@ cdk-shell:
 		-e AWS_DEFAULT_REGION -e AWS_REGION \
 		-e AWS_DEFAULT_ACCOUNT \
 		-e DEPLOY_PREFIX \
+		-e SES_DOMAIN \
+		-e SES_REPLY_TO_EMAIL \
+		-e DEV_SES_EMAIL \
 		--network host \
 		--pull always \
 		${IMAGE_NAME} || \
