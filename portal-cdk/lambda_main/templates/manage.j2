@@ -22,10 +22,6 @@
         </tr>
         {% for user in users %}
             <tr>
-                <<<<<<< HEAD
-                <th>{{ user["username"] }}</th>
-                <th>{{ ", ".join(user["labs"][lab.short_lab_name]["lab_profiles"]) }}</th>
-                =======
                 <th>
                     <b><a href="/portal/profile/form/{{ user["username"] }}">{{ user["username"] }}</a></b>
                 </th>
@@ -38,7 +34,6 @@
                         {% endif %}
                     {% endfor %}
                 </th>
-                >>>>>>> b969cf66737df55abb44c48abcbde6b4a50651ea
                 <th>
                     <form method="post" action="{{ lab.short_lab_name }}/edituser">
                         <input type="hidden" name="username" value={{ user["username"] }}>
