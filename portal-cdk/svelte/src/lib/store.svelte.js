@@ -16,8 +16,6 @@ class Common {
     }
 
     const data = await response.json();
-    console.log("Success:", data);
-
     this.data = data;
 
     return data;
@@ -41,21 +39,11 @@ class Common {
   };
 
   get data() {
-    console.log(
-      "get data",
-      $state.snapshot(this.store),
-      $state.snapshot(this.store[this.id])
-    );
     return this.store[this.id];
   }
 
   set data(newData) {
     this.store[this.id] = newData;
-    console.log(
-      "set data",
-      $state.snapshot(this.store),
-      $state.snapshot(this.store[this.id])
-    );
   }
 }
 

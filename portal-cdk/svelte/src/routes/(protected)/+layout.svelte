@@ -1,25 +1,29 @@
 <script>
-  //import { onMount } from "svelte";
-  import Header from "$components/layout/header.svelte";
-  import Footer from "$components/layout/footer.svelte";
-  import favicon from "$lib/assets/favicon.svg";
-  //import { UserClass } from "$lib/store.svelte.js";
-
-  //onMount(async () => {
-  //  let user = new UserClass();
-  //
-  //  await user.latest();
-  //});
+  import Header from "$components/layout/Header.svelte";
+  import Footer from "$components/layout/Footer.svelte";
 
   let { children } = $props();
 </script>
 
-<svelte:head>
-  <link rel="icon" href={favicon} />
-</svelte:head>
+<div class="app-container">
+  <Header />
 
-<Header />
+  <main>
+    {@render children?.()}
+  </main>
 
-{@render children?.()}
+  <Footer />
+</div>
 
-<Footer />
+<style>
+  .app-container {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh; /* Ensures the container always takes at least the full viewport height. 100vh adds scrollbars for some reason. */
+    margin: 0;
+  }
+
+  main {
+    flex-grow: 1;
+  }
+</style>

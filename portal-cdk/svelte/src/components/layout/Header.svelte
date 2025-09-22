@@ -8,22 +8,22 @@
   let user = new UserClass();
 
   onMount(async () => {
+    spinner.start();
     user.pull();
-    // spinner is already spinning on render
     spinner.stop();
   });
 </script>
 
 <Spinner bind:this={spinner} />
 
-<div>
-  <h1>
+<div class="header">
+  <h2>
     This is a header: <i>{(user.data && user.data.username) || "username"}</i>
-  </h1>
+  </h2>
 </div>
 
 <style>
-  div {
+  .header {
     text-align: center;
     width: 100%;
     height: 3rem;
