@@ -189,7 +189,6 @@ class PortalCdkStack(Stack):
         # Define the CloudFront Function code inline
         # Note that javascript curly brackets need to be escaped due to python's format
         # See https://repost.aws/questions/QUYAUeLI2FSoSTR4TygAMBOQ/specifying-different-error-behaviors-for-different-s3-origins-on-cloudfront#AN7rsXLi4iQzOl2EZth3sSYA
-        # Serve all traffic through /ui/index.html so that SvelteKit routing will determine where to go.
         frontend_function_code = """
             function handler(event) {{
                 const request = event.request;
@@ -205,7 +204,8 @@ class PortalCdkStack(Stack):
                     '/{frontend_prefix}/login',
                     '/{frontend_prefix}/users',
                     '/{frontend_prefix}/labs',
-                    '/{frontend_prefix}/calculator'
+                    '/{frontend_prefix}/calculator',
+                    '/{frontend_prefix}/whoami'
                 ]
                 
                 if( shortEndings.some(shortEnding => uri.endsWith(shortEnding)) ){{
