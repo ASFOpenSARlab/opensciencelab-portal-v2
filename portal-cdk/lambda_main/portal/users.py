@@ -8,7 +8,7 @@ from util.auth import require_access
 from util.session import current_session
 from util.user.dynamo_db import get_all_items
 from util.format import jinja_template
-from util.responses import wrap_response, form_body_to_dict
+from util.responses import wrap_response
 from util.exceptions import CognitoError, DbError
 from util.user import User
 
