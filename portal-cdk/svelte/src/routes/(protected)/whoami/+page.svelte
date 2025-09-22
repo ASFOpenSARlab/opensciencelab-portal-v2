@@ -10,8 +10,8 @@
   let user = new UserClass();
 
   onMount(async () => {
+    spinner.start();
     user.pull();
-    // spinner is already spinning on render
     spinner.stop();
   });
 
