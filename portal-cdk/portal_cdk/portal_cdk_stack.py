@@ -182,14 +182,7 @@ class PortalCdkStack(Stack):
             vars["ses_domain"],
         )
         ses_identity.grant_send_email(lambda_dynamo.lambda_function)
-        ## Optional Key for Developing, to accept SES emails:
-        #    (Since non-prod is a sandbox, you won't receive the email otherwise)
-        if os.getenv("DEV_SES_EMAIL"):
-            ses.EmailIdentity(
-                self,
-                "DevSESEmailIdentity",
-                identity=ses.Identity.email(os.getenv("DEV_SES_EMAIL")),
-            )
+
         ## Cognito Lambda Endpoint for Signup:
         # https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_lambda.Function.html
         lambda_cognito_signup = aws_lambda.Function(

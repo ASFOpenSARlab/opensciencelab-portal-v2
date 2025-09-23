@@ -1,12 +1,14 @@
 import datetime
 
+import os
 import json
 import base64
+import boto3
 
 from util import swagger
 from util.responses import wrap_response, json_body_to_dict
 from util.format import portal_template, request_context_string
-from util.auth import encrypt_data, require_access
+from util.auth import encrypt_data, decrypt_data, require_access
 from util.session import current_session
 from util.user import User
 
@@ -16,6 +18,15 @@ from aws_lambda_powertools.event_handler import content_types
 from aws_lambda_powertools.shared.cookies import Cookie
 
 hub_router = Router()
+
+# Lazy-load it, so it's only adds to cold start time if needed.
+_ses_client = None
+def get_ses_client():
+    global _ses_client # pylint: disable=global-statement
+    if _ses_client is None:
+        _ses_client = boto3.client("sesv2")
+    return _ses_client
+
 
 TEMP_USERNAME = "tester1"
 COOKIE_NAME = "portal-username"
@@ -186,7 +197,7 @@ swagger_email_options = {
 
 <hr>
 
-`POST` payload should be a dict of the form:
+`POST` body payload should be an ENCRYPTED dict. Decoded to match:
 
 ```json
 {
@@ -203,6 +214,62 @@ swagger_email_options = {
     """,
 )
 def send_user_email():
-    body = hub_router.current_event.json_body
+    body = decrypt_data(hub_router.current_event.json_body)
     body = json_body_to_dict(body)
-    return "TODO: OSL-3713"
+    ses_client = get_ses_client()
+    if isinstance(body["to"], str):
+        body["to"] = [body["to"]]
+    if body["from"] == "osl-admin":
+        body["from"] = f'osl@{os.getenv("SES_DOMAIN")}'
+
+    ses_client.send_email(
+        FromEmailAddress=f'osl@{os.getenv("SES_DOMAIN")}',
+        Destination={
+            # "ToAddresses": body["to"],
+            "ToAddresses": "cjshowalter@alaska.edu",
+        },
+        ReplyToAddresses=[os.getenv("SES_EMAIL")],
+        Content={
+            "Simple": {
+                'Subject': {
+                    'Data': "Hello from Subject",
+                    'Charset': 'UTF-8'
+                },
+                'Body': {
+                    # 'Text': {
+                    #     'Data': body["html_body"],
+                    #     'Charset': 'UTF-8'
+                    # },
+                    'Html': {
+                        'Data': "Hello World!",
+                        'Charset': 'UTF-8'
+                    }
+                },
+            }
+        },
+    )
+    # ses_client.send_email(
+    #     FromEmailAddress=body["from"],
+    #     Destination={
+    #         "ToAddresses": body["to"],
+    #     },
+    #     ReplyToAddresses=[os.getenv("SES_EMAIL")],
+    #     Content={
+    #         "Simple": {
+    #             'Subject': {
+    #                 'Data': body["subject"],
+    #                 'Charset': 'UTF-8'
+    #             },
+    #             'Body': {
+    #                 # 'Text': {
+    #                 #     'Data': body["html_body"],
+    #                 #     'Charset': 'UTF-8'
+    #                 # },
+    #                 'Html': {
+    #                     'Data': body["html_body"],
+    #                     'Charset': 'UTF-8'
+    #                 }
+    #             },
+    #         }
+    #     },
+    # )
