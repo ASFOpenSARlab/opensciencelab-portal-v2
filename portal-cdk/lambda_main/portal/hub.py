@@ -1,12 +1,15 @@
 import datetime
+import os
 
 import json
 import base64
 
+import boto3
+
 from util import swagger
-from util.responses import wrap_response, json_body_to_dict
+from util.responses import wrap_response
 from util.format import portal_template, request_context_string
-from util.auth import encrypt_data, require_access
+from util.auth import encrypt_data, decrypt_data, require_access
 from util.session import current_session
 from util.user import User
 
@@ -27,6 +30,15 @@ hub_route = {
 }
 
 logger = Logger(child=True)
+
+_sesv2 = None
+
+
+def get_sesv2() -> None:
+    global _sesv2
+    if not _sesv2:
+        _sesv2 = boto3.client("sesv2")
+    return _sesv2
 
 
 @hub_router.get("/", include_in_schema=False)
@@ -178,6 +190,16 @@ swagger_email_options = {
 }
 
 
+def _parse_email_message(data: dict) -> dict:
+    """
+    Parse sent POST payload into a dictionary of email parameters
+    """
+
+    raise NotImplementedError()
+
+    return data
+
+
 @hub_router.post(
     "/user/email",
     **swagger_email_options,
@@ -203,6 +225,52 @@ swagger_email_options = {
     """,
 )
 def send_user_email():
-    body = hub_router.current_event.json_body
-    body = json_body_to_dict(body)
+    """
+    Manually create test data on the command line to send to endpoint:
+
+    $ pip install opensarlab-backend requests
+    $ cat "SSO_TOKEN_VALUE" > /tmp/sso_token
+    $ OPENSARLAB_SSO_TOKEN_PATH=/tmp/sso_token python
+    > from opensarlab.auth import encryptedjwt as e
+    > import requests
+    > email = {'to': "email@example.com", "body": "hello"}
+    > data = e.encrypt(email)
+    > res = requests.post('PORTAL_DOMAIN/user/hub/send/email', json=data)
+    > res
+    """
+
+    sesv2: boto3.Client = get_sesv2()
+
+    request_data = hub_router.current_event.body
+
+    data: dict = decrypt_data(request_data)
+
+    data = _parse_email_message(data)
+
+    sesv2.send_email(
+        FromEmailAddress=f"dummy@{os.getenv('SES_DOMAIN')}",
+        Destination={
+            "ToAddresses": [
+                "emlundell@alaska.edu",
+            ],
+            # "CcAddresses": [
+            #    "string",
+            # ],
+            # "BccAddresses": [
+            #    "string",
+            # ],
+        },
+        ReplyToAddresses=[
+            os.getenv("SES_EMAIL"),
+        ],
+        Content={
+            "Simple": {
+                "Subject": {"Data": "hello Waorld", "Charset": "UTF-8"},
+                "Body": {
+                    "Html": {"Data": "hello Waorld", "Charset": "UTF-8"},
+                },
+            },
+        },
+    )
+
     return "TODO: OSL-3713"
