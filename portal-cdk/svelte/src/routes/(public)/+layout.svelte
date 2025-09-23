@@ -5,23 +5,50 @@
   let { data, children } = $props();
 </script>
 
-<div class="app-container">
+<div class="container">
+  <lside></lside>
+
   <main>
     {@render children?.()}
   </main>
 
-  <Footer />
+  <rside></rside>
+
+  <footer>
+    <Footer />
+  </footer>
 </div>
 
 <style>
-  .app-container {
-    display: flex;
-    flex-direction: column;
-    min-height: 100vh; /* Ensures the container always takes at least the full viewport height. 100vh adds scrollbars for some reason. */
-    margin: 0;
+  .container {
+    display: grid;
+
+    grid-template-areas:
+      "lside content rside"
+      "footer footer footer";
+
+    grid-template-columns: 10px 1fr 10px;
+    grid-template-rows: 1fr 4rem;
+    grid-gap: 10px;
+
+    height: 100vh;
+  }
+
+  lside {
+    grid-area: lside;
+    margin-left: 0.5rem;
   }
 
   main {
-    flex-grow: 1;
+    grid-area: content;
+  }
+
+  rside {
+    grid-area: rside;
+    margin-right: 0.5rem;
+  }
+
+  footer {
+    grid-area: footer;
   }
 </style>
