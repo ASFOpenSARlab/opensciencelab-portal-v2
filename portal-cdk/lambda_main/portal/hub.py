@@ -225,8 +225,7 @@ def send_user_email():
     ses_client.send_email(
         FromEmailAddress=f'osl@{os.getenv("SES_DOMAIN")}',
         Destination={
-            # "ToAddresses": body["to"],
-            "ToAddresses": "cjshowalter@alaska.edu",
+            "ToAddresses": body["to"],
         },
         ReplyToAddresses=[os.getenv("SES_EMAIL")],
         Content={
