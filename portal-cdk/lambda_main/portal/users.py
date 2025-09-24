@@ -1,5 +1,4 @@
 import json
-from decimal import Decimal
 
 from util.format import (
     portal_template,
@@ -24,15 +23,6 @@ users_route = {
     "prefix": "/portal/users",
     "name": "Users",
 }
-
-
-# Json dumps does not natively handle decimals
-class DecimalEncoder(json.JSONEncoder):
-    def default(self, obj):
-        if isinstance(obj, Decimal):
-            return str(obj)
-        return super().default(obj)
-
 
 def _delete_user(username) -> bool:
     current_username = current_session.auth.cognito.username
