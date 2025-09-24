@@ -1,9 +1,10 @@
 <script>
   import { onMount } from "svelte";
   import { resolveRoute } from "$app/paths";
-  import Spinner from "$components/Spinner.svelte";
+  import Spinner from "$components/utils/Spinner.svelte";
   import { UserClass } from "$lib/store.svelte.js";
   import { error } from "@sveltejs/kit";
+  import ClickToCopy from "$components/utils/ClickToCopy.svelte";
 
   let spinner;
   let errorMsg = $state(null);
@@ -48,10 +49,15 @@
 <h1>Future Home Page</h1>
 
 {#if errorMsg}
-  <p style="color:red">{errorMsg}</p>
+  <p style="color:red" id="errorMsgId">{errorMsg}</p>
 {/if}
 
-<p>{(user.data && user.data.username) || "no username given"}</p>
+<div>
+  <span id="usernameId">
+    {(user.data && user.data.username) || "no username given"}
+  </span>
+  <ClickToCopy target="#usernameId" />
+</div>
 
 <button onclick={onBtnClick}>New</button>
 <button onclick={onLatest}>Get Latest</button>

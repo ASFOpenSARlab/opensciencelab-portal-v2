@@ -1,6 +1,6 @@
 <script>
   import { base } from "$app/paths";
-  import Spinner from "$components/Spinner.svelte";
+  import Spinner from "$components/utils/Spinner.svelte";
   import { UserClass } from "$lib/store.svelte.js";
   import { onMount } from "svelte";
 
