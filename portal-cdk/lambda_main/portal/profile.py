@@ -5,7 +5,8 @@ from util.auth import require_access
 from util.session import current_session
 from util.user import User
 from util.responses import wrap_response, form_body_to_dict
-from util.labs import all_labs
+from util.labs import LABS
+
 from pathlib import Path
 import json
 from urllib.parse import urlencode
@@ -99,7 +100,7 @@ def profile_user(username: str):
         "input": {
             "user_logged_in": user_logged_in,
             "user_profile": user_profile,
-            "labs": all_labs,
+            "labs": LABS,
             "default_value": "Choose...",
             "warning_missing": "Value is missing",
         },
