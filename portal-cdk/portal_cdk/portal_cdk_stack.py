@@ -182,6 +182,7 @@ class PortalCdkStack(Stack):
             bucket_name=f"frontend-svelte-{construct_id.lower()}",
             versioned=True,
             removal_policy=RemovalPolicy.DESTROY,
+            auto_delete_objects=True,
             block_public_access=s3.BlockPublicAccess.BLOCK_ALL,
             public_read_access=False,
         )
