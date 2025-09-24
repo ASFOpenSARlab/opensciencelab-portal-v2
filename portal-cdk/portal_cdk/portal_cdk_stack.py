@@ -19,15 +19,11 @@ from aws_cdk import (
 )
 from aws_solutions_constructs.aws_lambda_dynamodb import LambdaToDynamoDB
 
+from lambda_main.util.labs import LABS
+
 LAMBDA_RUNTIME = aws_lambda.Runtime.PYTHON_3_11
 
 # I'd like to see this get spun off into CodeAsConfig collocated with the portal code.
-LABS = (
-    {
-        "LAB_SHORT_NAME": "smce-test-opensarlab",
-        "LAB_DOMAIN": "smce-test-1433554573.us-west-2.elb.amazonaws.com",
-    },
-)
 
 
 class PortalCdkStack(Stack):
@@ -145,10 +141,10 @@ class PortalCdkStack(Stack):
         )
 
         # Loop over Labs and add proxy behaviors
-        for lab in LABS:
+        for lab in LABS.values():
             # https://docs.aws.amazon.com/cdk/api/v2/python/aws_cdk.aws_cloudfront_origins/HttpOrigin.html
             lab_origin = origins.HttpOrigin(
-                lab["LAB_DOMAIN"],
+                lab.deployment_url.split("://")[1],
                 protocol_policy=cloudfront.OriginProtocolPolicy.HTTP_ONLY,
                 custom_headers={
                     # This *SHOULD* link to the CF Endpoint, but that creates a circular dependency
@@ -158,7 +154,7 @@ class PortalCdkStack(Stack):
 
             # LAB_SHORT_NAME, LAB_DOMAIN
             portal_cloudfront.add_behavior(
-                path_pattern=f"/lab/{lab['LAB_SHORT_NAME']}/*",
+                path_pattern=f"/lab/{lab.short_lab_name}/*",
                 origin=lab_origin,
                 origin_request_policy=cloudfront.OriginRequestPolicy.ALL_VIEWER,
                 allowed_methods=cloudfront.AllowedMethods.ALLOW_ALL,

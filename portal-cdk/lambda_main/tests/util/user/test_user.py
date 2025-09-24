@@ -150,7 +150,7 @@ class TestUserClass:
         from util.user.user import User
         from util.user.dynamo_db import get_users_with_lab
 
-        monkeypatch.setattr("util.user.dynamo_db.all_labs", helpers.FAKE_ALL_LABS)
+        monkeypatch.setattr("util.user.dynamo_db.LABS", helpers.FAKE_LABS)
 
         user1 = User(username="test_user1")
         user1.labs = {"testlab": {}}
