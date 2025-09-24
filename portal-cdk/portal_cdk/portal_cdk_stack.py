@@ -1,5 +1,6 @@
 import os
 from constructs import Construct
+from urllib.parse import urlparse
 
 from aws_cdk import (
     Stack,
@@ -142,9 +143,10 @@ class PortalCdkStack(Stack):
 
         # Loop over Labs and add proxy behaviors
         for lab in LABS.values():
+            parsed_url = urlparse(lab.deployment_url)
             # https://docs.aws.amazon.com/cdk/api/v2/python/aws_cdk.aws_cloudfront_origins/HttpOrigin.html
             lab_origin = origins.HttpOrigin(
-                lab.deployment_url.split("://")[1],
+                parsed_url.netloc + parsed_url.path,
                 protocol_policy=cloudfront.OriginProtocolPolicy.HTTP_ONLY,
                 custom_headers={
                     # This *SHOULD* link to the CF Endpoint, but that creates a circular dependency
