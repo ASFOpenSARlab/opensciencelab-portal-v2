@@ -9,7 +9,7 @@ import boto3
 from util import swagger
 from util.responses import wrap_response
 from util.format import portal_template, request_context_string
-from util.auth import encrypt_data, decrypt_data, require_access
+from util.auth import encrypt_data, require_access
 from util.session import current_session
 from util.user import User
 
@@ -190,84 +190,211 @@ swagger_email_options = {
 }
 
 
+def _get_user_email_for_username(username: str) -> str:
+    if not username:
+        return None
+
+    # Since osl-admin is a special username, make sure we override with the admin email
+    if username == "osl-admin":
+        return os.getenv("SES_EMAIL")
+
+    return "email@example.com"
+
+
 def _parse_email_message(data: dict) -> dict:
     """
     Parse sent POST payload into a dictionary of email parameters
+
+    Return dict of form:
+
+    {
+        "from": ["",],
+        "to": ["",],
+        "reply_to": ["",],
+        "cc": ["",],
+        "bcc": ["",],
+        "subject": "",
+        "html_body": ""
+    }
+
     """
 
-    raise NotImplementedError()
+    email_meta = {}
 
-    return data
+    ####  To
+    to_email = data["to"].get("email", "")
+    if isinstance(to_email, str):
+        to_email = [to_email]
+
+    to_username = data["to"].get("username", "")
+    if isinstance(to_username, str):
+        to_username = [to_username]
+
+    for user in to_username:
+        user_email = _get_user_email_for_username(username=user)
+        if user_email:
+            to_email.append(user_email)
+    if not to_email:
+        raise Exception("No TO user specified")
+
+    email_meta["to"] = ",".join(to_email)
+
+    ####  CC
+    cc = data.get("cc", None)
+    if cc:
+        cc_email = cc.get("email", "")
+        if isinstance(cc_email, str):
+            cc_email = [cc_email]
+
+        cc_username = cc.get("username", "")
+        if isinstance(cc_username, str):
+            cc_username = [cc_username]
+
+        for user in cc_username:
+            user_email = _get_user_email_for_username(username=user)
+            if user_email:
+                cc_email.append(user_email)
+
+        email_meta["cc"] = ",".join(cc_email)
+
+    ####  BCC
+    bcc = data.get("bcc", None)
+    if bcc:
+        bcc_email = bcc.get("email", "")
+        if isinstance(bcc_email, str):
+            bcc_email = [bcc_email]
+
+        bcc_username = bcc.get("username", "")
+        if isinstance(bcc_username, str):
+            bcc_username = [bcc_username]
+
+        for user in bcc_username:
+            user_email = _get_user_email_for_username(username=user)
+            if user_email:
+                bcc_email.append(user_email)
+
+        email_meta["bcc"] = ",".join(bcc_email)
+
+    ####  FROM
+    from_email = data["from"].get("email", "")
+    from_username = data["from"].get("username", "")
+
+    # Note that if a "from" username is given it will override any email
+    if from_username:
+        from_email = _get_user_email_for_username(username=from_username)
+
+    if from_email == os.getenv("SES_EMAIL"):
+        email_meta["reply_to"] = [os.getenv("SES_EMAIL")]
+        from_email = f"opensciencelab@{os.getenv('SES_DOMAIN')}"
+
+    if not from_email:
+        raise Exception("No FROM email specified")
+
+    email_meta["from"] = [from_email]
+
+    #### subject
+    data_subject = data.get("subject", "")
+    if data_subject:
+        email_meta["subject"] = data_subject
+
+    data_body = data.get("html_body", "")
+
+    if data_body:
+        email_meta["html_body"] = f"""
+        <html>
+            <body>
+                <h1> Message from OpenScienceLab </h1>
+                <section>
+                    {data_body}
+                </section>
+                <section>
+                    <hr/>
+                    <p> OpenScienceLab is operated by the Alaska Satellite Facility | <a href="https://opensarlab-docs.asf.alaska.edu">OpenScienceLab documentation</a>.</p>
+                </section>
+            </body>
+        </html>
+        """
+
+    return email_meta
 
 
 @hub_router.post(
     "/user/email",
     **swagger_email_options,
     description="""
-"Forwards" emails from labs, to the user's email address on file using AWS SES.
+Sends emails as defined in payload via SES. To help facilitate ease of use, usernames can be used instead of email addresses.
+    
+- If an username is given, user's email address on file is used
+- As a special case, username "osl-admin" substitutes the admin email as defined in the portal config
 
 <hr>
-
-`POST` payload should be a dict of the form:
+    
+Format of `POST` payload should be a dict of the form:
 
 ```json
 {
-    "to": {"username": "osl-admin"},
-    "from": {"username": "osl-admin"},
-    "subject": "OpenScienceLab Metric Alert",
-    "html_body": "<message>",
+    "to": {
+        "username": ["",] | "",
+        "email": ["",] | ""
+    },
+    "from": {
+        "username": "",
+        "email": ""
+    },
+    "cc": {
+        "username": ["",] | "",
+        "email": ["",] | ""
+    },
+    "bcc": {
+        "username": ["",] | "",
+        "email": ["",] | ""
+    },
+    "subject": "",
+    "html_body": "<message>"
 }
 ```
-
-- `<message>` is the text of the email to send.
-
-- `username` can also be a list in the form of `{"username": ["user1", "user2"]}`
-    """,
+""",
 )
 def send_user_email():
-    """
-    Manually create test data on the command line to send to endpoint:
-
-    $ pip install opensarlab-backend requests
-    $ cat "SSO_TOKEN_VALUE" > /tmp/sso_token
-    $ OPENSARLAB_SSO_TOKEN_PATH=/tmp/sso_token python
-    > from opensarlab.auth import encryptedjwt as e
-    > import requests
-    > email = {'to': "email@example.com", "body": "hello"}
-    > data = e.encrypt(email)
-    > res = requests.post('PORTAL_DOMAIN/user/hub/send/email', json=data)
-    > res
-    """
+    logger.info(f"SES_EMAIL: {os.getenv('SES_EMAIL')}")
+    logger.info(f"SES_DOMAIN: {os.getenv('SES_DOMAIN')}")
+    logger.infd(f"printenv: {vars(os.environ)}")
 
     sesv2: boto3.Client = get_sesv2()
 
-    request_data = hub_router.current_event.body
+    # request_data = hub_router.current_event.body
 
-    data: dict = decrypt_data(request_data)
+    # decrypted_data: dict = decrypt_data(request_data)
 
-    data = _parse_email_message(data)
+    decrypted_data = {
+        "to": {"email": "emlundell@alaska.edu"},
+        "from": {"email": "emlundell@alaska.edu"},
+        "subject": "hello",
+        "html_body": "<p>How are you today?</p>",
+    }
+
+    logger.info(f"{decrypted_data=}")
+
+    parsed_data: dict = _parse_email_message(decrypted_data)
+
+    logger.info(f"{parsed_data=}")
 
     sesv2.send_email(
-        FromEmailAddress=f"dummy@{os.getenv('SES_DOMAIN')}",
+        FromEmailAddress=parsed_data["from"],
         Destination={
-            "ToAddresses": [
-                "emlundell@alaska.edu",
-            ],
-            # "CcAddresses": [
-            #    "string",
-            # ],
-            # "BccAddresses": [
-            #    "string",
-            # ],
+            "ToAddresses": parsed_data["to"],
+            "CcAddresses": parsed_data.get("cc", []),
+            "BccAddresses": parsed_data.get("bcc", []),
         },
-        ReplyToAddresses=[
-            os.getenv("SES_EMAIL"),
-        ],
+        ReplyToAddresses=parsed_data.get("reply_to", []),
         Content={
             "Simple": {
-                "Subject": {"Data": "hello Waorld", "Charset": "UTF-8"},
+                "Subject": {"Data": parsed_data.get("subject", ""), "Charset": "UTF-8"},
                 "Body": {
-                    "Html": {"Data": "hello Waorld", "Charset": "UTF-8"},
+                    "Html": {
+                        "Data": parsed_data.get("html_body", ""),
+                        "Charset": "UTF-8",
+                    },
                 },
             },
         },
