@@ -3,12 +3,10 @@
   let spinning = $state(true);
 
   export const start = () => {
-    console.log("Start Loading...", spinning, id);
     spinning = true;
   };
 
   export const stop = () => {
-    console.log("Start Loading...", spinning, id);
     spinning = false;
   };
 </script>
