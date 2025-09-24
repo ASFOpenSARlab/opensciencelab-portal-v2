@@ -1,4 +1,5 @@
 <script>
+  import { giveAToast } from "$lib/utils/giveAToast";
   import { onMount } from "svelte";
 
   /** @type {import('./$types').PageProps} */
@@ -17,17 +18,27 @@
       this.dispatchEvent(
         new CustomEvent("copysuccess", {
           bubbles: true,
-          detail: text,
+          detail: {
+            message: text,
+          },
         })
       );
+
+      giveAToast("success", "Copied text: " + text);
+
       console.log(`Text '${text}' has been written to the clipboard`);
     } catch (error) {
       this.dispatchEvent(
         new CustomEvent("copyerror", {
           bubbles: true,
-          detail: error,
+          detail: {
+            message: error,
+          },
         })
       );
+
+      giveAToast("error", "Error! " + text);
+
       console.log(`Text '${text}' has had a copy error: ${error}`);
     }
   }
