@@ -24,6 +24,7 @@ users_route = {
     "name": "Users",
 }
 
+
 def _delete_user(username) -> bool:
     current_username = current_session.auth.cognito.username
     user_to_delete = User(username=username)
