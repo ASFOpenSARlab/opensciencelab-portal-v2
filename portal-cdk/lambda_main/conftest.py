@@ -196,14 +196,14 @@ class Helpers:
         def get_lab_access(self) -> list[LabAccessInfo]:
             return filter_lab_access(
                 is_admin=self.is_admin(),
-                all_labs_in=Helpers.FAKE_ALL_LABS,
-                labs=self.labs,
+                all_labs=Helpers.FAKE_LABS,
+                user_labs=self.labs,
             )
 
     # differentlab not initialized in FakeUser.labs
     # this is to allow labs to test against a lab the user does not have access too
     # unless used for other purpose in a given test
-    FAKE_ALL_LABS = {
+    FAKE_LABS = {
         "testlab": BaseLab(
             friendly_name="Test Lab",
             short_lab_name="testlab",
