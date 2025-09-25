@@ -3,8 +3,7 @@ from .base_lab import BaseLab
 from dataclasses import dataclass
 import os
 
-is_not_prod = os.getenv("IS_PROD", "false").lower() != "true"
-if not is_not_prod:
+if os.getenv("IS_PROD", "false").lower() == "true":
     LABS = {
         "smce-prod-opensarlab": BaseLab(
             short_lab_name="smce-prod-opensarlab",
