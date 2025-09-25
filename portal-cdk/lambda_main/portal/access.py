@@ -6,7 +6,7 @@ from util.auth import require_access
 from util.user.dynamo_db import get_users_with_lab
 from util.user import User
 from util.responses import wrap_response, form_body_to_dict, json_body_to_dict
-from util.labs import all_labs
+from util.labs import LABS
 
 from aws_lambda_powertools.event_handler.api_gateway import Router
 from aws_lambda_powertools.event_handler import content_types
@@ -45,7 +45,7 @@ def manage_lab(shortname):
     users = get_users_with_lab(shortname)
     template_input["users"] = users
 
-    lab = all_labs[shortname]
+    lab = LABS[shortname]
     template_input["lab"] = lab
 
     return jinja_template(template_input, "manage.j2")
@@ -246,7 +246,7 @@ def validate_set_lab_access(put_lab_request: dict) -> tuple[bool, str]:
 
     for lab_name in put_lab_request["labs"].keys():
         # Ensure lab exist
-        if lab_name not in all_labs:
+        if lab_name not in LABS:
             return False, f"Lab does not exist: {lab_name}"
 
         # Check all lab fields exist and are correct type
@@ -269,7 +269,7 @@ def validate_set_lab_access(put_lab_request: dict) -> tuple[bool, str]:
         # Ensure all profiles exist for a given lab
         for profile in put_lab_request["labs"][lab_name]["lab_profiles"]:
             # If the lab doesn't have the profile you're trying to set:
-            if profile not in all_labs[lab_name].allowed_profiles:
+            if profile not in LABS[lab_name].allowed_profiles:
                 return False, f"Profile '{profile}' not allowed for lab {lab_name}"
 
     return True, "Success"
@@ -288,7 +288,7 @@ def validate_delete_lab_access(
 
     for lab_name, lab_data in delete_lab_request["labs"].items():
         # Ensure lab exist
-        if lab_name not in all_labs:
+        if lab_name not in LABS:
             return False, f"Lab does not exist: {lab_name}"
 
         if not isinstance(lab_data, dict):
