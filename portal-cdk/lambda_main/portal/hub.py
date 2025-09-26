@@ -198,7 +198,13 @@ def _get_user_email_for_username(username: str) -> str:
     if username == "osl-admin":
         return os.getenv("SES_EMAIL")
 
-    return "email@example.com"
+    try:
+        user = User(username, create_if_missing=False)
+    except Exception:
+        logger.error(f"User {username} not found")
+        return None
+
+    return user.email
 
 
 def _parse_email_message(data: dict) -> dict:
@@ -222,18 +228,18 @@ def _parse_email_message(data: dict) -> dict:
     email_meta = {}
 
     ####  To
-    to_email = data["to"].get("email", "")
+    to_email = data["to"].get("email", [])
     if isinstance(to_email, str):
         to_email = [to_email]
 
-    to_username = data["to"].get("username", "")
+    to_username = data["to"].get("username", [])
     if isinstance(to_username, str):
         to_username = [to_username]
-
     for user in to_username:
         user_email = _get_user_email_for_username(username=user)
         if user_email:
             to_email.append(user_email)
+
     if not to_email:
         raise Exception("No TO user specified")
 
@@ -242,14 +248,13 @@ def _parse_email_message(data: dict) -> dict:
     ####  CC
     cc = data.get("cc", None)
     if cc:
-        cc_email = cc.get("email", "")
+        cc_email = cc.get("email", [])
         if isinstance(cc_email, str):
             cc_email = [cc_email]
 
-        cc_username = cc.get("username", "")
+        cc_username = cc.get("username", [])
         if isinstance(cc_username, str):
             cc_username = [cc_username]
-
         for user in cc_username:
             user_email = _get_user_email_for_username(username=user)
             if user_email:
@@ -260,11 +265,11 @@ def _parse_email_message(data: dict) -> dict:
     ####  BCC
     bcc = data.get("bcc", None)
     if bcc:
-        bcc_email = bcc.get("email", "")
+        bcc_email = bcc.get("email", [])
         if isinstance(bcc_email, str):
             bcc_email = [bcc_email]
 
-        bcc_username = bcc.get("username", "")
+        bcc_username = bcc.get("username", [])
         if isinstance(bcc_username, str):
             bcc_username = [bcc_username]
 
@@ -354,8 +359,7 @@ def send_user_email():
         # decrypted_data: dict = decrypt_data(request_data)
 
         decrypted_data = {
-            "to": {"email": "emlundell@alaska.edu"},
-            # "from": {"email": "emlundell@alaska.edu"},
+            "to": {"username": "emlundell"},
             "subject": "hello",
             "html_body": "<p>How are you today?</p>",
         }
