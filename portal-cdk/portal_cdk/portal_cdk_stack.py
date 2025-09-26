@@ -177,12 +177,20 @@ class PortalCdkStack(Stack):
 
         ## Our Email Identity in SES:
         # https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_ses.EmailIdentity.html
-        ses_identity = ses.EmailIdentity.from_email_identity_name(
+        # The domain must be verified in SES
+        ses_identity_domain = ses.EmailIdentity.from_email_identity_name(
             self,
-            "ImportedSESEmailIdentity",
+            "ImportedSESEmailIdentityDomain",
             vars["ses_domain"],
         )
-        ses_identity.grant_send_email(lambda_dynamo.lambda_function)
+        ses_identity_domain.grant_send_email(lambda_dynamo.lambda_function)
+
+        lambda_dynamo.lambda_function.role.add_to_policy(
+            iam.PolicyStatement(
+                actions=["ses:SendEmail"],
+                resources=[f"arn:aws:ses:{self.region}:{self.account}:identity/*"],
+            )
+        )
 
         ## Cognito Lambda Endpoint for Signup:
         # https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_lambda.Function.html
@@ -213,10 +221,10 @@ class PortalCdkStack(Stack):
             # https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_cognito.UserPoolEmail.html
             # https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_cognito.UserPoolSESOptions.html
             email=cognito.UserPoolEmail.with_ses(
-                from_email=f"osl@{ses_identity.email_identity_name}",
+                from_email=f"admin@{ses_identity_domain.email_identity_name}",
                 reply_to=vars["ses_email"],
                 from_name="ASF OpenScienceLab",
-                ses_verified_domain=ses_identity.email_identity_name,
+                ses_verified_domain=ses_identity_domain.email_identity_name,
             ),
             # https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_cognito.Mfa.html
             mfa=cognito.Mfa.REQUIRED,

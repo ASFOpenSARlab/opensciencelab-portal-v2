@@ -284,7 +284,7 @@ def _parse_email_message(data: dict) -> dict:
     ## It will be assumed that all emails will be FROM only one user and one REPLY-TO.
     ## Therefore the FROM will always be overriden and all inputed FROM parameters will be ignored.
     email_meta["reply_to"] = [os.getenv("SES_EMAIL")]
-    email_meta["from"] = f"noreply@{os.getenv('SES_DOMAIN')}"
+    email_meta["from"] = f'"OpenScienceLab" <admin@{os.getenv("SES_DOMAIN")}>'
 
     #### subject
     data_subject = data.get("subject", "")
@@ -359,7 +359,7 @@ def send_user_email():
         # decrypted_data: dict = decrypt_data(request_data)
 
         decrypted_data = {
-            "to": {"username": "emlundell"},
+            "to": {"email": "emlundell@alaska.edu"},
             "subject": "hello",
             "html_body": "<p>How are you today?</p>",
         }
@@ -393,6 +393,42 @@ def send_user_email():
         )
     except Exception as e:
         logger.error(f"Could not send email: {e}")
-        raise Exception from e
+        logger.info("Sending admin error email...")
+
+        html_body = f"""
+        <html>
+            <body>
+                <h1> Message from OpenScienceLab </h1>
+                <section>
+                    <p>There was an error while sending an email...</p>
+                </section>
+                <section>
+                    {e}
+                </section>
+            </body>
+        </html>
+        """
+
+        sesv2.send_email(
+            FromEmailAddress=f'"OpenScienceLab" <admin@{os.getenv("SES_DOMAIN")}>',
+            Destination={
+                "ToAddresses": [os.getenv("SES_EMAIL")],
+            },
+            ReplyToAddresses=[os.getenv("SES_EMAIL")],
+            Content={
+                "Simple": {
+                    "Subject": {
+                        "Data": "Error in sending email",
+                        "Charset": "UTF-8",
+                    },
+                    "Body": {
+                        "Html": {
+                            "Data": html_body,
+                            "Charset": "UTF-8",
+                        },
+                    },
+                },
+            },
+        )
 
     return "TODO: OSL-3713"
