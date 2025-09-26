@@ -19,17 +19,28 @@ from .validator_map import validator_map, validate
 def filter_lab_access(
     is_admin: bool, all_labs: dict[str, BaseLab], user_labs: dict
 ) -> list[LabAccessInfo]:
-    lab_access_info: list[LabAccessInfo] = []
+    labs_user_been_given: list[LabAccessInfo] = []
+    additional_labs: list[LabAccessInfo] = []
     if is_admin:
         # Admin access to all labs
         for labname in all_labs:
-            lab_access_info.append(
-                LabAccessInfo(
-                    lab=all_labs[labname],
-                    can_user_access_lab=True,
-                    can_user_see_lab_card=True,
+            shortname = all_labs[labname].short_lab_name
+            if shortname in user_labs:
+                labs_user_been_given.append(
+                    LabAccessInfo(
+                        lab=all_labs[labname],
+                        can_user_access_lab=True,
+                        can_user_see_lab_card=True,
+                    )
                 )
-            )
+            else:
+                additional_labs.append(
+                    LabAccessInfo(
+                        lab=all_labs[labname],
+                        can_user_access_lab=True,
+                        can_user_see_lab_card=True,
+                    )
+                )
     else:
         # Determine access from self.labs
         for labname in all_labs:
@@ -37,14 +48,25 @@ def filter_lab_access(
             if shortname in user_labs:
                 can_user_access_lab = user_labs[shortname]["can_user_see_lab_card"]
                 can_user_see_lab_card = user_labs[shortname]["can_user_see_lab_card"]
-                lab_access_info.append(
+                labs_user_been_given.append(
                     LabAccessInfo(
                         lab=all_labs[labname],
                         can_user_access_lab=can_user_access_lab,
                         can_user_see_lab_card=can_user_see_lab_card,
                     )
                 )
-    return lab_access_info
+            elif all_labs[labname].accessibility == "protected":
+                can_user_access_lab = False
+                can_user_see_lab_card = True
+                additional_labs.append(
+                    LabAccessInfo(
+                        lab=all_labs[labname],
+                        can_user_access_lab=can_user_access_lab,
+                        can_user_see_lab_card=can_user_see_lab_card,
+                    )
+                )
+
+    return labs_user_been_given + additional_labs
 
 
 def create_lab_structure(
