@@ -204,20 +204,29 @@ class Helpers:
     # this is to allow labs to test against a lab the user does not have access too
     # unless used for other purpose in a given test
     FAKE_LABS = {
+        "protectedlab": BaseLab(
+            friendly_name="A lab protected from being used",
+            short_lab_name="protectedlab",
+            allowed_profiles=["m6a.large"],
+            accessibility="protected",
+        ),
         "testlab": BaseLab(
             friendly_name="Test Lab",
             short_lab_name="testlab",
             allowed_profiles=["m6a.large"],
+            accessibility="protected",
         ),
         "noaccess": BaseLab(
             friendly_name="No Access Lab",
             short_lab_name="noaccess",
             allowed_profiles=[],
+            accessibility="private",
         ),
         "differentlab": BaseLab(
             friendly_name="Different Lab",
             short_lab_name="differentlab",
             allowed_profiles=["m6a.large"],
+            accessibility="protected",
         ),
     }
 
