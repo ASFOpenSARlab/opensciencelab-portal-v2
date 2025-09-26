@@ -197,11 +197,15 @@ def get_user_labs(username):
     # Find user in db
 
     user = User(username=username, create_if_missing=False)
-    lab_access:list[LabAccessInfo] = filter_lab_access(user.is_admin(), LABS, user.labs)
+    lab_access:list[LabAccessInfo] = filter_lab_access(
+        user.is_admin(), LABS, user.labs
+    )
 
     # Return user labs
     return wrap_response(
-        body=json.dumps({"labs": [asdict(entry) for entry in lab_access], "message": "OK"}),
+        body=json.dumps(
+            {"labs": [asdict(entry) for entry in lab_access], "message": "OK"}
+        ),
         code=200,
         content_type=content_types.APPLICATION_JSON,
     )

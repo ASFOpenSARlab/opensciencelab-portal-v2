@@ -229,21 +229,21 @@ class TestAccessPages:
             method="GET",
         )
         ret = main.lambda_handler(event, lambda_context)
-        
-        response_body = json.loads(ret['body'])
+
+        response_body = json.loads(ret["body"])
         lab_access_list = response_body.get("labs")
 
         assert ret["statusCode"] == 200
         assert any(
-            lab_acccess.get('lab').get("short_lab_name") == "testlab"
+            lab_acccess.get("lab").get("short_lab_name") == "testlab"
             for lab_acccess in lab_access_list
         )
         assert any(
-            lab_acccess.get('lab').get("short_lab_name") == "differentlab"
+            lab_acccess.get("lab").get("short_lab_name") == "differentlab"
             for lab_acccess in lab_access_list
         )
         assert any(
-            lab_acccess.get('lab').get("short_lab_name") == "noaccess"
+            lab_acccess.get("lab").get("short_lab_name") == "noaccess"
             for lab_acccess in lab_access_list
         )
         assert ret["headers"].get("Content-Type") == "application/json"
@@ -278,20 +278,20 @@ class TestAccessPages:
         )
         ret = main.lambda_handler(event, lambda_context)
 
-        response_body = json.loads(ret['body'])
+        response_body = json.loads(ret["body"])
         lab_access_list = response_body.get("labs")
 
         assert ret["statusCode"] == 200
         assert any(
-            lab_acccess.get('lab').get("short_lab_name") == "testlab"
+            lab_acccess.get("lab").get("short_lab_name") == "testlab"
             for lab_acccess in lab_access_list
         )
         assert any(
-            lab_acccess.get('lab').get("short_lab_name") == "differentlab"
+            lab_acccess.get("lab").get("short_lab_name") == "differentlab"
             for lab_acccess in lab_access_list
         )
         assert all(
-            lab_acccess.get('lab').get("short_lab_name") != "noaccess"
+            lab_acccess.get("lab").get("short_lab_name") != "noaccess"
             for lab_acccess in lab_access_list
         )
         assert ret["headers"].get("Content-Type") == "application/json"
@@ -303,25 +303,25 @@ class TestAccessPages:
         monkeypatch.setattr("util.auth.User", lambda *args, **kwargs: user)
 
         targetuser = helpers.FakeUser(
-                access=["user"],
-                username="test_user2",
-                labs={
-                        "testlab": {
-                            "time_quota": None,
-                            "lab_profiles": None,
-                            "lab_country_status": None,
-                            "can_user_see_lab_card": True,
-                            "can_user_access_lab": True,
-                        },
-                        "differentlab": {
-                            "time_quota": None,
-                            "lab_profiles": None,
-                            "lab_country_status": None,
-                            "can_user_see_lab_card": True,
-                            "can_user_access_lab": True,
-                        },
-                    },
-            )
+            access=["user"],
+            username="test_user2",
+            labs={
+                "testlab": {
+                    "time_quota": None,
+                    "lab_profiles": None,
+                    "lab_country_status": None,
+                    "can_user_see_lab_card": True,
+                    "can_user_access_lab": True,
+                },
+                "differentlab": {
+                    "time_quota": None,
+                    "lab_profiles": None,
+                    "lab_country_status": None,
+                    "can_user_see_lab_card": True,
+                    "can_user_access_lab": True,
+                },
+            },
+        )
         monkeypatch.setattr("portal.access.User", lambda *args, **kwargs: targetuser)
 
         monkeypatch.setattr("portal.access.LABS", helpers.FAKE_LABS)
@@ -337,9 +337,9 @@ class TestAccessPages:
         lab_access_list = response_body.get("labs")
 
         for i, lab in enumerate(lab_access_list):
-            if lab.get('lab').get('short_lab_name') == "differentlab":
+            if lab.get("lab").get("short_lab_name") == "differentlab":
                 differentlab_index = i
-            if lab.get('lab').get('short_lab_name') == "protectedlab":
+            if lab.get("lab").get("short_lab_name") == "protectedlab":
                 protectedlab_index = i
 
         assert ret["statusCode"] == 200
