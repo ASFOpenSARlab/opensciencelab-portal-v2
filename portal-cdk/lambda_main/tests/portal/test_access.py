@@ -255,17 +255,17 @@ class TestAccessPages:
         monkeypatch.setattr("util.auth.User", lambda *args, **kwargs: user)
 
         targetuser = helpers.FakeUser(
-                access=["user"],
-                username="test_user2",
-                labs={
-                        "testlab": {
-                            "time_quota": None,
-                            "lab_profiles": None,
-                            "lab_country_status": None,
-                            "can_user_see_lab_card": True,
-                            "can_user_access_lab": True,
-                        },
+            access=["user"],
+            username="test_user2",
+            labs={
+                    "testlab": {
+                        "time_quota": None,
+                        "lab_profiles": None,
+                        "lab_country_status": None,
+                        "can_user_see_lab_card": True,
+                        "can_user_access_lab": True,
                     },
+                },
             )
         monkeypatch.setattr("portal.access.User", lambda *args, **kwargs: targetuser)
 
@@ -296,9 +296,7 @@ class TestAccessPages:
         )
         assert ret["headers"].get("Content-Type") == "application/json"
     
-    def test_get_labs_order(
-        self, monkeypatch, lambda_context, helpers, fake_auth
-    ):
+    def test_get_labs_order(self, monkeypatch, lambda_context, helpers, fake_auth):
         user = helpers.FakeUser(access=["user", "admin"], username="test_admin")
         monkeypatch.setattr("util.auth.User", lambda *args, **kwargs: user)
 
@@ -333,7 +331,7 @@ class TestAccessPages:
         )
         ret = main.lambda_handler(event, lambda_context)
 
-        response_body = json.loads(ret['body'])
+        response_body = json.loads(ret["body"])
         lab_access_list = response_body.get("labs")
 
         for i, lab in enumerate(lab_access_list):
