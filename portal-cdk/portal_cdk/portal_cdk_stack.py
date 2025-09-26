@@ -79,6 +79,7 @@ class PortalCdkStack(Stack):
                     "DEBUG": str(vars["deploy_prefix"] != "prod").lower(),
                     "IS_PROD": str(vars["deploy_prefix"] == "prod").lower(),
                     "SES_EMAIL": str(os.getenv("SES_EMAIL")),
+                    "SES_DOMAIN": str(os.getenv("SES_DOMAIN")),
                 },
             ),
             # https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_dynamodb.TableProps.html

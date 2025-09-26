@@ -237,7 +237,7 @@ def _parse_email_message(data: dict) -> dict:
     if not to_email:
         raise Exception("No TO user specified")
 
-    email_meta["to"] = ",".join(to_email)
+    email_meta["to"] = to_email
 
     ####  CC
     cc = data.get("cc", None)
@@ -255,7 +255,7 @@ def _parse_email_message(data: dict) -> dict:
             if user_email:
                 cc_email.append(user_email)
 
-        email_meta["cc"] = ",".join(cc_email)
+        email_meta["cc"] = cc_email
 
     ####  BCC
     bcc = data.get("bcc", None)
@@ -273,24 +273,13 @@ def _parse_email_message(data: dict) -> dict:
             if user_email:
                 bcc_email.append(user_email)
 
-        email_meta["bcc"] = ",".join(bcc_email)
+        email_meta["bcc"] = bcc_email
 
     ####  FROM
-    from_email = data["from"].get("email", "")
-    from_username = data["from"].get("username", "")
-
-    # Note that if a "from" username is given it will override any email
-    if from_username:
-        from_email = _get_user_email_for_username(username=from_username)
-
-    if from_email == os.getenv("SES_EMAIL"):
-        email_meta["reply_to"] = [os.getenv("SES_EMAIL")]
-        from_email = f"opensciencelab@{os.getenv('SES_DOMAIN')}"
-
-    if not from_email:
-        raise Exception("No FROM email specified")
-
-    email_meta["from"] = [from_email]
+    ## It will be assumed that all emails will be FROM only one user and one REPLY-TO.
+    ## Therefore the FROM will always be overriden and all inputed FROM parameters will be ignored.
+    email_meta["reply_to"] = [os.getenv("SES_EMAIL")]
+    email_meta["from"] = f"noreply@{os.getenv('SES_DOMAIN')}"
 
     #### subject
     data_subject = data.get("subject", "")
@@ -326,6 +315,7 @@ Sends emails as defined in payload via SES. To help facilitate ease of use, user
     
 - If an username is given, user's email address on file is used
 - As a special case, username "osl-admin" substitutes the admin email as defined in the portal config
+- TO username and email are included for backward compatibility. TO will be defined by the SES_EMAIL.
 
 <hr>
     
@@ -356,48 +346,49 @@ Format of `POST` payload should be a dict of the form:
 """,
 )
 def send_user_email():
-    logger.info(f"SES_EMAIL: {os.getenv('SES_EMAIL')}")
-    logger.info(f"SES_DOMAIN: {os.getenv('SES_DOMAIN')}")
-    logger.infd(f"printenv: {vars(os.environ)}")
+    try:
+        sesv2: boto3.Client = get_sesv2()
 
-    sesv2: boto3.Client = get_sesv2()
+        # request_data = hub_router.current_event.body
 
-    # request_data = hub_router.current_event.body
+        # decrypted_data: dict = decrypt_data(request_data)
 
-    # decrypted_data: dict = decrypt_data(request_data)
+        decrypted_data = {
+            "to": {"email": "emlundell@alaska.edu"},
+            # "from": {"email": "emlundell@alaska.edu"},
+            "subject": "hello",
+            "html_body": "<p>How are you today?</p>",
+        }
 
-    decrypted_data = {
-        "to": {"email": "emlundell@alaska.edu"},
-        "from": {"email": "emlundell@alaska.edu"},
-        "subject": "hello",
-        "html_body": "<p>How are you today?</p>",
-    }
+        parsed_data: dict = _parse_email_message(decrypted_data)
 
-    logger.info(f"{decrypted_data=}")
+        logger.info(f"{parsed_data=}")
 
-    parsed_data: dict = _parse_email_message(decrypted_data)
-
-    logger.info(f"{parsed_data=}")
-
-    sesv2.send_email(
-        FromEmailAddress=parsed_data["from"],
-        Destination={
-            "ToAddresses": parsed_data["to"],
-            "CcAddresses": parsed_data.get("cc", []),
-            "BccAddresses": parsed_data.get("bcc", []),
-        },
-        ReplyToAddresses=parsed_data.get("reply_to", []),
-        Content={
-            "Simple": {
-                "Subject": {"Data": parsed_data.get("subject", ""), "Charset": "UTF-8"},
-                "Body": {
-                    "Html": {
-                        "Data": parsed_data.get("html_body", ""),
+        sesv2.send_email(
+            FromEmailAddress=parsed_data.get("from", ""),
+            Destination={
+                "ToAddresses": parsed_data.get("to", []),
+                "CcAddresses": parsed_data.get("cc", []),
+                "BccAddresses": parsed_data.get("bcc", []),
+            },
+            ReplyToAddresses=parsed_data.get("reply_to", []),
+            Content={
+                "Simple": {
+                    "Subject": {
+                        "Data": parsed_data.get("subject", ""),
                         "Charset": "UTF-8",
+                    },
+                    "Body": {
+                        "Html": {
+                            "Data": parsed_data.get("html_body", ""),
+                            "Charset": "UTF-8",
+                        },
                     },
                 },
             },
-        },
-    )
+        )
+    except Exception as e:
+        logger.error(f"Could not send email: {e}")
+        raise Exception from e
 
     return "TODO: OSL-3713"
