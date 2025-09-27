@@ -159,13 +159,6 @@ class Helpers:
                     "can_user_see_lab_card": True,
                     "can_user_access_lab": True,
                 },
-                "noaccess": {
-                    "time_quota": None,
-                    "lab_profiles": None,
-                    "lab_country_status": None,
-                    "can_user_see_lab_card": False,
-                    "can_user_access_lab": False,
-                },
             }
         )
         email: str = field(default_factory=lambda: "fakeemail@email.com")
@@ -194,11 +187,7 @@ class Helpers:
             self.labs.pop(lab_short_name, None)
 
         def get_lab_access(self) -> list[LabAccessInfo]:
-            return filter_lab_access(
-                is_admin=self.is_admin(),
-                all_labs=Helpers.FAKE_LABS,
-                user_labs=self.labs,
-            )
+            return filter_lab_access(self)
 
     # differentlab not initialized in FakeUser.labs
     # this is to allow labs to test against a lab the user does not have access too
