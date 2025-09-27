@@ -197,9 +197,7 @@ def get_user_labs(username):
     # Find user in db
 
     user = User(username=username, create_if_missing=False)
-    lab_access: list[LabAccessInfo] = filter_lab_access(
-        user.is_admin(), LABS, user.labs
-    )
+    lab_access: list[LabAccessInfo] = filter_lab_access(user)
 
     # Return user labs
     return wrap_response(

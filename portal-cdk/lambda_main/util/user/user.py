@@ -15,60 +15,6 @@ from .defaults import defaults
 from .validator_map import validator_map, validate
 
 
-# filters all_labs by which labs a user has access to
-def filter_lab_access(
-    is_admin: bool, all_labs: dict[str, BaseLab], user_labs: dict
-) -> list[LabAccessInfo]:
-    labs_user_been_given: list[LabAccessInfo] = []
-    additional_labs: list[LabAccessInfo] = []
-    if is_admin:
-        # Admin access to all labs
-        for labname in all_labs:
-            shortname = all_labs[labname].short_lab_name
-            if shortname in user_labs:
-                labs_user_been_given.append(
-                    LabAccessInfo(
-                        lab=all_labs[labname],
-                        can_user_access_lab=True,
-                        can_user_see_lab_card=True,
-                    )
-                )
-            else:
-                additional_labs.append(
-                    LabAccessInfo(
-                        lab=all_labs[labname],
-                        can_user_access_lab=True,
-                        can_user_see_lab_card=True,
-                    )
-                )
-    else:
-        # Determine access from self.labs
-        for labname in all_labs:
-            shortname = all_labs[labname].short_lab_name
-            if shortname in user_labs:
-                can_user_access_lab = user_labs[shortname]["can_user_see_lab_card"]
-                can_user_see_lab_card = user_labs[shortname]["can_user_see_lab_card"]
-                labs_user_been_given.append(
-                    LabAccessInfo(
-                        lab=all_labs[labname],
-                        can_user_access_lab=can_user_access_lab,
-                        can_user_see_lab_card=can_user_see_lab_card,
-                    )
-                )
-            elif all_labs[labname].accessibility == "protected":
-                can_user_access_lab = False
-                can_user_see_lab_card = True
-                additional_labs.append(
-                    LabAccessInfo(
-                        lab=all_labs[labname],
-                        can_user_access_lab=can_user_access_lab,
-                        can_user_see_lab_card=can_user_see_lab_card,
-                    )
-                )
-
-    return labs_user_been_given + additional_labs
-
-
 def create_lab_structure(
     lab_profiles: list[str],
     time_quota,
@@ -182,9 +128,7 @@ class User:
 
     def get_lab_access(self) -> list[LabAccessInfo]:
         """Returns ALL labs the user has access to."""
-        return filter_lab_access(
-            is_admin=self.is_admin(), all_labs=LABS, user_labs=self.labs
-        )
+        return filter_lab_access(self)
 
     def is_authorized_lab(self, lab_short_name: str) -> bool:
         """Check if the user has access to a specific lab."""
@@ -209,3 +153,43 @@ class User:
             raise DbError(f"Could not delete db user {self.username}")
 
         return True
+
+
+# returns labs filtered by user access
+def filter_lab_access(user: User) -> list[LabAccessInfo]:
+    labs_user_been_given: list[LabAccessInfo] = []
+    additional_labs: list[LabAccessInfo] = []
+
+    for labname in LABS:
+        shortname = LABS[labname].short_lab_name
+        if shortname in user.labs.keys():
+            # user has access: access and view
+            labs_user_been_given.append(
+                LabAccessInfo(
+                    lab=LABS[labname],
+                    can_user_access_lab=True,
+                    can_user_see_lab_card=True,
+                )
+            )
+        elif user.is_admin():
+            # user does not have access but is admin: access and view
+            # append to end of list
+            # also appends private labs
+            additional_labs.append(
+                LabAccessInfo(
+                    lab=LABS[labname],
+                    can_user_access_lab=True,
+                    can_user_see_lab_card=True,
+                )
+            )
+        elif LABS[labname].accessibility == "protected":
+            # user does not have access and not admin: only view
+            # append to end of list
+            additional_labs.append(
+                LabAccessInfo(
+                    lab=LABS[labname],
+                    can_user_access_lab=False,
+                    can_user_see_lab_card=True,
+                )
+            )
+    return labs_user_been_given + additional_labs

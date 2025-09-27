@@ -221,7 +221,7 @@ class TestAccessPages:
         monkeypatch.setattr("portal.access.User", lambda *args, **kwargs: user)
         monkeypatch.setattr("util.auth.User", lambda *args, **kwargs: user)
 
-        monkeypatch.setattr("portal.access.LABS", helpers.FAKE_LABS)
+        monkeypatch.setattr("util.user.user.LABS", helpers.FAKE_LABS)
 
         event = helpers.get_event(
             path="/portal/access/labs/test_user",
@@ -269,7 +269,7 @@ class TestAccessPages:
         )
         monkeypatch.setattr("portal.access.User", lambda *args, **kwargs: targetuser)
 
-        monkeypatch.setattr("portal.access.LABS", helpers.FAKE_LABS)
+        monkeypatch.setattr("util.user.user.LABS", helpers.FAKE_LABS)
 
         event = helpers.get_event(
             path="/portal/access/labs/test_user2",
@@ -318,11 +318,12 @@ class TestAccessPages:
                     "can_user_see_lab_card": True,
                     "can_user_access_lab": True,
                 },
+                # protectedlab is deliberately not here, it should be rendered after
             },
         )
         monkeypatch.setattr("portal.access.User", lambda *args, **kwargs: targetuser)
 
-        monkeypatch.setattr("portal.access.LABS", helpers.FAKE_LABS)
+        monkeypatch.setattr("util.user.user.LABS", helpers.FAKE_LABS)
 
         event = helpers.get_event(
             path="/portal/access/labs/test_user2",
@@ -341,7 +342,8 @@ class TestAccessPages:
                 protectedlab_index = i
 
         assert ret["statusCode"] == 200
-        assert differentlab_index and protectedlab_index
+        assert "differentlab_index" in locals()
+        assert "protectedlab_index" in locals()
         assert differentlab_index < protectedlab_index
         assert ret["headers"].get("Content-Type") == "application/json"
 
