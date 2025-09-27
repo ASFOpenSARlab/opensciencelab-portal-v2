@@ -7,7 +7,7 @@ from typing import Any
 
 from util.exceptions import DbError, CognitoError, UserNotFound
 from util.cognito import delete_user_from_user_pool
-from util.labs import LabAccessInfo, BaseLab
+from util.labs import LabAccessInfo
 from util.labs import LABS
 
 from .dynamo_db import get_item, create_item, update_item, delete_item
