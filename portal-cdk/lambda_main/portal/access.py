@@ -1,12 +1,14 @@
 import json
+from dataclasses import asdict
 
 from util import swagger
 from util.format import portal_template, jinja_template
 from util.auth import require_access
 from util.user.dynamo_db import get_users_with_lab
+from util.user.user import filter_lab_access
 from util.user import User
 from util.responses import wrap_response, form_body_to_dict, json_body_to_dict
-from util.labs import LABS
+from util.labs import LABS, LabAccessInfo
 
 from aws_lambda_powertools.event_handler.api_gateway import Router
 from aws_lambda_powertools.event_handler import content_types
@@ -195,10 +197,13 @@ def get_user_labs(username):
     # Find user in db
 
     user = User(username=username, create_if_missing=False)
+    lab_access: list[LabAccessInfo] = filter_lab_access(user)
 
     # Return user labs
     return wrap_response(
-        body=json.dumps({"labs": user.labs, "message": "OK"}),
+        body=json.dumps(
+            {"labs": [asdict(entry) for entry in lab_access], "message": "OK"}
+        ),
         code=200,
         content_type=content_types.APPLICATION_JSON,
     )
