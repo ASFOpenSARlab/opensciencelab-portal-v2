@@ -19,16 +19,12 @@ def create_lab_structure(
     lab_profiles: list[str],
     time_quota,
     lab_country_status: str,
-    can_user_access_lab: bool,
-    can_user_see_lab_card: bool,
     **kwargs,
 ) -> dict[str, Any]:
     return {
         "lab_profiles": lab_profiles,
         "time_quota": time_quota,
         "lab_country_status": lab_country_status,
-        "can_user_access_lab": can_user_access_lab,
-        "can_user_see_lab_card": can_user_see_lab_card,
     }
 
 

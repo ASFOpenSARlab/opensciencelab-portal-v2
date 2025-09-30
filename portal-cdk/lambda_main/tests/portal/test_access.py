@@ -39,8 +39,6 @@ class TestAccessPages:
                     "labs": {
                         "testlab": {
                             "lab_profiles": ["m6a.large"],
-                            "can_user_see_lab_card": True,
-                            "can_user_access_lab": True,
                         },
                     },
                 }
@@ -81,8 +79,6 @@ class TestAccessPages:
             "lab_profiles": "",
             "time_quota": "",
             "lab_country_status": "",
-            "can_user_see_lab_card": "on",
-            "can_user_access_lab": "on",
             "action": "add_user",
         }
         monkeypatch.setattr(
@@ -102,68 +98,6 @@ class TestAccessPages:
             "lab_profiles": [""],
             "time_quota": None,
             "lab_country_status": "",
-            "can_user_access_lab": True,
-            "can_user_see_lab_card": True,
-        }
-
-        assert ret["statusCode"] == 302
-        assert ret["headers"].get("Location") == "/portal/access/manage/testlab2"
-        assert ret["headers"].get("Content-Type") == "text/html"
-
-        # Remove user seeing lab card
-        bodystr = {
-            "username": "test_user",
-            "action": "toggle_can_user_see_lab_card",
-        }
-        monkeypatch.setattr(
-            "portal.access.form_body_to_dict", lambda *args, **kwargs: bodystr
-        )
-
-        event = helpers.get_event(
-            path="/portal/access/manage/testlab2/edituser",
-            cookies=fake_auth,
-            body="placeholder",
-            method="POST",
-        )
-        ret = main.lambda_handler(event, lambda_context)
-
-        assert "testlab2" in user.labs
-        assert user.labs["testlab2"] == {
-            "lab_profiles": [""],
-            "time_quota": None,
-            "lab_country_status": "",
-            "can_user_access_lab": True,
-            "can_user_see_lab_card": False,
-        }
-
-        assert ret["statusCode"] == 302
-        assert ret["headers"].get("Location") == "/portal/access/manage/testlab2"
-        assert ret["headers"].get("Content-Type") == "text/html"
-
-        # Remove user lab access
-        bodystr = {
-            "username": "test_user",
-            "action": "toggle_can_user_access_lab",
-        }
-        monkeypatch.setattr(
-            "portal.access.form_body_to_dict", lambda *args, **kwargs: bodystr
-        )
-
-        event = helpers.get_event(
-            path="/portal/access/manage/testlab2/edituser",
-            cookies=fake_auth,
-            body="placeholder",
-            method="POST",
-        )
-        ret = main.lambda_handler(event, lambda_context)
-
-        assert "testlab2" in user.labs
-        assert user.labs["testlab2"] == {
-            "lab_profiles": [""],
-            "time_quota": None,
-            "lab_country_status": "",
-            "can_user_access_lab": False,
-            "can_user_see_lab_card": False,
         }
 
         assert ret["statusCode"] == 302
@@ -262,8 +196,6 @@ class TestAccessPages:
                     "time_quota": None,
                     "lab_profiles": None,
                     "lab_country_status": None,
-                    "can_user_see_lab_card": True,
-                    "can_user_access_lab": True,
                 },
             },
         )
@@ -435,8 +367,6 @@ class TestAccessPages:
             "labs": {
                 "testlab": {
                     "lab_profiles": ["m6a.large"],
-                    "can_user_access_lab": True,
-                    "can_user_see_lab_card": True,
                     "time_quota": "",
                     "lab_country_status": "protected",
                 }
@@ -457,8 +387,6 @@ class TestAccessPages:
         assert user.labs == {
             "testlab": {
                 "lab_profiles": ["m6a.large"],
-                "can_user_access_lab": True,
-                "can_user_see_lab_card": True,
                 "time_quota": "",
                 "lab_country_status": "protected",
             }
@@ -477,8 +405,6 @@ class TestAccessPages:
             "labs": {
                 "noaccess": {
                     "lab_profiles": ["m6a.large"],
-                    "can_user_access_lab": True,
-                    "can_user_see_lab_card": True,
                     "time_quota": "",
                     "lab_country_status": "protected",
                 }
@@ -519,8 +445,6 @@ class TestAccessPages:
             "labs": {
                 "testlab": {
                     "lab_profiles": ["m6a.large"],
-                    "can_user_access_lab": True,
-                    "can_user_see_lab_card": True,
                     "time_quota": "",
                     "lab_country_status": "protected",
                 }
@@ -608,8 +532,6 @@ class TestAccessPages:
             "labs": {
                 "lab_does_not_exist": {
                     "lab_profiles": ["m6a.large"],
-                    "can_user_access_lab": True,
-                    "can_user_see_lab_card": True,
                     "time_quota": "",
                     "lab_country_status": "protected",
                 }
@@ -633,8 +555,6 @@ class TestAccessPages:
             "labs": {
                 "testlab": {
                     "lab_profiles": ["m6a.large"],
-                    "can_user_access_lab": True,
-                    "can_user_see_lab_card": True,
                     "time_quota": "",
                 }
             }
@@ -659,9 +579,7 @@ class TestAccessPages:
         body = {
             "labs": {
                 "testlab": {
-                    "lab_profiles": ["m6a.large"],
-                    "can_user_access_lab": [True],
-                    "can_user_see_lab_card": True,
+                    "lab_profiles": "m6a.large",
                     "time_quota": "",
                     "lab_country_status": "protected",
                 }
@@ -678,7 +596,7 @@ class TestAccessPages:
 
         assert ret["statusCode"] == 422
         assert (
-            "\"result\": \"Field 'can_user_access_lab' not of type <class 'bool'>\""
+            "\"result\": \"Field 'lab_profiles' not of type <class 'list'>\""
             in ret["body"]
         )
         assert ret["headers"].get("Content-Type") == "application/json"

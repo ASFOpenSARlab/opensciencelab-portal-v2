@@ -103,38 +103,16 @@ def edit_user(shortname):
     # Edit user
     user = User(body["username"])
 
-    # Map checkboxes to True and False
-    can_user_see_lab_card = "can_user_see_lab_card" in body
-    can_user_access_lab = "can_user_access_lab" in body
-
     if body["action"] == "add_user":
         user.add_lab(
             lab_short_name=shortname,
             lab_profiles=[s.strip() for s in body["lab_profiles"].split(",")],
             time_quota=body["time_quota"].strip() or None,
             lab_country_status=body["lab_country_status"],
-            can_user_access_lab=can_user_access_lab,
-            can_user_see_lab_card=can_user_see_lab_card,
         )
 
     elif body["action"] == "remove_user":
         user.remove_lab(shortname)
-
-    elif body["action"] == "toggle_can_user_see_lab_card":
-        labs = dict(user.labs)
-        labs[shortname] = dict(labs[shortname])
-        labs[shortname]["can_user_see_lab_card"] = not user.labs[shortname][
-            "can_user_see_lab_card"
-        ]
-        user.labs = labs
-
-    elif body["action"] == "toggle_can_user_access_lab":
-        labs = dict(user.labs)
-        labs[shortname] = dict(labs[shortname])
-        labs[shortname]["can_user_access_lab"] = not user.labs[shortname][
-            "can_user_access_lab"
-        ]
-        user.labs = labs
 
     else:
         error = f"Invalid edit_user action {body['action']}"
@@ -257,8 +235,6 @@ def validate_set_lab_access(put_lab_request: dict) -> tuple[bool, str]:
         # Check all lab fields exist and are correct type
         all_fields = {
             "lab_profiles": list,
-            "can_user_access_lab": bool,
-            "can_user_see_lab_card": bool,
             "time_quota": str,
             "lab_country_status": str,
         }
@@ -327,8 +303,6 @@ Sets what labs a user can access. Can be used to both add/remove labs.
     "labs": {
         "<lab_name>": {
             "lab_profiles": ["m6a.large"],
-            "can_user_access_lab": True,
-            "can_user_see_lab_card": True,
             "time_quota": "",
             "lab_country_status": "protected",
         }
