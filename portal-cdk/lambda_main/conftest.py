@@ -12,6 +12,9 @@ import pytest
 from dataclasses import dataclass, field
 import datetime
 
+# Save a copy of un-monkeypatched jwt.decode
+from jwt import decode as unpatched_jwt_decode
+
 os.environ["STACK_REGION"] = "us-west-2"
 os.environ["COGNITO_CLIENT_ID"] = "fake-cognito-id"
 os.environ["COGNITO_POOL_ID"] = "fake-pool-id"
@@ -88,6 +91,10 @@ BASIC_REQUEST = {
 
 @dataclass
 class Helpers:
+
+    # handler for unpatched jwt after monkeypatch
+    jwt_decode = unpatched_jwt_decode
+
     @staticmethod
     def get_event(
         path="/", method="GET", cookies=None, headers=None, qparams=None, body=None
