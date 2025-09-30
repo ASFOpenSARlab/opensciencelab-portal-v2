@@ -27,8 +27,11 @@ class TestJwt:
 
         import jwt
 
-        # Monkey patch back
-        monkeypatch.setattr("jwt.decode", helpers.jwt_decode)
+        # verify jwt.decode is monkeypatched
+        res = jwt.decode("bla")
+        assert res['client_id'] == "2pjp68mov6sfhqda8pjphll8cq"
 
+        # Monkey patch back to original
+        monkeypatch.setattr("jwt.decode", helpers.jwt_decode)
         res = jwt.decode(valid_jwt, jwt_secret, algorithms=[jwt_algo])
         assert res['name'] == "John Doe"
