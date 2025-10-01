@@ -204,7 +204,7 @@ class PortalCdkStack(Stack):
                     '/{frontend_prefix}/users',
                     '/{frontend_prefix}/labs',
                     '/{frontend_prefix}/calculator',
-                    '/{frontend_prefix}/whoami'
+                    '/{frontend_prefix}/example'
                 ]
                 
                 if( shortEndings.some(shortEnding => uri.endsWith(shortEnding)) ){{

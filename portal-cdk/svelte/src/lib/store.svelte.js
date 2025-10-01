@@ -49,6 +49,10 @@ class Common {
 
 export class UserClass extends Common {
   constructor() {
-    super(Symbol("UserClass"), "/portal/users/whoami", "/portal/users/whoami");
+    super(
+      Symbol("UserClass"),
+      "/portal/users/example",
+      "/portal/users/example"
+    );
   }
 }
