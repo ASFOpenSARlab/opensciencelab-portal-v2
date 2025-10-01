@@ -228,6 +228,47 @@ class TestAccessPages:
         )
         assert ret["headers"].get("Content-Type") == "application/json"
 
+    def test_lab_access_of_user(self, monkeypatch, lambda_context, helpers, fake_auth):
+        user = helpers.FakeUser(access=["user", "admin"], username="test_admin")
+        monkeypatch.setattr("util.auth.User", lambda *args, **kwargs: user)
+
+        targetuser = helpers.FakeUser(
+            access=["user"],
+            username="test_user2",
+            labs={
+                "testlab": {
+                    "time_quota": None,
+                    "lab_profiles": None,
+                    "lab_country_status": None,
+                },
+                # protectedlab is deliberately not here, it should be marked as able to see but not access
+                # noaccess is deliberately not here, should not be present
+            },
+        )
+        monkeypatch.setattr("portal.access.User", lambda *args, **kwargs: targetuser)
+
+        monkeypatch.setattr("util.user.user.LABS", helpers.FAKE_LABS)
+
+        event = helpers.get_event(
+            path="/portal/access/labs/test_user2",
+            cookies=fake_auth,
+            method="GET",
+        )
+        ret = main.lambda_handler(event, lambda_context)
+
+        response_body = json.loads(ret["body"])
+        lab_access_list = response_body.get("labs")
+
+        lab_access_dict = {lab_access["lab"]["short_lab_name"]:lab_access for lab_access in lab_access_list}
+
+        assert lab_access_dict["testlab"]["can_user_see_lab_card"]
+        assert lab_access_dict["testlab"]["can_user_access_lab"]
+
+        assert lab_access_dict["protectedlab"]["can_user_see_lab_card"]
+        assert not lab_access_dict["protectedlab"]["can_user_access_lab"]
+
+        assert not lab_access_dict.get("noaccess")
+
     def test_get_labs_order(self, monkeypatch, lambda_context, helpers, fake_auth):
         user = helpers.FakeUser(access=["user", "admin"], username="test_admin")
         monkeypatch.setattr("util.auth.User", lambda *args, **kwargs: user)
@@ -240,15 +281,11 @@ class TestAccessPages:
                     "time_quota": None,
                     "lab_profiles": None,
                     "lab_country_status": None,
-                    "can_user_see_lab_card": True,
-                    "can_user_access_lab": True,
                 },
                 "differentlab": {
                     "time_quota": None,
                     "lab_profiles": None,
                     "lab_country_status": None,
-                    "can_user_see_lab_card": True,
-                    "can_user_access_lab": True,
                 },
                 # protectedlab is deliberately not here, it should be rendered after
             },
