@@ -9,7 +9,7 @@ import boto3
 from util import swagger
 from util.responses import wrap_response
 from util.format import portal_template, request_context_string
-from util.auth import encrypt_data, require_access
+from util.auth import encrypt_data, require_access, decrypt_data
 from util.session import current_session
 from util.user import User
 
@@ -354,19 +354,11 @@ def send_user_email():
     try:
         sesv2: boto3.Client = get_sesv2()
 
-        # request_data = hub_router.current_event.body
+        request_data = hub_router.current_event.body
 
-        # decrypted_data: dict = decrypt_data(request_data)
-
-        decrypted_data = {
-            "to": {"email": "emlundell@alaska.edu"},
-            "subject": "hello",
-            "html_body": "<p>How are you today?</p>",
-        }
+        decrypted_data: dict = decrypt_data(request_data)
 
         parsed_data: dict = _parse_email_message(decrypted_data)
-
-        logger.info(f"{parsed_data=}")
 
         sesv2.send_email(
             FromEmailAddress=parsed_data.get("from", ""),
@@ -391,6 +383,8 @@ def send_user_email():
                 },
             },
         )
+
+        result = "Success"
     except Exception as e:
         logger.error(f"Could not send email: {e}")
         logger.info("Sending admin error email...")
@@ -431,4 +425,10 @@ def send_user_email():
             },
         )
 
-    return "TODO: OSL-3713"
+        result = "Error"
+
+    return wrap_response(
+        body=json.dumps({"result": result}),
+        code=200 if result == "Success" else 422,
+        content_type=content_types.APPLICATION_JSON,
+    )
