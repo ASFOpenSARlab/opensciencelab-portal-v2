@@ -8,14 +8,14 @@ on: # yamllint disable-line rule:truthy
   workflow_dispatch: {}
 
 env:
+  SES_EMAIL: ${{ secrets.SES_EMAIL }}
+  SES_DOMAIN: ${{ vars.SES_DOMAIN }}
   AWS_DEFAULT_REGION: ${{ vars.AWS_DEFAULT_REGION }}
 
 jobs:
   generate-coverage:
     runs-on: ubuntu-latest
     container: ghcr.io/asfopensarlab/osl-utils:v1.0.4
-    env:
-      SES_EMAIL: ${{ secrets.SES_EMAIL }}
     steps:
       - name: Checkout Repo
         uses: actions/checkout@v4
