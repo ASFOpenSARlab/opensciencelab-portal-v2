@@ -61,3 +61,4 @@ class BaseLab:
     enabled: str = None
     accessibility: str = None
     users: list = field(default_factory=lambda: [])
+    notifications: str = None

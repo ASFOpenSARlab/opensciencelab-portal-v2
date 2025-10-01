@@ -50,6 +50,8 @@ class TestPortalIntegrations:
         monkeypatch.setattr("portal.User", lambda *args, **kwargs: user)
         monkeypatch.setattr("util.auth.User", lambda *args, **kwargs: user)
 
+        monkeypatch.setattr("util.user.user.LABS", helpers.FAKE_LABS)
+
         event = helpers.get_event(path="/portal", cookies=fake_auth)
         ret = main.lambda_handler(event, lambda_context)
 
@@ -60,9 +62,11 @@ class TestPortalIntegrations:
         assert ret["headers"].get("Content-Type") == "text/html"
 
     def test_admin_home_page(self, monkeypatch, lambda_context, helpers, fake_auth):
-        user = helpers.FakeUser(access=["admin", "user"], labs=["testlab"])
+        user = helpers.FakeUser(access=["admin", "user"], labs={"testlab": {}})
         monkeypatch.setattr("portal.User", lambda *args, **kwargs: user)
         monkeypatch.setattr("util.auth.User", lambda *args, **kwargs: user)
+
+        monkeypatch.setattr("util.user.user.LABS", helpers.FAKE_LABS)
 
         event = helpers.get_event(path="/portal", cookies=fake_auth)
         ret = main.lambda_handler(event, lambda_context)
