@@ -1,4 +1,5 @@
 import os
+import traceback
 
 import boto3
 from aws_lambda_powertools import Logger
@@ -138,7 +139,7 @@ def send_user_email(request_data):
 
         parsed_data: dict = _parse_email_message(decrypted_data)
 
-        sesv2.send_email(
+        response = sesv2.send_email(
             FromEmailAddress=parsed_data.get("from", ""),
             Destination={
                 "ToAddresses": parsed_data.get("to", []),
@@ -162,34 +163,48 @@ def send_user_email(request_data):
             },
         )
 
+        logger.info(f"Send email response: {response}")
+
         result = "Success"
     except Exception as e:
-        logger.error(f"Could not send email: {e}")
-        logger.info("Sending admin error email...")
+        exception_traceback = traceback.print_exc()
 
-        html_body = jinja_template({"error": e}, "error_email.html.j2")
+        try:
+            logger.error(f'Could not send email: "{exception_traceback} ".')
+            logger.info("Sending admin error email...")
 
-        sesv2.send_email(
-            FromEmailAddress=f'"OpenScienceLab" <admin@{os.getenv("SES_DOMAIN")}>',
-            Destination={
-                "ToAddresses": [os.getenv("SES_EMAIL")],
-            },
-            ReplyToAddresses=[os.getenv("SES_EMAIL")],
-            Content={
-                "Simple": {
-                    "Subject": {
-                        "Data": "Error in sending email",
-                        "Charset": "UTF-8",
-                    },
-                    "Body": {
-                        "Html": {
-                            "Data": html_body,
+            html_body = jinja_template(
+                {"error": type(e).__name__}, "error_email.html.j2"
+            )
+
+            response = sesv2.send_email(
+                FromEmailAddress=f'"OpenScienceLab" <admin@{os.getenv("SES_DOMAIN")}>',
+                Destination={
+                    "ToAddresses": [os.getenv("SES_EMAIL")],
+                },
+                ReplyToAddresses=[os.getenv("SES_EMAIL")],
+                Content={
+                    "Simple": {
+                        "Subject": {
+                            "Data": "Error in sending email",
                             "Charset": "UTF-8",
+                        },
+                        "Body": {
+                            "Html": {
+                                "Data": html_body,
+                                "Charset": "UTF-8",
+                            },
                         },
                     },
                 },
-            },
-        )
+            )
+
+            logger.info(f"Send email response: {response}")
+
+        except Exception:
+            logger.error(
+                f"Could not send admin email. {traceback.print_exc()}. ORIGINAL ERROR: {exception_traceback}"
+            )
 
         result = "Error"
 
