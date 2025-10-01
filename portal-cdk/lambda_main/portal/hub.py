@@ -351,9 +351,9 @@ Format of `POST` payload should be a dict of the form:
 """,
 )
 def send_user_email():
-    try:
-        sesv2: boto3.Client = get_sesv2()
+    sesv2: boto3.Client = get_sesv2()
 
+    try:
         request_data = hub_router.current_event.body
 
         decrypted_data: dict = decrypt_data(request_data)
