@@ -37,7 +37,7 @@ _sesv2 = None
 def get_sesv2() -> None:
     global _sesv2
     if not _sesv2:
-        _sesv2 = boto3.client("sesv2")
+        _sesv2 = boto3.client("sesv2", region_name=os.environ.get("region"))
     return _sesv2
 
 
