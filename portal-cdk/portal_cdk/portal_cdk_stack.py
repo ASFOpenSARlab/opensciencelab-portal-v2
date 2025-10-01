@@ -232,8 +232,6 @@ class PortalCdkStack(Stack):
                     cloudfront.AccessLevel.READ,
                     cloudfront.AccessLevel.READ_VERSIONED,
                     cloudfront.AccessLevel.LIST,
-                    # cloudfront.AccessLevel.WRITE,
-                    # cloudfront.AccessLevel.DELETE,
                 ],
                 custom_headers={"Hello": "World"},
             ),
@@ -244,12 +242,8 @@ class PortalCdkStack(Stack):
                 )
             ],
             compress=True,
-            # origin_request_policy=cloudfront.OriginRequestPolicy.CORS,
-            # allowed_methods=cloudfront.AllowedMethods.ALLOW_ALL,
-            # cache_policy=cloudfront.CachePolicy.CACHING_DISABLED,
             response_headers_policy=cloudfront.ResponseHeadersPolicy.CORS_ALLOW_ALL_ORIGINS_WITH_PREFLIGHT,
             viewer_protocol_policy=cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
-            # viewer_protocol_policy=cloudfront.ViewerProtocolPolicy.ALLOW_ALL,
         )
 
         # Deploy content from a local directory to the S3 bucket
