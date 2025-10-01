@@ -7,8 +7,10 @@ on: # yamllint disable-line rule:truthy
       - main
   workflow_dispatch: {}
 
-jobs:
+env:
+  AWS_DEFAULT_REGION: ${{ vars.AWS_DEFAULT_REGION }}
 
+jobs:
   generate-coverage:
     runs-on: ubuntu-latest
     container: ghcr.io/asfopensarlab/osl-utils:v1.0.4
