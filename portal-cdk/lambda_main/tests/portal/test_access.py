@@ -259,7 +259,10 @@ class TestAccessPages:
         response_body = json.loads(ret["body"])
         lab_access_list = response_body.get("labs")
 
-        lab_access_dict = {lab_access["lab"]["short_lab_name"]:lab_access for lab_access in lab_access_list}
+        lab_access_dict = {
+            lab_access["lab"]["short_lab_name"]: lab_access
+            for lab_access in lab_access_list
+        }
 
         assert lab_access_dict["testlab"]["can_user_see_lab_card"]
         assert lab_access_dict["testlab"]["can_user_access_lab"]
