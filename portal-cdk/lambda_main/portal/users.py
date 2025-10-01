@@ -142,27 +142,17 @@ def delete_user(username):
     )
 
 
-@users_router.get("/all/usernames")
-# require_access() is broken due to assumptions with jinja
-# @require_access("admin")
-def users_all_usernames():
-    # Fetch all users
-    all_users: list[dict] = get_all_items()
-    all_usernames = [u["username"] for u in all_users]
-    all_usernames_sorted = sorted(all_usernames)
-
-    return json.dumps(all_usernames_sorted)
-
-
-@users_router.get("/whoami")
-def get_users_whoami():
+@users_router.get("/example")
+@require_access("admin", human=False)
+def get_users_example():
     username: str = current_session.auth.cognito.username
 
     return json.dumps({"username": username})
 
 
-@users_router.post("/whoami")
-def post_users_whoami():
+@users_router.post("/example")
+@require_access("admin", human=False)
+def post_users_example():
     username: str = current_session.auth.cognito.username
 
     body: str = users_router.current_event.body

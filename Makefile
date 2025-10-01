@@ -175,7 +175,8 @@ destroy-portal: install-reqs bundle-deps
 clean:
 	rm -rf /tmp/.build/ && \
 	rm -rf ./portal-cdk/cdk.out/ \
-	rm -rf ./portal-cdk/svelte/build
+	rm -rf ./portal-cdk/svelte/build \
+	rm -rf ./portal-cdk/svelte/.svelte-kit
 
 .PHONY := synth-oidc
 synth-oidc:
