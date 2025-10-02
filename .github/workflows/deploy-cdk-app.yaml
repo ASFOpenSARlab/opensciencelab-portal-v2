@@ -34,6 +34,7 @@ jobs:
       DEPLOY_PREFIX: ${{ needs.setup.outputs.deploy_prefix }}
       SES_EMAIL: ${{ secrets.SES_EMAIL }}
       SES_DOMAIN: ${{ vars.SES_DOMAIN }}
+      AWS_DEFAULT_REGION: ${{ vars.AWS_DEFAULT_REGION }}
     steps:
       - name: Checkout Repo
         uses: actions/checkout@v4
@@ -41,8 +42,8 @@ jobs:
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: arn:aws:iam::${{vars.AWS_ACCOUNT_NUMBER}}:role/deploy_portal_stack_role
-          aws-region: ${{vars.AWS_DEFAULT_REGION}}
+          role-to-assume: arn:aws:iam::${{ vars.AWS_ACCOUNT_NUMBER }}:role/deploy_portal_stack_role
+          aws-region: ${{ vars.AWS_DEFAULT_REGION }}
 
       - name: Run Portal Testsuite
         run: |

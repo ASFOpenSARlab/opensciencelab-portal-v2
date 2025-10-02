@@ -86,8 +86,7 @@ cdk-shell:
 		-e AWS_DEFAULT_ACCOUNT \
 		-e DEPLOY_PREFIX \
 		-e SES_DOMAIN \
-		-e SES_REPLY_TO_EMAIL \
-		-e DEV_SES_EMAIL \
+		-e SES_EMAIL \
 		--pull always \
 		${IMAGE_NAME} || \
 		(  echo -e "" && echo  'If docker run fails with "no matching manifest", ' \
