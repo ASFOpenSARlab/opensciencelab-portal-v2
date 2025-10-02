@@ -4,7 +4,8 @@ import json
 import base64
 
 from util import swagger
-from util.responses import wrap_response, json_body_to_dict
+from util import send_email
+from util.responses import wrap_response
 from util.format import portal_template, request_context_string
 from util.auth import encrypt_data, require_access
 from util.session import current_session
@@ -182,27 +183,47 @@ swagger_email_options = {
     "/user/email",
     **swagger_email_options,
     description="""
-"Forwards" emails from labs, to the user's email address on file using AWS SES.
+Sends emails as defined in payload via SES. To help facilitate ease of use, usernames can be used instead of email addresses.
+    
+- If an username is given, user's email address on file is used
+- As a special case, username "osl-admin" substitutes the admin email as defined in the portal config
+- TO username and email are included for backward compatibility. TO will be defined by the SES_EMAIL.
 
 <hr>
-
-`POST` payload should be a dict of the form:
+    
+Format of `POST` payload should be a dict of the form:
 
 ```json
 {
-    "to": {"username": "osl-admin"},
-    "from": {"username": "osl-admin"},
-    "subject": "OpenScienceLab Metric Alert",
-    "html_body": "<message>",
+    "to": {
+        "username": ["",] | "",
+        "email": ["",] | ""
+    },
+    "from": {
+        "username": "",
+        "email": ""
+    },
+    "cc": {
+        "username": ["",] | "",
+        "email": ["",] | ""
+    },
+    "bcc": {
+        "username": ["",] | "",
+        "email": ["",] | ""
+    },
+    "subject": "",
+    "html_body": "<message>"
 }
 ```
-
-- `<message>` is the text of the email to send.
-
-- `username` can also be a list in the form of `{"username": ["user1", "user2"]}`
-    """,
+""",
 )
 def send_user_email():
-    body = hub_router.current_event.json_body
-    body = json_body_to_dict(body)
-    return "TODO: OSL-3713"
+    request_data = hub_router.current_event.body
+
+    result: str = send_email.send_user_email(request_data)
+
+    return wrap_response(
+        body=json.dumps({"result": result}),
+        code=200 if result == "Success" else 422,
+        content_type=content_types.APPLICATION_JSON,
+    )

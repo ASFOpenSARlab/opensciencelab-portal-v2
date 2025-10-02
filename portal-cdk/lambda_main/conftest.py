@@ -7,10 +7,10 @@ https://stackoverflow.com/a/50610630/21674565
 import os
 import copy
 import time
-
-import pytest
 from dataclasses import dataclass, field
 import datetime
+
+import pytest
 
 os.environ["STACK_REGION"] = "us-west-2"
 os.environ["COGNITO_CLIENT_ID"] = "fake-cognito-id"
@@ -18,6 +18,7 @@ os.environ["COGNITO_POOL_ID"] = "fake-pool-id"
 from util.auth import PORTAL_USER_COOKIE, COGNITO_JWT_COOKIE
 from util.labs import BaseLab, LabAccessInfo
 from util.user.user import filter_lab_access, create_lab_structure
+from jwt import decode as unpatched_jwt_decode
 
 
 def MockedRequestsPost(*args, **kwargs):
@@ -88,6 +89,9 @@ BASIC_REQUEST = {
 
 @dataclass
 class Helpers:
+    # handler for unpatched jwt after monkeypatch
+    jwt_decode = unpatched_jwt_decode
+
     @staticmethod
     def get_event(
         path="/", method="GET", cookies=None, headers=None, qparams=None, body=None
