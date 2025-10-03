@@ -16,7 +16,7 @@ os.environ["STACK_REGION"] = "us-west-2"
 os.environ["COGNITO_CLIENT_ID"] = "fake-cognito-id"
 os.environ["COGNITO_POOL_ID"] = "fake-pool-id"
 from util.auth import PORTAL_USER_COOKIE, COGNITO_JWT_COOKIE
-from util.labs import BaseLab, LabAccessInfo
+from util.labs import BaseLab
 from util.user.user import filter_lab_access, create_lab_structure
 
 
@@ -184,7 +184,7 @@ class Helpers:
         def remove_lab(self, lab_short_name: str):
             self.labs.pop(lab_short_name, None)
 
-        def get_lab_access(self) -> list[LabAccessInfo]:
+        def get_lab_access(self) -> dict:
             return filter_lab_access(self)
 
     # differentlab not initialized in FakeUser.labs

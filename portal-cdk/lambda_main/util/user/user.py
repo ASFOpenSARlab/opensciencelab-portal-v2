@@ -7,7 +7,6 @@ from typing import Any
 
 from util.exceptions import DbError, CognitoError, UserNotFound
 from util.cognito import delete_user_from_user_pool
-from util.labs import LabAccessInfo
 from util.labs import LABS
 
 from .dynamo_db import get_item, create_item, update_item, delete_item
@@ -122,7 +121,7 @@ class User:
                 new_lab_list[lab] = self.labs[lab]
         self.labs = new_lab_list
 
-    def get_lab_access(self) -> list[LabAccessInfo]:
+    def get_lab_access(self) -> dict:
         """Returns ALL labs the user has access to."""
         return filter_lab_access(self)
 
@@ -152,40 +151,13 @@ class User:
 
 
 # returns labs filtered by user access
-def filter_lab_access(user: User) -> list[LabAccessInfo]:
-    labs_user_been_given: list[LabAccessInfo] = []
-    additional_labs: list[LabAccessInfo] = []
-
-    for labname in LABS:
-        shortname = LABS[labname].short_lab_name
-        if shortname in user.labs.keys():
-            # user has access: access and view
-            labs_user_been_given.append(
-                LabAccessInfo(
-                    lab=LABS[labname],
-                    can_user_access_lab=True,
-                    can_user_see_lab_card=True,
-                )
-            )
-        elif user.is_admin():
-            # user does not have access but is admin: access and view
-            # append to end of list
-            # also appends private labs
-            additional_labs.append(
-                LabAccessInfo(
-                    lab=LABS[labname],
-                    can_user_access_lab=True,
-                    can_user_see_lab_card=True,
-                )
-            )
-        elif LABS[labname].accessibility == "protected":
-            # user does not have access and not admin: only view
-            # append to end of list
-            additional_labs.append(
-                LabAccessInfo(
-                    lab=LABS[labname],
-                    can_user_access_lab=False,
-                    can_user_see_lab_card=True,
-                )
-            )
-    return labs_user_been_given + additional_labs
+def filter_lab_access(user: User) -> dict:
+    return {
+        "lab_info": {
+            labname: LABS[labname] for labname in LABS
+            if labname in user.labs or
+            LABS[labname].accessibility == "protected" or
+            user.is_admin()
+        },
+        "lab_access": user.labs,
+    }

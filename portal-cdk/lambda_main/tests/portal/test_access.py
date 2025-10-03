@@ -165,21 +165,12 @@ class TestAccessPages:
         ret = main.lambda_handler(event, lambda_context)
 
         response_body = json.loads(ret["body"])
-        lab_access_list = response_body.get("labs")
+        lab_access = response_body.get("labs")
 
         assert ret["statusCode"] == 200
-        assert any(
-            lab_acccess.get("lab").get("short_lab_name") == "testlab"
-            for lab_acccess in lab_access_list
-        )
-        assert any(
-            lab_acccess.get("lab").get("short_lab_name") == "differentlab"
-            for lab_acccess in lab_access_list
-        )
-        assert any(
-            lab_acccess.get("lab").get("short_lab_name") == "noaccess"
-            for lab_acccess in lab_access_list
-        )
+        assert lab_access["lab_info"].get("testlab")
+        assert lab_access["lab_info"].get("differentlab")
+        assert lab_access["lab_info"].get("noaccess")
         assert ret["headers"].get("Content-Type") == "application/json"
 
     def test_get_labs_of_a_user_not_admin_correct(
@@ -211,21 +202,12 @@ class TestAccessPages:
         ret = main.lambda_handler(event, lambda_context)
 
         response_body = json.loads(ret["body"])
-        lab_access_list = response_body.get("labs")
+        lab_access = response_body.get("labs")
 
         assert ret["statusCode"] == 200
-        assert any(
-            lab_acccess.get("lab").get("short_lab_name") == "testlab"
-            for lab_acccess in lab_access_list
-        )
-        assert any(
-            lab_acccess.get("lab").get("short_lab_name") == "differentlab"
-            for lab_acccess in lab_access_list
-        )
-        assert all(
-            lab_acccess.get("lab").get("short_lab_name") != "noaccess"
-            for lab_acccess in lab_access_list
-        )
+        assert lab_access["lab_info"].get("testlab")
+        assert lab_access["lab_info"].get("differentlab")
+        assert not lab_access["lab_info"].get("noaccess")
         assert ret["headers"].get("Content-Type") == "application/json"
 
     def test_lab_access_of_user(self, monkeypatch, lambda_context, helpers, fake_auth):
@@ -257,67 +239,16 @@ class TestAccessPages:
         ret = main.lambda_handler(event, lambda_context)
 
         response_body = json.loads(ret["body"])
-        lab_access_list = response_body.get("labs")
+        lab_access = response_body.get("labs")
 
-        lab_access_dict = {
-            lab_access["lab"]["short_lab_name"]: lab_access
-            for lab_access in lab_access_list
-        }
+        assert "testlab" in lab_access["lab_access"]
+        assert "testlab" in lab_access["lab_info"]
 
-        assert lab_access_dict["testlab"]["can_user_see_lab_card"]
-        assert lab_access_dict["testlab"]["can_user_access_lab"]
+        assert "protectedlab" not in lab_access["lab_access"]
+        assert "protectedlab" in lab_access["lab_info"]
 
-        assert lab_access_dict["protectedlab"]["can_user_see_lab_card"]
-        assert not lab_access_dict["protectedlab"]["can_user_access_lab"]
-
-        assert not lab_access_dict.get("noaccess")
-
-    def test_get_labs_order(self, monkeypatch, lambda_context, helpers, fake_auth):
-        user = helpers.FakeUser(access=["user", "admin"], username="test_admin")
-        monkeypatch.setattr("util.auth.User", lambda *args, **kwargs: user)
-
-        targetuser = helpers.FakeUser(
-            access=["user"],
-            username="test_user2",
-            labs={
-                "testlab": {
-                    "time_quota": None,
-                    "lab_profiles": None,
-                    "lab_country_status": None,
-                },
-                "differentlab": {
-                    "time_quota": None,
-                    "lab_profiles": None,
-                    "lab_country_status": None,
-                },
-                # protectedlab is deliberately not here, it should be rendered after
-            },
-        )
-        monkeypatch.setattr("portal.access.User", lambda *args, **kwargs: targetuser)
-
-        monkeypatch.setattr("util.user.user.LABS", helpers.FAKE_LABS)
-
-        event = helpers.get_event(
-            path="/portal/access/labs/test_user2",
-            cookies=fake_auth,
-            method="GET",
-        )
-        ret = main.lambda_handler(event, lambda_context)
-
-        response_body = json.loads(ret["body"])
-        lab_access_list = response_body.get("labs")
-
-        for i, lab in enumerate(lab_access_list):
-            if lab.get("lab").get("short_lab_name") == "differentlab":
-                differentlab_index = i
-            if lab.get("lab").get("short_lab_name") == "protectedlab":
-                protectedlab_index = i
-
-        assert ret["statusCode"] == 200
-        assert "differentlab_index" in locals()
-        assert "protectedlab_index" in locals()
-        assert differentlab_index < protectedlab_index
-        assert ret["headers"].get("Content-Type") == "application/json"
+        assert "noaccess" not in lab_access["lab_access"]
+        assert "noaccess" not in lab_access["lab_info"]
 
     def test_get_labs_of_a_user_user_not_found(
         self, monkeypatch, lambda_context, helpers, fake_auth
