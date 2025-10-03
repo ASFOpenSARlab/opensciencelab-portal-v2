@@ -1,5 +1,5 @@
 <script>
-  import Toast from "$components/utils/Toast.svelte";
+  import { Toasts } from "svoast";
   import favicon from "$lib/assets/favicon.svg";
 
   let { children } = $props();
@@ -9,6 +9,6 @@
   <link rel="icon" href={favicon} />
 </svelte:head>
 
-<Toast />
+<Toasts position="top-right" />
 
 {@render children?.()}

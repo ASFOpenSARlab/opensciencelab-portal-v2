@@ -1,5 +1,5 @@
 <script>
-  import { giveAToast } from "$lib/utils/giveAToast";
+  import { toast } from "svoast"; // https://svoast.vercel.app/
   import { onMount } from "svelte";
 
   /** @type {import('./$types').PageProps} */
@@ -8,38 +8,28 @@
 
   // From https://svelte.dev/playground/667d8ac94e2349f3a1b7b8c5fa4c0082?version=5.36.14
   async function copyText() {
-    let text = target
-      ? document.querySelector(target).innerText
-      : this.innerText;
-
     try {
+      let text = target
+        ? document.querySelector(target).innerText
+        : this.innerText;
+
       await navigator.clipboard.writeText(text);
 
-      this.dispatchEvent(
-        new CustomEvent("copysuccess", {
-          bubbles: true,
-          detail: {
-            message: text,
-          },
-        })
-      );
-
-      giveAToast("success", "Copied text: " + text);
-
-      console.log(`Text '${text}' has been written to the clipboard`);
+      toast.success(text, {
+        duration: 10000,
+        closable: true,
+      });
     } catch (error) {
-      this.dispatchEvent(
-        new CustomEvent("copyerror", {
-          bubbles: true,
-          detail: {
-            message: error,
-          },
-        })
-      );
-
-      giveAToast("error", "Error! " + text);
-
-      console.log(`Text '${text}' has had a copy error: ${error}`);
+      const message = `
+        <h1>Warning</h1>
+        <p>There was an error...</p>
+        <p style="color: orange">${error}</p>
+      `;
+      toast.error(message, {
+        infinite: true,
+        closable: true,
+        rich: true,
+      });
     }
   }
 

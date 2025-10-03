@@ -143,11 +143,16 @@ def delete_user(username):
 
 
 @users_router.get("/example")
-@require_access("admin", human=False)
+@require_access(human=False)
 def get_users_example():
     username: str = current_session.auth.cognito.username
 
-    return json.dumps({"username": username})
+    json_username = json.dumps({"username": username})
+
+    return wrap_response(
+        body=json_username,
+        code=200,
+    )
 
 
 @users_router.post("/example")
