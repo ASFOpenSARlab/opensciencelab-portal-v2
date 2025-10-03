@@ -176,7 +176,10 @@ def get_user_labs(username):
 
     user = User(username=username, create_if_missing=False)
     lab_access: dict = filter_lab_access(user)
-    lab_access["lab_info"] = {labname: asdict(lab_access["lab_info"][labname]) for labname in lab_access["lab_info"]}
+    lab_access["lab_info"] = {
+        labname: asdict(lab_access["lab_info"][labname])
+        for labname in lab_access["lab_info"]
+    }
 
     # Return user labs
     return wrap_response(

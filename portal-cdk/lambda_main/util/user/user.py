@@ -154,10 +154,11 @@ class User:
 def filter_lab_access(user: User) -> dict:
     return {
         "lab_info": {
-            labname: LABS[labname] for labname in LABS
-            if labname in user.labs or
-            LABS[labname].accessibility == "protected" or
-            user.is_admin()
+            labname: LABS[labname]
+            for labname in LABS
+            if labname in user.labs
+            or LABS[labname].accessibility == "protected"
+            or user.is_admin()
         },
         "lab_access": user.labs,
     }
