@@ -1,6 +1,5 @@
 from .base_lab import BaseLab
 
-from dataclasses import dataclass
 import os
 
 if os.getenv("IS_PROD", "false").lower() == "true":
