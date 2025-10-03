@@ -8,7 +8,7 @@ from util.user.dynamo_db import get_users_with_lab
 from util.user.user import filter_lab_access
 from util.user import User
 from util.responses import wrap_response, form_body_to_dict, json_body_to_dict
-from util.labs import LABS, LabAccessInfo
+from util.labs import LABS
 
 from aws_lambda_powertools.event_handler.api_gateway import Router
 from aws_lambda_powertools.event_handler import content_types
@@ -175,12 +175,16 @@ def get_user_labs(username):
     # Find user in db
 
     user = User(username=username, create_if_missing=False)
-    lab_access: list[LabAccessInfo] = filter_lab_access(user)
+    lab_access: dict = filter_lab_access(user)
+    lab_access["lab_info"] = {labname: asdict(lab_access["lab_info"][labname]) for labname in lab_access["lab_info"]}
 
     # Return user labs
     return wrap_response(
         body=json.dumps(
-            {"labs": [asdict(entry) for entry in lab_access], "message": "OK"}
+            {
+                "labs": lab_access,
+                "message": "OK",
+            }
         ),
         code=200,
         content_type=content_types.APPLICATION_JSON,
