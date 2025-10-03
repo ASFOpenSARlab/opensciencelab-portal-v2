@@ -5,28 +5,63 @@
   import { UserClass } from "$lib/store.svelte.js";
   import { error } from "@sveltejs/kit";
   import ClickToCopy from "$components/utils/ClickToCopy.svelte";
+  import { toast } from "svoast"; // https://svoast.vercel.app/
 
   let spinner;
-  let errorMsg = $state(null);
   let user = new UserClass();
 
   onMount(async () => {
-    spinner.start();
-    user.pull();
-    spinner.stop();
+    try {
+      spinner.start();
+      user.pull();
+    } catch (error) {
+      toastError(error.stack);
+    } finally {
+      spinner.stop();
+    }
   });
 
-  let onBtnClick = () => {
-    user.data.username = new Date();
-    console.log("Onclick", $state.snapshot(user.data));
+  let makeToast = {
+    success: (msg) => {
+      toast.success(msg);
+    },
+    error: (error) => {
+      toast.error(
+        `<h1>Error</h1>
+        <p style="color: lightyellow">${error}</p>`,
+        {
+          infinite: true,
+          closable: true,
+          rich: true,
+        }
+      );
+    },
+    attention: (msg) => {
+      toast.attention(msg);
+    },
+  };
+
+  let onThrowError = () => {
+    makeToast.error("Why did you click on me?");
+  };
+
+  let onNewUsername = () => {
+    try {
+      user.data.username = new Date();
+      makeToast.attention(`New username: ${user.data.username}`);
+      console.log("Updated User: ", $state.snapshot(user.data));
+    } catch (error) {
+      makeToast.error(error.stack);
+    }
   };
 
   let onLatest = async () => {
     spinner.start();
     try {
       const results = await user.pull();
+      makeToast.success(`Latest user data successfully pulled: ${results}`);
     } catch (error) {
-      errorMsg = error.stack;
+      makeToast.error(error.stack);
     } finally {
       spinner.stop();
     }
@@ -36,8 +71,10 @@
     spinner.start();
     try {
       await user.push();
+      makeToast.success("Latest user data successfully pushed");
     } catch (error) {
-      errorMsg = error.stack;
+      console.error(error);
+      makeToast.error(error.stack);
     } finally {
       spinner.stop();
     }
@@ -46,11 +83,7 @@
 
 <Spinner bind:this={spinner} />
 
-<h1>Future Home Page</h1>
-
-{#if errorMsg}
-  <p style="color:red" id="errorMsgId">{errorMsg}</p>
-{/if}
+<h1>Example Page</h1>
 
 <div>
   <span id="usernameId">
@@ -59,6 +92,7 @@
   <ClickToCopy target="#usernameId" />
 </div>
 
-<button onclick={onBtnClick}>New</button>
+<button onclick={onNewUsername}>New Username</button>
 <button onclick={onLatest}>Get Latest</button>
 <button onclick={onSave}>Save</button>
+<button onclick={onThrowError}>Do Not Click Me</button>
