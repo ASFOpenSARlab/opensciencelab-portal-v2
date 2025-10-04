@@ -8,7 +8,7 @@ from util.user.dynamo_db import get_users_with_lab
 from util.user.user import filter_lab_access
 from util.user import User
 from util.responses import wrap_response, form_body_to_dict, json_body_to_dict
-from util.labs import LABS, LabAccessInfo
+from util.labs import LABS
 
 from aws_lambda_powertools.event_handler.api_gateway import Router
 from aws_lambda_powertools.event_handler import content_types
@@ -103,38 +103,16 @@ def edit_user(shortname):
     # Edit user
     user = User(body["username"])
 
-    # Map checkboxes to True and False
-    can_user_see_lab_card = "can_user_see_lab_card" in body
-    can_user_access_lab = "can_user_access_lab" in body
-
     if body["action"] == "add_user":
         user.add_lab(
             lab_short_name=shortname,
             lab_profiles=[s.strip() for s in body["lab_profiles"].split(",")],
             time_quota=body["time_quota"].strip() or None,
             lab_country_status=body["lab_country_status"],
-            can_user_access_lab=can_user_access_lab,
-            can_user_see_lab_card=can_user_see_lab_card,
         )
 
     elif body["action"] == "remove_user":
         user.remove_lab(shortname)
-
-    elif body["action"] == "toggle_can_user_see_lab_card":
-        labs = dict(user.labs)
-        labs[shortname] = dict(labs[shortname])
-        labs[shortname]["can_user_see_lab_card"] = not user.labs[shortname][
-            "can_user_see_lab_card"
-        ]
-        user.labs = labs
-
-    elif body["action"] == "toggle_can_user_access_lab":
-        labs = dict(user.labs)
-        labs[shortname] = dict(labs[shortname])
-        labs[shortname]["can_user_access_lab"] = not user.labs[shortname][
-            "can_user_access_lab"
-        ]
-        user.labs = labs
 
     else:
         error = f"Invalid edit_user action {body['action']}"
@@ -197,12 +175,19 @@ def get_user_labs(username):
     # Find user in db
 
     user = User(username=username, create_if_missing=False)
-    lab_access: list[LabAccessInfo] = filter_lab_access(user)
+    lab_access: dict = filter_lab_access(user)
+    lab_access["lab_info"] = {
+        labname: asdict(lab_access["lab_info"][labname])
+        for labname in lab_access["lab_info"]
+    }
 
     # Return user labs
     return wrap_response(
         body=json.dumps(
-            {"labs": [asdict(entry) for entry in lab_access], "message": "OK"}
+            {
+                "labs": lab_access,
+                "message": "OK",
+            }
         ),
         code=200,
         content_type=content_types.APPLICATION_JSON,
@@ -257,8 +242,6 @@ def validate_set_lab_access(put_lab_request: dict) -> tuple[bool, str]:
         # Check all lab fields exist and are correct type
         all_fields = {
             "lab_profiles": list,
-            "can_user_access_lab": bool,
-            "can_user_see_lab_card": bool,
             "time_quota": str,
             "lab_country_status": str,
         }
@@ -327,8 +310,6 @@ Sets what labs a user can access. Can be used to both add/remove labs.
     "labs": {
         "<lab_name>": {
             "lab_profiles": ["m6a.large"],
-            "can_user_access_lab": True,
-            "can_user_see_lab_card": True,
             "time_quota": "",
             "lab_country_status": "protected",
         }
