@@ -1,6 +1,5 @@
 from .base_lab import BaseLab
 
-from dataclasses import dataclass
 import os
 
 if os.getenv("IS_PROD", "false").lower() == "true":
@@ -172,7 +171,7 @@ if os.getenv("IS_PROD", "false").lower() == "true":
         ),
     }
 else:
-    LABS = {
+    LABS: dict[str, BaseLab] = {
         "smce-test-opensarlab": BaseLab(
             short_lab_name="smce-test-opensarlab",
             friendly_name="SMCE Test (US Unrestricted, Lab Protected)",
@@ -202,10 +201,3 @@ else:
             notifications="https://calendar.google.com/calendar/ical/c_3704674759bada5ab28ed5f66686b932bbabe955ecc440bd2aeed0982d5cd34a%40group.calendar.google.com/public/basic.ics",
         ),
     }
-
-
-@dataclass
-class LabAccessInfo:
-    lab: BaseLab
-    can_user_access_lab: bool
-    can_user_see_lab_card: bool
