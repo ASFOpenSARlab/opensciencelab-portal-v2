@@ -1,3 +1,5 @@
+import json
+
 from util.format import (
     portal_template,
 )
@@ -138,3 +140,29 @@ def delete_user(username):
         headers={"Location": f"/portal/users?{'&'.join(get_params)}"},
         code=302,
     )
+
+
+@users_router.get("/example")
+@require_access(human=False)
+def get_users_example():
+    username: str = current_session.auth.cognito.username
+
+    json_username = json.dumps({"username": username})
+
+    return wrap_response(
+        body=json_username,
+        code=200,
+    )
+
+
+@users_router.post("/example")
+@require_access("admin", human=False)
+def post_users_example():
+    username: str = current_session.auth.cognito.username
+
+    body: str = users_router.current_event.body
+    data: dict = json.loads(body)
+
+    logger.info(f"Post Users Whoami: My {username=} has body {data}")
+
+    return json.dumps({"username": username})

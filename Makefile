@@ -10,7 +10,11 @@ Makefile commands:
 
     manual-cdk-bootstrap:   Bootstrap an account for CDK
 
-    test:					Run PyTest tests
+    build-frontend:         Build NPM packages for frontend
+
+    local-run-frontend:     Run locally built frontend for development. Some things might be broken.
+
+    test:                   Run PyTest tests
 
     synth-portal:           Synth portal CDK project
 
@@ -22,7 +26,7 @@ Makefile commands:
 
     aws-info:               Get AWS account info
 
-    clean:					Remove .build/ & cdk.out/
+    clean:                  Remove .build/ & cdk.out/ & svelte/build
 
 endef
 export HELP
@@ -87,6 +91,8 @@ cdk-shell:
 		-e DEPLOY_PREFIX \
 		-e SES_DOMAIN \
 		-e SES_EMAIL \
+		-e DEV_SES_EMAIL \
+		--network host \
 		--pull always \
 		${IMAGE_NAME} || \
 		(  echo -e "" && echo  'If docker run fails with "no matching manifest", ' \
@@ -131,6 +137,16 @@ bundle-deps:
 		echo "Skipping deps bundled in ${BUILD_DEPS}. Remove to rebuild."; \
 	fi
 
+.PHONY := build-frontend
+build-frontend:
+	echo "Building and compiling npm packages..." && \
+	cd ./portal-cdk/svelte/ && npm install . && npm run build
+
+.PHONY := local-run-frontend
+local-run-frontend:
+	echo "Running locally frontend..." && \
+	cd ./portal-cdk/svelte/ && npm run dev
+
 .PHONE := test
 test: install-reqs bundle-deps
 	@echo "Running tests for Portal (${DEPLOY_PREFIX})"
@@ -145,9 +161,10 @@ synth-portal: install-reqs bundle-deps
 	cd ./portal-cdk && cdk synth
 
 .PHONY := deploy-portal
-deploy-portal: install-reqs bundle-deps
+deploy-portal: install-reqs bundle-deps build-frontend
 	@echo "Deploying ${DEPLOY_PREFIX}/portal-cdk"
-	cd ./portal-cdk && cdk --require-approval never deploy
+	cd ./portal-cdk && \
+	cdk --require-approval never deploy
 
 .PHONY := destroy-portal
 destroy-portal: install-reqs bundle-deps
@@ -156,8 +173,7 @@ destroy-portal: install-reqs bundle-deps
 
 .PHONY := clean
 clean:
-	rm -rf /tmp/.build/ && \
-	rm -rf ./portal-cdk/cdk.out/
+	rm -rf /tmp/.build/ ./portal-cdk/cdk.out/ ./portal-cdk/svelte/build ./portal-cdk/svelte/.svelte-kit
 
 .PHONY := synth-oidc
 synth-oidc:

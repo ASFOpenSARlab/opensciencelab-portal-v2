@@ -15,6 +15,8 @@ from aws_cdk import (
     aws_cloudfront as cloudfront,
     aws_cloudfront_origins as origins,
     aws_iam as iam,
+    aws_s3 as s3,
+    aws_s3_deployment as s3deploy,
     aws_secretsmanager as secretsmanager,
     SecretValue,
 )
@@ -25,6 +27,12 @@ from lambda_main.util.labs import LABS
 LAMBDA_RUNTIME = aws_lambda.Runtime.PYTHON_3_11
 
 # I'd like to see this get spun off into CodeAsConfig collocated with the portal code.
+
+# Prefix key within frontend artifact bucket
+# This is also used as the cloudfront prefix path for frontend
+# If this is changed also update svelte.config.js#7
+# Do not include root slash and any possible trailing slashes.
+FRONTEND_PREFIX = "ui"
 
 
 class PortalCdkStack(Stack):
@@ -166,7 +174,96 @@ class PortalCdkStack(Stack):
                 viewer_protocol_policy=cloudfront.ViewerProtocolPolicy.ALLOW_ALL,
             )
 
-        # Hub endpoint
+        ## Svelte frontend out of S3
+        frontend_bucket = s3.Bucket(
+            self,
+            "FrontendSvelteBucket",  # Logical ID within the stack
+            bucket_name=f"frontend-svelte-{construct_id.lower()}",
+            versioned=True,
+            removal_policy=RemovalPolicy.DESTROY,
+            auto_delete_objects=True,
+            block_public_access=s3.BlockPublicAccess.BLOCK_ALL,
+            public_read_access=False,
+        )
+
+        # Define the CloudFront Function code inline
+        # Note that javascript curly brackets need to be escaped due to python's format
+        # See https://repost.aws/questions/QUYAUeLI2FSoSTR4TygAMBOQ/specifying-different-error-behaviors-for-different-s3-origins-on-cloudfront#AN7rsXLi4iQzOl2EZth3sSYA
+        frontend_function_code = """
+            function handler(event) {{
+                const request = event.request;
+
+                let uri = request.uri;
+                
+                // Full paths that will be appended with a "/index.html". This is to make the urls much more readable.
+                // Thses should match the general file path within SvelteKit (sans any prefix).
+                // Any other files will pass-through as expected. 
+                const shortEndings = [
+                    '/{frontend_prefix}',
+                    '/{frontend_prefix}/home',
+                    '/{frontend_prefix}/login',
+                    '/{frontend_prefix}/users',
+                    '/{frontend_prefix}/labs',
+                    '/{frontend_prefix}/calculator',
+                    '/{frontend_prefix}/example'
+                ]
+                
+                if( shortEndings.some(shortEnding => uri.endsWith(shortEnding)) ){{
+                    request.uri = uri + "/index.html"
+                }}
+
+                return request;
+            }}
+        """.format(frontend_prefix=FRONTEND_PREFIX)
+
+        frontend_function = cloudfront.Function(
+            self,
+            "FrontendFunction",
+            code=cloudfront.FunctionCode.from_inline(frontend_function_code),
+            runtime=cloudfront.FunctionRuntime.JS_2_0,
+        )
+
+        # Add frontend endpoint
+        portal_cloudfront.add_behavior(
+            path_pattern=f"/{FRONTEND_PREFIX}*",
+            # https://docs.aws.amazon.com/cdk/api/v2/python/aws_cdk.aws_cloudfront_origins/README.html
+            origin=origins.S3BucketOrigin.with_origin_access_control(
+                frontend_bucket,
+                origin_access_levels=[
+                    cloudfront.AccessLevel.READ,
+                    cloudfront.AccessLevel.READ_VERSIONED,
+                    cloudfront.AccessLevel.LIST,
+                ],
+                custom_headers={"Hello": "World"},
+            ),
+            function_associations=[
+                cloudfront.FunctionAssociation(
+                    function=frontend_function,
+                    event_type=cloudfront.FunctionEventType.VIEWER_REQUEST,
+                )
+            ],
+            compress=True,
+            response_headers_policy=cloudfront.ResponseHeadersPolicy.CORS_ALLOW_ALL_ORIGINS_WITH_PREFLIGHT,
+            viewer_protocol_policy=cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
+        )
+
+        # Deploy content from a local directory to the S3 bucket
+        # Check to see if /code/portal-cdk/svelte/build exists.
+        # If it does not, then there is no artifacts to push to the s3 bucket.
+        # In that case, don't deploy content
+        if os.path.exists("svelte/build"):
+            s3deploy.BucketDeployment(
+                self,
+                "DeployFrontendContentInvalidateCache",
+                sources=[s3deploy.Source.asset("svelte/build")],
+                destination_bucket=frontend_bucket,
+                destination_key_prefix=f"{FRONTEND_PREFIX}/",
+                # Optional: Invalidate CloudFront cache if using CloudFront distribution
+                distribution=portal_cloudfront,
+                distribution_paths=[f"/{FRONTEND_PREFIX}*"],
+            )
+
+        ## Hub endpoint
         http_api.add_routes(
             path="/portal",
             methods=[apigwv2.HttpMethod.ANY],
