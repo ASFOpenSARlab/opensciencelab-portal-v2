@@ -1,3 +1,5 @@
+import { customError } from "$lib/customErrors";
+
 class Common {
   constructor(id, getApiUri, postApiUri) {
     this.id = id;
@@ -12,7 +14,7 @@ class Common {
     });
 
     if (!response.ok) {
-      throw new Error(response);
+      customError(response);
     }
 
     const data = await response.json();
@@ -31,7 +33,7 @@ class Common {
     });
 
     if (!response.ok) {
-      throw new Error(response);
+      customError(response);
     }
 
     const result = await response.json();

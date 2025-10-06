@@ -3,23 +3,12 @@
   import { resolveRoute } from "$app/paths";
   import Spinner from "$components/utils/Spinner.svelte";
   import { UserClass } from "$lib/store.svelte.js";
-  import { error } from "@sveltejs/kit";
   import ClickToCopy from "$components/utils/ClickToCopy.svelte";
   import { toast } from "svoast"; // https://svoast.vercel.app/
+  import { customErrorTypes } from "$lib/customErrors";
 
   let spinner;
   let user = new UserClass();
-
-  onMount(async () => {
-    try {
-      spinner.start();
-      user.pull();
-    } catch (error) {
-      toastError(error.stack);
-    } finally {
-      spinner.stop();
-    }
-  });
 
   let makeToast = {
     success: (msg) => {
@@ -40,6 +29,26 @@
       toast.attention(msg);
     },
   };
+
+  onMount(async () => {
+    try {
+      spinner.start();
+      await user.pull(); // The `await` is critical for both data and error handling
+    } catch (error) {
+      console.log(error);
+      if (
+        [
+          customErrorTypes.ForbiddenError,
+          customErrorTypes.UnauthorizedError,
+        ].includes(error.name)
+      ) {
+        window.location.href = "/";
+      }
+      makeToast.error(error.stack);
+    } finally {
+      spinner.stop();
+    }
+  });
 
   let onThrowError = () => {
     makeToast.error("Why did you click on me?");
