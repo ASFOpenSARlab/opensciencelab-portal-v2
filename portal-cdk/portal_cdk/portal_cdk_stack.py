@@ -16,6 +16,7 @@ from aws_cdk import (
     aws_cloudfront_origins as origins,
     aws_iam as iam,
     aws_secretsmanager as secretsmanager,
+    aws_logs as logs,
     SecretValue,
 )
 from aws_solutions_constructs.aws_lambda_dynamodb import LambdaToDynamoDB
@@ -171,6 +172,40 @@ class PortalCdkStack(Stack):
             path="/portal",
             methods=[apigwv2.HttpMethod.ANY],
             integration=lambda_integration,
+        )
+
+        ## https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_logs.LogGroup.html
+        user_activity_log_group = logs.LogGroup(
+            self,
+            "UserActivityLogGroup",
+            log_group_name=f"/aws/lambda/{construct_id}-user-activity",
+            retention=logs.RetentionDays.ONE_YEAR,
+            removal_policy=(
+                RemovalPolicy.DESTROY
+                if vars["deploy_prefix"] != "prod"
+                else RemovalPolicy.RETAIN
+            ),
+        )
+        user_activity_log_group.grant_write(lambda_dynamo.lambda_function)
+
+        lambda_dynamo.lambda_function.add_environment(
+            "USER_ACTIVITY_LOGS_GROUP_NAME", user_activity_log_group.log_group_name
+        )
+
+        user_activity_log_stream = logs.LogStream(
+            self,
+            "UserActivityLogStream",
+            log_group=user_activity_log_group,
+            # the properties below are optional
+            removal_policy=(
+                RemovalPolicy.DESTROY
+                if vars["deploy_prefix"] != "prod"
+                else RemovalPolicy.RETAIN
+            ),
+        )
+
+        lambda_dynamo.lambda_function.add_environment(
+            "USER_ACTIVITY_LOGS_STREAM_NAME", user_activity_log_stream.log_stream_name
         )
 
         ## Our Email Identity in SES:
