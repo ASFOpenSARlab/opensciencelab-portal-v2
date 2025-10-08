@@ -11,7 +11,7 @@ logger = Logger(log_uncaught_exceptions=True)
 _logs = None
 
 
-def _get_logs_client() -> None:
+def _get_logs_client() -> boto3.client:
     global _logs
     if not _logs:
         _logs = boto3.client("logs", region_name=os.environ.get("region"))
@@ -31,6 +31,7 @@ def send_user_ip_logs(message: dict | str) -> dict:
     }
 
     logs_client = _get_logs_client()
+
     log_group_name = os.environ.get("USER_IP_LOGS_GROUP_NAME", None)
     log_stream_name = os.environ.get("USER_IP_LOGS_STREAM_NAME", None)
 
