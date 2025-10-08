@@ -15,7 +15,7 @@ def _get_logs_client() -> None:
     return _logs
 
 
-def send_user_activity_logs(message: dict | str) -> dict:
+def send_user_ip_logs(message: dict | str) -> dict:
     """
     message is either a dict or string of event inforoamtion to be sent to custom cloudwatch logs.
     """
@@ -23,8 +23,8 @@ def send_user_activity_logs(message: dict | str) -> dict:
         message = json.dumps(message)
 
     logs_client = _get_logs_client()
-    log_group_name = os.environ.get("USER_ACTIVITY_LOGS_GROUP_NAME", None)
-    log_stream_name = os.environ.get("USER_ACTIVITY_LOGS_STREAM_NAME", None)
+    log_group_name = os.environ.get("USER_IP_LOGS_GROUP_NAME", None)
+    log_stream_name = os.environ.get("USER_IP_LOGS_STREAM_NAME", None)
 
     if not log_group_name:
         raise Exception(
