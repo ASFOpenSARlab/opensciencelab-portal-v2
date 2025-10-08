@@ -15,7 +15,7 @@ from util.exceptions import (
 from util.session import current_session, PortalAuth
 from util.format import render_template
 import util.cognito
-from util.user_activity_logs_stream import send_user_activity_logs
+from util.user_ip_logs_stream import send_user_ip_logs
 
 import requests
 import jwt
@@ -365,7 +365,7 @@ def require_access(access="user", human: bool = False):
 
             ip_address = ip_address_with_port.split(":")[0]
 
-            send_user_activity_logs(
+            send_user_ip_logs(
                 {
                     "ip_address": ip_address,
                     "country_code": country_code,
