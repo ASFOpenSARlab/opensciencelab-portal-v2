@@ -26,6 +26,16 @@ def send_user_activity_logs(message: dict | str) -> dict:
     log_group_name = os.environ.get("USER_ACTIVITY_LOGS_GROUP_NAME", None)
     log_stream_name = os.environ.get("USER_ACTIVITY_LOGS_STREAM_NAME", None)
 
+    if not log_group_name:
+        raise Exception(
+            "User Activity Log Group Name not defined. Did you set the environment variable?"
+        )
+
+    if not log_stream_name:
+        raise Exception(
+            "User Activity Log Stream Name not defined. Did you set the environment variable?"
+        )
+
     # https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/logs/client/put_log_events.html
     response = logs_client.put_log_events(
         logGroupName=log_group_name,
