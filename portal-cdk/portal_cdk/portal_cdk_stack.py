@@ -176,10 +176,15 @@ class PortalCdkStack(Stack):
 
         ## Custom log group for User IP CloudWatch logs
         # https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_logs.LogGroup.html
+        user_ip_filter_indexes = logs.FieldIndexPolicy(
+            fields=["username", "ip_address", "country_code", "access_roles"]
+        )
+
         user_ip_log_group = logs.LogGroup(
             self,
             "UserActivityLogGroup",
             log_group_name=f"/aws/lambda/{construct_id}-user-activity",
+            field_index_policies=[user_ip_filter_indexes],
             retention=logs.RetentionDays.ONE_YEAR,
             removal_policy=(
                 RemovalPolicy.DESTROY
