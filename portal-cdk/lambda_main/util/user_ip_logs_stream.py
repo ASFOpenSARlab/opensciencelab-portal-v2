@@ -54,17 +54,62 @@ def send_user_ip_logs(message: dict | str) -> dict:
     return response
 
 
+def _consolidate_results(results: list) -> dict:
+    """
+    Reformat CloudWatch Query results into a more usuable format.
+    Drop "@ptr" field and convert field/values into dictionaries.
+
+    [[{'field': '@ptr', 'value': 1}, {'field': '@message', 'value': '{"username": "fakeuser"}'}], ]
+
+    =>
+
+    [{'@message': '{"username": "fakeuser"}'}, ]
+
+    """
+
+    all_results = []
+
+    for r in results:
+        all_results.extend(
+            [
+                {event["field"]: event["value"]}
+                for event in r
+                if event["field"] != "@ptr"
+            ]
+        )
+
+    return all_results
+
+
 def get_user_ip_logs(
-    query: str, start_date: datetime.datetime = None, end_date: datetime.datetime = None
+    query: str,
+    start_date: str | datetime.datetime = None,
+    end_date: str | datetime.datetime = None,
 ) -> dict:
+    """
+    start_time: datetime object or string in ISO 8601 format. Start of query time.
+    end_time: datetime object or string in ISO 8601 format. End of query time.
+    """
+
+    print(f"{query=}, {start_date=}, {end_date=}")
+
+    if type(end_date) is str:
+        end_date = datetime.datetime.fromisoformat(end_date.strip('"').strip("'"))
+
+    if type(start_date) is str:
+        start_date = datetime.datetime.fromisoformat(start_date.strip('"').strip("'"))
+
     if not end_date:
+        # End query 5 minutes into the future to guarantee that all results are returned.
         end_date = datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(
             minutes=5
         )
-    end_date_int = int(end_date.timestamp())
 
     if not start_date:
+        # Default start time is 30 days in the past from now
         start_date = end_date - datetime.timedelta(days=30)
+
+    end_date_int = int(end_date.timestamp())
     start_date_int = int(start_date.timestamp())
 
     logs_client = _get_logs_client()
@@ -78,6 +123,7 @@ def get_user_ip_logs(
         )
         return {}
 
+    # https://boto3.amazonaws.com/v1/documentation/api/1.26.82/reference/services/logs/client/start_query.html
     start_query_response = logs_client.start_query(
         logGroupName=log_group_name,
         startTime=start_date_int,
@@ -97,6 +143,15 @@ def get_user_ip_logs(
         "Unknown",
     ]:
         time.sleep(1)
+        # https://boto3.amazonaws.com/v1/documentation/api/1.26.82/reference/services/logs/client/get_query_results.html
         response = logs_client.get_query_results(queryId=query_id)
 
-    return response["results"]
+    results = response["results"]
+
+    if not results:
+        logger.warning(
+            "No results returned. Are you sure the query '{query}' is correct?"
+        )
+        return []
+
+    return _consolidate_results(results)
