@@ -93,5 +93,3 @@ class TestUserIpLogsClass:
         query_value: str = results[0]["@message"]
 
         assert json.dumps(self.message) == query_value
-
-        assert False
