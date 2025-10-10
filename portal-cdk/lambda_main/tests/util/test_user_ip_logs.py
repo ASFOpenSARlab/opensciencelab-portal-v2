@@ -14,27 +14,32 @@ USER_IP_LOGS_STREAM_NAME = "FAKE_USER_IP_LOGS_STREAM_NAME"
 @mock_aws
 class TestUserIpLogsClass:
     def setup_class():
-        pass
+        ## These imports have to be the long forum, to let us modify the values here:
+        # https://stackoverflow.com/a/12496239/11650472
+        import util
+
+        util.user_ip_logs_stream._logs_client = boto3.client("logs", region_name=REGION)
 
     def setup_method(self, method):
+        ## These imports have to be the long forum, to let us modify the values here:
+        # https://stackoverflow.com/a/12496239/11650472
+        import util
+
         self.message = {"username": "fakeuser"}
 
-        self.logs = boto3.client("logs", region_name=REGION)
+        util.user_ip_logs_stream._logs_client.create_log_group(
+            logGroupName=USER_IP_LOGS_GROUP_NAME
+        )
 
-        _ = self.logs.create_log_group(logGroupName=USER_IP_LOGS_GROUP_NAME)
-
-        _ = self.logs.create_log_stream(
+        util.user_ip_logs_stream._logs_client.create_log_stream(
             logGroupName=USER_IP_LOGS_GROUP_NAME, logStreamName=USER_IP_LOGS_STREAM_NAME
         )
+
+        self.logs_client = util.user_ip_logs_stream._logs_client
 
     def test_user_ip_log_send_success(self, monkeypatch):
         monkeypatch.setenv("USER_IP_LOGS_GROUP_NAME", USER_IP_LOGS_GROUP_NAME)
         monkeypatch.setenv("USER_IP_LOGS_STREAM_NAME", USER_IP_LOGS_STREAM_NAME)
-
-        monkeypatch.setattr(
-            "util.user_ip_logs_stream._get_logs_client",
-            lambda *args, **kwargs: self.logs,
-        )
 
         # Send fake log to fake cloudwatch log group
         ret = send_user_ip_logs(self.message)
@@ -42,7 +47,7 @@ class TestUserIpLogsClass:
         assert ret != {}
 
         # Check if log exists in group
-        response = self.logs.get_log_events(
+        response = self.logs_client.get_log_events(
             logGroupName=USER_IP_LOGS_GROUP_NAME,
             logStreamName=USER_IP_LOGS_STREAM_NAME,
             startFromHead=True,
@@ -56,18 +61,13 @@ class TestUserIpLogsClass:
         monkeypatch.delenv("USER_IP_LOGS_GROUP_NAME", raising=False)
         monkeypatch.delenv("USER_IP_LOGS_STREAM_NAME", raising=False)
 
-        monkeypatch.setattr(
-            "util.user_ip_logs_stream._get_logs_client",
-            lambda *args, **kwargs: self.logs,
-        )
-
         # Send fake log to fake cloudwatch log group
         ret = send_user_ip_logs(self.message)
 
         assert ret == {}
 
         # Check if log exists in group
-        response = self.logs.get_log_events(
+        response = self.logs_client.get_log_events(
             logGroupName=USER_IP_LOGS_GROUP_NAME,
             logStreamName=USER_IP_LOGS_STREAM_NAME,
             startFromHead=True,
@@ -79,28 +79,16 @@ class TestUserIpLogsClass:
         monkeypatch.setenv("USER_IP_LOGS_GROUP_NAME", USER_IP_LOGS_GROUP_NAME)
         monkeypatch.setenv("USER_IP_LOGS_STREAM_NAME", USER_IP_LOGS_STREAM_NAME)
 
-        monkeypatch.setattr(
-            "util.user_ip_logs_stream._get_logs_client",
-            lambda *args, **kwargs: self.logs,
-        )
-
         # Send fake log to fake cloudwatch log group
-        for i in range(10):
-            _ = send_user_ip_logs(self.message)
-
-        response = self.logs.get_log_events(
-            logGroupName=USER_IP_LOGS_GROUP_NAME,
-            logStreamName=USER_IP_LOGS_STREAM_NAME,
-            startFromHead=True,
-        )
-
-        print(f"LOGS: {response=}")
+        send_user_ip_logs(self.message)
 
         # Moto has not implemented creating field indexes.
         # Therefore, we can query for username, etc like we would elsewhere in the code.
-        query = "fields @timestamp"
+        query = "fields @message | filter username like 'fakeuser'"
 
         results = get_user_ip_logs(query=query)
+
+        assert self.message in results
 
         print(results)
 
