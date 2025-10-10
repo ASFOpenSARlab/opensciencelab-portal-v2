@@ -8,6 +8,7 @@ from util.format import jinja_template
 from util.responses import wrap_response
 from util.exceptions import CognitoError, DbError
 from util.user import User
+from util.user_ip_logs_stream import get_user_ip_logs
 
 from aws_lambda_powertools import Logger
 from aws_lambda_powertools.event_handler.api_gateway import Router
@@ -137,4 +138,20 @@ def delete_user(username):
         body="Post Delete redirect",
         headers={"Location": f"/portal/users?{'&'.join(get_params)}"},
         code=302,
+    )
+
+
+@users_router.get("/info", include_in_schema=False)
+@require_access("admin", human=False)
+def get_user_ip_info():
+    query = """
+        display @timestamp
+    """
+
+    # Get log results
+    results = get_user_ip_logs(query=query)
+
+    return wrap_response(
+        body=results,
+        code=200,
     )
