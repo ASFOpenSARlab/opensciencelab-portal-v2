@@ -58,7 +58,9 @@ def get_user_ip_logs(
     query: str, start_date: datetime.datetime = None, end_date: datetime.datetime = None
 ) -> dict:
     if not end_date:
-        end_date = datetime.datetime.now(datetime.timezone.utc)
+        end_date = datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(
+            minutes=0
+        )
     end_date_int = int(end_date.timestamp())
 
     if not start_date:
@@ -76,6 +78,8 @@ def get_user_ip_logs(
         )
         return {}
 
+    print(f"{start_date_int=}, {end_date_int=}, {query=}")
+
     start_query_response = logs_client.start_query(
         logGroupName=log_group_name,
         startTime=start_date_int,
@@ -87,11 +91,10 @@ def get_user_ip_logs(
 
     response = None
 
-    time_to_wait = 0
-
-    while response == None or response["status"] == "Running":
+    while response is None or response["status"] == "Running":
         print("Waiting for query to complete ...")
-        time.sleep(time_to_wait)
+        time.sleep(0.10)
         response = logs_client.get_query_results(queryId=query_id)
+        print(response)
 
     return response["results"]

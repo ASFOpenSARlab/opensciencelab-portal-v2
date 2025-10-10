@@ -193,6 +193,7 @@ class PortalCdkStack(Stack):
             ),
         )
         user_ip_log_group.grant_write(lambda_dynamo.lambda_function)
+        user_ip_log_group.grant_read(lambda_dynamo.lambda_function)
 
         lambda_dynamo.lambda_function.add_environment(
             "USER_IP_LOGS_GROUP_NAME", user_ip_log_group.log_group_name
