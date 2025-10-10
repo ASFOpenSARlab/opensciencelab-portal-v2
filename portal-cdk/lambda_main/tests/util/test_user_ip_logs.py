@@ -83,13 +83,15 @@ class TestUserIpLogsClass:
         send_user_ip_logs(self.message)
 
         # Moto has not implemented creating field indexes.
-        # Therefore, we can query for username, etc like we would elsewhere in the code.
-        query = "fields @message | filter username like 'fakeuser'"
+        # Therefore, we cannot filter for "username", etc like we would elsewhere in the code.
+        query = "fields @message"
 
         results = get_user_ip_logs(query=query)
 
-        assert self.message in results
+        assert len(results) == 1
 
-        print(results)
+        query_value: str = results[0]["@message"]
+
+        assert json.dumps(self.message) == query_value
 
         assert False

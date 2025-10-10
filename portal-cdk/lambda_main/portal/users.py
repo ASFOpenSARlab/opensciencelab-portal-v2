@@ -141,15 +141,31 @@ def delete_user(username):
     )
 
 
-@users_router.get("/info", include_in_schema=False)
+@users_router.get("/info", include_in_schema=True)
 @require_access("admin", human=False)
 def get_user_ip_info():
-    query = """
-        display @timestamp, @message
+    username: str | None = users_router.current_event.query_string_parameters.get(
+        "username", None
+    )
+    start_date: str | None = users_router.current_event.query_string_parameters.get(
+        "starttime", None
+    )
+    end_date: str | None = users_router.current_event.query_string_parameters.get(
+        "endtime", None
+    )
+
+    username_filter = ""
+    if username:
+        # If username has wrapped in quotes it will break the query. So strip any quotes.
+        username = username.strip('"').strip("'").lower()
+        username_filter = f" | filter username = '{username}'"
+
+    query = f"""
+        display @timestamp, username, ip_address, country_code, access_roles {username_filter}
     """
 
     # Get log results
-    results = get_user_ip_logs(query=query)
+    results = get_user_ip_logs(query=query, start_date=start_date, end_date=end_date)
 
     return wrap_response(
         body=results,
