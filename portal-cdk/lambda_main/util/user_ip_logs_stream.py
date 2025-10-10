@@ -9,14 +9,14 @@ from aws_lambda_powertools import Logger
 
 logger = Logger(log_uncaught_exceptions=True)
 
-_logs = None
+_logs_client = None
 
 
 def _get_logs_client() -> boto3.client:
-    global _logs
-    if not _logs:
-        _logs = boto3.client("logs", region_name=os.environ.get("region"))
-    return _logs
+    global _logs_client
+    if not _logs_client:
+        _logs_client = boto3.client("logs", region_name=os.environ.get("region"))
+    return _logs_client
 
 
 def send_user_ip_logs(message: dict | str) -> dict:
@@ -59,7 +59,7 @@ def get_user_ip_logs(
 ) -> dict:
     if not end_date:
         end_date = datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(
-            minutes=0
+            minutes=5
         )
     end_date_int = int(end_date.timestamp())
 
@@ -78,8 +78,6 @@ def get_user_ip_logs(
         )
         return {}
 
-    print(f"{start_date_int=}, {end_date_int=}, {query=}")
-
     start_query_response = logs_client.start_query(
         logGroupName=log_group_name,
         startTime=start_date_int,
@@ -89,12 +87,16 @@ def get_user_ip_logs(
 
     query_id = start_query_response["queryId"]
 
-    response = None
+    response = {}
 
-    while response is None or response["status"] == "Running":
-        print("Waiting for query to complete ...")
-        time.sleep(0.10)
+    while response.get("status", None) not in [
+        "Cancelled",
+        "Complete",
+        "Failed",
+        "Timeout",
+        "Unknown",
+    ]:
+        time.sleep(1)
         response = logs_client.get_query_results(queryId=query_id)
-        print(response)
 
     return response["results"]

@@ -145,7 +145,7 @@ def delete_user(username):
 @require_access("admin", human=False)
 def get_user_ip_info():
     query = """
-        display @timestamp
+        display @timestamp, @message
     """
 
     # Get log results
