@@ -87,8 +87,6 @@ def get_user_ip_logs(
     end_time: datetime object or string in ISO 8601 format. End of query time.
     """
 
-    print(f"{query=}, {start_date=}, {end_date=}")
-
     if type(end_date) is str:
         end_date = datetime.datetime.fromisoformat(end_date.strip('"').strip("'"))
 
