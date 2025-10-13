@@ -153,6 +153,9 @@ def get_user_ip_info():
     end_date: str | None = users_router.current_event.query_string_parameters.get(
         "endtime", None
     )
+    limit: str | None = users_router.current_event.query_string_parameters.get(
+        "limit", None
+    )
 
     username_filter = ""
     if username:
@@ -160,8 +163,15 @@ def get_user_ip_info():
         username = username.strip('"').strip("'").lower()
         username_filter = f" | filter username = '{username}'"
 
+    limit_filter = ""
+    if limit:
+        limit_filter = f"| limit {limit}"
+
     query = f"""
-        display @timestamp, username, ip_address, country_code, access_roles {username_filter}
+        display @timestamp, username, ip_address, country_code, access_roles 
+        | sort @timestamp desc 
+        {username_filter} 
+        {limit_filter}
     """
 
     # Get log results
