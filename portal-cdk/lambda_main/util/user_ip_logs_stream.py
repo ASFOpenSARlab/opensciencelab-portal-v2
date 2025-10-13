@@ -70,12 +70,8 @@ def _consolidate_results(results: list) -> dict:
     all_results = []
 
     for r in results:
-        all_results.extend(
-            [
-                {event["field"]: event["value"]}
-                for event in r
-                if event["field"] != "@ptr"
-            ]
+        all_results.append(
+            {event["field"]: event["value"] for event in r if event["field"] != "@ptr"}
         )
 
     return all_results
