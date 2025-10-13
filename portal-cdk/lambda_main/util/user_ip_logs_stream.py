@@ -78,14 +78,35 @@ def _consolidate_results(results: list) -> dict:
 
 
 def get_user_ip_logs(
-    query: str,
+    username: str = None,
     start_date: str | datetime.datetime = None,
     end_date: str | datetime.datetime = None,
+    limit: int = None,
 ) -> dict:
     """
     start_time: datetime object or string in ISO 8601 format. Start of query time.
     end_time: datetime object or string in ISO 8601 format. End of query time.
     """
+
+    username_filter = ""
+    if username:
+        # If username has wrapped in quotes it will break the query. So strip any quotes.
+        username = username.strip('"').strip("'").lower()
+        username_filter = f" | filter username = '{username}'"
+
+    limit_filter = ""
+    if limit:
+        limit = int(limit)
+        if limit < 0 or limit > 10000:
+            raise ValueError("Parameter `limit` must be between 0 and 10000.")
+        limit_filter = f"| limit {limit}"
+
+    query = f"""
+        display @timestamp, username, ip_address, country_code, access_roles 
+        | sort @timestamp desc 
+        {username_filter} 
+        {limit_filter}
+    """.strip()
 
     if type(end_date) is str:
         end_date = datetime.datetime.fromisoformat(end_date.strip('"').strip("'"))

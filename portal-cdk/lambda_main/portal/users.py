@@ -1,3 +1,5 @@
+import traceback
+
 from util.format import (
     portal_template,
 )
@@ -157,25 +159,16 @@ def get_user_ip_info():
         "limit", None
     )
 
-    username_filter = ""
-    if username:
-        # If username has wrapped in quotes it will break the query. So strip any quotes.
-        username = username.strip('"').strip("'").lower()
-        username_filter = f" | filter username = '{username}'"
-
-    limit_filter = ""
-    if limit:
-        limit_filter = f"| limit {limit}"
-
-    query = f"""
-        display @timestamp, username, ip_address, country_code, access_roles 
-        | sort @timestamp desc 
-        {username_filter} 
-        {limit_filter}
-    """
-
-    # Get log results
-    results = get_user_ip_logs(query=query, start_date=start_date, end_date=end_date)
+    try:
+        results = get_user_ip_logs(
+            username=username, start_date=start_date, end_date=end_date, limit=limit
+        )
+    except Exception:
+        logger.error(traceback.print_exc())
+        return wrap_response(
+            body="Something went wrong with getting the User Info",
+            code=422,
+        )
 
     return wrap_response(
         body=results,
