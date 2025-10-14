@@ -82,12 +82,25 @@ class TestUserIpLogsClass:
         # Send fake log to fake cloudwatch log group
         send_user_ip_logs(self.message)
 
+        # Check if log exists in group
+        response = self.logs_client.get_log_events(
+            logGroupName=USER_IP_LOGS_GROUP_NAME,
+            logStreamName=USER_IP_LOGS_STREAM_NAME,
+            startFromHead=True,
+        )
+        print(f"{response=}")
+
         # Moto has not implemented creating field indexes.
         # Therefore, we cannot filter for "username", etc like we would elsewhere in the code.
-        results = get_user_ip_logs()
+        # Instead, override query to find only @message
+        query_override = """
+            fields @message
+        """
+        results = get_user_ip_logs(query_override=query_override)
 
-        # TODO: Results returns [{}]. Ignore for now but this test will need to be fixed.
+        print(results)
+
         assert len(results) == 1
 
-        # query_value: str = results[0]["@message"]
-        # assert json.dumps(self.message) == query_value
+        query_value: str = results[0]["@message"]
+        assert json.dumps(self.message) == query_value

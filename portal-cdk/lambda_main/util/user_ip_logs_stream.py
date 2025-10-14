@@ -82,10 +82,14 @@ def get_user_ip_logs(
     start_date: str | datetime.datetime = None,
     end_date: str | datetime.datetime = None,
     limit: int = None,
+    query_override: str = None,
 ) -> dict:
     """
+    username: string. Username to filter query by.
     start_time: datetime object or string in ISO 8601 format. Start of query time.
     end_time: datetime object or string in ISO 8601 format. End of query time.
+    limit: int between 0-10,000. Number of results rows to return.
+    query_override: string. Query to run. Args username and limit are ignored. Useful mainly when fields annot be indexed.
     """
 
     username_filter = ""
@@ -101,12 +105,15 @@ def get_user_ip_logs(
             raise ValueError("Parameter `limit` must be between 0 and 10000.")
         limit_filter = f"| limit {limit}"
 
-    query = f"""
-        display @timestamp, username, ip_address, country_code, access_roles 
-        | sort @timestamp desc 
-        {username_filter} 
-        {limit_filter}
-    """.strip()
+    if query_override:
+        query = str(query_override).strip()
+    else:
+        query = f"""
+            display @timestamp, username, ip_address, country_code, access_roles
+            | sort @timestamp desc
+            {username_filter}
+            {limit_filter}
+        """.strip()
 
     if type(end_date) is str:
         end_date = datetime.datetime.fromisoformat(end_date.strip('"').strip("'"))
