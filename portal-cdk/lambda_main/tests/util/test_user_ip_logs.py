@@ -26,7 +26,12 @@ class TestUserIpLogsClass:
         # https://stackoverflow.com/a/12496239/11650472
         import util
 
-        self.message = {"username": "fakeuser"}
+        self.message = {
+            "username": "fakeuser",
+            "ip_address": "0.0.0.0",
+            "country_code": "ZZ",
+            "access_roles": "user",
+        }
 
         util.user_ip_logs_stream._logs_client.create_log_group(
             logGroupName=USER_IP_LOGS_GROUP_NAME
@@ -43,7 +48,7 @@ class TestUserIpLogsClass:
         monkeypatch.setenv("USER_IP_LOGS_STREAM_NAME", USER_IP_LOGS_STREAM_NAME)
 
         # Send fake log to fake cloudwatch log group
-        send_user_ip_logs(self.message)
+        send_user_ip_logs(**self.message)
 
         # Check if log exists in group
         response = self.logs_client.get_log_events(
@@ -62,7 +67,7 @@ class TestUserIpLogsClass:
 
         try:
             # Send fake log to fake cloudwatch log group
-            send_user_ip_logs(self.message)
+            send_user_ip_logs(**self.message)
         except EnvironmentNotSet as e:
             assert (
                 e.message
@@ -83,15 +88,14 @@ class TestUserIpLogsClass:
         monkeypatch.setenv("USER_IP_LOGS_STREAM_NAME", USER_IP_LOGS_STREAM_NAME)
 
         # Send fake log to fake cloudwatch log group
-        send_user_ip_logs(self.message)
+        send_user_ip_logs(**self.message)
 
         # Check if log exists in group
-        response = self.logs_client.get_log_events(
+        _ = self.logs_client.get_log_events(
             logGroupName=USER_IP_LOGS_GROUP_NAME,
             logStreamName=USER_IP_LOGS_STREAM_NAME,
             startFromHead=True,
         )
-        print(f"{response=}")
 
         # Moto has not implemented creating field indexes.
         # Therefore, we cannot filter for "username", etc like we would elsewhere in the code.

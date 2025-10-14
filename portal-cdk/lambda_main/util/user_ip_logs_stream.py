@@ -5,6 +5,7 @@ import datetime
 
 import boto3
 
+from util.user import User
 from .exceptions import EnvironmentNotSet
 
 from aws_lambda_powertools import Logger
@@ -21,16 +22,33 @@ def _get_logs_client() -> boto3.client:
     return _logs_client
 
 
-def send_user_ip_logs(message: dict | str) -> dict:
-    """
-    `message` is either a dict or string of event information to be sent to custom cloudwatch logs.
-    """
-    if isinstance(message, dict):
-        message = json.dumps(message)
+def update_user_ip_in_db(
+    username: str,
+    ip_address: str,
+    country_code: str,
+) -> bool:
+    user = User(username)
 
+    user.ip_address = ip_address
+    user.country_code = country_code
+
+
+def send_user_ip_logs(
+    username: str,
+    ip_address: str,
+    country_code: str,
+    access_roles: str,
+) -> dict:
     event = {
         "timestamp": int(time.time() * 1000),
-        "message": message,
+        "message": json.dumps(
+            {
+                "username": username,
+                "ip_address": ip_address,
+                "country_code": country_code,
+                "access_roles": access_roles,
+            }
+        ),
     }
 
     logs_client = _get_logs_client()
