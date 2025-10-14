@@ -368,14 +368,15 @@ def require_access(access="user", human: bool = False):
 
                 ip_address = ip_address_with_port.split(":")[0]
 
-                send_user_ip_logs(
-                    {
-                        "ip_address": ip_address,
-                        "country_code": country_code,
-                        "username": username,
-                        "access_roles": ",".join(current_session.user.access),
-                    }
-                )
+                if ip_address != "0.0.0.0" and country_code != "ZZ":
+                    send_user_ip_logs(
+                        {
+                            "ip_address": ip_address,
+                            "country_code": country_code,
+                            "username": username,
+                            "access_roles": ",".join(current_session.user.access),
+                        }
+                    )
 
             # Check if user is disabled:
             if current_session.user.is_locked:

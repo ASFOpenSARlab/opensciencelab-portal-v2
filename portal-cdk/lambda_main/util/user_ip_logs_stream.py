@@ -5,6 +5,8 @@ import datetime
 
 import boto3
 
+from .exceptions import EnvironmentNotSet
+
 from aws_lambda_powertools import Logger
 
 logger = Logger(log_uncaught_exceptions=True)
@@ -37,12 +39,11 @@ def send_user_ip_logs(message: dict | str) -> dict:
     log_stream_name = os.environ.get("USER_IP_LOGS_STREAM_NAME", None)
 
     if not log_group_name or not log_stream_name:
-        logger.warning(
-            "User Activity Log Group or Stream not defined. Did you set the environment variable?"
-        )
         logger.warning("User IP event not collected in special log group. Event: ")
         logger.warning(json.dumps(event))
-        return {}
+        raise EnvironmentNotSet(
+            "User Activity Log Group or Stream not defined. Did you set the environment variable?"
+        )
 
     # https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/logs/client/put_log_events.html
     response = logs_client.put_log_events(
@@ -59,11 +60,13 @@ def _consolidate_results(results: list) -> dict:
     Reformat CloudWatch Query results into a more usuable format.
     Drop "@ptr" field and convert field/values into dictionaries.
 
-    [[{'field': '@ptr', 'value': 1}, {'field': '@message', 'value': '{"username": "fakeuser"}'}], ]
+    Example from test:
 
-    =>
+        [[{'field': '@ptr', 'value': 1}, {'field': '@message', 'value': '{"username": "fakeuser"}'}], ]
 
-    [{'@message': '{"username": "fakeuser"}'}, ]
+        =>
+
+        [{'@message': '{"username": "fakeuser"}'}, ]
 
     """
 
@@ -89,7 +92,7 @@ def get_user_ip_logs(
     start_time: datetime object or string in ISO 8601 format. Start of query time.
     end_time: datetime object or string in ISO 8601 format. End of query time.
     limit: int between 0-10,000. Number of results rows to return.
-    query_override: string. Query to run. Args username and limit are ignored. Useful mainly when fields annot be indexed.
+    query_override: string. Query to run. Args username and limit are ignored. Useful mainly when fields cannot be indexed.
     """
 
     username_filter = ""
@@ -140,10 +143,9 @@ def get_user_ip_logs(
     log_stream_name = os.environ.get("USER_IP_LOGS_STREAM_NAME", None)
 
     if not log_group_name or not log_stream_name:
-        logger.warning(
+        raise EnvironmentNotSet(
             "User Activity Log Group or Stream not defined. Did you set the environment variable?"
         )
-        return {}
 
     # https://boto3.amazonaws.com/v1/documentation/api/1.26.82/reference/services/logs/client/start_query.html
     start_query_response = logs_client.start_query(
@@ -172,7 +174,7 @@ def get_user_ip_logs(
 
     if not results:
         logger.warning(
-            "No results returned. Are you sure the query '{query}' is correct?"
+            f"No results returned. Are you sure the query '{query}' is correct?"
         )
         return []
 

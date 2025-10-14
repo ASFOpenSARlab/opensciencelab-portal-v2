@@ -187,9 +187,9 @@ class PortalCdkStack(Stack):
             field_index_policies=[user_ip_filter_indexes],
             retention=logs.RetentionDays.ONE_YEAR,
             removal_policy=(
-                RemovalPolicy.DESTROY
-                if vars["deploy_prefix"] != "prod"
-                else RemovalPolicy.RETAIN
+                RemovalPolicy.RETAIN
+                if vars["deploy_prefix"] == "prod"
+                else RemovalPolicy.DESTROY
             ),
         )
         user_ip_log_group.grant_write(lambda_dynamo.lambda_function)
@@ -211,9 +211,9 @@ class PortalCdkStack(Stack):
             log_group=user_ip_log_group,
             # the properties below are optional
             removal_policy=(
-                RemovalPolicy.DESTROY
-                if vars["deploy_prefix"] != "prod"
-                else RemovalPolicy.RETAIN
+                RemovalPolicy.REMAIN
+                if vars["deploy_prefix"] == "prod"
+                else RemovalPolicy.DESTROY
             ),
         )
 
