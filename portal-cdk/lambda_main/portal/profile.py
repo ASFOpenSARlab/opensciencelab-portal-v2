@@ -6,6 +6,7 @@ from util.session import current_session
 from util.user import User
 from util.responses import wrap_response, form_body_to_dict
 from util.labs import LABS
+from util.user_ip_logs_stream import get_user_ip_logs
 
 from pathlib import Path
 import json
@@ -93,6 +94,8 @@ def profile_bob():
 @enforce_profile_access()
 @portal_template(name="profile.j2")
 def profile_user(username: str):
+    user_ip_results = get_user_ip_logs(username=username, limit=5)
+
     user_logged_in = current_session.user
     user_profile = User(username=username, create_if_missing=False)
     page_dict = {
@@ -101,6 +104,7 @@ def profile_user(username: str):
             "user_logged_in": user_logged_in,
             "user_profile": user_profile,
             "labs": LABS,
+            "user_ip_results": user_ip_results,
             "default_value": "Choose...",
             "warning_missing": "Value is missing",
         },
