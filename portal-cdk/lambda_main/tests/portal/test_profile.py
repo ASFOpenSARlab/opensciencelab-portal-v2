@@ -5,6 +5,10 @@ import main
 import portal.profile
 
 
+USER_IP_LOGS_GROUP_NAME = "FAKE_USER_IP_LOGS_GROUP_NAME"
+USER_IP_LOGS_STREAM_NAME = "FAKE_USER_IP_LOGS_STREAM_NAME"
+
+
 class TestProfilePages:
     # Ensure profile page is not reachable if not logged in
     def test_profile_logged_out(self, lambda_context, helpers):
@@ -26,6 +30,9 @@ class TestProfilePages:
 
         monkeypatch.setattr("portal.profile.User", lambda *args, **kwargs: user)
         monkeypatch.setattr("util.auth.User", lambda *args, **kwargs: user)
+
+        monkeypatch.setenv("USER_IP_LOGS_GROUP_NAME", USER_IP_LOGS_GROUP_NAME)
+        monkeypatch.setenv("USER_IP_LOGS_STREAM_NAME", USER_IP_LOGS_STREAM_NAME)
 
         event = helpers.get_event(
             path="/portal/profile/form/test_user", cookies=fake_auth
@@ -91,6 +98,9 @@ class TestProfilePages:
         monkeypatch.setattr("portal.profile.User", lambda *args, **kwargs: user)
         monkeypatch.setattr("util.auth.User", lambda *args, **kwargs: user)
 
+        monkeypatch.setenv("USER_IP_LOGS_GROUP_NAME", USER_IP_LOGS_GROUP_NAME)
+        monkeypatch.setenv("USER_IP_LOGS_STREAM_NAME", USER_IP_LOGS_STREAM_NAME)
+
         qparams = {
             "country_of_residence_error": "missing",
             "is_affiliated_with_nasa_error": "missing",
@@ -148,6 +158,9 @@ class TestProfilePages:
 
         monkeypatch.setattr("portal.profile.User", lambda *args, **kwargs: user)
         monkeypatch.setattr("util.auth.User", lambda *args, **kwargs: user)
+
+        monkeypatch.setenv("USER_IP_LOGS_GROUP_NAME", USER_IP_LOGS_GROUP_NAME)
+        monkeypatch.setenv("USER_IP_LOGS_STREAM_NAME", USER_IP_LOGS_STREAM_NAME)
 
         path = "/portal/profile/form/test_user"
         event = helpers.get_event(path=path, cookies=fake_auth)
@@ -510,6 +523,9 @@ class TestProfileAccess:
         monkeypatch.setattr("portal.profile.User", lambda *args, **kwargs: user)
         monkeypatch.setattr("util.auth.User", lambda *args, **kwargs: user)
 
+        monkeypatch.setenv("USER_IP_LOGS_GROUP_NAME", USER_IP_LOGS_GROUP_NAME)
+        monkeypatch.setenv("USER_IP_LOGS_STREAM_NAME", USER_IP_LOGS_STREAM_NAME)
+
         path = "/portal/profile/form/test_user"
         event = helpers.get_event(path=path, cookies=fake_auth)
         ret = main.lambda_handler(event, lambda_context)
@@ -542,6 +558,9 @@ class TestProfileAccess:
         monkeypatch.setattr("portal.profile.User", lambda *args, **kwargs: user)
         monkeypatch.setattr("util.auth.User", lambda *args, **kwargs: user)
 
+        monkeypatch.setenv("USER_IP_LOGS_GROUP_NAME", USER_IP_LOGS_GROUP_NAME)
+        monkeypatch.setenv("USER_IP_LOGS_STREAM_NAME", USER_IP_LOGS_STREAM_NAME)
+
         path = "/portal/profile/form/test_user"
         event = helpers.get_event(path=path, cookies=fake_auth)
         ret = main.lambda_handler(event, lambda_context)
@@ -559,6 +578,9 @@ class TestProfileAccess:
 
         monkeypatch.setattr("util.auth.User", lambda *args, **kwargs: admin_user)
         monkeypatch.setattr("portal.profile.User", lambda *args, **kwargs: profile_user)
+
+        monkeypatch.setenv("USER_IP_LOGS_GROUP_NAME", USER_IP_LOGS_GROUP_NAME)
+        monkeypatch.setenv("USER_IP_LOGS_STREAM_NAME", USER_IP_LOGS_STREAM_NAME)
 
         path = "/portal/profile/form/other_user"
         event = helpers.get_event(path=path, cookies=fake_auth)
@@ -610,6 +632,9 @@ class TestProfileAccess:
         monkeypatch.setattr("portal.profile.User", lambda *args, **kwargs: user)
         monkeypatch.setattr("util.auth.User", lambda *args, **kwargs: user)
 
+        monkeypatch.setenv("USER_IP_LOGS_GROUP_NAME", USER_IP_LOGS_GROUP_NAME)
+        monkeypatch.setenv("USER_IP_LOGS_STREAM_NAME", USER_IP_LOGS_STREAM_NAME)
+
         event = helpers.get_event(
             path="/portal/profile/form/test_user", cookies=fake_auth
         )
@@ -625,6 +650,9 @@ class TestProfileAccess:
 
         monkeypatch.setattr("portal.profile.User", lambda *args, **kwargs: user)
         monkeypatch.setattr("util.auth.User", lambda *args, **kwargs: user)
+
+        monkeypatch.setenv("USER_IP_LOGS_GROUP_NAME", USER_IP_LOGS_GROUP_NAME)
+        monkeypatch.setenv("USER_IP_LOGS_STREAM_NAME", USER_IP_LOGS_STREAM_NAME)
 
         event = helpers.get_event(
             path="/portal/profile/form/test_user", cookies=fake_auth
