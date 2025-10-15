@@ -204,7 +204,7 @@ def send_user_email(request_data):
 
         except Exception:
             logger.error(
-                f"Could not send admin email. {traceback.print_exc()}. ORIGINAL ERROR: {str(e)}"
+                f"Could not send admin email. {traceback.print_exc()}. ORIGINAL ERROR: {repr(e)}"
             )
 
         result = "Error"
