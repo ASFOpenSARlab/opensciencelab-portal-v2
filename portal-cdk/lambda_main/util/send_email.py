@@ -132,7 +132,8 @@ def _parse_email_message(data: dict) -> dict:
 
 
 def send_user_email(request_data):
-    sesv2: boto3.Client = get_sesv2()
+    sesv2: boto3.client = get_sesv2()
+    reason: str = None
 
     try:
         decrypted_data: dict = decrypt_data(request_data)
@@ -167,10 +168,10 @@ def send_user_email(request_data):
 
         result = "Success"
     except Exception as e:
-        exception_traceback = traceback.print_exc()
+        traceback.print_exc()
 
         try:
-            logger.error(f'Could not send email: "{exception_traceback} ".')
+            logger.error(f'Could not send email: "{traceback.format_exc()}".')
             logger.info("Sending admin error email...")
 
             html_body = jinja_template(
@@ -203,9 +204,10 @@ def send_user_email(request_data):
 
         except Exception:
             logger.error(
-                f"Could not send admin email. {traceback.print_exc()}. ORIGINAL ERROR: {exception_traceback}"
+                f"Could not send admin email. {traceback.print_exc()}. ORIGINAL ERROR: {repr(e)}"
             )
 
         result = "Error"
+        reason = repr(e)
 
-    return result
+    return result, reason
