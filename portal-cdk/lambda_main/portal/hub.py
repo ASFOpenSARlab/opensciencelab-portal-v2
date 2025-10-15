@@ -220,10 +220,15 @@ Format of `POST` payload should be a dict of the form:
 def send_user_email():
     request_data = hub_router.current_event.body
 
-    result: str = send_email.send_user_email(request_data)
+    result, reason = send_email.send_user_email(request_data)
+
+    # If the response fails, say why:
+    response = {"result": result}
+    if reason:
+        response["reason"] = reason
 
     return wrap_response(
-        body=json.dumps({"result": result}),
+        body=json.dumps(response),
         code=200 if result == "Success" else 422,
         content_type=content_types.APPLICATION_JSON,
     )
