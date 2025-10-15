@@ -509,6 +509,13 @@ class TestProfilePages:
 
 
 class TestProfileAccess:
+    def setup_class():
+        ## These imports have to be the long forum, to let us modify the values here:
+        # https://stackoverflow.com/a/12496239/11650472
+        import util
+
+        util.user_ip_logs_stream._logs_client = boto3.client("logs", region_name=REGION)
+
     # Test user accessing other profile
     def test_user_access_other_profile(
         self, monkeypatch, lambda_context, fake_auth, helpers
