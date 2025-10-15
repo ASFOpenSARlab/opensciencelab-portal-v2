@@ -13,18 +13,16 @@ USER_IP_LOGS_STREAM_NAME = "FAKE_USER_IP_LOGS_STREAM_NAME"
 
 @mock_aws
 class TestProfileAccess:
-
     def setup_method(self, method):
         # Logs need to be created since the profiles use @require_access which populates the log group
         self.logs_client = boto3.client("logs", region_name=REGION)
 
-        self.logs_client.create_log_group(
-            logGroupName=USER_IP_LOGS_GROUP_NAME
-        )
+        self.logs_client.create_log_group(logGroupName=USER_IP_LOGS_GROUP_NAME)
 
         self.logs_client.create_log_stream(
             logGroupName=USER_IP_LOGS_GROUP_NAME, logStreamName=USER_IP_LOGS_STREAM_NAME
         )
+
     # Test user accessing other profile
     def test_user_access_other_profile(
         self, monkeypatch, lambda_context, fake_auth, helpers
