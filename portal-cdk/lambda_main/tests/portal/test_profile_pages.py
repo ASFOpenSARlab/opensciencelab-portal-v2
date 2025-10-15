@@ -18,14 +18,11 @@ class TestProfilePages:
     def setup_method(self, method):
         ## These imports have to be the long forum, to let us modify the values here:
         # https://stackoverflow.com/a/12496239/11650472
-        import util
 
         # Logs need to be created since the profiles use @require_access which populates the log group
         self.logs_client = boto3.client("logs", region_name=REGION)
 
-        self.logs_client.create_log_group(
-            logGroupName=USER_IP_LOGS_GROUP_NAME
-        )
+        self.logs_client.create_log_group(logGroupName=USER_IP_LOGS_GROUP_NAME)
 
         self.logs_client.create_log_stream(
             logGroupName=USER_IP_LOGS_GROUP_NAME, logStreamName=USER_IP_LOGS_STREAM_NAME
