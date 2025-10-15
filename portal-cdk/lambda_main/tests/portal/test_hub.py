@@ -13,7 +13,6 @@ EMAIL_DOMAIN = "my.test.domain.com"
 
 @mock_aws
 class TestHubPages:
-
     def setup_method(self, method):
         # Create verified domain
         # https://stackoverflow.com/questions/77356259/moto-mock-ses-list-identitiesidentitytype-emailaddress-returns-both-email-ad
