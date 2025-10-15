@@ -1,15 +1,25 @@
+import os
 from urllib.parse import urlencode
 from base64 import b64encode
+
+import boto3
 
 import main
 import portal.profile
 
-
+REGION = os.getenv("STACK_REGION", "us-west-2")
 USER_IP_LOGS_GROUP_NAME = "FAKE_USER_IP_LOGS_GROUP_NAME"
 USER_IP_LOGS_STREAM_NAME = "FAKE_USER_IP_LOGS_STREAM_NAME"
 
 
 class TestProfilePages:
+    def setup_class():
+        ## These imports have to be the long forum, to let us modify the values here:
+        # https://stackoverflow.com/a/12496239/11650472
+        import util
+
+        util.user_ip_logs_stream._logs_client = boto3.client("logs", region_name=REGION)
+
     # Ensure profile page is not reachable if not logged in
     def test_profile_logged_out(self, lambda_context, helpers):
         event = helpers.get_event(path="/portal/profile/form/test_user")
