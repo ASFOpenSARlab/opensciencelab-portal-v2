@@ -33,7 +33,7 @@ With ANY job run, there's a link in the summary to see the logs. That should be 
 
 #### Users outside of regex
 
-Users outside the regex NOT fail, and be imported just fine. This means if we want to force username constraints, we have to filter the usernames before importing first.
+Users outside the regex DON'T fail, and will be imported just fine. This means if we want to force username constraints, we have to filter the usernames before importing first.
 
 It also means if we want to "grandfather" in existing usernames, but only be more strict going forward, we can do that too.
 
