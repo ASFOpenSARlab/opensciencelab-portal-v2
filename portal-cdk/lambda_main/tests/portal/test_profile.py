@@ -3,6 +3,7 @@ from urllib.parse import urlencode
 from base64 import b64encode
 
 import boto3
+from moto import mock_aws
 
 import main
 import portal.profile
@@ -12,13 +13,23 @@ USER_IP_LOGS_GROUP_NAME = "FAKE_USER_IP_LOGS_GROUP_NAME"
 USER_IP_LOGS_STREAM_NAME = "FAKE_USER_IP_LOGS_STREAM_NAME"
 
 
+@mock_aws
 class TestProfilePages:
-    def setup_class():
+    def setup_method(self, method):
         ## These imports have to be the long forum, to let us modify the values here:
         # https://stackoverflow.com/a/12496239/11650472
         import util
 
+        # Logs need to be created since the profiles use @require_access which populates the log group
         util.user_ip_logs_stream._logs_client = boto3.client("logs", region_name=REGION)
+
+        util.user_ip_logs_stream._logs_client.create_log_group(
+            logGroupName=USER_IP_LOGS_GROUP_NAME
+        )
+
+        util.user_ip_logs_stream._logs_client.create_log_stream(
+            logGroupName=USER_IP_LOGS_GROUP_NAME, logStreamName=USER_IP_LOGS_STREAM_NAME
+        )
 
     # Ensure profile page is not reachable if not logged in
     def test_profile_logged_out(self, lambda_context, helpers):
