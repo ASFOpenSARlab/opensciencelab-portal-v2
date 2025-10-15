@@ -4,3 +4,9 @@
 /.ruff_cache/
 **/.coverage
 .venv
+
+# Ignore Node stuff:
+node_modules/
+package-lock.json
+package.json
+
