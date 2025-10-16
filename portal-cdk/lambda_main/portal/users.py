@@ -1,3 +1,5 @@
+import traceback
+
 from util.format import (
     portal_template,
 )
@@ -8,6 +10,7 @@ from util.format import jinja_template
 from util.responses import wrap_response
 from util.exceptions import CognitoError, DbError
 from util.user import User
+from util.user_ip_logs_stream import get_user_ip_logs
 
 from aws_lambda_powertools import Logger
 from aws_lambda_powertools.event_handler.api_gateway import Router
@@ -137,4 +140,37 @@ def delete_user(username):
         body="Post Delete redirect",
         headers={"Location": f"/portal/users?{'&'.join(get_params)}"},
         code=302,
+    )
+
+
+@users_router.get("/info", include_in_schema=True)
+@require_access("admin", human=False)
+def get_user_ip_info():
+    username: str | None = users_router.current_event.query_string_parameters.get(
+        "username", None
+    )
+    start_date: str | None = users_router.current_event.query_string_parameters.get(
+        "starttime", None
+    )
+    end_date: str | None = users_router.current_event.query_string_parameters.get(
+        "endtime", None
+    )
+    limit: str | None = users_router.current_event.query_string_parameters.get(
+        "limit", None
+    )
+
+    try:
+        results = get_user_ip_logs(
+            username=username, start_date=start_date, end_date=end_date, limit=limit
+        )
+    except Exception:
+        logger.error(traceback.print_exc())
+        return wrap_response(
+            body="Something went wrong with getting the User Info",
+            code=422,
+        )
+
+    return wrap_response(
+        body=results,
+        code=200,
     )
