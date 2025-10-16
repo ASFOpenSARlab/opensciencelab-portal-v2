@@ -78,13 +78,26 @@ def _consolidate_results(results: list) -> dict:
     Reformat CloudWatch Query results into a more usuable format.
     Drop "@ptr" field and convert field/values into dictionaries.
 
-    Example from test:
+    Example:
 
-        [[{'field': '@ptr', 'value': 1}, {'field': '@message', 'value': '{"username": "fakeuser"}'}], ]
+        [[
+            {"field": "@timestamp","value": "2025-10-16 19:15:55.797"},
+            {"field": "username","value": "my_username"},
+            {"field": "ip_address","value": "0.0.0.0"},
+            {"field": "country_code","value": "ZZ"},
+            {"field": "access_roles","value": "user,admin"},
+            {"field": "@ptr","value": "Cq8BC...hAAGAE="}
+        ],]
 
-        =>
+            =>
 
-        [{'@message': '{"username": "fakeuser"}'}, ]
+        [{
+            "@timestamp": "2025-10-16 19:15:55.797",
+            "username": "my_username",
+            "ip_address": "0.0.0.0",
+            "country_code": "ZZ",
+            "access_roles": "user,admin"
+        },]
 
     """
 
