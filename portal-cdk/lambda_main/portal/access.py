@@ -173,8 +173,8 @@ def view_lab(lab):
 @require_access("admin", human=False)
 def get_user_labs(username):
     # Find user in db
-
     user = User(username=username, create_if_missing=False)
+
     lab_access: dict = filter_lab_access(user)
     lab_access["lab_info"] = {
         labname: asdict(lab_access["lab_info"][labname])
