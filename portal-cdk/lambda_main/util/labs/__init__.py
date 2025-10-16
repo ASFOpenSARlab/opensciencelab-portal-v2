@@ -207,7 +207,9 @@ else:
             deployment_url="http://smce-test-1433554573.us-west-2.elb.amazonaws.com",
             ip_country_status={
                 "limited": [],
-                "prohibited": ["US",],
+                "prohibited": [
+                    "US",
+                ],
             },
             enabled=True,
             accessibility="protected",

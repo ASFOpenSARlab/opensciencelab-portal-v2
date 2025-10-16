@@ -156,8 +156,7 @@ def filter_lab_access(user: User) -> dict:
         "lab_info": {
             labname: LABS[labname]
             for labname in LABS
-            if (labname in user.labs
-            or LABS[labname].accessibility == "protected")
+            if (labname in user.labs or LABS[labname].accessibility == "protected")
             and user.country_code not in LABS[labname].ip_country_status["prohibited"]
             or user.is_admin()
         },
