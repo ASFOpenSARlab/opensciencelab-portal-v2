@@ -334,6 +334,21 @@
                     </tr>
                 {% endfor %}
             </table>
+            <h3>IP Info</h3>
+            <table style="width:100%" border=1>
+                <tr>
+                    <th>Timestamp</th>
+                    <th>Country Code</th>
+                    <th>IP Address</th>
+                </tr>
+                {% for res in user_ip_results -%}
+                    <tr>
+                        <td>{{ res['@timestamp'] }}</td>
+                        <td>{{ res['country_code'] }}</td>
+                        <td>{{ res['ip_address'] }}</td>
+                    </tr>
+                {% endfor %}
+            </table>
         {% endif %}
     </body>
 </html>

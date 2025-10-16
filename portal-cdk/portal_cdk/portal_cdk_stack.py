@@ -16,6 +16,7 @@ from aws_cdk import (
     aws_cloudfront_origins as origins,
     aws_iam as iam,
     aws_secretsmanager as secretsmanager,
+    aws_logs as logs,
     SecretValue,
 )
 from aws_solutions_constructs.aws_lambda_dynamodb import LambdaToDynamoDB
@@ -171,6 +172,53 @@ class PortalCdkStack(Stack):
             path="/portal",
             methods=[apigwv2.HttpMethod.ANY],
             integration=lambda_integration,
+        )
+
+        ## Custom log group for User IP CloudWatch logs
+        # https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_logs.LogGroup.html
+        user_ip_filter_indexes = logs.FieldIndexPolicy(
+            fields=["username", "ip_address", "country_code", "access_roles"]
+        )
+
+        user_ip_log_group = logs.LogGroup(
+            self,
+            "UserActivityLogGroup",
+            log_group_name=f"/aws/lambda/{construct_id}-user-activity",
+            field_index_policies=[user_ip_filter_indexes],
+            retention=logs.RetentionDays.ONE_YEAR,
+            removal_policy=(
+                RemovalPolicy.RETAIN
+                if vars["deploy_prefix"] == "prod"
+                else RemovalPolicy.DESTROY
+            ),
+        )
+        user_ip_log_group.grant_write(lambda_dynamo.lambda_function)
+        user_ip_log_group.grant_read(lambda_dynamo.lambda_function)
+        user_ip_log_group.grant(
+            lambda_dynamo.lambda_function,
+            "logs:StartQuery",
+            "logs:StopQuery",
+            "logs:GetQueryResults",
+        )
+
+        lambda_dynamo.lambda_function.add_environment(
+            "USER_IP_LOGS_GROUP_NAME", user_ip_log_group.log_group_name
+        )
+
+        user_ip_log_stream = logs.LogStream(
+            self,
+            "UserActivityLogStream",
+            log_group=user_ip_log_group,
+            # the properties below are optional
+            removal_policy=(
+                RemovalPolicy.REMAIN
+                if vars["deploy_prefix"] == "prod"
+                else RemovalPolicy.DESTROY
+            ),
+        )
+
+        lambda_dynamo.lambda_function.add_environment(
+            "USER_IP_LOGS_STREAM_NAME", user_ip_log_stream.log_stream_name
         )
 
         ## Our Email Identity in SES:

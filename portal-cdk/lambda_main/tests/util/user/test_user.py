@@ -6,6 +6,7 @@ import boto3
 ## This is here just to fix a weird import timing issue with importing utils directly
 from util.user import dynamo_db as _  # noqa: F401 # pylint: disable=unused-import,import-error
 from util.exceptions import UserNotFound
+from util.user_ip_logs_stream import update_user_ip_in_db
 
 import pytest
 
@@ -265,3 +266,24 @@ class TestUserClass:
         assert user.is_authorized_lab("testlab"), (
             "Admin should be authorized for testlab"
         )
+
+    def test_user_update_ip_address(self):
+        from util.user.user import User
+
+        message = {
+            "username": "test_user",
+            "ip_address": "0.0.0.0",
+            "country_code": "ZZ",
+        }
+
+        user1 = User(username=message["username"])
+
+        assert user1.ip_address is None
+        assert user1.country_code is None
+
+        update_user_ip_in_db(**message)
+
+        user2 = User(username=message["username"])
+
+        assert user2.ip_address == "0.0.0.0"
+        assert user2.country_code == "ZZ"
