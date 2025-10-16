@@ -281,7 +281,9 @@ class TestAccessPages:
         assert "noaccess" not in lab_access["lab_access"]
         assert "noaccess" in lab_access["lab_info"]
 
-    def test_lab_access_geo_restricted_user(self, monkeypatch, lambda_context, helpers, fake_auth):
+    def test_lab_access_geo_restricted_user(
+        self, monkeypatch, lambda_context, helpers, fake_auth
+    ):
         user = helpers.FakeUser(access=["user", "admin"], username="test_admin")
         monkeypatch.setattr("util.auth.User", lambda *args, **kwargs: user)
 
@@ -313,7 +315,9 @@ class TestAccessPages:
         assert "noaccess" not in lab_access["lab_access"]
         assert "noaccess" not in lab_access["lab_info"]
 
-    def test_lab_access_geo_restricted_admin(self, monkeypatch, lambda_context, helpers, fake_auth):
+    def test_lab_access_geo_restricted_admin(
+        self, monkeypatch, lambda_context, helpers, fake_auth
+    ):
         user = helpers.FakeUser(access=["user", "admin"], username="test_admin")
         monkeypatch.setattr("util.auth.User", lambda *args, **kwargs: user)
 
