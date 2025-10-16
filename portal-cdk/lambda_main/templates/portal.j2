@@ -15,18 +15,14 @@
     </i>
 </p>
 {% for labname, _ in labs["lab_access"].items() %}
-    {{ macros.lab_card(
-        labs["lab_info"][labname],
+    {{ macros.lab_card(labs["lab_info"][labname],
         accessable=True,
-        admin=admin
-        ) }}
+        admin=admin) }}
 {% endfor %}
 {% for labname, lab_access in labs["lab_info"].items() %}
     {% if labname not in labs["lab_access"] %}
-    {{ macros.lab_card(
-        labs["lab_info"][labname],
-        accessable=True,
-        admin=admin
-        ) }}
-        {% endif %}
+        {{ macros.lab_card(labs["lab_info"][labname],
+                accessable=True,
+                admin=admin) }}
+    {% endif %}
 {% endfor %}

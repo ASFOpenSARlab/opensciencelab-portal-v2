@@ -27,4 +27,6 @@ validator_map = {
     "email": str,
     "_rec_counter": int,
     "is_locked": bool,
+    "ip_address": str,
+    "country_code": str,
 }

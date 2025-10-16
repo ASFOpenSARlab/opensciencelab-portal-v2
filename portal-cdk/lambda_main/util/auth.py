@@ -15,6 +15,7 @@ from util.exceptions import (
 from util.session import current_session, PortalAuth
 from util.format import render_template
 import util.cognito
+from util.user_ip_logs_stream import send_user_ip_logs, update_user_ip_in_db
 
 import requests
 import jwt
@@ -354,6 +355,36 @@ def require_access(access="user", human: bool = False):
                     headers={"Location": f"/?return={return_path}"},
                     cookies=cookies,
                 )
+
+            # Makes sure that capture IPs for human endpoints only.
+            # Access role is included in log so that we can filter admin traffic
+            if human:
+                ip_address_with_port = current_session.app.current_event.get(
+                    "headers", {}
+                ).get("cloudfront-viewer-address", "0.0.0.0")
+                country_code = current_session.app.current_event.get("headers", {}).get(
+                    "cloudfront-viewer-country", "ZZ"
+                )
+
+                ip_address = ip_address_with_port.split(":")[0]
+
+                if ip_address != "0.0.0.0" and country_code != "ZZ":
+                    send_user_ip_logs(
+                        **{
+                            "ip_address": ip_address,
+                            "country_code": country_code,
+                            "username": username,
+                            "access_roles": ",".join(current_session.user.access),
+                        }
+                    )
+                    update_user_ip_in_db(
+                        **{
+                            "ip_address": ip_address,
+                            "country_code": country_code,
+                            "username": username,
+                        }
+                    )
+
             # Check if user is disabled:
             if current_session.user.is_locked:
                 logger.warning("User %s is locked", username)
