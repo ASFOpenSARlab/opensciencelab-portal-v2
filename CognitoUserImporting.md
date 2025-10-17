@@ -56,7 +56,7 @@ db = sqlite3.connect('file:/home/ec2-user/code/services/srv/portal/jupyterhub/ju
 cur = db.cursor()
 ```
 
-You'll copy-paste this into the python shell in the next step.
+This is the SQL you'll need in the very next step:
 
 ```SQL
 SELECT 
