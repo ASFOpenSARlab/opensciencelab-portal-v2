@@ -95,7 +95,7 @@ Run the above SQL query in the python shell, to load the data into python:
 cur.execute("""
 <SQL QUERY FROM ABOVE>
 """)
-data = [row[0] for row in cur.fetchall()]
+data = [row for row in cur.fetchall()]
 ```
 
 Finally save it to a CSV:
