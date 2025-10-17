@@ -93,7 +93,9 @@ Run the above SQL query in the python shell, to load the data into python:
 ```python
 # Load the Data (SQL is a multi-line string)
 cur.execute("""
+
 <SQL QUERY FROM ABOVE>
+
 """)
 data = [row for row in cur.fetchall()]
 ```
