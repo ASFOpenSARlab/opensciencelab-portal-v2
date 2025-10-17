@@ -44,3 +44,101 @@ This one behaves like you expect. If they're in the same file, the first imports
 #### Invalid email address format
 
 More than likely, you didn't edit the `<USERS_EMAIL_HERE>` in the example CSV above.
+
+## Exporting from Portal v1
+
+On the portal v1's EC2, run (in a python shell):
+
+```python
+# Create a Curser to run SQL Queries on the DB
+import sqlite3
+db = sqlite3.connect('file:/home/ec2-user/code/services/srv/portal/jupyterhub/jupyterhub.sqlite?mode=ro', uri=True)
+cur = db.cursor()
+```
+
+This is the SQL you'll need in the very next step:
+
+```SQL
+SELECT 
+   t1.name, t1.created, t1.last_activity, t2.email 
+FROM 
+   users AS t1 
+INNER JOIN 
+   users_info AS t2 ON t1.name == t2.username 
+WHERE 
+   -- User last logged in within the last 12 months
+   t1.last_activity > date(current_date, '-1 year') AND
+
+   -- Filter users out who created and quickly abandoned accounts
+   (
+       -- User access there account more than 1 day after creation
+       t1.last_activity > date(t1.created, '+1 day') OR
+       -- OR the user created their account in the last month
+       t1.created > date(current_date, '-1 month')
+   ) AND
+
+   -- require has_2fa & authorize for accounts NOT created in the last month
+   (
+      t1.created > date(current_date, '-1 month') OR
+      (
+          has_2fa = 1 AND
+          is_authorized = 1
+      )
+   )
+ORDER by t1.last_activity ASC;
+```
+
+Run the above SQL query in the python shell, to load the data into python:
+
+```python
+# Load the Data (SQL is a multi-line string)
+cur.execute("""
+
+<SQL QUERY FROM ABOVE>
+
+""")
+data = [row for row in cur.fetchall()]
+```
+
+Finally save it to a CSV:
+
+```python
+import csv
+# Get the csv "header" at the beginning of the data list, for the CSV:
+data.insert(0, ("users.name", "users.created", "users.last_activity", "users_info.email"))
+# Aaand finally save it:
+with open("user_db_export.csv", "w", newline="") as f:
+    writer = csv.writer(f)
+    writer.writerows(data)
+```
+
+In IAM, create an access key under your user. (`IAM` > `Users` > You  > `Create access key` > `Command Line interface (CLI)` > `Create`).
+
+Then, on your local machine, run:
+
+```bash
+# QUOTES around the variables:
+export AWS_ACCESS_KEY_ID="<YOUR_ACCESS_KEY_ID>"
+export AWS_SECRET_ACCESS_KEY="<YOUR_SECRET_ACCESS_KEY>"
+aws s3 cp ./user_db_export.csv "s3://portal-v1-user-data-export/db-export-($(date +'%Y-%m-%d %H:%M:%S')).csv"
+unset AWS_ACCESS_KEY_ID
+unset AWS_SECRET_ACCESS_KEY
+```
+
+Then delete the key from your IAM user too. You can now download the CSV from the S3 bucket.
+
+### Get Table Information
+
+Some helpful queries, if we need to expand the DB query above more later on.
+
+```python
+# Query for tables
+>>> cur.execute("SELECT name FROM sqlite_master WHERE type='table';")
+>>> [row[0] for row in cur.fetchall()]
+```
+
+```python
+# See the fields inside of a table (i.e here, profile)
+>>> cur.execute("PRAGMA table_info(profile);")
+>>> [row for row in cur.fetchall()]
+```
