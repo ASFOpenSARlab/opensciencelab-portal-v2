@@ -168,9 +168,9 @@ class TestAccessPages:
         lab_access = response_body.get("labs")
 
         assert ret["statusCode"] == 200
-        assert lab_access["lab_info"].get("testlab")
-        assert lab_access["lab_info"].get("differentlab")
-        assert lab_access["lab_info"].get("noaccess")
+        assert lab_access["viewable_labs_config"].get("testlab")
+        assert lab_access["viewable_labs_config"].get("differentlab")
+        assert lab_access["viewable_labs_config"].get("noaccess")
         assert ret["headers"].get("Content-Type") == "application/json"
 
     def test_get_labs_of_a_user_not_admin_correct(
@@ -205,9 +205,9 @@ class TestAccessPages:
         lab_access = response_body.get("labs")
 
         assert ret["statusCode"] == 200
-        assert lab_access["lab_info"].get("testlab")
-        assert lab_access["lab_info"].get("differentlab")
-        assert not lab_access["lab_info"].get("noaccess")
+        assert lab_access["viewable_labs_config"].get("testlab")
+        assert lab_access["viewable_labs_config"].get("differentlab")
+        assert not lab_access["viewable_labs_config"].get("noaccess")
         assert ret["headers"].get("Content-Type") == "application/json"
 
     def test_lab_access_of_user(self, monkeypatch, lambda_context, helpers, fake_auth):
@@ -242,13 +242,13 @@ class TestAccessPages:
         lab_access = response_body.get("labs")
 
         assert "testlab" in lab_access["lab_access"]
-        assert "testlab" in lab_access["lab_info"]
+        assert "testlab" in lab_access["viewable_labs_config"]
 
         assert "protectedlab" not in lab_access["lab_access"]
-        assert "protectedlab" in lab_access["lab_info"]
+        assert "protectedlab" in lab_access["viewable_labs_config"]
 
         assert "noaccess" not in lab_access["lab_access"]
-        assert "noaccess" not in lab_access["lab_info"]
+        assert "noaccess" not in lab_access["viewable_labs_config"]
 
     def test_lab_access_of_admin(self, monkeypatch, lambda_context, helpers, fake_auth):
         user = helpers.FakeUser(access=["user", "admin"], username="test_admin")
@@ -273,13 +273,13 @@ class TestAccessPages:
         lab_access = response_body.get("labs")
 
         assert "testlab" in lab_access["lab_access"]
-        assert "testlab" in lab_access["lab_info"]
+        assert "testlab" in lab_access["viewable_labs_config"]
 
         assert "protectedlab" not in lab_access["lab_access"]
-        assert "protectedlab" in lab_access["lab_info"]
+        assert "protectedlab" in lab_access["viewable_labs_config"]
 
         assert "noaccess" not in lab_access["lab_access"]
-        assert "noaccess" in lab_access["lab_info"]
+        assert "noaccess" in lab_access["viewable_labs_config"]
 
     def test_lab_access_geo_restricted_user(
         self, monkeypatch, lambda_context, helpers, fake_auth
@@ -307,13 +307,13 @@ class TestAccessPages:
         lab_access = response_body.get("labs")
 
         assert "testlab" in lab_access["lab_access"]
-        assert "testlab" not in lab_access["lab_info"]
+        assert "testlab" not in lab_access["viewable_labs_config"]
 
         assert "protectedlab" not in lab_access["lab_access"]
-        assert "protectedlab" not in lab_access["lab_info"]
+        assert "protectedlab" not in lab_access["viewable_labs_config"]
 
         assert "noaccess" not in lab_access["lab_access"]
-        assert "noaccess" not in lab_access["lab_info"]
+        assert "noaccess" not in lab_access["viewable_labs_config"]
 
     def test_lab_access_geo_restricted_admin(
         self, monkeypatch, lambda_context, helpers, fake_auth
@@ -340,13 +340,13 @@ class TestAccessPages:
         lab_access = response_body.get("labs")
 
         assert "testlab" in lab_access["lab_access"]
-        assert "testlab" in lab_access["lab_info"]
+        assert "testlab" in lab_access["viewable_labs_config"]
 
         assert "protectedlab" not in lab_access["lab_access"]
-        assert "protectedlab" in lab_access["lab_info"]
+        assert "protectedlab" in lab_access["viewable_labs_config"]
 
         assert "noaccess" not in lab_access["lab_access"]
-        assert "noaccess" in lab_access["lab_info"]
+        assert "noaccess" in lab_access["viewable_labs_config"]
 
     def test_get_labs_of_a_user_user_not_found(
         self, monkeypatch, lambda_context, helpers, fake_auth

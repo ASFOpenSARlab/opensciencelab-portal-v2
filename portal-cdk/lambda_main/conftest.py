@@ -220,6 +220,16 @@ class Helpers:
             allowed_profiles=["m6a.large"],
             accessibility="protected",
         ),
+        "openlab": BaseLab(
+            friendly_name="Open Lab",
+            short_lab_name="differentlab",
+            allowed_profiles=["m6a.large"],
+            accessibility="protected",
+            ip_country_status={
+                "limited": [],
+                "prohibited": [],
+            },
+        ),
     }
 
     # Raises a given error, used for monkeypatching
