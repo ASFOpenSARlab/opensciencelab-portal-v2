@@ -241,13 +241,13 @@ class TestAccessPages:
         response_body = json.loads(ret["body"])
         lab_access = response_body.get("labs")
 
-        assert "testlab" in lab_access["lab_access"]
+        assert lab_access["lab_access"]["testlab"]["can_user_access_lab"]
         assert "testlab" in lab_access["viewable_labs_config"]
 
-        assert "protectedlab" not in lab_access["lab_access"]
+        assert not lab_access["lab_access"]["protectedlab"]["can_user_access_lab"]
         assert "protectedlab" in lab_access["viewable_labs_config"]
 
-        assert "noaccess" not in lab_access["lab_access"]
+        assert not lab_access["lab_access"].get("noaccess")
         assert "noaccess" not in lab_access["viewable_labs_config"]
 
     def test_lab_access_of_admin(self, monkeypatch, lambda_context, helpers, fake_auth):
@@ -272,13 +272,13 @@ class TestAccessPages:
         response_body = json.loads(ret["body"])
         lab_access = response_body.get("labs")
 
-        assert "testlab" in lab_access["lab_access"]
+        assert lab_access["lab_access"]["testlab"]["can_user_access_lab"]
         assert "testlab" in lab_access["viewable_labs_config"]
 
-        assert "protectedlab" not in lab_access["lab_access"]
+        assert lab_access["lab_access"]["protectedlab"]["can_user_access_lab"]
         assert "protectedlab" in lab_access["viewable_labs_config"]
 
-        assert "noaccess" not in lab_access["lab_access"]
+        assert lab_access["lab_access"]["noaccess"]["can_user_access_lab"]
         assert "noaccess" in lab_access["viewable_labs_config"]
 
     def test_lab_access_geo_restricted_user(
@@ -291,6 +291,18 @@ class TestAccessPages:
             access=["user"],
             username="test_georestricted",
             country_code="AF",
+            labs={
+                "testlab": {
+                    "time_quota": None,
+                    "lab_profiles": None,
+                    "lab_country_status": None,
+                },
+                "openlab": {
+                    "time_quota": None,
+                    "lab_profiles": None,
+                    "lab_country_status": None,
+                },
+            },
         )
         monkeypatch.setattr("portal.access.User", lambda *args, **kwargs: targetuser)
 
@@ -306,13 +318,16 @@ class TestAccessPages:
         response_body = json.loads(ret["body"])
         lab_access = response_body.get("labs")
 
-        assert "testlab" in lab_access["lab_access"]
-        assert "testlab" not in lab_access["viewable_labs_config"]
+        assert lab_access["lab_access"]["openlab"]["can_user_access_lab"]
+        assert "openlab" in lab_access["viewable_labs_config"]
 
-        assert "protectedlab" not in lab_access["lab_access"]
-        assert "protectedlab" not in lab_access["viewable_labs_config"]
+        assert not lab_access["lab_access"]["testlab"]["can_user_access_lab"]
+        assert "testlab" in lab_access["viewable_labs_config"]
 
-        assert "noaccess" not in lab_access["lab_access"]
+        assert not lab_access["lab_access"]["protectedlab"]["can_user_access_lab"]
+        assert "protectedlab" in lab_access["viewable_labs_config"]
+
+        assert not lab_access["lab_access"].get("noaccess")
         assert "noaccess" not in lab_access["viewable_labs_config"]
 
     def test_lab_access_geo_restricted_admin(
@@ -339,13 +354,13 @@ class TestAccessPages:
         response_body = json.loads(ret["body"])
         lab_access = response_body.get("labs")
 
-        assert "testlab" in lab_access["lab_access"]
+        assert lab_access["lab_access"]["testlab"]["can_user_access_lab"]
         assert "testlab" in lab_access["viewable_labs_config"]
 
-        assert "protectedlab" not in lab_access["lab_access"]
+        assert lab_access["lab_access"]["protectedlab"]["can_user_access_lab"]
         assert "protectedlab" in lab_access["viewable_labs_config"]
 
-        assert "noaccess" not in lab_access["lab_access"]
+        assert lab_access["lab_access"]["noaccess"]["can_user_access_lab"]
         assert "noaccess" in lab_access["viewable_labs_config"]
 
     def test_get_labs_of_a_user_user_not_found(

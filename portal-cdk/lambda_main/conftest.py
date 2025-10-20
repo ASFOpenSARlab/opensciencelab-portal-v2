@@ -222,7 +222,7 @@ class Helpers:
         ),
         "openlab": BaseLab(
             friendly_name="Open Lab",
-            short_lab_name="differentlab",
+            short_lab_name="openlab",
             allowed_profiles=["m6a.large"],
             accessibility="protected",
             ip_country_status={
