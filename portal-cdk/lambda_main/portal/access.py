@@ -175,7 +175,7 @@ def get_user_labs(username):
     # Find user in db
     user = User(username=username, create_if_missing=False)
 
-    lab_access: dict = filter_lab_access(user) # Maybe rethink filtering here
+    lab_access: dict = filter_lab_access(user)  # Maybe rethink filtering here
     lab_access["viewable_labs_config"] = {
         labname: asdict(lab_access["viewable_labs_config"][labname])
         for labname in lab_access["viewable_labs_config"]

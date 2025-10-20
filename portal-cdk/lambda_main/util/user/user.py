@@ -158,6 +158,7 @@ def _can_user_see_lab(user: User, lab) -> bool:
     # user has access, or lab is protected or public
     return True
 
+
 def _can_user_access_lab(user: User, lab) -> bool:
     if user.is_admin():
         return True
@@ -170,9 +171,10 @@ def _can_user_access_lab(user: User, lab) -> bool:
     # user has access
     return True
 
+
 # returns labs filtered by user access
 def filter_lab_access(user: User) -> dict:
-    # Dynamically create can_user_x flags 
+    # Dynamically create can_user_x flags
     user_lab_permissions = {}
     for labname in LABS:
         user_lab_permissions[labname] = {
@@ -185,11 +187,13 @@ def filter_lab_access(user: User) -> dict:
 
     return {
         "viewable_labs_config": {
-            labname: LABS[labname] for labname, _ in user_lab_permissions.items()
+            labname: LABS[labname]
+            for labname, _ in user_lab_permissions.items()
             if user_lab_permissions[labname]["can_user_see_lab"]
         },
         "lab_access": {
-            labname: access for labname, access in user_lab_permissions.items()
+            labname: access
+            for labname, access in user_lab_permissions.items()
             if user_lab_permissions[labname]["can_user_see_lab"]
         },
     }
