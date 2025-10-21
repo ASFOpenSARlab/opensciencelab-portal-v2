@@ -200,4 +200,26 @@ else:
             accessibility="private",
             notifications="https://calendar.google.com/calendar/ical/c_3704674759bada5ab28ed5f66686b932bbabe955ecc440bd2aeed0982d5cd34a%40group.calendar.google.com/public/basic.ics",
         ),
+        "test_protected": BaseLab(
+            short_lab_name="test_protected",
+            friendly_name="Test Protected Lab",
+            description="",
+            deployment_url="http://smce-test-1433554573.us-west-2.elb.amazonaws.com",
+            enabled=True,
+            accessibility="protected",
+        ),
+        "test_prohibited": BaseLab(
+            short_lab_name="test_prohibited",
+            friendly_name="Test Prohibited Lab",
+            description="",
+            deployment_url="http://smce-test-1433554573.us-west-2.elb.amazonaws.com",
+            ip_country_status={
+                "limited": [],
+                "prohibited": [
+                    "US",
+                ],
+            },
+            enabled=True,
+            accessibility="protected",
+        ),
     }

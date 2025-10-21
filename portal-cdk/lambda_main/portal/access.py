@@ -173,12 +173,14 @@ def view_lab(lab):
 @require_access("admin", human=False)
 def get_user_labs(username):
     # Find user in db
-
     user = User(username=username, create_if_missing=False)
+
+    # Should this return the users filtered labs (including viewable and accessable)
+    # Or should it just return the labs the user has access to
     lab_access: dict = filter_lab_access(user)
-    lab_access["lab_info"] = {
-        labname: asdict(lab_access["lab_info"][labname])
-        for labname in lab_access["lab_info"]
+    lab_access["viewable_labs_config"] = {
+        labname: asdict(lab_access["viewable_labs_config"][labname])
+        for labname in lab_access["viewable_labs_config"]
     }
 
     # Return user labs

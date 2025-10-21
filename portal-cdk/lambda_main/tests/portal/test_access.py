@@ -168,9 +168,9 @@ class TestAccessPages:
         lab_access = response_body.get("labs")
 
         assert ret["statusCode"] == 200
-        assert lab_access["lab_info"].get("testlab")
-        assert lab_access["lab_info"].get("differentlab")
-        assert lab_access["lab_info"].get("noaccess")
+        assert lab_access["viewable_labs_config"].get("testlab")
+        assert lab_access["viewable_labs_config"].get("differentlab")
+        assert lab_access["viewable_labs_config"].get("noaccess")
         assert ret["headers"].get("Content-Type") == "application/json"
 
     def test_get_labs_of_a_user_not_admin_correct(
@@ -205,9 +205,9 @@ class TestAccessPages:
         lab_access = response_body.get("labs")
 
         assert ret["statusCode"] == 200
-        assert lab_access["lab_info"].get("testlab")
-        assert lab_access["lab_info"].get("differentlab")
-        assert not lab_access["lab_info"].get("noaccess")
+        assert lab_access["viewable_labs_config"].get("testlab")
+        assert lab_access["viewable_labs_config"].get("differentlab")
+        assert not lab_access["viewable_labs_config"].get("noaccess")
         assert ret["headers"].get("Content-Type") == "application/json"
 
     def test_lab_access_of_user(self, monkeypatch, lambda_context, helpers, fake_auth):
@@ -241,14 +241,127 @@ class TestAccessPages:
         response_body = json.loads(ret["body"])
         lab_access = response_body.get("labs")
 
-        assert "testlab" in lab_access["lab_access"]
-        assert "testlab" in lab_access["lab_info"]
+        assert lab_access["lab_access"]["testlab"]["can_user_access_lab"]
+        assert "testlab" in lab_access["viewable_labs_config"]
 
-        assert "protectedlab" not in lab_access["lab_access"]
-        assert "protectedlab" in lab_access["lab_info"]
+        assert not lab_access["lab_access"]["protectedlab"]["can_user_access_lab"]
+        assert "protectedlab" in lab_access["viewable_labs_config"]
 
-        assert "noaccess" not in lab_access["lab_access"]
-        assert "noaccess" not in lab_access["lab_info"]
+        assert not lab_access["lab_access"].get("noaccess")
+        assert "noaccess" not in lab_access["viewable_labs_config"]
+
+    def test_lab_access_of_admin(self, monkeypatch, lambda_context, helpers, fake_auth):
+        user = helpers.FakeUser(access=["user", "admin"], username="test_admin")
+        monkeypatch.setattr("util.auth.User", lambda *args, **kwargs: user)
+
+        targetuser = helpers.FakeUser(
+            access=["user", "admin"],
+            username="test_admin2",
+        )
+        monkeypatch.setattr("portal.access.User", lambda *args, **kwargs: targetuser)
+
+        monkeypatch.setattr("util.user.user.LABS", helpers.FAKE_LABS)
+
+        event = helpers.get_event(
+            path="/portal/access/labs/test_admin2",
+            cookies=fake_auth,
+            method="GET",
+        )
+        ret = main.lambda_handler(event, lambda_context)
+
+        response_body = json.loads(ret["body"])
+        lab_access = response_body.get("labs")
+
+        assert lab_access["lab_access"]["testlab"]["can_user_access_lab"]
+        assert "testlab" in lab_access["viewable_labs_config"]
+
+        assert lab_access["lab_access"]["protectedlab"]["can_user_access_lab"]
+        assert "protectedlab" in lab_access["viewable_labs_config"]
+
+        assert lab_access["lab_access"]["noaccess"]["can_user_access_lab"]
+        assert "noaccess" in lab_access["viewable_labs_config"]
+
+    def test_lab_access_geo_restricted_user(
+        self, monkeypatch, lambda_context, helpers, fake_auth
+    ):
+        user = helpers.FakeUser(access=["user", "admin"], username="test_admin")
+        monkeypatch.setattr("util.auth.User", lambda *args, **kwargs: user)
+
+        targetuser = helpers.FakeUser(
+            access=["user"],
+            username="test_georestricted",
+            country_code="AF",
+            labs={
+                "testlab": {
+                    "time_quota": None,
+                    "lab_profiles": None,
+                    "lab_country_status": None,
+                },
+                "openlab": {
+                    "time_quota": None,
+                    "lab_profiles": None,
+                    "lab_country_status": None,
+                },
+            },
+        )
+        monkeypatch.setattr("portal.access.User", lambda *args, **kwargs: targetuser)
+
+        monkeypatch.setattr("util.user.user.LABS", helpers.FAKE_LABS)
+
+        event = helpers.get_event(
+            path="/portal/access/labs/test_georestricted",
+            cookies=fake_auth,
+            method="GET",
+        )
+        ret = main.lambda_handler(event, lambda_context)
+
+        response_body = json.loads(ret["body"])
+        lab_access = response_body.get("labs")
+
+        assert lab_access["lab_access"]["openlab"]["can_user_access_lab"]
+        assert "openlab" in lab_access["viewable_labs_config"]
+
+        assert not lab_access["lab_access"]["testlab"]["can_user_access_lab"]
+        assert "testlab" in lab_access["viewable_labs_config"]
+
+        assert not lab_access["lab_access"]["protectedlab"]["can_user_access_lab"]
+        assert "protectedlab" in lab_access["viewable_labs_config"]
+
+        assert not lab_access["lab_access"].get("noaccess")
+        assert "noaccess" not in lab_access["viewable_labs_config"]
+
+    def test_lab_access_geo_restricted_admin(
+        self, monkeypatch, lambda_context, helpers, fake_auth
+    ):
+        user = helpers.FakeUser(access=["user", "admin"], username="test_admin")
+        monkeypatch.setattr("util.auth.User", lambda *args, **kwargs: user)
+
+        targetuser = helpers.FakeUser(
+            access=["user", "admin"],
+            username="test_georestricted_admin",
+        )
+        monkeypatch.setattr("portal.access.User", lambda *args, **kwargs: targetuser)
+
+        monkeypatch.setattr("util.user.user.LABS", helpers.FAKE_LABS)
+
+        event = helpers.get_event(
+            path="/portal/access/labs/test_georestricted_admin",
+            cookies=fake_auth,
+            method="GET",
+        )
+        ret = main.lambda_handler(event, lambda_context)
+
+        response_body = json.loads(ret["body"])
+        lab_access = response_body.get("labs")
+
+        assert lab_access["lab_access"]["testlab"]["can_user_access_lab"]
+        assert "testlab" in lab_access["viewable_labs_config"]
+
+        assert lab_access["lab_access"]["protectedlab"]["can_user_access_lab"]
+        assert "protectedlab" in lab_access["viewable_labs_config"]
+
+        assert lab_access["lab_access"]["noaccess"]["can_user_access_lab"]
+        assert "noaccess" in lab_access["viewable_labs_config"]
 
     def test_get_labs_of_a_user_user_not_found(
         self, monkeypatch, lambda_context, helpers, fake_auth

@@ -4,7 +4,6 @@ import json
 import datetime
 import frozendict
 from typing import Any
-
 from util.exceptions import DbError, CognitoError, UserNotFound
 from util.cognito import delete_user_from_user_pool
 from util.labs import LABS
@@ -150,15 +149,51 @@ class User:
         return True
 
 
+def _can_user_see_lab(user: User, lab) -> bool:
+    if user.is_admin():
+        return True
+    # user is not admin
+    if lab.short_lab_name not in user.labs and lab.accessibility == "private":
+        return False
+    # user has access, or lab is protected or public
+    return True
+
+
+def _can_user_access_lab(user: User, lab) -> bool:
+    if user.is_admin():
+        return True
+    # user is not admin
+    if user.country_code in lab.ip_country_status["prohibited"]:
+        return False
+    # user not georestricted
+    if lab.short_lab_name not in user.labs:
+        return False
+    # user has access
+    return True
+
+
 # returns labs filtered by user access
 def filter_lab_access(user: User) -> dict:
+    # Dynamically create can_user_x flags
+    user_lab_permissions = {}
+    for labname in LABS:
+        user_lab_permissions[labname] = {
+            "can_user_see_lab": _can_user_see_lab(user, LABS[labname]),
+            "can_user_access_lab": _can_user_access_lab(user, LABS[labname]),
+        }
+        if labname in user.labs:
+            # if user has access, add user.labs access info
+            user_lab_permissions[labname] |= user.labs[labname]
+
     return {
-        "lab_info": {
+        "viewable_labs_config": {
             labname: LABS[labname]
-            for labname in LABS
-            if labname in user.labs
-            or LABS[labname].accessibility == "protected"
-            or user.is_admin()
+            for labname, _ in user_lab_permissions.items()
+            if user_lab_permissions[labname]["can_user_see_lab"]
         },
-        "lab_access": user.labs,
+        "lab_access": {
+            labname: access
+            for labname, access in user_lab_permissions.items()
+            if user_lab_permissions[labname]["can_user_see_lab"]
+        },
     }

@@ -1,8 +1,8 @@
+{# djlint:off H006 #}
 {# 
     remove H025 after multiline jinja comment dealth with 
     inside of <a> tag with id="start-{{ currentlab.short_lab_name }}"
 #}
-{% import "macros.j2" as macros %}
 <h2 class="title">Welcome To OpenScienceLab</h2>
 <p>
     <i>
@@ -14,15 +14,76 @@
         and any other information that you feel is needed.
     </i>
 </p>
-{% for labname, _ in labs["lab_access"].items() %}
-    {{ macros.lab_card(labs["lab_info"][labname],
-        accessable=True,
-        admin=admin) }}
-{% endfor %}
-{% for labname, lab_access in labs["lab_info"].items() %}
-    {% if labname not in labs["lab_access"] %}
-        {{ macros.lab_card(labs["lab_info"][labname],
-                accessable=True,
-                admin=admin) }}
+
+{% for labname, access in labs["lab_access"].items()|sort(attribute='1.can_user_access_lab', reverse=true) %}
+    {% set accessable=labs["lab_access"][labname]["can_user_access_lab"] %}
+    {% set lab=labs["viewable_labs_config"][labname] %}
+    {% if labs["lab_access"][labname]["can_user_see_lab"] %}
+        <div class="container margin-top-10">
+        <div class="row">
+            <section>
+                <div id="lab-choices">
+                    <fieldset class="fieldset-border">
+                        <legend class="legend-border-text font-30">{{ lab.friendly_name }}</legend>
+                        {# {% if lab.is_lab_deployment_healthy is defined and not lab.is_lab_deployment_healthy -%}
+                        <p class="alert alert-danger show">
+                            The lab url is either unhealthy or no longer exists. Please contact the <a href="mailto:uaf-jupyterhub-asf+help@alaska.edu">OpenScienceLab Team</a>.
+                            <br />
+                        </p> 
+                        {% endif %}#}
+                        <div class="lab-logo">
+                            <span>
+                                {% if lab.logo is defined and lab.logo != None -%}
+                                    <img class="lab-logo-img"
+                                         src="/static/img/{{ lab.logo }}"
+                                         alt="logo for {{ lab.friendly_name }}" />
+                                {% endif %}
+                            </span>
+                        </div>
+                        <div>
+                            <div class="lab-description">
+                                <span>{{ lab.description | safe }}</span>
+                            </div>
+                            <div class="lab-btns">
+                                <a id="start-{{ lab.short_lab_name }}"
+                                    role="button"
+                                    class="btn btn-lg btn-primary go-to-lab-btn"
+                                    {% if not accessable -%}
+                                        href="#"
+                                        title="You do not have access to the lab"
+                                        disabled
+                                        {# {% elif lab.is_lab_deployment_healthy is defined and not lab.is_lab_deployment_healthy -%}
+                                    href="#"
+                                    title="The lab url is either unhealthy or the lab no longer exists"
+                                    disabled #}
+                                    {% else -%}
+                                        href="/lab/{{ lab.short_lab_name }}/hub/login"
+                                        title="Click to go to the lab {{ lab.short_lab_name }}"
+                                    {% endif %}
+                                    >
+                                    <i>Go to lab</i>
+                                </a>
+                                {% if lab.about_page_url is defined and lab.about_page_url != None -%}
+                                    <a id="about-{{ lab.short_lab_name }}"
+                                       role="button"
+                                       class="btn btn-lg btn-primary go-to-about-btn"
+                                       target="_blank"
+                                       href="{{ lab.about_page_url }}">{{ lab.about_page_button_label }}</a>
+                                {% endif %}
+                                {% if admin %}
+                                    <a id="about-{{ lab.short_lab_name }}"
+                                       role="button"
+                                       class="btn btn-lg btn-primary go-to-about-btn"
+                                       href="/portal/access/manage/{{ lab.short_lab_name }}">Manage</a>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </fieldset>
+                </div>
+            </section>
+        </div>
+        </div>
+        <br>
+        <br>
     {% endif %}
 {% endfor %}

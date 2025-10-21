@@ -116,7 +116,7 @@ def post_portal_hub_auth():
         "force_user_profile_update": user.require_profile_update,
         "ip_country_status": "unrestricted",
         "country_code": user.profile["country_of_residence"],
-        "lab_access": user.labs,
+        "lab_access": user.get_lab_access()["lab_access"],
     }
     encrypted_data = encrypt_data(data)
 
