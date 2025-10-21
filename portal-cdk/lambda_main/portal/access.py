@@ -175,7 +175,9 @@ def get_user_labs(username):
     # Find user in db
     user = User(username=username, create_if_missing=False)
 
-    lab_access: dict = filter_lab_access(user)  # Maybe rethink filtering here
+    # Should this return the users filtered labs (including viewable and accessable)
+    # Or should it just return the labs the user has access to
+    lab_access: dict = filter_lab_access(user)
     lab_access["viewable_labs_config"] = {
         labname: asdict(lab_access["viewable_labs_config"][labname])
         for labname in lab_access["viewable_labs_config"]
