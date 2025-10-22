@@ -44,32 +44,37 @@ You can deploy a new stack without conflicting with any others.
 
 First create your environments file:
 
-`nano vars.env`:
+```bash
+cp .env.example .env
+nano .env
+```
 
 ```bash
-export AWS_PROFILE=<YOUR PROFILE>
-export DEPLOY_PREFIX=<YOUR INITIALS>
-export SES_DOMAIN=opensciencelab.asf.alaska.edu # SAME NAME as the SES above!!
-export SES_EMAIL=<THE TEAM EMAIL>
+AWS_PROFILE=<YOUR PROFILE>
+DEPLOY_PREFIX=<YOUR INITIALS>
+SES_DOMAIN=opensciencelab.asf.alaska.edu # SAME NAME as the SES above!!
+SES_EMAIL=<THE TEAM EMAIL>
 ### OPTIONAL:
-export DEV_SES_EMAIL=<YOUR EMAIL> # For testing, if you want to receive emails. You'll have to confirm a email sent to you too.
+DEV_SES_EMAIL=<YOUR EMAIL> # For testing, if you want to receive emails. You'll have to confirm a email sent to you too.
 ```
 
 Then, to deploy your personal stack:
 
 ```bash
-source vars.env
-# Just synthing locally:
-make synth-portal -e DEPLOY_PREFIX=cs
-# Or deploying:
-make deploy-portal -e DEPLOY_PREFIX=cs
+$ set -a && source .env && set +a
+
+## Just synthing locally:
+$ make synth-portal -e DEPLOY_PREFIX=cs
+
+## Or deploying:
+$ make deploy-portal -e DEPLOY_PREFIX=cs
 ```
 
 ##### Clone Repo
 
 Clone the portal repo to your local work station
 
-##### Ensure AWS credentials a present
+##### Ensure AWS credentials are present
 
 The Makefile + Docker process will need to communicate with AWS. In actions, this is done through an
 OIDC Provider in AWS and requires no authentication. Locally however, a profile must be present in
@@ -77,28 +82,35 @@ OIDC Provider in AWS and requires no authentication. Locally however, a profile 
 `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` must be set. Either solution works, and will get
 automagically populated into the dockerized build/deploy environment.
 
-##### Start CDK Shell
+###### `~/.aws` configuration
 
-From the root of the cloned repo, run `make cdk-image` to build the image:
+You will need a section in `~/.aws/credentials` like
 
-```shell
-user@Mac-mini opensciencelab-portal-v2 % make cdk-image
-cd /Users/user/PycharmProjects/opensciencelab-portal-v2/ && pwd && docker build --pull -t cdk-env:latest -f ./build/cdk.Dockerfile .
-/Users/user/PycharmProjects/opensciencelab-portal-v2
-[+] Building 67.3s (15/15) FINISHED                                                                                                                                               docker:desktop-linux
- => [internal] load[.yamllint.yaml](.yamllint.yaml) build definition from cdk.Dockerfile                                                                                                                                          0.0s
-[....clipped.....]                                                                                                                                0.7s
- => [10/10] COPY ./build /build                                                                                                                                                                   0.0s
- => exporting to image                                                                                                                                                                            3.9s
- => => exporting layers                                                                                                                                                                           3.9s
- => => writing image sha256:4ce2799f6aed653350571169671645ea591af787b7ab60ad0efbc3c5984781b6                                                                                                      0.0s
- => => naming to docker.io/library/cdk-env:latest                         
+```
+[portalv2]
+aws_access_key_id = <YOUR KEY ID HERE>
+aws_secret_access_key = <YOUR KEY VALUE HERE>
 ```
 
-That step can be skipped if the image is already cashed. Next start the container:
+and a section in `~/.aws/config` like
+```
+[portalv2]
+region = us-west-2
+output = json
+```
+
+You can generate AWS Access Keys from the IAM console:
+[AWS docs](https://docs.aws.amazon.com/IAM/latest/UserGuide/access-key-self-managed.html#Using_CreateAccessKey)
+
+##### Start CDK Shell
+
+From the root of the cloned repo, start the container:
 
 ```shell
-user@Mac-mini opensciencelab-portal-v2 % make cdk-shell
+$ make cdk-shell
+export AWS_DEFAULT_ACCOUNT=`aws sts get-caller-identity --query 'Account' --output=text` && \
+...
+...
 [ root@a7a585db4d88:/cdk ]# 
 
 ```
