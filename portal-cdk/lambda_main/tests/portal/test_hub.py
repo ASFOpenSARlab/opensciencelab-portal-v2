@@ -25,7 +25,7 @@ class TestHubPages:
         self.ses_v2: boto3.client = boto3.client("sesv2", region_name=REGION)
 
     def test_hub_send_email_success(
-        self, monkeypatch, lambda_context, helpers, fake_auth
+        self, monkeypatch, lambda_context, helpers, fake_get_secret
     ):
         monkeypatch.setenv("SES_EMAIL", f"testing@{EMAIL_DOMAIN}")
         monkeypatch.setenv("SES_DOMAIN", EMAIL_DOMAIN)
@@ -36,9 +36,6 @@ class TestHubPages:
 
         user_email = user.email
         user_username = user.username
-
-        # jwt.decode is patched globally for testing. Depatch so that jwt.decode works as expected.
-        monkeypatch.setattr("jwt.decode", helpers.jwt_decode)
 
         # Create payload to send to endpoint
         payload = {
@@ -78,7 +75,7 @@ class TestHubPages:
         assert "reason" not in response
 
     def test_hub_send_email_bad_payload(
-        self, monkeypatch, lambda_context, helpers, fake_auth
+        self, monkeypatch, lambda_context, helpers, fake_get_secret
     ):
         monkeypatch.setenv("SES_EMAIL", f"testing@{EMAIL_DOMAIN}")
         monkeypatch.setenv("SES_DOMAIN", EMAIL_DOMAIN)
@@ -86,9 +83,6 @@ class TestHubPages:
         monkeypatch.setattr("portal.hub.User", lambda *args, **kwargs: user)
         monkeypatch.setattr("portal.hub.send_email._sesv2", self.ses_v2)
         monkeypatch.setattr("portal.hub.send_email.User", lambda *args, **kwargs: user)
-
-        # jwt.decode is patched globally for testing. Depatch so that jwt.decode works as expected.
-        monkeypatch.setattr("jwt.decode", helpers.jwt_decode)
 
         # Create payload to send to endpoint
         payload = {}
