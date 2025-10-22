@@ -205,6 +205,7 @@ class TestPortalAuth:
         self, lambda_context, helpers, monkeypatch, fake_get_secret
     ):
         from util.auth import decrypt_data
+
         # Create FakeUser instance to be monkeypatched in and inspected after modified
         user = helpers.FakeUser()
         monkeypatch.setattr("portal.hub.User", lambda *args, **kwargs: user)
@@ -221,13 +222,13 @@ class TestPortalAuth:
 
         assert ret["statusCode"] == 200
         assert ret["headers"].get("Content-Type") == "application/json"
-        
+
         json_payload = json.loads(ret["body"])
         assert json_payload.get("message") == "OK"
         assert json_payload.get("data")
         expected_data = {
             "admin": False,
-            "roles": [user],
+            "roles": ["user"],
             "name": "test_user",
             "has_2fa": True,
             "force_user_profile_update": False,
@@ -236,11 +237,11 @@ class TestPortalAuth:
             "lab_access": {
                 "test_protected": {
                     "can_user_see_lab": True,
-                    "can_user_access_lab": False
+                    "can_user_access_lab": False,
                 },
                 "test_prohibited": {
                     "can_user_see_lab": True,
-                    "can_user_access_lab": False
+                    "can_user_access_lab": False,
                 },
             },
         }
