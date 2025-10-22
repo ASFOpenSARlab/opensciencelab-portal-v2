@@ -4,6 +4,7 @@
 /.ruff_cache/
 **/.coverage
 .venv
+.env
 
 # Ignore Node stuff:
 node_modules/
