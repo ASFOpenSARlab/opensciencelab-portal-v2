@@ -2,8 +2,7 @@ from .base_lab import BaseLab, daac_limited_restricted_status
 
 import os
 
-if os.getenv("IS_PROD", "false").lower() == "true":
-    LABS = {
+PROD_LABS = {
         "smce-prod-opensarlab": BaseLab(
             short_lab_name="smce-prod-opensarlab",
             friendly_name="OpenSARLab (ASF DAAC)",
@@ -93,8 +92,8 @@ if os.getenv("IS_PROD", "false").lower() == "true":
             ],
         ),
     }
-else:
-    LABS: dict[str, BaseLab] = {
+
+NON_PROD_LABS = {
         "smce-test-opensarlab": BaseLab(
             short_lab_name="smce-test-opensarlab",
             friendly_name="SMCE Test (US Unrestricted, Lab Protected)",
@@ -155,3 +154,8 @@ else:
             allowed_profiles=[],
         ),
     }
+
+if os.getenv("IS_PROD", "false").lower() == "true":
+    LABS: dict[str, BaseLab] = PROD_LABS
+else:
+    LABS: dict[str, BaseLab] = NON_PROD_LABS
