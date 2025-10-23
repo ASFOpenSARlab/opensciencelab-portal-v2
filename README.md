@@ -38,42 +38,6 @@ One of the parameters to pass in is an existing, **VERIFIED** SES domain.
 - Open a PR with Platform to add the records to ASF's DNS. There's already some examples in there to work from.
 - Wait for the domain to be verified in SES. This can take a while (Up to 24 hours).
 
-##### Deploying a Personal Stack
-
-You can deploy a new stack without conflicting with any others.
-
-First create your environments file:
-
-```bash
-cp .env.example .env
-nano .env
-```
-
-```bash
-AWS_PROFILE=<YOUR PROFILE>
-DEPLOY_PREFIX=<YOUR INITIALS>
-SES_DOMAIN=opensciencelab.asf.alaska.edu # SAME NAME as the SES above!!
-SES_EMAIL=<THE TEAM EMAIL>
-### OPTIONAL:
-DEV_SES_EMAIL=<YOUR EMAIL> # For testing, if you want to receive emails. You'll have to confirm a email sent to you too.
-```
-
-Then, to deploy your personal stack:
-
-```bash
-$ set -a && source .env && set +a
-
-## Just synthing locally:
-$ make synth-portal -e DEPLOY_PREFIX=cs
-
-## Or deploying:
-$ make deploy-portal -e DEPLOY_PREFIX=cs
-```
-
-##### Clone Repo
-
-Clone the portal repo to your local work station
-
 ##### Ensure AWS credentials are present
 
 The Makefile + Docker process will need to communicate with AWS. In actions, this is done through an
@@ -102,6 +66,26 @@ output = json
 You can generate AWS Access Keys from the IAM console:
 [AWS docs](https://docs.aws.amazon.com/IAM/latest/UserGuide/access-key-self-managed.html#Using_CreateAccessKey)
 
+##### Updating environment variables
+
+You can deploy a new stack without conflicting with any others.
+
+First, create your environments file from the example:
+
+```bash
+cp .env.example .env
+nano .env
+```
+
+```bash
+AWS_PROFILE=<YOUR PROFILE> # from ~/.aws/config
+DEPLOY_PREFIX=<YOUR INITIALS>
+SES_DOMAIN=opensciencelab.asf.alaska.edu # SAME NAME as the SES above!!
+SES_EMAIL=<THE TEAM EMAIL>
+### OPTIONAL:
+DEV_SES_EMAIL=<YOUR EMAIL> # For testing, if you want to receive emails. You'll have to confirm a email sent to you too.
+```
+
 ##### Start CDK Shell
 
 From the root of the cloned repo, start the container:
@@ -110,6 +94,7 @@ From the root of the cloned repo, start the container:
 $ make cdk-shell
 export AWS_DEFAULT_ACCOUNT=`aws sts get-caller-identity --query 'Account' --output=text` && \
 ...
+... this takes a while ...
 ...
 [ root@a7a585db4d88:/cdk ]# 
 ```
@@ -121,6 +106,8 @@ environment:
 [ root@a7a585db4d88:/cdk ]# cd /code`
 [ root@a7a585db4d88:/cdk ]# make synth-portal
 ```
+
+If you see CloudFormation after a few minutes, you're ready to deploy!
 
 ##### Deploy via CDK
 
