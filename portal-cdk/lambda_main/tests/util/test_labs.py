@@ -57,5 +57,6 @@ class TestLabs:
             if lab.logo:
                 used_logos.add(lab.logo)
 
+        LAMBDA_MAIN_PATH = pathlib.Path(__file__).resolve().parents[2]
         for logo in used_logos:
-            assert pathlib.Path(f"./lambda_main/static/img/{logo}").exists()
+            assert pathlib.Path(LAMBDA_MAIN_PATH / "static" / "img" / logo).exists()
