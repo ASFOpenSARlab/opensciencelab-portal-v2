@@ -77,6 +77,7 @@ cp .env.example .env
 nano .env
 ```
 
+`.env`:
 ```bash
 AWS_PROFILE=<YOUR PROFILE> # from ~/.aws/config
 DEPLOY_PREFIX=<YOUR INITIALS>
@@ -84,6 +85,12 @@ SES_DOMAIN=opensciencelab.asf.alaska.edu # SAME NAME as the SES above!!
 SES_EMAIL=<THE TEAM EMAIL>
 ### OPTIONAL:
 DEV_SES_EMAIL=<YOUR EMAIL> # For testing, if you want to receive emails. You'll have to confirm a email sent to you too.
+```
+
+Once you've updated the values of the variables in your `.env`, load them into your
+environment:
+```bash
+set -a && source .env && set +a
 ```
 
 ##### Start CDK Shell
@@ -103,7 +110,7 @@ Change to `/code`, the virtual mount point, and run `make synth-portal` to test 
 environment:
 
 ```shell
-[ root@a7a585db4d88:/cdk ]# cd /code`
+[ root@a7a585db4d88:/cdk ]# cd /code
 [ root@a7a585db4d88:/cdk ]# make synth-portal
 ```
 
@@ -151,10 +158,10 @@ After you "Release Changes" on the cluster CodePipeline and the cluster
 builds, you should be able to access the cluster.
 
 To add your lab to the portal, give yourself Admin privileges in DynamoDB by adding
-an `admin` value to the `access` list for your profile. After refreshing your portal
-deployment, you'll be able to see all labs. Add yourself to the lab under the "Manage"
-button on the lab card with a valid profile, and when you return to the home page and
-click "Go to Lab" you should see the lab "Start Server" interface.
+the `admin` value to the `access` list for your profile (in addition to `user`). After
+refreshing your portal deployment, you'll be able to see all labs. Add yourself to the
+lab under the "Manage" button on the lab card with a valid profile, and when you return
+to the home page and click "Go to Lab" you should see the lab "Start Server" interface.
 
 #### **`Test`**
 
