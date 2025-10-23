@@ -220,7 +220,9 @@ Format of `POST` payload should be a dict of the form:
 def send_user_email():
     request_data = hub_router.current_event.body
 
-    result, reason = send_email.send_user_email(request_data)
+    request_data_decoded = base64.b64decode(request_data)
+
+    result, reason = send_email.send_user_email(request_data_decoded)
 
     # If the response fails, say why:
     response = {"result": result}
