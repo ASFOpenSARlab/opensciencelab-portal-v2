@@ -112,15 +112,20 @@ export AWS_DEFAULT_ACCOUNT=`aws sts get-caller-identity --query 'Account' --outp
 ...
 ...
 [ root@a7a585db4d88:/cdk ]# 
+```
 
+Change to `/code`, the virtual mount point, and run `make synth-portal` to test your
+environment:
+
+```shell
+[ root@a7a585db4d88:/cdk ]# cd /code`
+[ root@a7a585db4d88:/cdk ]# make synth-portal
 ```
 
 ##### Deploy via CDK
 
 ```shell
-[ root@a7a585db4d88:/cdk ]# make cdk-synth
-
-[ root@a7a585db4d88:/cdk ]# make cdk-deploy
+[ root@a7a585db4d88:/cdk ]# make deploy-portal
 ```
 
 ##### Linting
@@ -128,6 +133,41 @@ export AWS_DEFAULT_ACCOUNT=`aws sts get-caller-identity --query 'Account' --outp
 Before committing changes, the code can be easily linted by utilizing the `lint` 
 target of the Makefile. This will call the same linting routines used by the 
 GitHub actions.
+
+##### Accessing the Deployment
+
+In order to sign up for an account on your dev instance, add your email to the
+"Verified Identities" table in AWS SES. This will enable SES to send email to
+you specifically.
+
+Update your SSO token: In AWS Secrets Manager, update the SSO token to match the
+test deployment.
+
+##### Configuring Lab Access
+
+When the deployment has completed (after about four minutes), a series of outputs
+will be displayed:
+
+```
+PortalCdkStack-<DEPLOY_PREFIX>.ApiGatewayURL = <URL>
+PortalCdkStack-<DEPLOY_PREFIX>.CloudFrontURL = <URL>
+PortalCdkStack-<DEPLOY_PREFIX>.CognitoURL = <URL>
+PortalCdkStack-<DEPLOY_PREFIX>.SSOTOKENARN = <ARN>
+PortalCdkStack-<DEPLOY_PREFIX>.returnpathwhitelistvalue = <URL>
+Stack ARN: <ARN>
+```
+
+Copy the `returnpathwhitelistvalue` and add it to the `PORTAL_DOMAINS` variable in the
+configuration file of the lab you're adding
+([`opensciencelab.yaml` in SMCE-Test](https://github.com/ASFOpenSARlab/deployment-opensarlab-test-cluster/blob/main/opensciencelab.yaml)).
+After you "Release Changes" on the cluster CodePipeline and the cluster
+builds, you should be able to access the cluster.
+
+To add your lab to the portal, give yourself Admin privileges in DynamoDB by adding
+an `admin` value to the `access` list for your profile. After refreshing your portal
+deployment, you'll be able to see all labs. Add yourself to the lab under the "Manage"
+button on the lab card with a valid profile, and when you return to the home page and
+click "Go to Lab" you should see the lab "Start Server" interface.
 
 #### **`Test`**
 
