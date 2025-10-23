@@ -58,4 +58,4 @@ class TestLabs:
                 used_logos.add(lab.logo)
 
         for logo in used_logos:
-            assert pathlib.Path(f"./portal-cdk/lambda_main/static/img/{logo}").exists()
+            assert pathlib.Path(f"./lambda_main/static/img/{logo}").exists()
