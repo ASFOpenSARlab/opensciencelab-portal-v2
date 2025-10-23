@@ -290,7 +290,7 @@ class TestAccessPages:
         targetuser = helpers.FakeUser(
             access=["user"],
             username="test_georestricted",
-            country_code="AF",
+            country_code="SY",
             labs={
                 "testlab": {
                     "time_quota": None,
@@ -309,7 +309,7 @@ class TestAccessPages:
         monkeypatch.setattr("util.user.user.LABS", helpers.FAKE_LABS)
 
         event = helpers.get_event(
-            path="/portal/access/labs/test_georestricted",
+            path=f"/portal/access/labs/{targetuser.username}",
             cookies=fake_auth,
             method="GET",
         )
