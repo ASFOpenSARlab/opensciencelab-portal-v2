@@ -1,25 +1,32 @@
 import importlib
 
 import util.labs
-from util.labs import BaseLab
+from util.labs import BaseLab, NON_PROD_LABS, PROD_LABS
+
+import pytest
+import pathlib
 
 
 class TestLabs:
-    def test_lab_conditional_non_prod(self, monkeypatch):
-        monkeypatch.setenv("IS_PROD", "false")
+    @pytest.mark.parametrize("is_prod,labs", [
+        ("false", NON_PROD_LABS),
+        ("true", PROD_LABS),
+    ])
+    def test_lab_conditional_set_is_prod(self, monkeypatch, is_prod, labs):
+        monkeypatch.setenv("IS_PROD", is_prod)
 
         importlib.reload(util.labs)
+        from util.labs import LABS
 
-        assert "smce-test-opensarlab" in util.labs.LABS.keys()
-        assert "smce-prod-opensarlab" not in util.labs.LABS.keys()
+        assert LABS == labs
 
-    def test_lab_conditional_prod(self, monkeypatch):
-        monkeypatch.setenv("IS_PROD", "true")
+    def test_lab_conditional_not_set_is_prod(self, monkeypatch):
+        monkeypatch.delenv("IS_PROD", raising=False)
 
         importlib.reload(util.labs)
+        from util.labs import LABS
 
-        assert "smce-test-opensarlab" not in util.labs.LABS.keys()
-        assert "smce-prod-opensarlab" in util.labs.LABS.keys()
+        assert LABS == NON_PROD_LABS
 
     def test_lab_required_keys(self):
         required_keys = {
@@ -40,3 +47,12 @@ class TestLabs:
             assert required_fields.issubset(lab_fields), (
                 f"Lab '{lab_short_name}' is missing required keys"
             )
+
+    def test_images_path_exist(self, monkeypatch):
+        used_logos = set()
+        for lab in (PROD_LABS | NON_PROD_LABS).values():
+            if lab.logo:
+                used_logos.add(lab.logo)
+
+        for logo in used_logos:
+            assert pathlib.Path(f"./portal-cdk/lambda_main/static/img/{logo}").exists()
