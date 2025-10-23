@@ -8,10 +8,13 @@ import pathlib
 
 
 class TestLabs:
-    @pytest.mark.parametrize("is_prod,labs", [
-        ("false", NON_PROD_LABS),
-        ("true", PROD_LABS),
-    ])
+    @pytest.mark.parametrize(
+        "is_prod,labs",
+        [
+            ("false", NON_PROD_LABS),
+            ("true", PROD_LABS),
+        ],
+    )
     def test_lab_conditional_set_is_prod(self, monkeypatch, is_prod, labs):
         monkeypatch.setenv("IS_PROD", is_prod)
 
