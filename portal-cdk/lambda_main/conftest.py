@@ -201,24 +201,28 @@ class Helpers:
             short_lab_name="protectedlab",
             allowed_profiles=["m6a.large"],
             accessibility="protected",
+            deployment_url="https://example.com",
         ),
         "testlab": BaseLab(
             friendly_name="Test Lab",
             short_lab_name="testlab",
             allowed_profiles=["m6a.large"],
             accessibility="protected",
+            deployment_url="https://example.com",
         ),
         "noaccess": BaseLab(
             friendly_name="No Access Lab",
             short_lab_name="noaccess",
             allowed_profiles=[],
             accessibility="private",
+            deployment_url="https://example.com",
         ),
         "differentlab": BaseLab(
             friendly_name="Different Lab",
             short_lab_name="differentlab",
             allowed_profiles=["m6a.large"],
             accessibility="protected",
+            deployment_url="https://example.com",
         ),
         "openlab": BaseLab(
             friendly_name="Open Lab",
@@ -229,6 +233,7 @@ class Helpers:
                 "limited": [],
                 "prohibited": [],
             },
+            deployment_url="https://example.com",
         ),
     }
 
