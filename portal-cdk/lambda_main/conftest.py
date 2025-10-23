@@ -50,25 +50,29 @@ def mocked_requests_post() -> MockedRequestsPost:
 
 
 @pytest.fixture
-def fake_auth(monkeypatch):
+def fake_get_secret(monkeypatch):
+    # Override signing key
+    monkeypatch.setattr(
+        "aws_lambda_powertools.utilities.parameters.get_secret",
+        lambda a: "er9LnqEOiH+JLBsFCy0kVeba6ZSlG903cliU7VYKnM8=",
+    )
+
+
+@pytest.fixture
+def fake_auth(monkeypatch, fake_get_secret):
     # Bypass JWT
     validate_jwt = Helpers().validate_jwt
     tokens = {
         "access_token": "valid_access_token",
         "id_token": "valid_id_token",
     }
+
     monkeypatch.setattr(
         "util.auth.get_tokens_from_refresh",
         lambda *args, **kwargs: tokens,
     )
     monkeypatch.setattr("util.auth.validate_jwt", validate_jwt)
     monkeypatch.setattr("jwt.decode", validate_jwt)
-
-    # Override signing key
-    monkeypatch.setattr(
-        "aws_lambda_powertools.utilities.parameters.get_secret",
-        lambda a: "er9LnqEOiH+JLBsFCy0kVeba6ZSlG903cliU7VYKnM8=",
-    )
 
     auth_cookies = {PORTAL_USER_COOKIE: "bla", COGNITO_JWT_COOKIE: "bla"}
 
