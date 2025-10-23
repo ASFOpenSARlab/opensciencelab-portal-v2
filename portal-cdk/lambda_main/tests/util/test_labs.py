@@ -3,6 +3,7 @@ import importlib
 import util.labs
 from util.labs import BaseLab
 
+
 class TestLabs:
     def test_lab_conditional_non_prod(self, monkeypatch):
         monkeypatch.setenv("IS_PROD", "false")
@@ -36,4 +37,6 @@ class TestLabs:
         for lab_short_name, lab in util.labs.LABS.items():
             lab_fields = set(lab.__dataclass_fields__.keys())
             required_fields = set(required_keys.keys())
-            assert required_fields.issubset(lab_fields), f"Lab '{lab_short_name}' is missing required keys"
+            assert required_fields.issubset(lab_fields), (
+                f"Lab '{lab_short_name}' is missing required keys"
+            )
