@@ -1,5 +1,6 @@
 import os
 import json
+from base64 import b64encode
 
 import boto3
 from moto import mock_aws
@@ -57,14 +58,17 @@ class TestHubPages:
         }
 
         # Encrypt payload
-        encrypted_payload = encrypt_data(payload)
+        encrypted_payload: str = encrypt_data(payload)
+
+        # The helpers.get_event() does not base64 encode the payload
+        encoded_payload: bytes = b64encode(encrypted_payload.encode("utf-8"))
 
         # Send payload
         event = helpers.get_event(
             path="/portal/hub/user/email",
             method="POST",
             # cookies=fake_auth,
-            body=encrypted_payload,
+            body=encoded_payload,
         )
 
         ret = main.lambda_handler(event, lambda_context)
@@ -90,12 +94,15 @@ class TestHubPages:
         # Encrypt payload
         encrypted_payload = encrypt_data(payload)
 
+        # The helpers.get_event() does not base64 encode the payload
+        encoded_payload: bytes = b64encode(encrypted_payload.encode("utf-8"))
+
         # Send payload
         event = helpers.get_event(
             path="/portal/hub/user/email",
             method="POST",
             # cookies=fake_auth,
-            body=encrypted_payload,
+            body=encoded_payload,
         )
 
         ret = main.lambda_handler(event, lambda_context)
