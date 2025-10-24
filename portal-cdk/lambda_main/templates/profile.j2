@@ -322,9 +322,9 @@
                             {% if lab.short_lab_name in user_profile.labs %}
                                 {% for profile in lab.allowed_profiles %}
                                     {% if profile in user_profile.labs[lab.short_lab_name]["lab_profiles"] %}
-                                        <span style="color: green;">{{ profile }}</span>
+                                        <span style="border: 1px solid black; padding: 1px 4px; color: green;">{{ profile }}</span>,
                                     {% else %}
-                                        <span style="color: red;">{{ profile }}</span>
+                                        <span style="border: 1px solid black; padding: 1px 4px; color: red;">{{ profile }}</span>,
                                     {% endif %}
                                 {% endfor %}
                             {% elif user_profile.is_admin() %}
