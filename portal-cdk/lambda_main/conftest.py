@@ -203,6 +203,7 @@ class Helpers:
         "protectedlab": BaseLab(
             friendly_name="A lab protected from being used",
             short_lab_name="protectedlab",
+            logo="ASF_logo.svg",
             allowed_profiles=["m6a.large"],
             accessibility="protected",
             deployment_url="https://example.com",
@@ -210,6 +211,7 @@ class Helpers:
         "testlab": BaseLab(
             friendly_name="Test Lab",
             short_lab_name="testlab",
+            logo="ASFLogo-Blue2.png",
             allowed_profiles=["m6a.large"],
             accessibility="protected",
             deployment_url="https://example.com",
