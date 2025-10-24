@@ -176,11 +176,13 @@ def _can_user_access_lab(user: User, lab) -> bool:
 def filter_lab_access(user: User) -> dict:
     # Dynamically create can_user_x flags
     user_lab_permissions = {}
-    for labname in LABS:
+    for labname, lab_info in LABS.items():
         user_lab_permissions[labname] = {
-            "can_user_see_lab": _can_user_see_lab(user, LABS[labname]),
-            "can_user_access_lab": _can_user_access_lab(user, LABS[labname]),
+            "can_user_see_lab": _can_user_see_lab(user, lab_info),
+            "can_user_access_lab": _can_user_access_lab(user, lab_info),
         }
+        ## ONLY if user has access to the lab, add their lab info
+        # (can_user_*_lab must exist for EVERY lab)
         if labname in user.labs:
             # if user has access, add user.labs access info
             user_lab_permissions[labname] |= user.labs[labname]
@@ -188,7 +190,7 @@ def filter_lab_access(user: User) -> dict:
     return {
         "viewable_labs_config": {
             labname: LABS[labname]
-            for labname, _ in user_lab_permissions.items()
+            for labname in user_lab_permissions.keys()
             if user_lab_permissions[labname]["can_user_see_lab"]
         },
         "lab_access": {
