@@ -26,9 +26,9 @@
                 <th>
                     {% for profile in lab.allowed_profiles %}
                         {% if profile in user["labs"][lab.short_lab_name]["lab_profiles"] %}
-                            <span style="color: green;">{{ profile }}</span>
+                            <span style="border: 1px solid black; padding: 1px 4px; color: green;">{{ profile }}</span>,
                         {% else %}
-                            <span style="color: red;">{{ profile }}</span>
+                            <span style="border: 1px solid black; padding: 1px 4px; color: red;">{{ profile }}</span>,
                         {% endif %}
                     {% endfor %}
                 </th>
