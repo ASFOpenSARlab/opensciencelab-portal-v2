@@ -2,19 +2,12 @@
 {% block voiceatlas %}
     <section>
         <script src="https://bot.voiceatlas.com/v1/chatlas.js"></script>
-        <app-chatlas atlas-id="{{ voice_atlas_id }}"
-                     full-screen="false"
-                     voice-enabled="false"
-                     class="app-chatlas-container">
+        <app-chatlas atlas-id="{{ voice_atlas_id }}" full-screen="false" voice-enabled="false" class="app-chatlas-container">
         </app-chatlas>
         <div class="popup-container">
             <div class="popuptext blink-me">
-                <h3>
-Got SAR questions?
-                </h3>
-                <h2>
-Ask OSL Bot.
-                </h2>
+                <h3>Got SAR questions?</h3>
+                <h2>Ask OSL Bot.</h2>
             </div>
         </div>
         <style>
