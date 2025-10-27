@@ -1,7 +1,8 @@
-{# djlint:off H006,H016,H030,H031 #}
+{# djlint:off H006,H016,H030,H031,H021 #}
 <!DOCTYPE html>
 <html lang="en">
     {% include 'head.j2' %}
+    {% include 'voice-atlas.j2' %}
     <body>
         {% include './noscript.j2' %}
         <nav class="navbar navbar-default">
@@ -34,7 +35,10 @@
                                    role="button"
                                    class="navbar-btn btn-sm btn btn-default"
                                    href="{{ login_url }}{{ return_path }}">
-                                    <i aria-hidden="true" class="fa">
+                                    <i aria-hidden="true"
+                                       class="fa"
+                                       style="font-family: 'FontAwesome';
+                                              font-weight: 400">
                                         Log in
                                     </i>
                                 </a>

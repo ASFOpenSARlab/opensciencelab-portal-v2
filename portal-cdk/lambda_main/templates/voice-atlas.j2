@@ -1,0 +1,62 @@
+{% set voice_atlas_id = "93727eed-5eda-4d8a-879d-112f3870a386" %}
+{% block voiceatlas %}
+    <section>
+        <script src="https://bot.voiceatlas.com/v1/chatlas.js"></script>
+        <app-chatlas atlas-id="{{ voice_atlas_id }}" full-screen="false" voice-enabled="false" class="app-chatlas-container">
+        </app-chatlas>
+        <div class="popup-container">
+            <div class="popuptext blink-me">
+                <h3>Got SAR questions?</h3>
+                <h2>Ask OSL Bot.</h2>
+            </div>
+        </div>
+        <style>
+                /* Blink unopened chat button */
+                .blink-me {
+                    animation: blinker 2s linear infinite;
+                }
+
+                @keyframes blinker {
+                    50% {
+                        opacity: 0.50;
+                    }
+                }
+
+                .popup-container {
+                    position: fixed;
+                    right: 140px;
+                    bottom: 110px;
+                }
+
+                /* The actual popup */
+                .popup-container .popuptext {
+                    visibility: visible;
+                    width: 200px;
+                    background-color: white;
+                    color: #333;
+                    text-align: center;
+                    border-radius: 6px;
+                    border: 1px solid black;
+                    padding: 8px 0;
+                    position: absolute;
+                    z-index: 1;
+                    bottom: 125%;
+                    left: 50%;
+                    margin-left: -80px;
+                }
+
+                /* Popup arrow */
+                .popup-container .popuptext::after {
+                    content: "";
+                    position: absolute;
+                    top: 100%;
+                    left: 80%;
+                    margin-left: -10px;
+                    border-width: 10px;
+                    border-style: solid;
+                    border-color: #555 transparent transparent transparent;
+                }
+                
+        </style>
+    </section>
+{% endblock voiceatlas %}
