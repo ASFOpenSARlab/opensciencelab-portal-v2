@@ -9,6 +9,7 @@ from aws_cdk import (
     RemovalPolicy,
     aws_cognito as cognito,
     aws_apigatewayv2 as apigwv2,
+    aws_certificatemanager as acm,
     aws_dynamodb as dynamodb,
     aws_ses as ses,
     aws_apigatewayv2_integrations as apigwv2_integrations,
@@ -123,6 +124,19 @@ class PortalCdkStack(Stack):
         ## And a basic CloudFront Endpoint:
         # https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_cloudfront-readme.html#from-an-http-endpoint
 
+        # Only provide custom domain properties if they're provided.
+        if os.getenv("SSL_CERT_ARN") and os.getenv("DEPLOY_DOMAINS"):
+            certificate = acm.Certificate.from_certificate_arn(
+                self, "Certificate", os.getenv("SSL_CERT_ARN")
+            )
+            domain_names = os.getenv("DEPLOY_DOMAINS").replace(" ", "").split(",")
+            custom_domain_args = {
+                "certificate": certificate,
+                "domain_names": domain_names,
+            }
+        else:
+            custom_domain_args = {}
+
         # https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_cloudfront.Distribution.html
         portal_cloudfront = cloudfront.Distribution(
             self,
@@ -141,6 +155,14 @@ class PortalCdkStack(Stack):
                 cache_policy=cloudfront.CachePolicy.CACHING_DISABLED,
                 response_headers_policy=cloudfront.ResponseHeadersPolicy.CORS_ALLOW_ALL_ORIGINS_WITH_PREFLIGHT_AND_SECURITY_HEADERS,
             ),
+            **custom_domain_args,
+        )
+
+        # Host name for all redirects
+        primary_host = (
+            custom_domain_args["domain_names"][0]
+            if "domain_names" in custom_domain_args
+            else portal_cloudfront.distribution_domain_name
         )
 
         # Loop over Labs and add proxy behaviors
@@ -308,27 +330,22 @@ class PortalCdkStack(Stack):
 
         ## User Pool Client, AKA App Client:
         # https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_cognito.UserPoolClient.html
-        portal_host_asf = (
-            "opensciencelab"
-            + ("" if vars["deploy_prefix"] == "prod" else "-" + vars["deploy_prefix"])
-            + ".asf.alaska.edu"
-        )
+        callback_hosts = [
+            f"https://{http_api.http_api_id}.execute-api.{self.region}.amazonaws.com",
+            f"https://{portal_cloudfront.distribution_domain_name}",
+        ]
+        if "domain_names" in custom_domain_args:
+            for custom_domain in custom_domain_args["domain_names"]:
+                callback_hosts.append(f"https://{custom_domain}")
+
         user_pool_client = user_pool.add_client(
             "UserPoolClient",
             # https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_cognito.OAuthSettings.html
             o_auth=cognito.OAuthSettings(
                 # Where to redirect after log IN:
-                callback_urls=[
-                    f"https://{http_api.http_api_id}.execute-api.{self.region}.amazonaws.com/auth",
-                    f"https://{portal_host_asf}/auth",
-                    f"https://{portal_cloudfront.distribution_domain_name}/auth",
-                ],
+                callback_urls=[f"{host}/auth" for host in callback_hosts],
                 # Where to redirect after log OUT:
-                logout_urls=[
-                    f"https://{http_api.http_api_id}.execute-api.{self.region}.amazonaws.com/logout",
-                    f"https://{portal_host_asf}/logout",
-                    f"https://{portal_cloudfront.distribution_domain_name}/logout",
-                ],
+                logout_urls=[f"{host}/logout" for host in callback_hosts],
             ),
             # supported_identity_providers=[
             #     cognito.UserPoolClientIdentityProvider.COGNITO
@@ -366,8 +383,9 @@ class PortalCdkStack(Stack):
         )
 
         lambda_dynamo.lambda_function.add_environment("STACK_REGION", self.region)
+
         lambda_dynamo.lambda_function.add_environment(
-            "CLOUDFRONT_ENDPOINT", f"{portal_cloudfront.distribution_domain_name}"
+            "DEPLOYMENT_HOSTNAME", primary_host
         )
 
         # Allow lambda to delete users from cognito
@@ -423,9 +441,16 @@ class PortalCdkStack(Stack):
             # https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_cognito.SignInUrlOptions.html
             value=user_pool_domain.sign_in_url(
                 client=user_pool_client,
-                redirect_uri=f"https://{portal_cloudfront.distribution_domain_name}/portal",
+                redirect_uri=f"https://{primary_host}/portal",
             ),
             description="Endpoint for Cognito User Pool Domain",
+        )
+
+        CfnOutput(
+            self,
+            "PrimaryHostName",
+            value=f"https://{primary_host}",
+            description="The primary access URL",
         )
 
         CfnOutput(
