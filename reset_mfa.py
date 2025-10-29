@@ -76,7 +76,7 @@ def reset_user(deployment, username):
         delete_user(args.user, user_pool_id)
         return recreate_user(user, user_pool_id)
     except cog_client.exceptions.UserNotFoundException:
-        raise Exception(f"User '{args.user}' not found")
+        raise InputError(f"User '{args.user}' not found")
 
 
 result = reset_user(args.deployment, args.user)
