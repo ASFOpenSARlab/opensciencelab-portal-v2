@@ -116,11 +116,7 @@ def auth_code():
     if not code:
         return wrap_response(render_template(content="No return Code found."), code=401)
 
-    # FIXME: inbound_host must match the origin of initial cognito login request.
-    #        This value needs to be more dynamically detected. Right now, the CF
-    #        endpoint (or _actual_ host) is not embedded in the request.
-    # inbound_host = app.current_event.request_context.domain_name
-    inbound_host = os.getenv("CLOUDFRONT_ENDPOINT")
+    inbound_host = os.getenv("DEPLOYMENT_HOSTNAME")
     token_payload = validate_code(code, inbound_host)
     if not token_payload:
         return wrap_response(
