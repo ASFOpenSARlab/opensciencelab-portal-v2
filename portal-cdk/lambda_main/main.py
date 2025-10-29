@@ -120,7 +120,7 @@ def auth_code():
     #        This value needs to be more dynamically detected. Right now, the CF
     #        endpoint (or _actual_ host) is not embedded in the request.
     # inbound_host = app.current_event.request_context.domain_name
-    inbound_host = os.getenv("CLOUDFRONT_ENDPOINT")
+    inbound_host = os.getenv("DEPLOYMENT_HOSTNAME")
     token_payload = validate_code(code, inbound_host)
     if not token_payload:
         return wrap_response(
