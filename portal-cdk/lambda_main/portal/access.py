@@ -111,11 +111,11 @@ def edit_user(shortname):
             time_quota=body["time_quota"].strip() or None,
             lab_country_status=body["lab_country_status"],
         )
-        print(f'Added user "{body['username']}" to {shortname}')
+        print(f'Added user "{body["username"]}" to {shortname}')
 
     elif body["action"] == "remove_user":
         user.remove_lab(shortname)
-        print(f'Removed user "{body['username']}" from {shortname}')
+        print(f'Removed user "{body["username"]}" from {shortname}')
 
     else:
         error = f"Invalid edit_user action {body['action']}"
