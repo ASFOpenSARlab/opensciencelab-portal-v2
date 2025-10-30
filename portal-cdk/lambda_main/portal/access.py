@@ -12,6 +12,9 @@ from util.labs import LABS
 
 from aws_lambda_powertools.event_handler.api_gateway import Router
 from aws_lambda_powertools.event_handler import content_types
+from aws_lambda_powertools import Logger
+
+logger = Logger(service="APP", level="DEBUG")
 
 access_router = Router()
 
@@ -90,15 +93,14 @@ def edit_user(shortname):
 
     if body is None:
         error = "Body not provided to edit_user"
-        print(error)
+        logger.error(error)
         raise ValueError(error)
     body = form_body_to_dict(body)
 
     # Validate request
     success, message = validate_edit_user_request(body=body)
     if not success:
-        print(f"Response body: {body}")
-        print(message)
+        logger.error(message)
         raise ValueError(message)
 
     # Edit user
@@ -111,15 +113,15 @@ def edit_user(shortname):
             time_quota=body["time_quota"].strip() or None,
             lab_country_status=body["lab_country_status"],
         )
-        print(f'Added user "{body["username"]}" to {shortname}')
+        logger.info(f'Added user "{body["username"]}" to {shortname}')
 
     elif body["action"] == "remove_user":
         user.remove_lab(shortname)
-        print(f'Removed user "{body["username"]}" from {shortname}')
+        logger.info(f'Removed user "{body["username"]}" from {shortname}')
 
     else:
         error = f"Invalid edit_user action {body['action']}"
-        print(error)
+        logger.error(error)
         raise ValueError(error)
 
     # Send the user to the management page
