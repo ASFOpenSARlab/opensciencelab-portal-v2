@@ -15,12 +15,12 @@ import requests
 # DOMAIN = "opensciencelab-test.asf.alaska.edu"
 # USERS = [f"user{num}" for num in range(1,10)]
 # PROFILES = "m6a.large,m6a.xlarge"
-PORTAL_JWT:str = None
-PORTAL_USERNAME:str = None
-LAB_SHORTNAME:str = None
-DOMAIN:str = None
-USERS:list[str] = None
-PROFILES:str = None
+PORTAL_JWT: str = None
+PORTAL_USERNAME: str = None
+LAB_SHORTNAME: str = None
+DOMAIN: str = None
+USERS: list[str] = None
+PROFILES: str = None
 
 
 def main():
@@ -60,7 +60,7 @@ def main():
     parser.add_argument(
         "--users",
         type=str,
-        nargs='+',
+        nargs="+",
         help="list of users to be added",
         default=USERS,
     )
@@ -96,11 +96,13 @@ def main():
             "username": username,
             "action": "add_user",
         }
-        data.update({
-            "lab_profiles": args.profiles,
-            "time_quota": "",
-            "lab_country_status": "something",
-        })
+        data.update(
+            {
+                "lab_profiles": args.profiles,
+                "time_quota": "",
+                "lab_country_status": "something",
+            }
+        )
 
         # Add user
         ret = requests.post(
@@ -112,7 +114,7 @@ def main():
         if ret.status_code == 200:
             print(f"Added {username} to {args.lab_shortname} on {args.domain}")
         else:
-            print(f"Failed to create user \"{username}\"")
+            print(f'Failed to create user "{username}"')
 
 
 if __name__ == "__main__":
