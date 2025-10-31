@@ -20,6 +20,7 @@ import requests
 #                         list of users to be added
 #   --profiles PROFILES   profiles to be given to each user, comma separated string
 
+
 def read_user_file(path: str) -> list[str]:
     with open(path, "r") as f:
         users = []
@@ -53,7 +54,7 @@ def validate_arguments(args) -> list[str]:
         missing_args.append("--profiles")
     if missing_args:
         raise argparse.ArgumentTypeError(
-            f"Required arguments when --delete is NOT set: {", ".join(missing_args)}"
+            f"Required arguments when --delete is NOT set: {', '.join(missing_args)}"
         )
 
 
