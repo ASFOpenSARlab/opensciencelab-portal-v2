@@ -16,21 +16,21 @@ COGNITO_PUBLIC_KEYS_URL = (
 
 _COGNITO_CLIENT = boto3.client("cognito-idp", region_name=AWS_DEFAULT_REGION)
 
-CLOUDFRONT_ENDPOINT = os.getenv("CLOUDFRONT_ENDPOINT")
+DEPLOYMENT_HOSTNAME = os.getenv("DEPLOYMENT_HOSTNAME")
 LOGIN_URL = (
     COGNITO_HOST
     + "/login?"
     + f"client_id={COGNITO_CLIENT_ID}&"
     + "response_type=code&"
     + "scope=aws.cognito.signin.user.admin+email+openid+phone+profile&"
-    + f"redirect_uri=https://{CLOUDFRONT_ENDPOINT}/auth"
+    + f"redirect_uri=https://{DEPLOYMENT_HOSTNAME}/auth"
 )
 
 LOGOUT_URL = (
     COGNITO_HOST
     + "/logout?"
     + f"client_id={COGNITO_CLIENT_ID}&"
-    + f"logout_uri=https://{CLOUDFRONT_ENDPOINT}/logout"
+    + f"logout_uri=https://{DEPLOYMENT_HOSTNAME}/logout"
 )
 
 
