@@ -20,8 +20,8 @@ import requests
 #                         list of users to be added
 #   --profiles PROFILES   profiles to be given to each user, comma separated string
 
-def read_user_file(path:str) -> list[str]:
-    with open(path, 'r') as f:
+def read_user_file(path: str) -> list[str]:
+    with open(path, "r") as f:
         users = []
         for line in f.readlines():
             # Add user if line is not empty
@@ -29,10 +29,13 @@ def read_user_file(path:str) -> list[str]:
                 users.append(line.strip())
         return users
 
+
 def validate_arguments(args) -> list[str]:
     # validate required for deleting users
     if args.delete and not args.users_file:
-        raise argparse.ArgumentTypeError("Required arguments when --delete is set: --users_file")
+        raise argparse.ArgumentTypeError(
+            "Required arguments when --delete is set: --users_file"
+        )
 
     # validate required for adding users
     missing_args = []
@@ -49,7 +52,9 @@ def validate_arguments(args) -> list[str]:
     if not args.delete and not args.profiles:
         missing_args.append("--profiles")
     if missing_args:
-        raise argparse.ArgumentTypeError(f"Required arguments when --delete is NOT set: {", ".join(missing_args)}")
+        raise argparse.ArgumentTypeError(
+            f"Required arguments when --delete is NOT set: {", ".join(missing_args)}"
+        )
 
 
 def main():
@@ -134,7 +139,9 @@ def main():
         if ret.status_code == 200:
             print(f"Added {username} to {args.lab_shortname} on {args.domain}")
         else:
-            raise Exception(f'Failed to create user "{username}"\nResponse body: {ret.text}')
+            raise Exception(
+                f'Failed to create user "{username}"\nResponse body: {ret.text}'
+            )
 
 
 if __name__ == "__main__":
