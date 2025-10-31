@@ -122,10 +122,7 @@ def main():
     }
 
     # Set action
-    if args.delete:
-        action = "remove_user"
-    else:
-        action = "add_user"
+    action = "remove_user" if args.delete else "add_user"
 
     # Apply action on users
     users = read_user_file(args.users_file)
@@ -147,10 +144,7 @@ def main():
         )
 
         if ret.status_code == 200:
-            if args.delete:
-                action_english = "Removed"
-            else:
-                action_english = "Added"
+            action_english = "Removed" if args.delete else "Added"
             print(
                 f"{action_english} {username} to {args.lab_shortname} on {args.domain}"
             )
