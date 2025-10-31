@@ -38,6 +38,19 @@ One of the parameters to pass in is an existing, **VERIFIED** SES domain.
 - Open a PR with Platform to add the records to ASF's DNS. There's already some examples in there to work from.
 - Wait for the domain to be verified in SES. This can take a while (Up to 24 hours).
 
+##### Create SSL Certificate for `.asf.alaska.edu` domains
+
+Certificate is needed when doing test or production deployments since those will have a `asf.alaska.edu` url. 
+**Important**: SSL certificate **must** be created us the **`us-east-1`** region, regardless of deployment region 
+(`us-west-2`). The `arn` for the certificate must be provided by the `SSL_CERT_ARN` environment variable. Where required, 
+the `arn` value should be stored as a GitHub actions variable. 
+
+If deploying using a `.asf.alaska.edu` address, also be sure to set the `DEPLOY_DOMAINS` environment variable. Both are 
+required to successfully attach a custom domain to the cloudfront endpoint. `DEPLOY_DOMAINS` should also be stored a 
+GitHub actions variable. 
+
+For testing purposes, both `SSL_CERT_ARN` and `DEPLOY_DOMAINS` can be provided on the command line for `make` actions.
+
 ##### Ensure AWS credentials are present
 
 The Makefile + Docker process will need to communicate with AWS. In actions, this is done through an
