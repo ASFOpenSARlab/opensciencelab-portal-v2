@@ -3,10 +3,11 @@ import requests
 
 # Commandline use example
 # usage: bulk_add_users.py [-h] [--portal-jwt PORTAL_JWT] [--portal-username PORTAL_USERNAME]
-#                          [--lab-shortname LAB_SHORTNAME] [--domain DOMAIN] [--users USERS [USERS ...]]
-#                          [--profiles PROFILES]
+#                          [--lab-shortname LAB_SHORTNAME] [--domain DOMAIN] [--users_file USERS_FILE]
+#                          [--profiles PROFILES] [--delete]
 
 # Bulk adds users to a lab with a set of default profiles
+
 # options:
 #   -h, --help            show this help message and exit
 #   --portal-jwt PORTAL_JWT
@@ -16,15 +17,19 @@ import requests
 #   --lab-shortname LAB_SHORTNAME
 #                         shortname of lab which users will be added to
 #   --domain DOMAIN       domain of lab deployment
-#   --users USERS [USERS ...]
-#                         list of users to be added
+#   --users_file USERS_FILE
+#                         file where list of users to be modified is defined, file is of usernames separated by newlines
 #   --profiles PROFILES   profiles to be given to each user, comma separated string
+#   --delete              if provided will delete the provided users
 
 
 def read_user_file(path: str) -> list[str]:
     with open(path, "r") as f:
         users = []
         for line in f.readlines():
+            # Skip if line is commented
+            if line.startswith("#"):
+                continue
             # Add user if line is not empty
             if line.strip():
                 users.append(line.strip())
@@ -32,29 +37,26 @@ def read_user_file(path: str) -> list[str]:
 
 
 def validate_arguments(args) -> list[str]:
-    # validate required for deleting users
-    if args.delete and not args.users_file:
-        raise argparse.ArgumentTypeError(
-            "Required arguments when --delete is set: --users_file"
-        )
+    missing_args = []
+    # validate always required args
+    if not args.portal_jwt:
+        missing_args.append("--portal-jwt")
+    if not args.portal_username:
+        missing_args.append("--portal-username")
+    if not args.domain:
+        missing_args.append("--domain")
+    if not args.lab_shortname:
+        missing_args.append("--lab-shortname")
+    if not args.users_file:
+        missing_args.append("--users_file")
 
     # validate required for adding users
-    missing_args = []
-    if not args.delete and not args.portal_jwt:
-        missing_args.append("--portal-jwt")
-    if not args.delete and not args.portal_username:
-        missing_args.append("--portal-username")
-    if not args.delete and not args.lab_shortname:
-        missing_args.append("--lab-shortname")
-    if not args.delete and not args.domain:
-        missing_args.append("--domain")
-    if not args.delete and not args.users_file:
-        missing_args.append("--users")
-    if not args.delete and not args.profiles:
-        missing_args.append("--profiles")
+    if not args.delete:
+        if not args.profiles:
+            missing_args.append("--profiles")
     if missing_args:
         raise argparse.ArgumentTypeError(
-            f"Required arguments when --delete is NOT set: {', '.join(missing_args)}"
+            f"Required arguments missing: {', '.join(missing_args)}"
         )
 
 
@@ -119,12 +121,19 @@ def main():
         "portal-username": args.portal_username,
     }
 
+    # Set action
+    if args.delete:
+        action = "remove_user"
+    else:
+        action = "add_user"
+
+    # Apply action on users
     users = read_user_file(args.users_file)
     for username in users:
         # Generate user creation data
         data = {
             "username": username,
-            "action": "add_user",
+            "action": action,
             "lab_profiles": args.profiles,
             "time_quota": "",
             "lab_country_status": "something",
@@ -138,7 +147,11 @@ def main():
         )
 
         if ret.status_code == 200:
-            print(f"Added {username} to {args.lab_shortname} on {args.domain}")
+            if args.delete:
+                action_english = "Removed"
+            else:
+                action_english = "Added"
+            print(f"{action_english} {username} to {args.lab_shortname} on {args.domain}")
         else:
             raise Exception(
                 f'Failed to create user "{username}"\nResponse body: {ret.text}'
