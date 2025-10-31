@@ -151,7 +151,9 @@ def main():
                 action_english = "Removed"
             else:
                 action_english = "Added"
-            print(f"{action_english} {username} to {args.lab_shortname} on {args.domain}")
+            print(
+                f"{action_english} {username} to {args.lab_shortname} on {args.domain}"
+            )
         else:
             raise Exception(
                 f'Failed to create user "{username}"\nResponse body: {ret.text}'
