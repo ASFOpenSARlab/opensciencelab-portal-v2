@@ -91,7 +91,7 @@ def main():
     )
 
     parser.add_argument(
-        "--users_file",
+        "--users-file",
         type=str,
         help="file where list of users to be modified is defined, file is of usernames separated by newlines",
     )
