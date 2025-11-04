@@ -84,7 +84,7 @@ def root():
         render_template(
             content="Welcome to OpenScienceLab",
             title="OpenScience",
-            name="logged-out.j2",
+            name="landing.j2",
         )
     )
 
