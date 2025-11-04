@@ -133,7 +133,7 @@ bundle-deps:
 		echo "Skipping deps bundled in ${BUILD_DEPS}. Remove to rebuild."; \
 	fi
 
-.PHONE := test
+.PHONY := test
 test: install-reqs bundle-deps
 	@echo "Running tests for Portal (${DEPLOY_PREFIX})"
 	pip install -r portal-cdk/requirements-dev.txt && \
