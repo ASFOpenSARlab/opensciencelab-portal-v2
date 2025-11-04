@@ -69,30 +69,26 @@
     </style>
     <body>
         {% include './noscript.j2' %}
-
         <section>
             <div class="pure-g outside-margins">
-                <div class="pure-u-1-6">
-                </div>
+                <div class="pure-u-1-6"></div>
                 <div class="pure-u-1-2">
                     <div class="pure-g top-margins">
                         <div class="pure-u-1-3">
-                            <img style="height: 100px"
-                                src="/static/img/NASA_logo.svg"
-                                alt="nasa logo">
+                            <img style="height: 100px" src="/static/img/NASA_logo.svg" alt="nasa logo">
                         </div>
                         <div class="pure-u-1-3 bump-margin">
                             <img style="height: 100px"
-                                src="/static/img/OpenScienceLab_logo.svg"
-                                alt="osl logo">
+                                 src="/static/img/OpenScienceLab_logo.svg"
+                                 alt="osl logo">
                         </div>
                     </div>
                     <div class="pure-g top-margins">
                         <p>
-                        OpenScienceLab is a collection of JupyterHub computing environments. Developed and operated by the <a href="https://asf.alaska.edu">Alaska Satellite Facility (ASF)</a>, it is used for education and research with data from NASA’s Distributed Active Archive Centers (DAAC).
+                            OpenScienceLab is a collection of JupyterHub computing environments. Developed and operated by the <a href="https://asf.alaska.edu">Alaska Satellite Facility (ASF)</a>, it is used for education and research with data from NASA’s Distributed Active Archive Centers (DAAC).
                         </p>
                         <p>
-                        Signing up is free and includes access to ASF’s OpenSARLab - a lab designed for Synthetic Aperture Radar (SAR) workflows.
+                            Signing up is free and includes access to ASF’s OpenSARLab - a lab designed for Synthetic Aperture Radar (SAR) workflows.
                         </p>
                         <p>
                             Basic documentaion about OpenScienceLab can be found <span><a href="https://opensarlab-docs.asf.alaska.edu/">here.</a></span>
@@ -106,22 +102,20 @@
                 </div>
                 <div class="pure-u-1-3 login-padding">
                     <div>
-                        <a class="pure-button button-warning" href="{{ login_url }}{{ return_path }}">Sign in</a>
+                        <a class="pure-button button-warning"
+                           href="{{ login_url }}{{ return_path }}">Sign in</a>
                     </div>
                     <div>
                         <button class="link-button" popovertarget="myPopover">Reset MFA</button>
                         <div id="myPopover" popover>
                             <!--This is the popover content using the Popover API!-->
-                            <h3>
-                                To reset your MFA, please contact ASF Admins and supply your username. It may take a few days to respond.
-                            </h3>
+                            <h3>To reset your MFA, please contact ASF Admins and supply your username. It may take a few days to respond.</h3>
                         </div>
                     </div>
                     <div>
                         <a href="{{ login_url }}{{ return_path }}">Forgot Password?</a>
                     </div>
                 </div>
-                
             </div>
         </section>
     </body>
