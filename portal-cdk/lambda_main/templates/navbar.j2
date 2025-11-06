@@ -34,7 +34,14 @@
             <ul class="nav navbar-nav navbar-right">
                 <li>
                     <span id="login_widget">
-                        <p class="navbar-text">{{ username }}</p>
+                        <span class="dropdown">
+                            <span class="dropdown-toggle"><div class="navbar-text">{{ username }}</div></span>
+                            <div class="dropdown-menu">
+                                <a href="{{ reset_password_url }}">Reset Password</a>
+                                <!-- <a href="{{ reset_mfa_url }}">Reset MFA</a> -->
+                                <a href="https://google.com">Reset MFA</a>
+                            </div>
+                        </span>
                         <a id="logout"
                            role="button"
                            class="navbar-btn btn-sm btn btn-default"
@@ -52,3 +59,20 @@
         </div>
     </div>
 </nav>
+
+<script>
+    const toggle = document.querySelector('.dropdown-toggle');
+    const menu = document.querySelector('.dropdown-menu');
+    const dropdown = document.querySelector('.dropdown');
+
+    toggle.addEventListener('click', function(e) {
+        e.stopPropagation();
+        menu.classList.toggle('show');
+    });
+
+    document.addEventListener('click', function(e) {
+        if (!dropdown.contains(e.target)) {
+            menu.classList.remove('show');
+        }
+    });
+</script>
