@@ -385,7 +385,7 @@ class PortalCdkStack(Stack):
         }
 
         # https://docs.aws.amazon.com/cdk/api/v2/python/aws_cdk.aws_cognito/CfnManagedLoginBranding.html
-        cfn_managed_login_branding = cognito.CfnManagedLoginBranding(
+        _ = cognito.CfnManagedLoginBranding(
             self,
             "MyCfnManagedLoginBranding",
             user_pool_id=user_pool.user_pool_id,
