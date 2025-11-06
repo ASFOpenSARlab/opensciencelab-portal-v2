@@ -360,6 +360,7 @@ class PortalCdkStack(Stack):
             cognito_domain=cognito.CognitoDomainOptions(
                 domain_prefix=construct_id.lower(),
             ),
+            managed_login_version=cognito.ManagedLoginVersion.NEWER_MANAGED_LOGIN,
         )
 
         portal_routes = ("access", "profile", "hub")
@@ -370,6 +371,31 @@ class PortalCdkStack(Stack):
                 methods=[apigwv2.HttpMethod.ANY],
                 integration=lambda_integration,
             )
+
+        ## Manged Cognito Login Styles
+        branding_settings = {
+            "colors": {"primary": "#007bff", "background": "#f8f9fa"},
+            "fonts": {"body": "Arial, sans-serif"},
+        }
+
+        # https://docs.aws.amazon.com/cdk/api/v2/python/aws_cdk.aws_cognito/CfnManagedLoginBranding.html
+        cfn_managed_login_branding = cognito.CfnManagedLoginBranding(
+            self,
+            "MyCfnManagedLoginBranding",
+            user_pool_id=user_pool.user_pool_id,
+            # the properties below are optional
+            # assets=[
+            #    cognito.CfnManagedLoginBranding.AssetTypeProperty(
+            #        category="category",
+            #        color_mode="colorMode",
+            #        extension="extension",
+            #    )
+            # ],
+            client_id=user_pool_client.user_pool_client_id,
+            return_merged_resources=True,
+            settings=branding_settings,
+            use_cognito_provided_values=False,
+        )
 
         ### Secrets Manager
         sso_token_secret = secretsmanager.Secret(
