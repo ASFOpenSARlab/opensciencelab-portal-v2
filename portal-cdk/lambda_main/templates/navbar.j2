@@ -39,7 +39,7 @@
                             <div class="dropdown-menu">
                                 <a href="{{ reset_password_url }}">Reset Password</a>
                                 <!-- <a href="{{ reset_mfa_url }}">Reset MFA</a> -->
-                                <a href="https://google.com">Reset MFA</a>
+                                <a class="popup-trigger">Reset MFA</a>
                             </div>
                         </span>
                         <a id="logout"
@@ -60,10 +60,26 @@
     </div>
 </nav>
 
+<div class="modal" id="popup-modal">
+    <div class="modal-content">
+        <span class="close-btn">&times;</span>
+        <h2>Reset MFA</h2>
+        <p>
+        We are currently developing a self-service workflow for resetting a user's
+        MFA configuration. In the meantime, please contact OpenScienceLab admins at
+        <a href="mailto:uaf-jupyterhub-admin@alaska.edu">uaf-jupyterhub-admin@alaska.edu</a>
+        with the email subject: "OpenScienceLab MFA Reset: {{ username }}".
+        </p>
+    </div>
+</div>
+
 <script>
     const toggle = document.querySelector('.dropdown-toggle');
     const menu = document.querySelector('.dropdown-menu');
     const dropdown = document.querySelector('.dropdown');
+    const popupTrigger = document.querySelector('.popup-trigger');
+    const modal = document.getElementById('popup-modal');
+    const closeBtn = document.querySelector('.close-btn');
 
     toggle.addEventListener('click', function(e) {
         e.stopPropagation();
@@ -73,6 +89,22 @@
     document.addEventListener('click', function(e) {
         if (!dropdown.contains(e.target)) {
             menu.classList.remove('show');
+        }
+    });
+
+    popupTrigger.addEventListener('click', function(e) {
+        e.preventDefault();
+        menu.classList.remove('show');
+        modal.classList.add('show');
+    });
+
+    closeBtn.addEventListener('click', function() {
+        modal.classList.remove('show');
+    });
+
+    modal.addEventListener('click', function(e) {
+        if (e.target === modal) {
+            modal.classList.remove('show');
         }
     });
 </script>
