@@ -8,26 +8,22 @@
           integrity="sha384-X38yfunGUhNzHpBaEBsWLO+A0HDYOQi8ufWDkZ0k9e0eXz/tH3II7uKZ9msv++Ls"
           crossorigin="anonymous" />
     <style>
-        #login-main {
-            display: block;
-        }
-
         .outside-margins {
-            margin: 100px;
+            margin: 10rem;
         }
 
         .top-margins {
-            margin-top: 100px;
+            margin-top: 10rem;
         }
 
-        .login-padding {
-            padding-left: 100px;
-            padding-top: 50px;
+        .middle-margins {
+            margin-top: 5rem;
         }
 
         .bump-margin {
-            margin-top: 10px;
+            margin-top: 1rem;
         }
+
         .button-warning {
             color: white;
             border-radius: 4px;
@@ -89,8 +85,11 @@
                                  alt="osl logo">
                         </div>
                     </div>
-                    <div class="pure-g top-margins">
+                    <div class="pure-g middle-margins">
                         <div class="pure-1">
+                            <h3>
+                                Welcome to OpenScienceLab!
+                            </h3>
                             <p>
                                 OpenScienceLab is a collection of JupyterHub computing environments. Developed and operated by the <a href="https://asf.alaska.edu">Alaska Satellite Facility (ASF)</a>, it is used for education and research with data from NASA’s Distributed Active Archive Centers (DAAC).
                             </p>
@@ -111,9 +110,9 @@
                 <div class="pure-u-1-3">
                     <div class="pure-g top-margins">
                         <div class="pure-u-1-5"></div>
-                        <div class="pure-u-3-5">
+                        <div class="pure-u-3-5 middle-margins">
                             <div>
-                                <a class="pure-button button-warning" href="{{ login_url }}{{ return_path }}">Sign in</a>
+                                <a class="pure-button button-warning" href="{{ login_url }}{{ return_path }}">Log in</a>
                             </div>
                             <div class="custom-hr"></div>
                             <div>
