@@ -373,9 +373,15 @@ class PortalCdkStack(Stack):
             )
 
         ## Manged Cognito Login Styles
+        # Colors in 6-digit hex with addtional last two digits being the alpha value
         branding_settings = {
-            "colors": {"primary": "#007bff", "background": "#f8f9fa"},
-            "fonts": {"body": "Arial, sans-serif"},
+            "components": {
+                "pageBackground": {
+                    "image": {"enabled": False},
+                    "lightMode": {"color": "f37625ff"},
+                    "darkMode": {"color": "f37625ff"},
+                }
+            }
         }
 
         # https://docs.aws.amazon.com/cdk/api/v2/python/aws_cdk.aws_cognito/CfnManagedLoginBranding.html
