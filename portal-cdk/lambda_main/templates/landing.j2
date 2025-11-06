@@ -72,8 +72,7 @@
         {% include './noscript.j2' %}
         <section>
             <div class="pure-g outside-margins">
-                <div class="pure-u-1-6">
-                </div>
+                <div class="pure-u-1-6"></div>
                 <div class="pure-u-1-2">
                     <div class="pure-g top-margins">
                         <div class="pure-u-1-3">
@@ -87,9 +86,7 @@
                     </div>
                     <div class="pure-g middle-margins">
                         <div class="pure-1">
-                            <h3>
-                                Welcome to OpenScienceLab!
-                            </h3>
+                            <h3>Welcome to OpenScienceLab!</h3>
                             <p>
                                 OpenScienceLab is a collection of JupyterHub computing environments. Developed and operated by the <a href="https://asf.alaska.edu">Alaska Satellite Facility (ASF)</a>, it is used for education and research with data from NASA’s Distributed Active Archive Centers (DAAC).
                             </p>
@@ -112,7 +109,8 @@
                         <div class="pure-u-1-5"></div>
                         <div class="pure-u-3-5 middle-margins">
                             <div>
-                                <a class="pure-button button-warning" href="{{ login_url }}{{ return_path }}">Log in</a>
+                                <a class="pure-button button-warning"
+                                   href="{{ login_url }}{{ return_path }}">Log in</a>
                             </div>
                             <div class="custom-hr"></div>
                             <div>
