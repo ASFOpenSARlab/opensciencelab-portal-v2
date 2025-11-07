@@ -5,28 +5,28 @@ on: # yamllint disable-line rule:truthy
   workflow_dispatch: {}
 jobs:
   shell:
-    uses: ASFOpenSARlab/osl-utils/.github/workflows/reusable-code-quality-shell.yaml@v1.0.4
+    uses: ASFOpenSARlab/osl-utils/.github/workflows/reusable-code-quality-shell.yaml@v1.0.5
     with:
-      osl-utils-tag: v1.0.4
+      osl-utils-tag: v1.0.5
   python:
-    uses: ASFOpenSARlab/osl-utils/.github/workflows/reusable-code-quality-python.yaml@v1.0.4
+    uses: ASFOpenSARlab/osl-utils/.github/workflows/reusable-code-quality-python.yaml@v1.0.5
     with:
-      osl-utils-tag: v1.0.4
+      osl-utils-tag: v1.0.5
   jinja2:
-    uses: ASFOpenSARlab/osl-utils/.github/workflows/reusable-code-quality-jinja2.yaml@v1.0.4
+    uses: ASFOpenSARlab/osl-utils/.github/workflows/reusable-code-quality-jinja2.yaml@v1.0.5
     with:
-      osl-utils-tag: v1.0.4
+      osl-utils-tag: v1.0.5
   # These yaml lints aren't working
   # yaml:
-  #   uses: ASFOpenSARlab/osl-utils/.github/workflows/reusable-code-quality-yaml.yaml@v1.0.4
+  #   uses: ASFOpenSARlab/osl-utils/.github/workflows/reusable-code-quality-yaml.yaml@v1.0.5
   #   with:
-  #     osl-utils-tag: v1.0.4
+  #     osl-utils-tag: v1.0.5
   dockerfile:
-    uses: ASFOpenSARlab/osl-utils/.github/workflows/reusable-code-quality-dockerfile.yaml@v1.0.4
+    uses: ASFOpenSARlab/osl-utils/.github/workflows/reusable-code-quality-dockerfile.yaml@v1.0.5
     with:
-      osl-utils-tag: v1.0.4
+      osl-utils-tag: v1.0.5
   markdown:
-    uses: ASFOpenSARlab/osl-utils/.github/workflows/reusable-code-quality-markdown.yaml@cs/markdown-lint
+    uses: ASFOpenSARlab/osl-utils/.github/workflows/reusable-code-quality-markdown.yaml@v1.0.5
     with:
       # The osl-utils docker tag. Can also be `dev`, initials, etc. Should match the tag above in prod.
-      osl-utils-tag: cs
+      osl-utils-tag: v1.0.5
