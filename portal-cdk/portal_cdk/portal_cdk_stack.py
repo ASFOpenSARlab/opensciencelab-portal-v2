@@ -3,6 +3,7 @@ from constructs import Construct
 from urllib.parse import urlparse
 import pathlib
 import base64
+import json
 
 from aws_cdk import (
     Stack,
@@ -401,71 +402,28 @@ class PortalCdkStack(Stack):
         ## Manged Cognito Login Styles
         # https://docs.aws.amazon.com/cdk/api/v2/python/aws_cdk.aws_cognito/CfnManagedLoginBranding.html
 
-        # Colors are 6-digit hex with addtional last two digits being the alpha value
-        branding_settings: dict = {
-            "components": {
-                "pageHeader": {
-                    "backgroundImage": {"enabled": True},
-                },
-                "pageBackground": {
-                    "image": {"enabled": True},
-                },
-                "form": {
-                    "backgroundImage": {"enabled": False},
-                    "logo": {
-                        "location": "CENTER",
-                        "position": "TOP",
-                        "enabled": True,
-                        "formInclusion": "IN",
-                    },
-                },
-                "primaryButton": {
-                    "lightMode": {
-                        "defaults": {
-                            "backgroundColor": "f37625ff",  # Full Jupyter Orange
-                            "textColor": "373681ff",
-                        },
-                    },
-                    "darkMode": {
-                        "defaults": {
-                            "backgroundColor": "ffffffff",
-                            "textColor": "000716ff",
-                        },
-                    },
-                },
-            },
-            "categories": {
-                "global": {
-                    "colorSchemeMode": "DYNAMIC",
-                    "pageHeader": {"enabled": True},
-                },
-            },
-        }
-
-        # OpenScienceLab_logo
-        # https://docs.aws.amazon.com/cdk/api/v2/python/aws_cdk.aws_cognito/CfnManagedLoginBranding.html#assettypeproperty
-        # category: # 'FAVICON_ICO'|'FAVICON_SVG'|'EMAIL_GRAPHIC'|'SMS_GRAPHIC'|'AUTH_APP_GRAPHIC'|'PASSWORD_GRAPHIC'|
-        #   'PASSKEY_GRAPHIC'|'PAGE_HEADER_LOGO'|'PAGE_HEADER_BACKGROUND'|'PAGE_FOOTER_LOGO'|'PAGE_FOOTER_BACKGROUND'|
-        #   'PAGE_BACKGROUND'|'FORM_BACKGROUND'|'FORM_LOGO'|'IDP_BUTTON_ICON',
+        with open(CWD / "cognito_ui/managed_ui_settings.json", "r") as f:
+            branding_settings: dict = json.load(f)
 
         osl_logo: str = image_to_encoded_bytes(
             CWD / "cognito_ui/assets/OpenScienceLab_logo.svg"
         )
 
-        nasa_logo: str = image_to_encoded_bytes(CWD / "cognito_ui/assets/NASA_logo.svg")
-
+        # category: # 'FAVICON_ICO'|'FAVICON_SVG'|'EMAIL_GRAPHIC'|'SMS_GRAPHIC'|'AUTH_APP_GRAPHIC'|'PASSWORD_GRAPHIC'|
+        #   'PASSKEY_GRAPHIC'|'PAGE_HEADER_LOGO'|'PAGE_HEADER_BACKGROUND'|'PAGE_FOOTER_LOGO'|'PAGE_FOOTER_BACKGROUND'|
+        #   'PAGE_BACKGROUND'|'FORM_BACKGROUND'|'FORM_LOGO'|'IDP_BUTTON_ICON',
         branding_assets: list = [
             cognito.CfnManagedLoginBranding.AssetTypeProperty(
-                category="PAGE_HEADER_BACKGROUND",
-                color_mode="DYNAMIC",  # 'LIGHT'|'DARK'|'DYNAMIC'
+                category="PAGE_BACKGROUND",
+                color_mode="LIGHT",  # 'LIGHT'|'DARK'|'(broken)DYNAMIC'
                 extension="SVG",  # 'ICO'|'JPEG'|'PNG'|'SVG'|'WEBP'
                 bytes=osl_logo,
             ),
             cognito.CfnManagedLoginBranding.AssetTypeProperty(
-                category="FORM_LOGO",
-                color_mode="DYNAMIC",  # 'LIGHT'|'DARK'|'DYNAMIC'
+                category="PAGE_BACKGROUND",
+                color_mode="DARK",  # 'LIGHT'|'DARK'|'(broken)DYNAMIC'
                 extension="SVG",  # 'ICO'|'JPEG'|'PNG'|'SVG'|'WEBP'
-                bytes=nasa_logo,
+                bytes=osl_logo,
             ),
         ]
 
