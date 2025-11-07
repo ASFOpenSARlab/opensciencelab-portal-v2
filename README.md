@@ -2,10 +2,22 @@
 
 ## Architecture
 
-At the most basic level, the new portal is a Python Lambda app, back-ended by AWS DynamoDB, and 
-front-ended by API Gateway and CloudFront. 
+At the most basic level, the new portal is a Python Lambda app, back-ended by AWS DynamoDB, and
+front-ended by API Gateway and CloudFront.
 
 ![Architecture Diagram](./docs/Portal%20V2.png)
+
+## Directory Structure
+
+The README structure is spread out through the repo. The more you dive in, the more specific the sections should get to that specific section. They should also be linked together, for easy navigation.
+
+### [portal-cdk](./portal-cdk/README.md)
+
+All Portal-related Stuff. Includes the CDK infrastructure code, Lambda code, and tests.
+
+### [oidc-cdk](./oidc-cdk/README.md)
+
+Permissions for GH Actions when deploying, along with the CDK infrastructure.
 
 ## Deployments
 
