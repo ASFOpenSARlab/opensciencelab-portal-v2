@@ -126,13 +126,22 @@
 
         .dropdown-toggle {
             cursor: pointer;
-            color: #007bff;
-            font-weight: bold;
             user-select: none;
         }
 
-        .dropdown-toggle:hover {
-            text-decoration: underline;
+        .dropdown-toggle::before {
+            content: '›';
+            width: 1em;
+            height: 1em;
+            text-align: center;
+            margin-left: 4px;
+            display: inline-block;
+            transition: transform 0.3s ease;
+            transform-origin: center 85%;
+        }
+
+        .dropdown-toggle.active::before {
+            transform: rotate(-90deg);
         }
 
         .dropdown-menu {
