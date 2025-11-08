@@ -34,15 +34,16 @@
             <ul class="nav navbar-nav navbar-right">
                 <li>
                     <span id="login_widget">
-                        <span class="dropdown">
-                            <span class="dropdown-toggle"><div class="navbar-text">{{ username }}</div></span>
+                        <div class="dropdown">
+                            <span class="navbar-text">
+                                <span class="dropdown-toggle">{{ username }}</span>
+                            </span>
                             <div class="dropdown-menu">
                                 <a href="{{ reset_password_url }}">Reset Password</a>
                                 <!-- <a href="{{ reset_mfa_url }}">Reset MFA</a> -->
                                 <a class="popup-trigger">Reset MFA</a>
                             </div>
-                        </span>
-                        <a id="logout"
+                        </div><a id="logout"
                            role="button"
                            class="navbar-btn btn-sm btn btn-default"
                            href="{{ logout_url }}">
@@ -84,11 +85,13 @@
     toggle.addEventListener('click', function(e) {
         e.stopPropagation();
         menu.classList.toggle('show');
+        toggle.classList.toggle('active');
     });
 
     document.addEventListener('click', function(e) {
         if (!dropdown.contains(e.target)) {
             menu.classList.remove('show');
+            toggle.classList.remove('active');
         }
     });
 
