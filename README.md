@@ -2,10 +2,22 @@
 
 ## Architecture
 
-At the most basic level, the new portal is a Python Lambda app, back-ended by AWS DynamoDB, and 
-front-ended by API Gateway and CloudFront. 
+At the most basic level, the new portal is a Python Lambda app, back-ended by AWS DynamoDB, and
+front-ended by API Gateway and CloudFront.
 
 ![Architecture Diagram](./docs/Portal%20V2.png)
+
+## Directory Structure
+
+The README structure is spread out through the repo. The more you dive in, the more specific the sections should get to that specific section. They should also be linked together, for easy navigation.
+
+### [portal-cdk](./portal-cdk/README.md)
+
+All Portal-related Stuff. Includes the CDK infrastructure code, Lambda code, and tests.
+
+### [oidc-cdk](./oidc-cdk/README.md)
+
+Permissions for GH Actions when deploying, along with the CDK infrastructure.
 
 ## Deployments
 
@@ -19,10 +31,10 @@ front-ended by API Gateway and CloudFront.
 
 ### Maturities
 
-* Non-`main` branches with specified prefix/suffix (eg `ab/ticket.feature`) will deploy a matched
+- Non-`main` branches with specified prefix/suffix (eg `ab/ticket.feature`) will deploy a matched
 prefix (ie `ab`) dev maturity ( and `dev` GitHub environment!) deployment.
-* Merges into `main` branch will create/update the `test` maturity deployment.
-* Symantic Tags (where `v#.#.#` is `v[Major].[Minor].[Patch]`) will deploy to Prod.
+- Merges into `main` branch will create/update the `test` maturity deployment.
+- Symantic Tags (where `v#.#.#` is `v[Major].[Minor].[Patch]`) will deploy to Prod.
 
 #### `Dev`/Development
 
@@ -40,14 +52,8 @@ One of the parameters to pass in is an existing, **VERIFIED** SES domain.
 
 ##### Create SSL Certificate for `.asf.alaska.edu` domains
 
-Certificate is needed when doing test or production deployments since those will have a `asf.alaska.edu` url. 
-**Important**: SSL certificate **must** be created us the **`us-east-1`** region, regardless of deployment region 
-(`us-west-2`). The `arn` for the certificate must be provided by the `SSL_CERT_ARN` environment variable. Where required, 
-the `arn` value should be stored as a GitHub actions variable. 
-
-If deploying using a `.asf.alaska.edu` address, also be sure to set the `DEPLOY_DOMAINS` environment variable. Both are 
-required to successfully attach a custom domain to the cloudfront endpoint. `DEPLOY_DOMAINS` should also be stored a 
-GitHub actions variable. 
+Certificate is needed when doing test or production deployments since those will have a `asf.alaska.edu` url. **Important**: SSL certificate **must** be created us the **`us-east-1`** region, regardless of deployment region (`us-west-2`). The `arn` for the certificate must be provided by the `SSL_CERT_ARN` environment variable. Where required, the `arn` value should be stored as a GitHub actions variable.
+If deploying using a `.asf.alaska.edu` address, also be sure to set the `DEPLOY_DOMAINS` environment variable. Both are required to successfully attach a custom domain to the cloudfront endpoint. `DEPLOY_DOMAINS` should also be stored a GitHub actions variable.
 
 For testing purposes, both `SSL_CERT_ARN` and `DEPLOY_DOMAINS` can be provided on the command line for `make` actions.
 
@@ -63,14 +69,15 @@ automagically populated into the dockerized build/deploy environment.
 
 You will need a section in `~/.aws/credentials` like
 
-```
+```txt
 [portalv2]
 aws_access_key_id = <YOUR KEY ID HERE>
 aws_secret_access_key = <YOUR KEY VALUE HERE>
 ```
 
 and a section in `~/.aws/config` like
-```
+
+```txt
 [portalv2]
 region = us-west-2
 output = json
@@ -91,6 +98,7 @@ nano .env
 ```
 
 `.env`:
+
 ```bash
 AWS_PROFILE=<YOUR PROFILE> # from ~/.aws/config
 DEPLOY_PREFIX=<YOUR INITIALS>
@@ -102,6 +110,7 @@ DEV_SES_EMAIL=<YOUR EMAIL> # For testing, if you want to receive emails. You'll 
 
 Once you've updated the values of the variables in your `.env`, load them into your
 environment:
+
 ```bash
 set -a && source .env && set +a
 ```
@@ -137,9 +146,7 @@ If you see CloudFormation after a few minutes, you're ready to deploy!
 
 ##### Linting
 
-Before committing changes, the code can be easily linted by utilizing the `lint` 
-target of the Makefile. This will call the same linting routines used by the 
-GitHub actions.
+Before committing changes, the code can be easily linted by utilizing the `lint` target of the Makefile. This will call the same linting routines used by the GitHub actions.
 
 ##### Accessing the Deployment
 
@@ -155,7 +162,7 @@ test deployment.
 When the deployment has completed (after about four minutes), a series of outputs
 will be displayed:
 
-```
+```txt
 PortalCdkStack-<DEPLOY_PREFIX>.ApiGatewayURL = <URL>
 PortalCdkStack-<DEPLOY_PREFIX>.CloudFrontURL = <URL>
 PortalCdkStack-<DEPLOY_PREFIX>.CognitoURL = <URL>
@@ -194,11 +201,5 @@ For testing, see the [Testing README](./portal-cdk/tests/README.md).
 
 #### GitHub Actions
 
-* [`lint.yaml`](.github/workflows/lint.yaml) - Automate code linting and formatting enforcement
-* [`on-pull-request-notify.yaml`](.github/workflows/on-pull-request-notify.yaml) - Alert SES 
-mattermost channel about new and modified non-draft pull requests.
-
-## CDK Tech
-
-**_Information about CDK stack(s)_**
-
+- [`lint.yaml`](.github/workflows/lint.yaml) - Automate code linting and formatting enforcement
+- [`on-pull-request-notify.yaml`](.github/workflows/on-pull-request-notify.yaml) - Alert SES mattermost channel about new and modified non-draft pull requests.
