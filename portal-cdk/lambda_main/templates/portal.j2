@@ -51,46 +51,48 @@
                                         <span>{{ lab.description | safe }}</span>
                                     </div>
                                     <div class="lab-btns">
-                                    <a id="start-{{ lab.short_lab_name }}"
-                                       role="button"
-                                       class="btn btn-lg btn-primary go-to-lab-btn"
-                                       {% if not accessable -%}
-                                       href="#"
-                                       title="You do not have access to the lab"
-                                       disabled
-                                       i>Restricted</i>
-                                    {# {% elif lab.is_lab_deployment_healthy is defined and not lab.is_lab_deployment_healthy -%}
-                                    href="#"
-                                    title="The lab url is either unhealthy or the lab no longer exists"
-                                    disabled 
-                                    <i>Unavailable</i>#}
-                                {% else -%}
-                                    href="/lab/{{ lab.short_lab_name }}/hub/login"
-                                    title="Click to go to the lab {{ lab.short_lab_name }}"
-                                    <i>Go to lab</i>
-                                {% endif %}
-                            </a>
-                            {% if lab.about_page_url is defined and lab.about_page_url != None -%}
-                                <a id="about-{{ lab.short_lab_name }}"
-                                   role="button"
-                                   class="btn btn-lg btn-primary go-to-about-btn"
-                                   target="_blank"
-                                   href="{{ lab.about_page_url }}">{{ lab.about_page_button_label }}</a>
-                            {% endif %}
-                            {% if admin %}
-                                <a id="about-{{ lab.short_lab_name }}"
-                                   role="button"
-                                   class="btn btn-lg btn-primary go-to-about-btn"
-                                   href="/portal/access/manage/{{ lab.short_lab_name }}">Manage</a>
-                            {% endif %}
-                        </div>
+                                        <a id="start-{{ lab.short_lab_name }}"
+                                           role="button"
+                                           class="btn btn-lg btn-primary go-to-lab-btn"
+                                           {% if not accessable -%}
+                                           href="#"
+                                           title="You do not have access to the lab"
+                                           disabled>
+                                            <i>Restricted</i>
+                                            {# {% elif lab.is_lab_deployment_healthy is defined and not lab.is_lab_deployment_healthy -%}
+                                            href="#"
+                                            title="The lab url is either unhealthy or the lab no longer exists"
+                                            disabled 
+                                            >
+                                                <i>Unavailable</i>#}
+                                        {% else -%}
+                                            href="/lab/{{ lab.short_lab_name }}/hub/login"
+                                            title="Click to go to the lab {{ lab.short_lab_name }}"
+                                            >
+                                            <i>Go to lab</i>
+                                        {% endif %}
+                                    </a>
+                                    {% if lab.about_page_url is defined and lab.about_page_url != None -%}
+                                        <a id="about-{{ lab.short_lab_name }}"
+                                           role="button"
+                                           class="btn btn-lg btn-primary go-to-about-btn"
+                                           target="_blank"
+                                           href="{{ lab.about_page_url }}">{{ lab.about_page_button_label }}</a>
+                                    {% endif %}
+                                    {% if admin %}
+                                        <a id="about-{{ lab.short_lab_name }}"
+                                           role="button"
+                                           class="btn btn-lg btn-primary go-to-about-btn"
+                                           href="/portal/access/manage/{{ lab.short_lab_name }}">Manage</a>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </fieldset>
                     </div>
-                </fieldset>
+                </section>
             </div>
-        </section>
-    </div>
-</div>
-<br>
-<br>
-{% endif %}
+        </div>
+        <br>
+        <br>
+    {% endif %}
 {% endfor %}

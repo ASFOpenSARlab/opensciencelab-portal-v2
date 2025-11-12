@@ -406,7 +406,7 @@ class PortalCdkStack(Stack):
             branding_settings: dict = json.load(f)
 
         osl_logo: str = image_to_encoded_bytes(
-            CWD / "cognito_ui/assets/OpenScienceLab_logo.svg"
+            CWD / "cognito_ui/assets/OpenScienceLab_logo_50p.svg"
         )
 
         # category: # 'FAVICON_ICO'|'FAVICON_SVG'|'EMAIL_GRAPHIC'|'SMS_GRAPHIC'|'AUTH_APP_GRAPHIC'|'PASSWORD_GRAPHIC'|
