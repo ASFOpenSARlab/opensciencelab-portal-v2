@@ -5,7 +5,7 @@ import copy
 
 from util.responses import wrap_response
 from util.session import current_session
-from util.cognito import LOGIN_URL, LOGOUT_URL  # , FORGOT_PASSWORD_URL
+from util.cognito import LOGIN_URL, LOGOUT_URL, FORGOT_PASSWORD_URL, SIGNUP_URL
 
 from jinja2 import Environment, FileSystemLoader, StrictUndefined, select_autoescape
 
@@ -98,6 +98,8 @@ def render_template(content, input=None, name=None, title="OSL Portal"):
         "title": title,
         "login_url": LOGIN_URL,
         "logout_url": LOGOUT_URL,
+        "forgot_password_url": FORGOT_PASSWORD_URL,
+        "signup_url": SIGNUP_URL,
         "return_path": f"&state={return_path}" if return_path else "",
         "reset_password_url": "https://example.com",  # TODO change to FORGOT_PASSWORD_URL after merging eml/remodel-login-page
         "reset_mfa_url": "",  # TODO add functionality

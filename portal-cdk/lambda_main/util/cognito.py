@@ -26,6 +26,24 @@ LOGIN_URL = (
     + f"redirect_uri=https://{DEPLOYMENT_HOSTNAME}/auth"
 )
 
+FORGOT_PASSWORD_URL = (
+    COGNITO_HOST
+    + "/forgotPassword?"
+    + f"client_id={COGNITO_CLIENT_ID}&"
+    + "response_type=code&"
+    + "scope=aws.cognito.signin.user.admin+email+openid+phone+profile&"
+    + f"redirect_uri=https://{DEPLOYMENT_HOSTNAME}/auth"
+)
+
+SIGNUP_URL = (
+    COGNITO_HOST
+    + "/signup?"
+    + f"client_id={COGNITO_CLIENT_ID}&"
+    + "response_type=code&"
+    + "scope=aws.cognito.signin.user.admin+email+openid+phone+profile&"
+    + f"redirect_uri=https://{DEPLOYMENT_HOSTNAME}/auth"
+)
+
 LOGOUT_URL = (
     COGNITO_HOST
     + "/logout?"
