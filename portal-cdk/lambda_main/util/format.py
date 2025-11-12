@@ -101,7 +101,7 @@ def render_template(content, input=None, name=None, title="OSL Portal"):
         "forgot_password_url": FORGOT_PASSWORD_URL,
         "signup_url": SIGNUP_URL,
         "return_path": f"&state={return_path}" if return_path else "",
-        "reset_password_url": "https://example.com",  # TODO change to FORGOT_PASSWORD_URL after merging eml/remodel-login-page
+        "reset_password_url": FORGOT_PASSWORD_URL,
         "reset_mfa_url": "",  # TODO add functionality
     }
     if input:
