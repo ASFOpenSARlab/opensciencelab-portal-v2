@@ -1,6 +1,9 @@
 import os
 from constructs import Construct
 from urllib.parse import urlparse
+import pathlib
+import base64
+import json
 
 from aws_cdk import (
     Stack,
@@ -26,7 +29,31 @@ from lambda_main.util.labs import LABS
 
 LAMBDA_RUNTIME = aws_lambda.Runtime.PYTHON_3_11
 
+CWD = pathlib.Path(__file__).parent
+
 # I'd like to see this get spun off into CodeAsConfig collocated with the portal code.
+
+
+def image_to_encoded_bytes(image_path: str) -> str | None:
+    """
+    Opens an image file and returns its content as a bytes object.
+
+    Args:
+        image_path (str): The path to the image file.
+
+    Returns:
+        str: The base64-encoded content of the image file.
+    """
+    try:
+        with open(image_path, "rb") as f:
+            image_bytes = f.read()
+        return base64.b64encode(image_bytes).decode("utf-8")
+    except FileNotFoundError:
+        print(f"Error: The file '{image_path}' was not found.")
+        raise
+    except Exception as e:
+        print(f"An error occurred: {e}")
+        raise
 
 
 class PortalCdkStack(Stack):
@@ -360,6 +387,7 @@ class PortalCdkStack(Stack):
             cognito_domain=cognito.CognitoDomainOptions(
                 domain_prefix=construct_id.lower(),
             ),
+            managed_login_version=cognito.ManagedLoginVersion.NEWER_MANAGED_LOGIN,
         )
 
         portal_routes = ("access", "profile", "hub")
@@ -370,6 +398,45 @@ class PortalCdkStack(Stack):
                 methods=[apigwv2.HttpMethod.ANY],
                 integration=lambda_integration,
             )
+
+        ## Manged Cognito Login Styles
+        # https://docs.aws.amazon.com/cdk/api/v2/python/aws_cdk.aws_cognito/CfnManagedLoginBranding.html
+
+        with open(CWD / "cognito_ui/managed_ui_settings.json", "r") as f:
+            branding_settings: dict = json.load(f)
+
+        osl_logo: str = image_to_encoded_bytes(
+            CWD / "cognito_ui/assets/OpenScienceLab_logo_50p.svg"
+        )
+
+        # category: # 'FAVICON_ICO'|'FAVICON_SVG'|'EMAIL_GRAPHIC'|'SMS_GRAPHIC'|'AUTH_APP_GRAPHIC'|'PASSWORD_GRAPHIC'|
+        #   'PASSKEY_GRAPHIC'|'PAGE_HEADER_LOGO'|'PAGE_HEADER_BACKGROUND'|'PAGE_FOOTER_LOGO'|'PAGE_FOOTER_BACKGROUND'|
+        #   'PAGE_BACKGROUND'|'FORM_BACKGROUND'|'FORM_LOGO'|'IDP_BUTTON_ICON',
+        branding_assets: list = [
+            cognito.CfnManagedLoginBranding.AssetTypeProperty(
+                category="PAGE_BACKGROUND",
+                color_mode="LIGHT",  # 'LIGHT'|'DARK'|'(broken)DYNAMIC'
+                extension="SVG",  # 'ICO'|'JPEG'|'PNG'|'SVG'|'WEBP'
+                bytes=osl_logo,
+            ),
+            cognito.CfnManagedLoginBranding.AssetTypeProperty(
+                category="PAGE_BACKGROUND",
+                color_mode="DARK",  # 'LIGHT'|'DARK'|'(broken)DYNAMIC'
+                extension="SVG",  # 'ICO'|'JPEG'|'PNG'|'SVG'|'WEBP'
+                bytes=osl_logo,
+            ),
+        ]
+
+        _ = cognito.CfnManagedLoginBranding(
+            self,
+            "MyCfnManagedLoginBranding",
+            user_pool_id=user_pool.user_pool_id,
+            client_id=user_pool_client.user_pool_client_id,
+            assets=branding_assets,
+            settings=branding_settings,
+            use_cognito_provided_values=False,
+            return_merged_resources=False,
+        )
 
         ### Secrets Manager
         sso_token_secret = secretsmanager.Secret(
