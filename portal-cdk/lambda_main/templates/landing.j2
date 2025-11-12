@@ -1,0 +1,141 @@
+{# djlint:off H006,H016,H030,H031,H021 #}
+<!DOCTYPE html>
+<html lang="en">
+    {% include 'head.j2' %}
+    {% include 'voice-atlas.j2' %}
+    <link rel="stylesheet"
+          href="https://cdn.jsdelivr.net/npm/purecss@3.0.0/build/pure-min.css"
+          integrity="sha384-X38yfunGUhNzHpBaEBsWLO+A0HDYOQi8ufWDkZ0k9e0eXz/tH3II7uKZ9msv++Ls"
+          crossorigin="anonymous" />
+    <style>
+        .outside-margins {
+            margin: 10rem;
+        }
+
+        .top-margins {
+            margin-top: 10rem;
+        }
+
+        .middle-margins {
+            margin-top: 5rem;
+        }
+
+        .bump-margin {
+            margin-top: 1rem;
+        }
+
+        .button-warning {
+            color: white;
+            border-radius: 4px;
+            text-shadow: 0 1px 1px rgba(0, 0, 0, 0.2);
+            font-size: 125%;
+            background: #b64d0a;
+        }
+
+        .link-button {
+            background: none; /* Remove background color */
+            border: none; /* Remove border */
+            padding: 0; /* Remove padding */
+            font: inherit; /* Inherit font styles from parent */
+            color: #2c7bb6; /* Set link color */
+            cursor: pointer; /* Change cursor to pointer on hover */
+            text-align: left; /* Align text to the left */
+        }
+
+        .link-button:hover {
+            color: darkblue; /* Change color on hover */
+        }
+
+        /* Basic styling for the popover element */
+        #myPopover {
+            background-color: #fff;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 10px;
+            box-shadow: 0 10px 10px rgba(0, 0, 0, 0.2);
+            width: 20%;
+            height: 30rem;
+        }
+
+        /* Styling for when the popover is open (optional, as default styling is often sufficient) */
+        #myPopover:popover-open {
+            /* Add specific styles for the open state if needed */
+        }
+
+        .custom-hr {
+            border-top: 1px solid #ccc; /* Creates a 1px solid light gray line */
+            margin: 20px 0; /* Adds some vertical spacing */
+            height: 0; /* Ensures the div itself doesn't take up vertical space beyond the border */
+        }
+    </style>
+    <body>
+        {% include './noscript.j2' %}
+        <section>
+            <div class="pure-g outside-margins">
+                <div class="pure-u-1-6"></div>
+                <div class="pure-u-1-2">
+                    <div class="pure-g top-margins">
+                        <div class="pure-u-1-3">
+                            <img style="height: 100px" src="/static/img/NASA_logo.svg" alt="nasa logo">
+                        </div>
+                        <div class="pure-u-1-3 bump-margin">
+                            <img style="height: 100px"
+                                 src="/static/img/OpenScienceLab_logo.svg"
+                                 alt="osl logo">
+                        </div>
+                    </div>
+                    <div class="pure-g middle-margins">
+                        <div class="pure-1">
+                            <h3>Welcome to OpenScienceLab!</h3>
+                            <p>
+                                OpenScienceLab is a collection of JupyterHub computing environments. Developed and operated by the <a href="https://asf.alaska.edu">Alaska Satellite Facility (ASF)</a>, it is used for education and research with data from NASA’s Distributed Active Archive Centers (DAAC).
+                            </p>
+                            <p>
+                                Signing up is free and includes access to ASF’s OpenSARLab - a lab designed for Synthetic Aperture Radar (SAR) workflows.
+                            </p>
+                            <p>
+                                Basic documentaion about OpenScienceLab can be found <span><a href="https://opensarlab-docs.asf.alaska.edu/">here.</a></span>
+                            </p>
+                            <p style="margin-top: 2rem;">
+                                <b>
+                                    Learn more about OpenScienceLab and SAR. Ask your pressing questions in your favorite language. Click the OSL Bot button to the right. Let us known what you think.
+                                </b>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <div class="pure-u-1-3">
+                    <div class="pure-g top-margins">
+                        <div class="pure-u-1-5"></div>
+                        <div class="pure-u-3-5 middle-margins">
+                            <div>
+                                <a class="pure-button button-warning"
+                                   href="{{ login_url }}{{ return_path }}">Log in</a>
+                            </div>
+                            <div class="custom-hr"></div>
+                            <div>
+                                <a href="{{ signup_url }}{{ return_path }}">Create Account</a>
+                            </div>
+                            <div>
+                                <a href="{{ forgot_password_url }}{{ return_path }}">Forgot Password?</a>
+                            </div>
+                            <div>
+                                <button class="link-button" popovertarget="myPopover">Reset MFA</button>
+                                <div id="myPopover" popover>
+                                    <!--This is the popover content using the Popover API!-->
+                                    <h3>To reset your MFA, please contact ASF Admins with your username.</h3>
+                                    <h3>It may take a few days to respond.</h3>
+                                    <h3>You will be emailed when your MFA is reset.</h3>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="pure-u-1-5"></div>
+                    </div>
+                    <div class="pure-g top-margins">
+                        <div class="pure-u-1"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </body>
+</html>
