@@ -32,7 +32,7 @@ roles = [
 
 #### Initialze Dockerized CDK Environment
 
-```
+```bash
 
 # Navigate to this path
 > pwd
@@ -55,7 +55,7 @@ The following ENV VARS are exported to the docker run environemnt, but `AWS_DEFA
 - `DEPLOY_PREFIX`
 - `PROJECT_NAME`
 
-```
+```bash
 # It is helpful to set a AWS Profile.
 > export AWS_DEFAULT_PROFILE=portal-nonprod-profile
 
@@ -66,7 +66,7 @@ bash-4.2#
 
 Once we're shelled into the Dockerized environment, we can start working with CDK!
 
-```
+```bash
 # AWS accounts need to be bootstrapped for each region (Once!)
 bash-4.2# make cdk-bootstrap
  ⏳  Bootstrapping environment aws://000000000000/us-west-2...
