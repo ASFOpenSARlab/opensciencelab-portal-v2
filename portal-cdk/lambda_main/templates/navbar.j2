@@ -43,7 +43,8 @@
                                 <!-- <a href="{{ reset_mfa_url }}">Reset MFA</a> -->
                                 <a class="popup-trigger">Reset MFA</a>
                             </div>
-                        </div><a id="logout"
+                        </div>
+                        <a id="logout"
                            role="button"
                            class="navbar-btn btn-sm btn btn-default"
                            href="{{ logout_url }}">
@@ -60,20 +61,18 @@
         </div>
     </div>
 </nav>
-
 <div class="modal" id="popup-modal">
     <div class="modal-content">
-        <span class="close-btn">&times;</span>
+        <span class="close-btn">×</span>
         <h2>Reset MFA</h2>
         <p>
-        We are currently developing a self-service workflow for resetting a user's
-        MFA configuration. In the meantime, please contact OpenScienceLab admins at
-        <a href="mailto:uaf-jupyterhub-admin@alaska.edu">uaf-jupyterhub-admin@alaska.edu</a>
-        with the email subject: "OpenScienceLab MFA Reset: {{ username }}".
+            We are currently developing a self-service workflow for resetting a user's
+            MFA configuration. In the meantime, please contact OpenScienceLab admins at
+            <a href="mailto:uaf-jupyterhub-admin@alaska.edu">uaf-jupyterhub-admin@alaska.edu</a>
+            with the email subject: "OpenScienceLab MFA Reset: {{ username }}".
         </p>
     </div>
 </div>
-
 <script>
     const toggle = document.querySelector('.dropdown-toggle');
     const menu = document.querySelector('.dropdown-menu');
