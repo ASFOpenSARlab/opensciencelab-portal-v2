@@ -28,5 +28,5 @@ jobs:
   markdown:
     uses: ASFOpenSARlab/osl-utils/.github/workflows/reusable-code-quality-markdown.yaml@v1.1.0
     with:
-      # The osl-utils docker tag. Can also be `dev`, initials, etc. Should match the tag above in prod.
+      # The osl-utils docker tag. Can also be `dev`, initials, etc. Should match the tag in prod.
       osl-utils-tag: v1.1.0
