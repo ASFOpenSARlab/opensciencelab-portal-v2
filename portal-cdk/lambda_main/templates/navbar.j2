@@ -34,7 +34,16 @@
             <ul class="nav navbar-nav navbar-right">
                 <li>
                     <span id="login_widget">
-                        <p class="navbar-text">{{ username }}</p>
+                        <div class="dropdown">
+                            <span class="navbar-text">
+                                <span class="dropdown-toggle">{{ username }}</span>
+                            </span>
+                            <div class="dropdown-menu">
+                                <a href="{{ reset_password_url }}">Reset Password</a>
+                                <!-- <a href="{{ reset_mfa_url }}">Reset MFA</a> -->
+                                <a class="popup-trigger">Reset MFA</a>
+                            </div>
+                        </div>
                         <a id="logout"
                            role="button"
                            class="navbar-btn btn-sm btn btn-default"
@@ -52,3 +61,52 @@
         </div>
     </div>
 </nav>
+<div class="modal" id="popup-modal">
+    <div class="modal-content">
+        <span class="close-btn">×</span>
+        <h2>Reset MFA</h2>
+        <p>
+            We are currently developing a self-service workflow for resetting a user's
+            MFA configuration. In the meantime, please contact OpenScienceLab admins at
+            <a href="mailto:uaf-jupyterhub-admin@alaska.edu">uaf-jupyterhub-admin@alaska.edu</a>
+            with the email subject: "OpenScienceLab MFA Reset: {{ username }}".
+        </p>
+    </div>
+</div>
+<script>
+    const toggle = document.querySelector('.dropdown-toggle');
+    const menu = document.querySelector('.dropdown-menu');
+    const dropdown = document.querySelector('.dropdown');
+    const popupTrigger = document.querySelector('.popup-trigger');
+    const modal = document.getElementById('popup-modal');
+    const closeBtn = document.querySelector('.close-btn');
+
+    toggle.addEventListener('click', function(e) {
+        e.stopPropagation();
+        menu.classList.toggle('show');
+        toggle.classList.toggle('active');
+    });
+
+    document.addEventListener('click', function(e) {
+        if (!dropdown.contains(e.target)) {
+            menu.classList.remove('show');
+            toggle.classList.remove('active');
+        }
+    });
+
+    popupTrigger.addEventListener('click', function(e) {
+        e.preventDefault();
+        menu.classList.remove('show');
+        modal.classList.add('show');
+    });
+
+    closeBtn.addEventListener('click', function() {
+        modal.classList.remove('show');
+    });
+
+    modal.addEventListener('click', function(e) {
+        if (e.target === modal) {
+            modal.classList.remove('show');
+        }
+    });
+</script>
