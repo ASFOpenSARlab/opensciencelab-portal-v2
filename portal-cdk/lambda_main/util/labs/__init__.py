@@ -22,6 +22,7 @@ PROD_LABS = {
         deployment_url="https://smce-prod-1240379463.us-west-2.elb.amazonaws.com",
         logo="ASFLogo-Blue2.png",
         about_page_url="https://opensarlab-docs.asf.alaska.edu/user/",
+        # about_page_button_label="Course",
         ip_country_status=daac_limited_restricted_status,
         accessibility="protected",
         allowed_profiles=[

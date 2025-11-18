@@ -37,6 +37,7 @@ jobs:
       SSL_CERT_ARN: ${{ vars.SSL_CERT_ARN }}
       DEPLOY_DOMAINS: ${{ vars.DEPLOY_DOMAINS }}
       AWS_DEFAULT_REGION: ${{ vars.AWS_DEFAULT_REGION }}
+      IS_PROD: ${{ needs.setup.outputs.environment == 'prod' }}
     steps:
       - name: Checkout Repo
         uses: actions/checkout@v4
