@@ -49,6 +49,7 @@ jobs:
           aws-region: ${{ vars.AWS_DEFAULT_REGION }}
 
       - name: Run Portal Testsuite
+        if: ${{ needs.setup.outputs.environment != 'prod' }}
         run: |
           make test
 
