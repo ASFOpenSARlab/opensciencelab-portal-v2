@@ -129,7 +129,7 @@ NON_PROD_LABS = {
             "m6a.large",
             "m6a.large - Desktop",
         ],
-        crypto_remediation_role_arn="arn:aws:iam::000000000000:role/service-role/cryptomining-remediation-role-b4sw3o86",
+        crypto_remediation_role_arn="arn:aws:iam::123456789012:role/service-role/cryptomining-remediation-role-b4sw3o86",
     ),
     "test_protected": BaseLab(
         short_lab_name="test_protected",
