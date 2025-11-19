@@ -44,6 +44,8 @@ be completed using the following steps:
 
 ##### First-time AWS Account Setup
 
+First time account setup requires [oidc provider and cdk bootstrapping](./oidc-cdk/README.md).
+
 One of the parameters to pass in is an existing, **VERIFIED** SES domain.
 
 - Create one first with `AWS SES` -> `Identities` -> `Create Identity` -> `Domain`. Name it `opensciencelab.asf.alaska.edu`. Accept all the defaults and create it.
@@ -198,6 +200,14 @@ should **never** be released by any mechanism other than GitHub actions.
 For testing, see the [Testing README](./portal-cdk/tests/README.md).
 
 ### Automation
+
+#### GitHub Variables and Secrets
+
+Environments: `prod`, `test`, `dev` \
+Required variables:
+- AWS_ACCOUNT_NUMBER
+- DEPLOY_DOMAINS
+- SSL_CERT_ARN
 
 #### GitHub Actions
 
