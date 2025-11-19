@@ -22,6 +22,7 @@ class BaseLab:
             ],
         }
     )
+    crypto_remediation_role_arn: str = None
 
 
 daac_limited_restricted_status = {

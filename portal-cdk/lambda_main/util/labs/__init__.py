@@ -39,6 +39,7 @@ PROD_LABS = {
             "OPERA",
             "noistio",
         ],
+        crypto_remediation_role_arn="arn:aws:iam::381492216607:role/service-role/cryptomining-remediation-role-b4sw3o86",
     ),
     "azdwr-prod-opensarlab": BaseLab(
         short_lab_name="azdwr-prod-opensarlab",
@@ -128,6 +129,7 @@ NON_PROD_LABS = {
             "m6a.large",
             "m6a.large - Desktop",
         ],
+        crypto_remediation_role_arn="arn:aws:iam::000000000000:role/service-role/cryptomining-remediation-role-b4sw3o86",
     ),
     "test_protected": BaseLab(
         short_lab_name="test_protected",
