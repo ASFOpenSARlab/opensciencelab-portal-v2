@@ -56,6 +56,7 @@ INNER JOIN
    users_info AS t2 ON t1.name == t2.username,
    useretc.profile AS p1 ON p1.username == t1.name
 WHERE
+   -- t1.name = 'bbuechle' and
    -- User last logged in within the last 12 months
    t1.last_activity > date(current_date, '-{EXPORT_ACTIVITY_CUTOFF_MONTHS} months') AND
 
@@ -81,7 +82,8 @@ ORDER by t1.last_activity ASC;
 ACCESS_SQL = """
 select 
    lab_short_name,
-   username
+   username,
+   lab_profiles 
 from 
    useretc.access
 where
@@ -106,6 +108,6 @@ for row in rows:
 
     labs = [dict(lab) for lab in cur.fetchall()]
     export_object["labs"] = labs
-    print(export_object)
+    print(json.dumps(export_object, indent=2))
 
     break
