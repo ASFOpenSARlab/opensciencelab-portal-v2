@@ -10,8 +10,7 @@ from oidc_provider import OidcProviderStack
 
 # User Stack Name
 project_name = os.getenv("PROJECT_NAME")
-stack_prefix = os.getenv("DEPLOY_PREFIX", "test")
-stack_name = project_name if project_name else f"{stack_prefix}-oidc-provider"
+stack_name = project_name if project_name else "oidc-provider"
 
 app = cdk.App()
 OidcProviderStack(
