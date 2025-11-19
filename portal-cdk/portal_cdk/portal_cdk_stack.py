@@ -260,7 +260,7 @@ class PortalCdkStack(Stack):
             log_group=user_ip_log_group,
             # the properties below are optional
             removal_policy=(
-                RemovalPolicy.REMAIN
+                RemovalPolicy.RETAIN
                 if vars["deploy_prefix"] == "prod"
                 else RemovalPolicy.DESTROY
             ),
