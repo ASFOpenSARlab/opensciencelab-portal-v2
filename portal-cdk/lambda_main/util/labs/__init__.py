@@ -61,7 +61,7 @@ PROD_LABS = {
         short_lab_name="avo-prod",
         friendly_name="AVO",
         description="Alaska Volcano Observatory deployment, powered by ASF OpenScienceLab",
-        deployment_url="https://avo-prod-53819398.us-west-2.elb.amazonaws.com/",
+        deployment_url="https://avo-prod-53819398.us-west-2.elb.amazonaws.com",
         accessibility="private",
         allowed_profiles=[
             "SAR 1",
@@ -83,7 +83,7 @@ PROD_LABS = {
             Class lab, powered by ASF OpenScienceLab.
         </p>
         """,
-        deployment_url="http://geos636-224946823.us-west-2.elb.amazonaws.com/",
+        deployment_url="http://geos636-224946823.us-west-2.elb.amazonaws.com",
         # about_page_url="",
         # about_page_button_label="Course",
         accessibility="private",
