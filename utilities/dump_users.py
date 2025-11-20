@@ -92,22 +92,120 @@ where
 
 # Connect to DBS
 db = sqlite3.connect(f"file:{JUPYTER_HUB_DB}?mode=ro", uri=True)
-db.row_factory = sqlite3.Row # Enable column fetching
+db.row_factory = sqlite3.Row  # Enable column fetching
 cur = db.cursor()
 
 # Join other DB's
-cur.execute(f"ATTACH DATABASE 'file:{USER_ETC_DB}?mode=ro' AS useretc")
+_ = cur.execute(f"ATTACH DATABASE 'file:{USER_ETC_DB}?mode=ro' AS useretc")
 
 ####
-cur.execute(ALL_SQL)
+_ = cur.execute(ALL_SQL)
 rows = [row for row in cur.fetchall()]
 
 for row in rows:
     export_object = dict(row)
-    cur.execute(ACCESS_SQL, (export_object["username"], ))
+    cur.execute(ACCESS_SQL, (export_object["username"],))
 
     labs = [dict(lab) for lab in cur.fetchall()]
     export_object["labs"] = labs
+
+    crafted_export = {
+        "username": {"S": export_object["username"]},
+        "access": {"L": [{"S": "user"}, {"S": "admin"}]}
+        if export_object["is_admin"] == 1
+        else {"L": [{"S": "user"}]},
+        "country_code": {"S": export_object["country_code"]},
+        "created_at": {"S": export_object["created_at"]},
+        "email": {"S": export_object["email"]},
+        "ip_address": {"S": export_object["ip_address"]},
+        "is_locked": {"BOOL": export_object["is_locked"] == 1},
+        "labs": {
+            "M": {
+                entry["lab_short_name"]: {
+                    "M": {
+                        "lab_profiles": {
+                            "L": []
+                            if entry["lab_profiles"] is None
+                            or entry["lab_profiles"] == ""
+                            else [n.strip() for n in entry["lab_profiles"].split(",")]
+                        }
+                    }
+                }
+            }
+            for entry in export_object["labs"]
+        },
+        "last_cookie_assignment": {"S": export_object["last_cookie_assignment"]},
+        "last_update": {"S": export_object["last_update"]},
+        "profile": {
+            "M": {
+                "country_of_residence": {
+                    "S": export_object["profile.country_of_residence"]
+                },
+                "faculty_member_affliated_with_university": {
+                    "BOOL": export_object[
+                        "profile.faculty_member_affliated_with_university"
+                    ]
+                    == "Yes"
+                },
+                "graduate_student_affliated_with_university": {
+                    "BOOL": export_object[
+                        "profile.graduate_student_affliated_with_university"
+                    ]
+                    == "Yes"
+                },
+                "is_affiliated_with_nasa": {
+                    "S": export_object["profile.is_affiliated_with_nasa"].lower()
+                },
+                "is_affiliated_with_us_gov_research": {
+                    "S": export_object[
+                        "profile.is_affiliated_with_us_gov_research"
+                    ].lower()
+                },
+                "is_affliated_with_isro_research": {
+                    "S": export_object[
+                        "profile.is_affliated_with_isro_research"
+                    ].lower()
+                },
+                "is_affliated_with_university": {
+                    "S": export_object["profile.is_affliated_with_university"].lower()
+                },
+                "pi_affliated_with_nasa_research_email": {
+                    "S": export_object[
+                        "profile.pi_affliated_with_nasa_research_email"
+                    ].lower()
+                },
+                "research_member_affliated_with_university": {
+                    "BOOL": export_object[
+                        "profile.research_member_affliated_with_university"
+                    ]
+                    == "Yes"
+                },
+                "user_affliated_with_gov_research_email": {
+                    "S": export_object[
+                        "profile.user_affliated_with_gov_research_email"
+                    ].lower()
+                },
+                "user_affliated_with_isro_research_email": {
+                    "S": export_object[
+                        "profile.user_affliated_with_isro_research_email"
+                    ].lower()
+                },
+                "user_affliated_with_nasa_research_email": {
+                    "S": export_object[
+                        "profile.user_affliated_with_nasa_research_email"
+                    ].lower()
+                },
+            }
+        },
+        "random_dict": {"NULL": True},
+        "require_profile_update": {
+            "BOOL": True if export_object["require_profile_update"] == 1 else False
+        },
+        "some_int_without_default": {"NULL": True},
+        "_rec_counter": {"N": export_object["_rec_counter"]},
+    }
+
     print(json.dumps(export_object, indent=2))
+    print(json.dumps(crafted_export, indent=2))
 
     break
