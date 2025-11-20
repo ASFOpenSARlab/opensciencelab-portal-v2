@@ -102,6 +102,14 @@ _ = cur.execute(f"ATTACH DATABASE 'file:{USER_ETC_DB}?mode=ro' AS useretc")
 _ = cur.execute(ALL_SQL)
 rows = [row for row in cur.fetchall()]
 
+active_labs = [
+    "smce-prod-opensarlab",
+    "smce-test-opensarlab",
+    "azdwr-prod-opensarlab",
+    "avo-prod",
+    "geos636-2025",
+]
+
 for row in rows:
     export_object = dict(row)
     cur.execute(ACCESS_SQL, (export_object["username"],))
@@ -133,6 +141,7 @@ for row in rows:
                 }
             }
             for entry in export_object["labs"]
+            if entry["lab_short_name"] in active_labs
         },
         "last_cookie_assignment": {"S": export_object["last_cookie_assignment"]},
         "last_update": {"S": export_object["last_update"]},
