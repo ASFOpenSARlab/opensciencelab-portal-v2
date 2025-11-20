@@ -192,6 +192,7 @@ class PortalCdkStack(Stack):
             else portal_cloudfront.distribution_domain_name
         )
 
+        crypto_remediation_arns = []
         # Loop over Labs and add proxy behaviors
         for lab in LABS.values():
             parsed_url = urlparse(lab.deployment_url)
@@ -204,6 +205,8 @@ class PortalCdkStack(Stack):
                     "return-path": f"{http_api.http_api_id}.execute-api.{self.region}.amazonaws.com"
                 },
             )
+            if lab.crypto_remediation_role_arn:
+                crypto_remediation_arns.append(lab.crypto_remediation_role_arn)
 
             # LAB_SHORT_NAME, LAB_DOMAIN
             portal_cloudfront.add_behavior(
@@ -438,6 +441,31 @@ class PortalCdkStack(Stack):
             return_merged_resources=False,
         )
 
+        if crypto_remediation_arns:
+            # Create a list of ArnPrincipal objects from the ARNs
+            arn_principals = [iam.ArnPrincipal(arn) for arn in crypto_remediation_arns]
+
+            # Deconflict names in test/dev with consistant name for prod
+            role_name = "Cross-Account-Lambda-To-Cognito"
+            if vars["deploy_prefix"].lower() != "prod":
+                role_name += f"-{vars['deploy_prefix'].title()}"
+
+            lambda_role = iam.Role(
+                self,
+                "CrossAccountLambdaToCognito",
+                assumed_by=iam.CompositePrincipal(*arn_principals),
+                role_name=role_name,
+                description="IAM Role for cross account crypto remediation lambda access to cognito",
+            )
+            lambda_role.add_to_policy(
+                iam.PolicyStatement(
+                    actions=[
+                        "cognito-idp:AdminDisableUser",
+                    ],
+                    resources=[user_pool.user_pool_arn],
+                )
+            )
+
         ### Secrets Manager
         sso_token_secret = secretsmanager.Secret(
             self,
@@ -532,4 +560,11 @@ class PortalCdkStack(Stack):
             "return-path-whitelist-value",
             value=f"{http_api.http_api_id}.execute-api.{self.region}.amazonaws.com",
             description="The return-path value that needs to be added to Lab whitelists (for non-prod)",
+        )
+
+        CfnOutput(
+            self,
+            "Cross-Account-Crypto-Remediation-Role",
+            value=lambda_role.role_arn,
+            description="IAM Role for cross account crypto remediation lambda access to cognito",
         )
