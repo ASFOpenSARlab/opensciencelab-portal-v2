@@ -46,12 +46,18 @@ def add_lab():
 def manage_lab(shortname):
     template_input = {}
 
+    user_filter = access_router.current_event.query_string_parameters.get("filter")
+    row_limit = 200
+
     # Get users of lab, check if lab exists
-    users = get_users_with_lab(shortname)
+    users = get_users_with_lab(shortname, limit=row_limit, username_filter=user_filter)
+    users = sorted(users, key=lambda x: x["username"])
     template_input["users"] = users
 
     lab = LABS[shortname]
     template_input["lab"] = lab
+    template_input["rowcount"] = len(users)
+    template_input["exceeded"] = len(users) >= row_limit
 
     return jinja_template(template_input, "manage.j2")
 
