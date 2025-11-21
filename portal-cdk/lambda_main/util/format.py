@@ -72,7 +72,7 @@ def jinja_template(template_input, template_name):
     return template.render(**template_input)
 
 
-def render_template(content, input=None, name=None, title="OSL Portal"):
+def render_template(content, input=None, name=None, title=None):
     # Check for a logged-out return path
     current_event = current_session.app.current_event
     return_path = current_event.query_string_parameters.get("return", None)
@@ -80,6 +80,9 @@ def render_template(content, input=None, name=None, title="OSL Portal"):
 
     if not name:
         name = "main.j2"
+
+    if not title:
+        title = "OSL Portal"
 
     username = current_session.auth.cognito.username
 
