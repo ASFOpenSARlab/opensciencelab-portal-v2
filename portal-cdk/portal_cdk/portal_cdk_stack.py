@@ -328,7 +328,7 @@ class PortalCdkStack(Stack):
             mfa=cognito.Mfa.REQUIRED,
             ## The different ways users can get a MFA code:
             # https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_cognito.MfaSecondFactor.html
-            mfa_second_factor=cognito.MfaSecondFactor(sms=True, otp=True, email=False),
+            mfa_second_factor=cognito.MfaSecondFactor(sms=False, otp=True, email=False),
             deletion_protection=bool(vars["deploy_prefix"] == "prod"),
             # Default removal_policy is always RETAIN:
             removal_policy=(

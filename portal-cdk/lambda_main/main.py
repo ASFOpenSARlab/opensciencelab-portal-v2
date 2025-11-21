@@ -162,10 +162,17 @@ def send_user_email_deprecated():
 @app.not_found
 @portal_template(title="Request Not Found", name="logged-out.j2", response=404)
 def handle_not_found(error):
+    # Don't dump context in prod
+    if os.getenv("IS_PROD", "false").lower() != "true":
+        # Dump request context in non-prod
+        debug_info = f"<pre>{request_context_string(app)}</pre>"
+    else:
+        debug_info = "<a href='/portal'>Return to portal Home</a>"
+
     body = f"""
     <h3>Not Found: '{app.current_event.request_context.http.path}'<h3>
     <hr>
-    <pre>{request_context_string(app)}</pre>
+    {debug_info}
     """
     return body
 
