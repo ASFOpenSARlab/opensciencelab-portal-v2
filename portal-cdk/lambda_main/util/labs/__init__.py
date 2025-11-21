@@ -38,6 +38,7 @@ PROD_LABS = {
             "VDAP m6a.large",
             "OPERA",
             "noistio",
+            "sudo",
         ],
         crypto_remediation_role_arn="arn:aws:iam::381492216607:role/service-role/cryptomining-remediation-role-b4sw3o86",
     ),
@@ -55,6 +56,7 @@ PROD_LABS = {
             "AZDWR SAR 3",
             "AZDWR SAR 4",
             "AZDWR SAR 5",
+            "sudo",
         ],
     ),
     "avo-prod": BaseLab(
@@ -68,6 +70,7 @@ PROD_LABS = {
             "SAR 2",
             "SAR 3",
             "Debug Server Profile",
+            "sudo",
         ],
     ),
     "geos636-2025": BaseLab(
@@ -90,6 +93,7 @@ PROD_LABS = {
         allowed_profiles=[
             "Debug Server Profile",
             "m6a.large",
+            "sudo",
         ],
     ),
 }
@@ -128,6 +132,7 @@ NON_PROD_LABS = {
             "m6a.xlarge",
             "m6a.large",
             "m6a.large - Desktop",
+            "sudo",
         ],
         crypto_remediation_role_arn="arn:aws:iam::381492216607:role/service-role/cryptomining-remediation-role-b4sw3o86",
     ),
