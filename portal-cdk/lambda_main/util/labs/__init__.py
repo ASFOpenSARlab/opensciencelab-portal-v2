@@ -21,7 +21,8 @@ PROD_LABS = {
         """,
         deployment_url="https://smce-prod-1240379463.us-west-2.elb.amazonaws.com",
         logo="ASFLogo-Blue2.png",
-        about_page_url="https://opensarlab-docs.asf.alaska.edu/user/",
+        about_page_url="https://opensarlab-docs.asf.alaska.edu/",
+        about_page_button_label="Info",
         ip_country_status=daac_limited_restricted_status,
         accessibility="protected",
         allowed_profiles=[
@@ -117,8 +118,8 @@ NON_PROD_LABS = {
         """,
         deployment_url="http://smce-test-1433554573.us-west-2.elb.amazonaws.com",
         logo="ASFLogo-Blue2.png",
-        # about_page_url="",
-        # about_page_button_label="Course",
+        about_page_url="https://opensarlab-docs.asf.alaska.edu/",
+        about_page_button_label="Info",
         ip_country_status=daac_limited_restricted_status,
         accessibility="private",
         allowed_profiles=[
