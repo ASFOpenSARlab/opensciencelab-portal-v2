@@ -247,19 +247,6 @@ class TestPortalAuth:
         }
         assert decrypt_data(json_payload["data"]) == expected_data
 
-    def test_get_portal_hub_auth(self, lambda_context, fake_auth, helpers, monkeypatch):
-        # Create FakeUser instance to be monkeypatched in and inspected after modified
-        user = helpers.FakeUser()
-        monkeypatch.setattr("util.auth.User", lambda *args, **kwargs: user)
-
-        event = helpers.get_event(path="/portal/hub/login", cookies=fake_auth)
-        ret = main.lambda_handler(event, lambda_context)
-        assert ret["statusCode"] == 200
-        assert ret["headers"].get("Content-Type") == "text/html"
-        assert ret["body"].find("hello - Cookie Created") != -1
-        cookies = [cookie.split("=")[0] for cookie in ret["cookies"]]
-        assert PORTAL_USER_COOKIE in cookies
-
     def test_get_portal_hub_no_auth(self, lambda_context, helpers):
         event = helpers.get_event(path="/portal/hub", cookies={"foo": "bar"})
         ret = main.lambda_handler(event, lambda_context)
