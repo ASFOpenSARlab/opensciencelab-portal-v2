@@ -226,7 +226,7 @@ def get_labs_users(shortname):
     users = get_users_with_lab(shortname)
 
     return wrap_response(
-        body=json.dumps({"users": users, "message": "OK"}),
+        body=json.dumps({"users": users, "message": "OK"}, default=str),
         code=200,
         content_type=content_types.APPLICATION_JSON,
     )
