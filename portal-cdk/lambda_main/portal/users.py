@@ -74,15 +74,27 @@ def users_root():
     message = users_router.current_event.query_string_parameters.get("message")
     success = users_router.current_event.query_string_parameters.get("success", "false")
     username = users_router.current_event.query_string_parameters.get("username")
+    user_filter = users_router.current_event.query_string_parameters.get("filter")
 
     # Fetch all users
     all_users = get_all_items()
     all_users_sorted = sorted(all_users, key=lambda x: x["username"])
+
+    # Apply optional filter
+    if user_filter:
+        all_users_sorted = [x for x in all_users_sorted if user_filter in x["username"]]
+
+    # Limit to 200 rows max
+    full_list_count = len(all_users_sorted)
+    all_users_sorted = all_users_sorted[0:200]
+
     template_input = {
         "all_users_sorted": all_users_sorted,
         "message": message,
         "success": success.lower() == "true",
         "username": username,
+        "rowcount": len(all_users_sorted),
+        "exceeded": full_list_count > len(all_users_sorted),
     }
 
     # Generate an HTML table
