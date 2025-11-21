@@ -11,6 +11,14 @@
         </span>
     </div>
 </div>
+{% if exceeded %}
+    <div style="border: 2px solid red;
+                background-color: lightcoral;
+                width:95%;
+                vertical-align: middle">
+        Search results limited to {{ rowcount }}. Try filtering with <code>?filter=value</code>
+    </div>
+{% endif %}
 <div class="margin-left-30">
     <table>
         <tr class="tr-highlight">

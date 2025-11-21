@@ -143,17 +143,50 @@ def get_record_counter(table, username) -> int:
     return int(response["Item"]["_rec_counter"])
 
 
-def get_all_items() -> list:
+def filter_username(items, username_filter):
+    """
+    Helper function to filter dynamo pagination return
+    """
+    if not username_filter:
+        return items
+    return [x for x in items if username_filter in x["username"]]
+
+
+def pull_all_pagination(table, limit, username_filter, filterexpr=None):
+    table_scan_params = {}
+    if filterexpr:
+        table_scan_params["FilterExpression"] = filterexpr
+
+    response = table.scan(**table_scan_params)
+    items = filter_username(response.get("Items", []), username_filter)
+    while "LastEvaluatedKey" in response:
+        table_scan_params["ExclusiveStartKey"] = response["LastEvaluatedKey"]
+        response = table.scan(**table_scan_params)
+        items.extend(filter_username(response.get("Items", []), username_filter))
+
+        # Break if we meet a set limit, and we're not filtering
+        if limit and len(items) >= limit:
+            break
+
+    return items
+
+
+def get_all_items(limit=None, username_filter=None) -> list:
     """
     Returns all items in the DB.
     Need to page because there's a 100 item limit.
+
+    limit: A maximum list return length
+    username_filter: Only return users matching filter
+
     """
     _client, _db, table = _get_dynamo()
-    response = table.scan()
-    items = response.get("Items", [])
-    while "LastEvaluatedKey" in response:
-        response = table.scan(ExclusiveStartKey=response["LastEvaluatedKey"])
-        items.extend(response.get("Items", []))
+    items = pull_all_pagination(table, limit, username_filter)
+
+    # Bound the return set if limit provided
+    if limit:
+        return items[:limit]
+
     return items
 
 
@@ -225,7 +258,9 @@ def update_username(old_username: str, new_username: str) -> bool:
 
 
 # Returns a list of users usernames that have access to a given lab
-def get_users_with_lab(lab_short_name: str) -> list[dict]:
+def get_users_with_lab(
+    lab_short_name: str, limit: int | None = None, username_filter: str | None = None
+) -> list[dict]:
     # Check if lab exists
     if lab_short_name not in LABS:
         raise LabDoesNotExist(message=f'"{lab_short_name}" lab does not exist')
@@ -233,6 +268,10 @@ def get_users_with_lab(lab_short_name: str) -> list[dict]:
     # Get users info
     _client, _db, table = _get_dynamo()
     filterexpr = Attr(f"labs.{lab_short_name}").exists()
-    response = table.scan(FilterExpression=filterexpr)
 
-    return response["Items"]
+    items = pull_all_pagination(table, limit, username_filter, filterexpr)
+
+    if limit:
+        return items[:limit]
+
+    return items
