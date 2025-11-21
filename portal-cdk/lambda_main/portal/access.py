@@ -81,12 +81,6 @@ def validate_edit_user_request(body: dict) -> tuple[bool, str]:
         # check removing user fields provided
         return True, "Ready to remove user"
 
-    elif body["action"] == "toggle_can_user_see_lab_card":
-        return True, "Ready to toggle can_user_see_lab_card"
-
-    elif body["action"] == "toggle_can_user_access_lab":
-        return True, "Ready to toggle can_user_access_lab"
-
     else:
         return False, "Invalid action"
 
