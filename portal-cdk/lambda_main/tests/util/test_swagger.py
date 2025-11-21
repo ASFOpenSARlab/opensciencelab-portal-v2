@@ -5,7 +5,6 @@ SWAGGER_EXCLUDED_ENDPOINTS = {
         ("GET", "/portal/hub"),
         ("GET", "/portal/hub/home"),
         ("GET", "/portal/hub/auth"),
-        ("GET", "/portal/hub/login"),
     ],
     "portal_root": [
         ("GET", "/portal"),

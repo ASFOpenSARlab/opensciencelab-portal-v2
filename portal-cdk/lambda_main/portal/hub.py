@@ -1,12 +1,10 @@
-import datetime
-
 import json
 import base64
 
 from util import swagger
 from util import send_email
 from util.responses import wrap_response
-from util.format import portal_template, request_context_string
+from util.format import portal_template
 from util.auth import encrypt_data, require_access
 from util.session import current_session
 from util.user import User
@@ -14,12 +12,8 @@ from util.user import User
 from aws_lambda_powertools import Logger
 from aws_lambda_powertools.event_handler.api_gateway import Router
 from aws_lambda_powertools.event_handler import content_types
-from aws_lambda_powertools.shared.cookies import Cookie
 
 hub_router = Router()
-
-TEMP_USERNAME = "tester1"
-COOKIE_NAME = "portal-username"
 
 hub_route = {
     "router": hub_router,
@@ -55,9 +49,6 @@ def get_portal_hub_auth():
     next_url = hub_router.current_event.query_string_parameters.get("next_url", None)
     username = current_session.auth.cognito.username
     logger.info(f"GET auth: {next_url=}, (username = {username}")
-
-    ### Authenticate with Portal server cookie here
-    # If not authenticated, go to /portal/hub/login so the user can authenticate within browser
 
     return wrap_response(
         body={"Redirect": next_url},
@@ -125,46 +116,6 @@ def post_portal_hub_auth():
         code=200,
         content_type=content_types.APPLICATION_JSON,
     )
-
-
-@hub_router.get("/login", include_in_schema=False)
-@require_access(human=True)
-def portal_hub_login():
-    try:
-        logger.info("Log in user")
-
-        ## Create portal-auth server cookie here
-
-        ## Create portal-username browser cookie
-        cookie_value = encrypt_data(TEMP_USERNAME)
-        expiration_date = datetime.datetime.now(
-            datetime.timezone.utc
-        ) + datetime.timedelta(days=7)
-        portal_username_cookie = Cookie(
-            name=COOKIE_NAME,
-            value=cookie_value,
-            path="/",
-            secure=False,
-            http_only=True,
-            expires=expiration_date,
-        )
-
-        return wrap_response(
-            body="<html><body><p>hello - Cookie Created</p></body></html>",
-            cookies=[portal_username_cookie],
-        )
-
-    except Exception as e:
-        body = f"""
-        <html><body>
-        <h3>Error: @ '{hub_router.current_event.request_context.http.path}'</h3>
-        <hr>
-        <pre>{e}</pre>
-        <hr>
-        <pre>{request_context_string(hub_router)}</pre>
-        </body></html>
-        """
-        return wrap_response(body=body, code=400)
 
 
 swagger_email_options = {
