@@ -35,8 +35,6 @@ def wrap_response(body, code=200, content_type=None, headers=None, cookies=None)
 
         response_payload["cookies"] = cookies
 
-    logger.info(response_payload)
-
     return Response(**response_payload)
 
 
