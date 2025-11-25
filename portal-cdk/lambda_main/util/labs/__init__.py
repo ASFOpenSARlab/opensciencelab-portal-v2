@@ -21,8 +21,8 @@ PROD_LABS = {
         """,
         deployment_url="https://smce-prod-1240379463.us-west-2.elb.amazonaws.com",
         logo="ASFLogo-Blue2.png",
-        about_page_url="https://opensarlab-docs.asf.alaska.edu/user/",
-        # about_page_button_label="Course",
+        about_page_url="https://opensarlab-docs.asf.alaska.edu/",
+        about_page_button_label="Info",
         ip_country_status=daac_limited_restricted_status,
         accessibility="protected",
         allowed_profiles=[
@@ -39,7 +39,9 @@ PROD_LABS = {
             "VDAP m6a.large",
             "OPERA",
             "noistio",
+            "sudo",
         ],
+        crypto_remediation_role_arn="arn:aws:iam::381492216607:role/service-role/cryptomining-remediation-role-b4sw3o86",
     ),
     "azdwr-prod-opensarlab": BaseLab(
         short_lab_name="azdwr-prod-opensarlab",
@@ -55,6 +57,7 @@ PROD_LABS = {
             "AZDWR SAR 3",
             "AZDWR SAR 4",
             "AZDWR SAR 5",
+            "sudo",
         ],
     ),
     "avo-prod": BaseLab(
@@ -68,6 +71,7 @@ PROD_LABS = {
             "SAR 2",
             "SAR 3",
             "Debug Server Profile",
+            "sudo",
         ],
     ),
     "geos636-2025": BaseLab(
@@ -90,6 +94,7 @@ PROD_LABS = {
         allowed_profiles=[
             "Debug Server Profile",
             "m6a.large",
+            "sudo",
         ],
     ),
 }
@@ -113,8 +118,8 @@ NON_PROD_LABS = {
         """,
         deployment_url="http://smce-test-1433554573.us-west-2.elb.amazonaws.com",
         logo="ASFLogo-Blue2.png",
-        # about_page_url="",
-        # about_page_button_label="Course",
+        about_page_url="https://opensarlab-docs.asf.alaska.edu/",
+        about_page_button_label="Info",
         ip_country_status=daac_limited_restricted_status,
         accessibility="private",
         allowed_profiles=[
@@ -128,7 +133,9 @@ NON_PROD_LABS = {
             "m6a.xlarge",
             "m6a.large",
             "m6a.large - Desktop",
+            "sudo",
         ],
+        crypto_remediation_role_arn="arn:aws:iam::381492216607:role/service-role/cryptomining-remediation-role-b4sw3o86",
     ),
     "test_protected": BaseLab(
         short_lab_name="test_protected",
