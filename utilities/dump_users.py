@@ -304,90 +304,96 @@ active_labs = [
     "geos636-2025",
 ]
 
-for row in rows:
-    export_object = dict(row)
-    cur.execute(ACCESS_SQL, (export_object["username"],))
 
-    labs = [dict(lab) for lab in cur.fetchall()]
-    export_object["labs"] = labs
+def migrate_users():
+    for row in rows:
+        export_object = dict(row)
+        cur.execute(ACCESS_SQL, (export_object["username"],))
 
-    crafted_export = {
-        "username": export_object["username"],
-        "access": ["user", "admin"] if export_object["is_admin"] == 1 else ["user"],
-        "country_code": export_object["country_code"],
-        "created_at": export_object["created_at"],
-        "email": export_object["email"],
-        "ip_address": export_object["ip_address"],
-        "is_locked": export_object["is_locked"] == 1,
-        "labs": {
-            entry["lab_short_name"]: {
-                "lab_profiles": []
-                if entry["lab_profiles"] is None or entry["lab_profiles"] == ""
-                else [n.strip() for n in entry["lab_profiles"].split(",")]
-            }
-            for entry in export_object["labs"]
-            if entry["lab_short_name"] in active_labs
-        },
-        "last_cookie_assignment": export_object["last_cookie_assignment"],
-        "last_update": export_object["last_update"],
-        "profile": {
-            "country_of_residence": export_object.get(
-                "profile.country_of_residence", ""
-            ),
-            "faculty_member_affliated_with_university": export_object.get(
-                "profile.faculty_member_affliated_with_university", "No"
+        labs = [dict(lab) for lab in cur.fetchall()]
+        export_object["labs"] = labs
+
+        crafted_export = {
+            "username": export_object["username"],
+            "access": ["user", "admin"] if export_object["is_admin"] == 1 else ["user"],
+            "country_code": export_object["country_code"],
+            "created_at": export_object["created_at"],
+            "email": export_object["email"],
+            "ip_address": export_object["ip_address"],
+            "is_locked": export_object["is_locked"] == 1,
+            "labs": {
+                entry["lab_short_name"]: {
+                    "lab_profiles": []
+                    if entry["lab_profiles"] is None or entry["lab_profiles"] == ""
+                    else [n.strip() for n in entry["lab_profiles"].split(",")]
+                }
+                for entry in export_object["labs"]
+                if entry["lab_short_name"] in active_labs
+            },
+            "last_cookie_assignment": export_object["last_cookie_assignment"],
+            "last_update": export_object["last_update"],
+            "profile": {
+                "country_of_residence": export_object.get(
+                    "profile.country_of_residence", ""
+                ),
+                "faculty_member_affliated_with_university": export_object.get(
+                    "profile.faculty_member_affliated_with_university", "No"
+                )
+                == "Yes",
+                "graduate_student_affliated_with_university": export_object.get(
+                    "profile.graduate_student_affliated_with_university", "No"
+                )
+                == "Yes",
+                "is_affiliated_with_nasa": export_object.get(
+                    "profile.is_affiliated_with_nasa", ""
+                ).lower()
+                or None,
+                "is_affiliated_with_us_gov_research": export_object.get(
+                    "profile.is_affiliated_with_us_gov_research", ""
+                ).lower(),
+                "is_affliated_with_isro_research": export_object.get(
+                    "profile.is_affliated_with_isro_research", ""
+                ).lower(),
+                "is_affliated_with_university": export_object.get(
+                    "profile.is_affliated_with_university", ""
+                ).lower(),
+                "pi_affliated_with_nasa_research_email": export_object.get(
+                    "profile.pi_affliated_with_nasa_research_email", ""
+                ).lower(),
+                "research_member_affliated_with_university": export_object.get(
+                    "profile.research_member_affliated_with_university", "No"
+                )
+                == "Yes",
+                "user_affliated_with_gov_research_email": export_object.get(
+                    "profile.user_affliated_with_gov_research_email", ""
+                ).lower(),
+                "user_affliated_with_isro_research_email": export_object.get(
+                    "profile.user_affliated_with_isro_research_email", ""
+                ).lower(),
+                "user_affliated_with_nasa_research_email": export_object.get(
+                    "profile.user_affliated_with_nasa_research_email", ""
+                ).lower(),
+                "user_or_pi_nasa_email": "none",
+            },
+            "require_profile_update": True
+            if export_object.get("require_profile_update", 1) == 1
+            else False,
+            "_rec_counter": export_object["_rec_counter"],
+        }
+
+        print("----")
+        print(json.dumps(export_object, indent=2))
+        print(json.dumps(crafted_export, indent=2))
+
+        _ = create_item(crafted_export)
+
+        if args.cognito:
+            cog_client.admin_create_user(
+                UserPoolId=args.user_pool_id,
+                Username=crafted_export["username"],
+                UserAttributes=[{"Name": "email", "Value": crafted_export["email"]}],
             )
-            == "Yes",
-            "graduate_student_affliated_with_university": export_object.get(
-                "profile.graduate_student_affliated_with_university", "No"
-            )
-            == "Yes",
-            "is_affiliated_with_nasa": export_object.get(
-                "profile.is_affiliated_with_nasa", ""
-            ).lower()
-            or None,
-            "is_affiliated_with_us_gov_research": export_object.get(
-                "profile.is_affiliated_with_us_gov_research", ""
-            ).lower(),
-            "is_affliated_with_isro_research": export_object.get(
-                "profile.is_affliated_with_isro_research", ""
-            ).lower(),
-            "is_affliated_with_university": export_object.get(
-                "profile.is_affliated_with_university", ""
-            ).lower(),
-            "pi_affliated_with_nasa_research_email": export_object.get(
-                "profile.pi_affliated_with_nasa_research_email", ""
-            ).lower(),
-            "research_member_affliated_with_university": export_object.get(
-                "profile.research_member_affliated_with_university", "No"
-            )
-            == "Yes",
-            "user_affliated_with_gov_research_email": export_object.get(
-                "profile.user_affliated_with_gov_research_email", ""
-            ).lower(),
-            "user_affliated_with_isro_research_email": export_object.get(
-                "profile.user_affliated_with_isro_research_email", ""
-            ).lower(),
-            "user_affliated_with_nasa_research_email": export_object.get(
-                "profile.user_affliated_with_nasa_research_email", ""
-            ).lower(),
-            "user_or_pi_nasa_email": "none",
-        },
-        "require_profile_update": True
-        if export_object.get("require_profile_update", 1) == 1
-        else False,
-        "_rec_counter": export_object["_rec_counter"],
-    }
 
-    print("----")
-    print(json.dumps(export_object, indent=2))
-    print(json.dumps(crafted_export, indent=2))
 
-    _ = create_item(crafted_export)
-
-    if args.cognito:
-        cog_client.admin_create_user(
-            UserPoolId=args.user_pool_id,
-            Username=crafted_export["username"],
-            UserAttributes=[{"Name": "email", "Value": crafted_export["email"]}],
-        )
+if __name__ == "__main__":
+    migrate_users()
