@@ -146,7 +146,9 @@ def main():
         )
 
         try:
-            if ret.status_code == 302 and ret.headers.get('Location').endswith(f"/portal/access/manage/{args.lab_shortname}"):
+            if ret.status_code == 302 and ret.headers.get('Location').endswith(
+                f"/portal/access/manage/{args.lab_shortname}"
+            ):
                 action_english = "Removed" if args.delete else "Added"
                 print(
                     f"{action_english} {username} to {args.lab_shortname} on {args.domain}"
