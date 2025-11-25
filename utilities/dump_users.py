@@ -11,18 +11,30 @@ cog_client = boto3.client("cognito-idp", region_name="us-west-2")
 
 # Get cmd line args
 parser = argparse.ArgumentParser(description="Migrate users from OSL Portal v1 to v2")
-parser.add_argument(
+_ = parser.add_argument(
     "-c",
     "--cognito",
     dest="cognito",
     action="store_true",
     help="Create cognito accounts for all users",
 )
+_ = parser.add_argument(
+    "-t",
+    "--dynamo-table-name",
+    dest="dynamo_table",
+    type=str,
+    required=True,
+    help="The DynamoDB table name for the migration destination",
+)
+_ = parser.add_argument(
+    "-p",
+    "--user-pool-id",
+    dest="user_pool_id",
+    type=str,
+    required=True,
+    help="The Cognito User Pool ID for the migration destination",
+)
 args = parser.parse_args()
-
-# ---------------------- FILL THESE OUT BEFORE RUNNING ----------------------
-MIGRATION_DYNAMO_TABLE = ""
-MIGRATION_COGNITO_USER_POOL = ""
 
 
 def _get_dynamo():
@@ -36,7 +48,7 @@ def _get_dynamo():
     if not _DYNAMO_DB:
         _DYNAMO_DB = boto3.resource("dynamodb", region_name=region)
     if not _DYNAMO_TABLE:
-        _DYNAMO_TABLE = _DYNAMO_DB.Table(MIGRATION_DYNAMO_TABLE)
+        _DYNAMO_TABLE = _DYNAMO_DB.Table(args.dynamo_table)
     return _DYNAMO_CLIENT, _DYNAMO_DB, _DYNAMO_TABLE
 
 
@@ -353,7 +365,7 @@ for row in rows:
 
     if args.cognito:
         cog_client.admin_create_user(
-            UserPoolId=MIGRATION_COGNITO_USER_POOL,
+            UserPoolId=args.user_pool_id,
             Username=crafted_export["username"],
             UserAttributes=[{"Name": "email", "Value": crafted_export["email"]}],
         )
