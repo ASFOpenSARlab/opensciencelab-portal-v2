@@ -147,6 +147,27 @@ class TestUserClass:
             "Access should be updated in the DB too"
         )
 
+    def test_limit_user_return(self):
+        from util.user.user import User
+        from util.user.dynamo_db import get_all_items
+
+        # Create some users to filter
+        for i in range(10):
+            username = f"test_user_{i}"
+            User(username)
+        for i in range(10):
+            username = f"test_user_filter_{i}"
+            User(username)
+
+        assert len(get_all_items()) == 20, "There should be 20 users in the DB"
+        assert len(get_all_items(limit=5)) == 5, "There should be a limit of 5 users"
+        assert len(get_all_items(username_filter="filter")) == 10, (
+            "There should be 10 matched users"
+        )
+        assert len(get_all_items(limit=5, username_filter="filter")) == 5, (
+            "There should be 5 matched and filtered users"
+        )
+
     def test_get_users_with_lab(self, monkeypatch, helpers):
         from util.user.user import User
         from util.user.dynamo_db import get_users_with_lab
@@ -167,6 +188,17 @@ class TestUserClass:
         assert len(output) == 2
         assert output[0]["username"] == "test_user1"
         assert output[1]["username"] == "test_user2"
+
+        assert len(get_users_with_lab("testlab", limit=2)) == 2, (
+            "Limited results should be limited to 2"
+        )
+        assert len(get_users_with_lab("testlab", username_filter="test_user2")) == 1, (
+            "Filtered results should be limited to 1"
+        )
+        assert (
+            len(get_users_with_lab("testlab", username_filter="test_user", limit=2))
+            == 2
+        ), "Filtered and limited results should be limited to 2"
 
     def test_delete_user(self, monkeypatch):
         from util.user.user import User

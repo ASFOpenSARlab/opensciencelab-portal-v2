@@ -62,7 +62,9 @@ class TestUsersPages:
 
         monkeypatch.setattr("portal.profile.User", lambda *args, **kwargs: user)
         monkeypatch.setattr("util.auth.User", lambda *args, **kwargs: user)
-        monkeypatch.setattr("portal.users.get_all_items", lambda: USER_TABLE_DATA)
+        monkeypatch.setattr(
+            "portal.users.get_all_items", lambda *args, **kwargs: USER_TABLE_DATA
+        )
 
         event = helpers.get_event(path="/portal/users", cookies=fake_auth)
 
@@ -77,7 +79,9 @@ class TestUsersPages:
 
         monkeypatch.setattr("portal.users.User", lambda *args, **kwargs: user)
         monkeypatch.setattr("util.auth.User", lambda *args, **kwargs: user)
-        monkeypatch.setattr("portal.users.get_all_items", lambda: USER_TABLE_DATA)
+        monkeypatch.setattr(
+            "portal.users.get_all_items", lambda *args, **kwargs: USER_TABLE_DATA
+        )
 
         event = helpers.get_event(path="/portal/users", cookies=fake_auth)
 
@@ -97,7 +101,9 @@ class TestUsersPages:
 
         monkeypatch.setattr("portal.users.User", lambda *args, **kwargs: user)
         monkeypatch.setattr("util.auth.User", lambda *args, **kwargs: user)
-        monkeypatch.setattr("portal.users.get_all_items", lambda: USER_TABLE_DATA)
+        monkeypatch.setattr(
+            "portal.users.get_all_items", lambda *args, **kwargs: USER_TABLE_DATA
+        )
 
         event = helpers.get_event(path="/portal/users", cookies=fake_auth)
 
@@ -135,7 +141,9 @@ class TestUsersPages:
 
         monkeypatch.setattr("portal.users.User", lambda *args, **kwargs: user)
         monkeypatch.setattr("util.auth.User", lambda *args, **kwargs: user)
-        monkeypatch.setattr("portal.users.get_all_items", lambda: USER_TABLE_DATA)
+        monkeypatch.setattr(
+            "portal.users.get_all_items", lambda *args, **kwargs: USER_TABLE_DATA
+        )
         monkeypatch.setattr(
             "util.cognito.delete_user_from_user_pool", lambda *args, **kwargs: True
         )
@@ -161,7 +169,9 @@ class TestUsersPages:
 
         monkeypatch.setattr("portal.users.User", lambda *args, **kwargs: user)
         monkeypatch.setattr("util.auth.User", lambda *args, **kwargs: user)
-        monkeypatch.setattr("portal.users.get_all_items", lambda: USER_TABLE_DATA)
+        monkeypatch.setattr(
+            "portal.users.get_all_items", lambda *args, **kwargs: USER_TABLE_DATA
+        )
         monkeypatch.setattr(
             "util.cognito.delete_user_from_user_pool", lambda *args, **kwargs: True
         )
@@ -187,7 +197,9 @@ class TestUsersPages:
 
         monkeypatch.setattr("portal.users.User", lambda *args, **kwargs: user)
         monkeypatch.setattr("util.auth.User", lambda *args, **kwargs: user)
-        monkeypatch.setattr("portal.users.get_all_items", lambda: USER_TABLE_DATA)
+        monkeypatch.setattr(
+            "portal.users.get_all_items", lambda *args, **kwargs: USER_TABLE_DATA
+        )
         monkeypatch.setattr(
             "util.cognito.delete_user_from_user_pool", lambda *args, **kwargs: True
         )
@@ -211,7 +223,9 @@ class TestUsersPages:
 
         monkeypatch.setattr("portal.users.User", lambda *args, **kwargs: delete_user)
         monkeypatch.setattr("util.auth.User", lambda *args, **kwargs: acting_user)
-        monkeypatch.setattr("portal.users.get_all_items", lambda: USER_TABLE_DATA)
+        monkeypatch.setattr(
+            "portal.users.get_all_items", lambda *args, **kwargs: USER_TABLE_DATA
+        )
         monkeypatch.setattr(
             "util.cognito.delete_user_from_user_pool", lambda *args, **kwargs: True
         )
@@ -237,7 +251,9 @@ class TestUsersPages:
 
         monkeypatch.setattr("portal.users.User", lambda *args, **kwargs: user)
         monkeypatch.setattr("util.auth.User", lambda *args, **kwargs: user)
-        monkeypatch.setattr("portal.users.get_all_items", lambda: USER_TABLE_DATA)
+        monkeypatch.setattr(
+            "portal.users.get_all_items", lambda *args, **kwargs: USER_TABLE_DATA
+        )
         monkeypatch.setattr(
             "util.cognito.delete_user_from_user_pool", lambda *args, **kwargs: True
         )
@@ -260,7 +276,9 @@ class TestUsersPages:
 
         monkeypatch.setattr("portal.users.User", lambda *args, **kwargs: lock_user)
         monkeypatch.setattr("util.auth.User", lambda *args, **kwargs: acting_user)
-        monkeypatch.setattr("portal.users.get_all_items", lambda: USER_TABLE_DATA)
+        monkeypatch.setattr(
+            "portal.users.get_all_items", lambda *args, **kwargs: USER_TABLE_DATA
+        )
 
         event = helpers.get_event(
             path=f"/portal/users/lock/{lock_user.username}",
@@ -282,7 +300,9 @@ class TestUsersPages:
 
         monkeypatch.setattr("portal.users.User", lambda *args, **kwargs: locked_user)
         monkeypatch.setattr("util.auth.User", lambda *args, **kwargs: acting_user)
-        monkeypatch.setattr("portal.users.get_all_items", lambda: USER_TABLE_DATA)
+        monkeypatch.setattr(
+            "portal.users.get_all_items", lambda *args, **kwargs: USER_TABLE_DATA
+        )
 
         event = helpers.get_event(
             path=f"/portal/users/lock/{locked_user.username}",
@@ -304,7 +324,9 @@ class TestUsersPages:
 
         monkeypatch.setattr("portal.users.User", lambda *args, **kwargs: locked_user)
         monkeypatch.setattr("util.auth.User", lambda *args, **kwargs: acting_user)
-        monkeypatch.setattr("portal.users.get_all_items", lambda: USER_TABLE_DATA)
+        monkeypatch.setattr(
+            "portal.users.get_all_items", lambda *args, **kwargs: USER_TABLE_DATA
+        )
 
         event = helpers.get_event(
             path=f"/portal/users/unlock/{locked_user.username}",

@@ -46,12 +46,18 @@ def add_lab():
 def manage_lab(shortname):
     template_input = {}
 
+    user_filter = access_router.current_event.query_string_parameters.get("filter")
+    row_limit = 200
+
     # Get users of lab, check if lab exists
-    users = get_users_with_lab(shortname)
+    users = get_users_with_lab(shortname, limit=row_limit, username_filter=user_filter)
+    users = sorted(users, key=lambda x: x["username"])
     template_input["users"] = users
 
     lab = LABS[shortname]
     template_input["lab"] = lab
+    template_input["rowcount"] = len(users)
+    template_input["exceeded"] = len(users) >= row_limit
 
     return jinja_template(template_input, "manage.j2")
 
@@ -74,12 +80,6 @@ def validate_edit_user_request(body: dict) -> tuple[bool, str]:
     elif body["action"] == "remove_user":
         # check removing user fields provided
         return True, "Ready to remove user"
-
-    elif body["action"] == "toggle_can_user_see_lab_card":
-        return True, "Ready to toggle can_user_see_lab_card"
-
-    elif body["action"] == "toggle_can_user_access_lab":
-        return True, "Ready to toggle can_user_access_lab"
 
     else:
         return False, "Invalid action"
@@ -226,7 +226,7 @@ def get_labs_users(shortname):
     users = get_users_with_lab(shortname)
 
     return wrap_response(
-        body=json.dumps({"users": users, "message": "OK"}),
+        body=json.dumps({"users": users, "message": "OK"}, default=str),
         code=200,
         content_type=content_types.APPLICATION_JSON,
     )
