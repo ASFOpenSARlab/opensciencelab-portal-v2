@@ -205,6 +205,7 @@ For testing, see the [Testing README](./portal-cdk/tests/README.md).
 
 Environments: `prod`, `test`, `dev` \
 Required variables:
+
 - AWS_ACCOUNT_NUMBER
 - DEPLOY_DOMAINS
 - SSL_CERT_ARN
