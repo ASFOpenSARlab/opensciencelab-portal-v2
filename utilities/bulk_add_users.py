@@ -145,20 +145,17 @@ def main():
             cookies=cookies,
         )
 
-        try:
-            if ret.status_code == 302 and ret.headers.get("Location").endswith(
-                f"/portal/access/manage/{args.lab_shortname}"
-            ):
-                action_english = "Removed" if args.delete else "Added"
-                print(
-                    f"{action_english} {username} to {args.lab_shortname} on {args.domain}"
-                )
-            else:
-                raise Exception(
-                    f'Failed to create user "{username}"\nResponse body: {ret.text}\nReponse code: {ret.status_code}'
-                )
-        except Exception as e:
-            failed_users.append(e)
+        if ret.status_code == 302 and ret.headers.get("Location").endswith(
+            f"/portal/access/manage/{args.lab_shortname}"
+        ):
+            action_english = "Removed" if args.delete else "Added"
+            print(
+                f"{action_english} {username} to {args.lab_shortname} on {args.domain}"
+            )
+        else:
+            failed_users.append(
+                f'Failed to create user "{username}"\nResponse body: {ret.text}\nReponse code: {ret.status_code}'
+            )
     if failed_users:
         print(f"Failed to create {len(failed_users)}  users")
         for user in failed_users:

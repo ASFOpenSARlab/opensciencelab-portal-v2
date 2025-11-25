@@ -4,7 +4,6 @@ PROJECT_DIR := $(if $(CI_PROJECT_DIR),$(CI_PROJECT_DIR:/=),$(PWD:/=/../..))
 DOCKER_TAG ?= test
 
 # If we're doing TAG_COMMIT, use MATURITY ("prod"), otherwise use DOCKER_TAG
-# DEPLOY_PREFIX ?= $(if $(TAG_COMMIT),$(MATURITY),$(DOCKER_TAG))
 PROJECT_NAME ?= oidc-provider
 
 # # Read in all the variables from AWS/Makefile
