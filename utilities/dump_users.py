@@ -381,18 +381,28 @@ def migrate_users():
             "_rec_counter": export_object["_rec_counter"],
         }
 
-        print("----")
-        print(json.dumps(export_object, indent=2))
-        print(json.dumps(crafted_export, indent=2))
-
-        _ = create_item(crafted_export)
+        try:
+            _ = create_item(crafted_export)
+            print(f"Created user {crafted_export['username']} in DynamoDB")
+        except Exception as e:
+            print(
+                f"EXCEPTION THROWN \n {e} \n for username {crafted_export['username']}"
+            )
 
         if args.cognito:
-            cog_client.admin_create_user(
-                UserPoolId=args.user_pool_id,
-                Username=crafted_export["username"],
-                UserAttributes=[{"Name": "email", "Value": crafted_export["email"]}],
-            )
+            try:
+                cog_client.admin_create_user(
+                    UserPoolId=args.user_pool_id,
+                    Username=crafted_export["username"],
+                    UserAttributes=[
+                        {"Name": "email", "Value": crafted_export["email"]}
+                    ],
+                )
+                print(f"Created user {crafted_export['username']} in Cognito")
+            except Exception as e:
+                print(
+                    f"EXCEPTION THROWN \n {e} \n for username {crafted_export['username']}"
+                )
 
 
 if __name__ == "__main__":
