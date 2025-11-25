@@ -2,6 +2,7 @@ import json
 import sqlite3
 import os
 import boto3
+import argparse
 
 _DYNAMO_CLIENT, _DYNAMO_DB, _DYNAMO_TABLE = None, None, None
 
