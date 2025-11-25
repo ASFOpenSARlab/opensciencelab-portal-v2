@@ -7,6 +7,7 @@ import json
 
 from aws_cdk import (
     Stack,
+    Duration,
     aws_lambda,
     CfnOutput,
     RemovalPolicy,
@@ -182,6 +183,12 @@ class PortalCdkStack(Stack):
                 cache_policy=cloudfront.CachePolicy.CACHING_DISABLED,
                 response_headers_policy=cloudfront.ResponseHeadersPolicy.CORS_ALLOW_ALL_ORIGINS_WITH_PREFLIGHT_AND_SECURITY_HEADERS,
             ),
+            error_responses=[
+               cloudfront.ErrorResponse(
+                    http_status=404,
+                    ttl=Duration.minutes(10), # Default in console.
+                ),
+            ],
             **custom_domain_args,
         )
 
