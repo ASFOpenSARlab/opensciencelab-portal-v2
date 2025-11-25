@@ -3,6 +3,7 @@ import sqlite3
 import os
 import boto3
 import argparse
+import pathlib
 
 _DYNAMO_CLIENT, _DYNAMO_DB, _DYNAMO_TABLE = None, None, None
 
@@ -33,6 +34,31 @@ _ = parser.add_argument(
     type=str,
     required=True,
     help="The Cognito User Pool ID for the migration destination",
+)
+_ = parser.add_argument(
+    "-u",
+    "--user-database-path",
+    dest="user_database_path",
+    default=pathlib.Path("/home/ec2-user/code/services/srv/useretc/db/useretc.db"),
+    type=pathlib.Path,
+    help="The Cognito User Pool ID for the migration destination",
+)
+_ = parser.add_argument(
+    "-a",
+    "--auth-database-path",
+    dest="auth_database_path",
+    default=pathlib.Path(
+        "/home/ec2-user/code/services/srv/portal/jupyterhub/jupyterhub.sqlite"
+    ),
+    type=pathlib.Path,
+    help="The Cognito User Pool ID for the migration destination",
+)
+_ = parser.add_argument(
+    "-w",
+    "--active-window-start",
+    dest="active_window_start",
+    action="store_true",
+    help="The number of months in the past to start the 'active user' migration window",
 )
 args = parser.parse_args()
 
@@ -68,10 +94,6 @@ def create_item(item: dict) -> bool:
     table.put_item(Item=item)
     return True
 
-
-USER_ETC_DB = "/home/ec2-user/code/services/srv/useretc/db/useretc.db"
-JUPYTER_HUB_DB = "/home/ec2-user/code/services/srv/portal/jupyterhub/jupyterhub.sqlite"
-EXPORT_ACTIVITY_CUTOFF_MONTHS = 13
 
 ALL_SQL = f"""
 SELECT
@@ -126,7 +148,7 @@ INNER JOIN
 WHERE
    -- t1.name = 'bbuechle' and
    -- User last logged in within the last 12 months
-   t1.last_activity > date(current_date, '-{EXPORT_ACTIVITY_CUTOFF_MONTHS} months') AND
+   t1.last_activity > date(current_date, '-{args.active_window_start} months') AND
 
    -- Filter users out who created and quickly abandoned accounts
    (
@@ -259,7 +281,7 @@ def coal(user_profile_value: str) -> str:
 
 
 # Connect to DBS
-db = sqlite3.connect(f"file:{JUPYTER_HUB_DB}?mode=ro", uri=True)
+db = sqlite3.connect(f"file:{args.auth_database_path}?mode=ro", uri=True)
 db.row_factory = sqlite3.Row  # Enable column fetching
 
 db.create_function("REMOVE_NEGATED", 1, remove_negated)
@@ -268,7 +290,7 @@ db.create_function("COAL", 1, coal)
 cur = db.cursor()
 
 # Join other DB's
-_ = cur.execute(f"ATTACH DATABASE 'file:{USER_ETC_DB}?mode=ro' AS useretc")
+_ = cur.execute(f"ATTACH DATABASE 'file:{args.user_database_path}?mode=ro' AS useretc")
 
 ####
 _ = cur.execute(ALL_SQL)
