@@ -126,6 +126,7 @@ def main():
 
     # Apply action on users
     users = read_user_file(args.users_file)
+    failed_users = []
     for username in users:
         # Generate user creation data
         data = {
@@ -138,20 +139,28 @@ def main():
 
         # Add user
         ret = requests.post(
+            allow_redirects=False,
             url=url,
             data=data,
             cookies=cookies,
         )
 
-        if ret.status_code == 200:
-            action_english = "Removed" if args.delete else "Added"
-            print(
-                f"{action_english} {username} to {args.lab_shortname} on {args.domain}"
-            )
-        else:
-            raise Exception(
-                f'Failed to create user "{username}"\nResponse body: {ret.text}'
-            )
+        try:
+            if ret.status_code == 302 and ret.headers.get('Location').endswith(f"/portal/access/manage/{args.lab_shortname}"):
+                action_english = "Removed" if args.delete else "Added"
+                print(
+                    f"{action_english} {username} to {args.lab_shortname} on {args.domain}"
+                )
+            else:
+                raise Exception(
+                    f'Failed to create user "{username}"\nResponse body: {ret.text}\nReponse code: {ret.status_code}'
+                )
+        except Exception as e:
+            failed_users.append(e)
+    if failed_users:
+        print(f"Failed to create {len(failed_users)}  users")
+        for user in failed_users:
+            print(f"    {user}")
 
 
 if __name__ == "__main__":
