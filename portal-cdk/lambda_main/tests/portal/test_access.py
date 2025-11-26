@@ -484,21 +484,21 @@ class TestAccessPages:
             lab_short_name="testlab",
             lab_profiles="m6a.large",
             time_quota=None,
-            lab_country_status="something"
+            lab_country_status="something",
         )
         user2 = User("test_user2")
         user2.add_lab(
             lab_short_name="testlab",
             lab_profiles="m6a.large",
             time_quota=None,
-            lab_country_status="something"
+            lab_country_status="something",
         )
         user3 = User("super_cool_guy")
         user3.add_lab(
             lab_short_name="testlab",
             lab_profiles="m6a.large",
             time_quota=None,
-            lab_country_status="something"
+            lab_country_status="something",
         )
         
         user = helpers.FakeUser(access=["user", "admin"])
@@ -511,7 +511,7 @@ class TestAccessPages:
             path="/portal/access/users/testlab",
             cookies=fake_auth,
             method="GET",
-            qparams={"filter":"test_user"},
+            qparams={"filter": "test_user"},
         )
         ret = main.lambda_handler(event, lambda_context)
         body = json.loads(ret["body"])
