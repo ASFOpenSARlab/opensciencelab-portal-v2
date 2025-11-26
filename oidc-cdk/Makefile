@@ -1,16 +1,10 @@
-# Respect pathing
-export PWD=$(dir $(realpath $(firstword $(MAKEFILE_LIST))))
-PROJECT_DIR := $(if $(CI_PROJECT_DIR),$(CI_PROJECT_DIR:/=),$(PWD:/=/../..))
-DOCKER_TAG ?= test
-
-# If we're doing TAG_COMMIT, use MATURITY ("prod"), otherwise use DOCKER_TAG
+# Project name for the stack
 PROJECT_NAME ?= oidc-provider
 
 # Config make
 SHELL:=/bin/bash
 .DEFAULT_GOAL := all
 .SILENT:
-# .ONESHELL:
 
 .PHONY := cdk-shell
 cdk-shell:
