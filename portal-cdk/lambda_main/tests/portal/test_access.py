@@ -500,7 +500,7 @@ class TestAccessPages:
             time_quota=None,
             lab_country_status="something",
         )
-        
+
         user = helpers.FakeUser(access=["user", "admin"])
         monkeypatch.setattr("util.auth.User", lambda *args, **kwargs: user)
         monkeypatch.setattr("portal.access.User", lambda *args, **kwargs: user)
