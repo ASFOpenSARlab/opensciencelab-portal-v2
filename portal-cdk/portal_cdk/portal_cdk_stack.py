@@ -350,7 +350,7 @@ class PortalCdkStack(Stack):
             ## This is where we can customize info in invitation emails/text:
             # https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_cognito.UserInvitationConfig.html
             user_invitation=cognito.UserInvitationConfig(
-                email_body="Welcome {username}, to the new OpenScienceLab! To get started with our improved service, <a href='https://opensciencelab.asf.alaska.edu'>sign in here</a> with your temporary password:<br><code>{####}</code>",
+                email_body=f"Hello {{username}},<br><br> Your temporary password is: <code>{{####}}</code><br><br><a href='https://{primary_host}'>Sign in here</a>.",
                 email_subject="Your OpenScienceLab Temporary Password",
             ),
             auto_verify=cognito.AutoVerifiedAttrs(
