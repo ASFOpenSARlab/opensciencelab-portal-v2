@@ -338,8 +338,21 @@ class PortalCdkStack(Stack):
             ),
             ## Let users create accounts:
             self_sign_up_enabled=True,
-            # This is where we can customize info in verification emails/text:
-            user_verification=cognito.UserVerificationConfig(),
+            ## This is where we can customize info in verification emails/text:
+            # https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_cognito.UserVerificationConfig.html
+            user_verification=cognito.UserVerificationConfig(
+                ## Email Body Info, required vars change if VerificationEmailStyle is LINK vs CODE
+                # https://docs.aws.amazon.com/cognito/latest/developerguide/cognito-user-pool-settings-message-customizations.html#cognito-user-pool-settings-email-verification-message-customization
+                email_body="Welcome to OpenScienceLab!<br><br>Please {##click here to verify your account##}.",
+                email_subject="Verify Your OpenScienceLab Account",
+                email_style=cognito.VerificationEmailStyle.LINK,
+            ),
+            ## This is where we can customize info in invitation emails/text:
+            # https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_cognito.UserInvitationConfig.html
+            user_invitation=cognito.UserInvitationConfig(
+                email_body=f"Hello {{username}},<br><br> Your temporary password is: <code>{{####}}</code><br><br><a href='https://{primary_host}'>Sign in here</a>.",
+                email_subject="Your OpenScienceLab Temporary Password",
+            ),
             auto_verify=cognito.AutoVerifiedAttrs(
                 email=True,
                 phone=False,
