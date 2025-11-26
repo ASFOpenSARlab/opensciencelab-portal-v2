@@ -222,7 +222,7 @@ def get_user_labs(username):
     tags=[access_route["name"]],
 )
 @require_access("admin", human=False)
-def get_labs_users(shortname): 
+def get_labs_users(shortname):
     user_filter = access_router.current_event.query_string_parameters.get("filter")
     row_limit = 200
 
