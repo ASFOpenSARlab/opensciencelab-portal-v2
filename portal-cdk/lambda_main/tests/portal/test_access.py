@@ -458,8 +458,7 @@ class TestAccessPages:
             "dynamodb",
             region_name=REGION,
         )
-        
-        
+
         from util.user.dynamo_db import get_all_items
 
         ## These imports have to be the long forum, to let us modify the values here:
@@ -479,12 +478,28 @@ class TestAccessPages:
         )
         assert get_all_items() == [], "DB should be empty at the start"
         from util.user.user import User
+
         user1 = User("test_user")
-        user1.add_lab(lab_short_name="testlab", lab_profiles="m6a.large", time_quota=None, lab_country_status="something")
+        user1.add_lab(
+            lab_short_name="testlab",
+            lab_profiles="m6a.large",
+            time_quota=None,
+            lab_country_status="something"
+        )
         user2 = User("test_user2")
-        user2.add_lab(lab_short_name="testlab", lab_profiles="m6a.large", time_quota=None, lab_country_status="something")
+        user2.add_lab(
+            lab_short_name="testlab",
+            lab_profiles="m6a.large",
+            time_quota=None,
+            lab_country_status="something"
+        )
         user3 = User("super_cool_guy")
-        user3.add_lab(lab_short_name="testlab", lab_profiles="m6a.large", time_quota=None, lab_country_status="something")
+        user3.add_lab(
+            lab_short_name="testlab",
+            lab_profiles="m6a.large",
+            time_quota=None,
+            lab_country_status="something"
+        )
         
         user = helpers.FakeUser(access=["user", "admin"])
         monkeypatch.setattr("util.auth.User", lambda *args, **kwargs: user)
@@ -496,7 +511,7 @@ class TestAccessPages:
             path="/portal/access/users/testlab",
             cookies=fake_auth,
             method="GET",
-            qparams={"filter":"test_user"}
+            qparams={"filter":"test_user"},
         )
         ret = main.lambda_handler(event, lambda_context)
         body = json.loads(ret["body"])
@@ -506,7 +521,6 @@ class TestAccessPages:
         assert unique_users == ["test_user", "test_user2"]
         assert body["message"] == "OK"
         assert ret["headers"].get("Content-Type") == "application/json"
-
 
     def test_set_user_labs_correct(
         self, monkeypatch, lambda_context, helpers, fake_auth
