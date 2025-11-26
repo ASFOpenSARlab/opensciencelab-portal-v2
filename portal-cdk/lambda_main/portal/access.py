@@ -230,13 +230,15 @@ def get_labs_users(shortname):
     users = get_users_with_lab(shortname, limit=row_limit, username_filter=user_filter)
 
     out_payload = {
-       "users": users, 
-       "message": "OK",
-       "count": len(users),
+        "users": users, 
+        "message": "OK",
+        "count": len(users),
     }
 
     if len(users) >= row_limit:
-       out_payload["warning"] = "Return exceded search limit. Try adding '?filter=<value>'"
+       out_payload["warning"] = (
+            "Return exceded search limit. Try adding '?filter=<value>'"
+       )
 
     return wrap_response(
         body=json.dumps(out_payload, default=str),
