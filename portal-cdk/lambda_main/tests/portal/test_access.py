@@ -1,9 +1,13 @@
 import main
 from util.exceptions import UserNotFound
+from moto import mock_aws
+import boto3
+import os
 import json
 import pytest
 
 
+@mock_aws
 class TestAccessPages:
     def test_user_accessing_manage_page(
         self, monkeypatch, lambda_context, helpers, fake_auth
@@ -387,7 +391,7 @@ class TestAccessPages:
         assert '"error": "User not found"' in ret["body"]
         assert ret["headers"].get("Content-Type") == "application/json"
 
-    def test_get_all_users_of_a_lab(
+    def test_get_json_all_users_of_a_lab(
         self, monkeypatch, lambda_context, helpers, fake_auth
     ):
         user = helpers.FakeUser(access=["user", "admin"])
@@ -435,6 +439,86 @@ class TestAccessPages:
                 "labs": {"testlab": {"lab_profiles": ["m6a.large"]}},
             }
         ]
+        assert body["message"] == "OK"
+        assert ret["headers"].get("Content-Type") == "application/json"
+
+    def test_filter_get_json_users_of_a_lab(
+        self, monkeypatch, lambda_context, helpers, fake_auth
+    ):
+        REGION = os.getenv("STACK_REGION", "us-west-2")
+        ## These imports have to be the long forum, to let us modify the values here:
+        # https://stackoverflow.com/a/12496239/11650472
+        import util
+
+        util.user.dynamo_db._DYNAMO_CLIENT = boto3.client(
+            "dynamodb",
+            region_name=REGION,
+        )
+        util.user.dynamo_db._DYNAMO_DB = boto3.resource(
+            "dynamodb",
+            region_name=REGION,
+        )
+
+        from util.user.dynamo_db import get_all_items
+
+        ## These imports have to be the long forum, to let us modify the values here:
+        # https://stackoverflow.com/a/12496239/11650472
+        import util
+
+        user_table_name = "TestUserTable"
+        util.user.dynamo_db._DYNAMO_DB.create_table(
+            TableName=user_table_name,
+            BillingMode="PAY_PER_REQUEST",
+            KeySchema=[{"AttributeName": "username", "KeyType": "HASH"}],
+            AttributeDefinitions=[{"AttributeName": "username", "AttributeType": "S"}],
+        )
+        ## No need to delete the table between methods, it goes out of scope anyways.
+        util.user.dynamo_db._DYNAMO_TABLE = util.user.dynamo_db._DYNAMO_DB.Table(
+            user_table_name
+        )
+        assert get_all_items() == [], "DB should be empty at the start"
+        from util.user.user import User
+
+        user1 = User("test_user")
+        user1.add_lab(
+            lab_short_name="testlab",
+            lab_profiles="m6a.large",
+            time_quota=None,
+            lab_country_status="something",
+        )
+        user2 = User("test_user2")
+        user2.add_lab(
+            lab_short_name="testlab",
+            lab_profiles="m6a.large",
+            time_quota=None,
+            lab_country_status="something",
+        )
+        user3 = User("super_cool_guy")
+        user3.add_lab(
+            lab_short_name="testlab",
+            lab_profiles="m6a.large",
+            time_quota=None,
+            lab_country_status="something",
+        )
+
+        user = helpers.FakeUser(access=["user", "admin"])
+        monkeypatch.setattr("util.auth.User", lambda *args, **kwargs: user)
+        monkeypatch.setattr("portal.access.User", lambda *args, **kwargs: user)
+        monkeypatch.setattr("portal.access.LABS", helpers.FAKE_LABS)
+        monkeypatch.setattr("util.user.dynamo_db.LABS", helpers.FAKE_LABS)
+
+        event = helpers.get_event(
+            path="/portal/access/users/testlab",
+            cookies=fake_auth,
+            method="GET",
+            qparams={"filter": "test_user"},
+        )
+        ret = main.lambda_handler(event, lambda_context)
+        body = json.loads(ret["body"])
+
+        assert ret["statusCode"] == 200
+        unique_users = [entry["username"] for entry in body["users"]]
+        assert unique_users == ["test_user", "test_user2"]
         assert body["message"] == "OK"
         assert ret["headers"].get("Content-Type") == "application/json"
 
