@@ -222,12 +222,25 @@ def get_user_labs(username):
     tags=[access_route["name"]],
 )
 @require_access("admin", human=False)
-def get_labs_users(shortname):
-    users = get_users_with_lab(shortname)
+def get_labs_users(shortname): 
+    user_filter = access_router.current_event.query_string_parameters.get("filter")
+    row_limit = 200
+
+    # Get users of lab, check if lab exists
+    users = get_users_with_lab(shortname, limit=row_limit, username_filter=user_filter)
+
+    out_payload = {
+       "users": users, 
+       "message": "OK",
+       "count": len(users),
+    }
+
+    if len(users) >= row_limit:
+       out_payload["warning"] = "Return exceded search limit. Try adding '?filter=<value>'"
 
     return wrap_response(
-        body=json.dumps({"users": users, "message": "OK"}, default=str),
-        code=200,
+        body=json.dumps(out_payload, default=str),
+        code=200 if "warning" not in out_payload else 206,
         content_type=content_types.APPLICATION_JSON,
     )
 
@@ -243,6 +256,8 @@ def validate_set_lab_access(put_lab_request: dict) -> tuple[bool, str]:
 
     for lab_name in put_lab_request["labs"].keys():
         # Ensure lab exist
+        print("GAME")
+        print([name for name in LABS])
         if lab_name not in LABS:
             return False, f"Lab does not exist: {lab_name}"
 
