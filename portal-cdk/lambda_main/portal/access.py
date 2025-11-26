@@ -212,9 +212,22 @@ def get_user_labs(username):
                     {"username": "user1", "labs": {}, "access": []},
                 ],
                 "message": "OK",
+                "count": 150,
             },
             description="Returns users that can access the lab.",
             code=200,
+        ),
+        **swagger.format_response(
+            example={
+                "users": [
+                    {"username": "user1", "labs": {}, "access": []},
+                ],
+                "message": "OK",
+                "count": 200,
+                "warning": "Return exceded search limit. Try adding '?filter=<value>'",
+            },
+            description="If number of users exceeds 200, return 200 users and a warning that search is limited to 200 users at a time.",
+            code=206,
         ),
         **swagger.code_403,
         **swagger.code_404_lab_not_found,
@@ -223,11 +236,26 @@ def get_user_labs(username):
 )
 @require_access("admin", human=False)
 def get_labs_users(shortname):
-    users = get_users_with_lab(shortname)
+    user_filter = access_router.current_event.query_string_parameters.get("filter")
+    row_limit = 200
+
+    # Get users of lab, check if lab exists
+    users = get_users_with_lab(shortname, limit=row_limit, username_filter=user_filter)
+
+    out_payload = {
+        "users": users,
+        "message": "OK",
+        "count": len(users),
+    }
+
+    if len(users) >= row_limit:
+        out_payload["warning"] = (
+            "Return exceded search limit. Try adding '?filter=<value>'"
+        )
 
     return wrap_response(
-        body=json.dumps({"users": users, "message": "OK"}, default=str),
-        code=200,
+        body=json.dumps(out_payload, default=str),
+        code=200 if "warning" not in out_payload else 206,
         content_type=content_types.APPLICATION_JSON,
     )
 
