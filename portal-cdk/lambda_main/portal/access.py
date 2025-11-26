@@ -224,7 +224,7 @@ def get_user_labs(username):
                 ],
                 "message": "OK",
                 "count": 200,
-                "warning": "Return exceded search limit. Try adding '?filter=<value>'"
+                "warning": "Return exceded search limit. Try adding '?filter=<value>'",
             },
             description="If number of users exceeds 200, return 200 users and a warning that search is limited to 200 users at a time.",
             code=206,
