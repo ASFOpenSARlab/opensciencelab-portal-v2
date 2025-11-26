@@ -212,9 +212,22 @@ def get_user_labs(username):
                     {"username": "user1", "labs": {}, "access": []},
                 ],
                 "message": "OK",
+                "count": 150,
             },
             description="Returns users that can access the lab.",
             code=200,
+        ),
+        **swagger.format_response(
+            example={
+                "users": [
+                    {"username": "user1", "labs": {}, "access": []},
+                ],
+                "message": "OK",
+                "count": 200,
+                "warning": "Return exceded search limit. Try adding '?filter=<value>'"
+            },
+            description="If number of users exceeds 200, return 200 users and a warning that search is limited to 200 users at a time.",
+            code=206,
         ),
         **swagger.code_403,
         **swagger.code_404_lab_not_found,
@@ -258,8 +271,6 @@ def validate_set_lab_access(put_lab_request: dict) -> tuple[bool, str]:
 
     for lab_name in put_lab_request["labs"].keys():
         # Ensure lab exist
-        print("GAME")
-        print([name for name in LABS])
         if lab_name not in LABS:
             return False, f"Lab does not exist: {lab_name}"
 
