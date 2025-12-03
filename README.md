@@ -62,7 +62,8 @@ For testing purposes, both `SSL_CERT_ARN` and `DEPLOY_DOMAINS` can be provided o
 **Troubleshooting** \
 During deployment, if a DNS record exists for a domain that is a callback domain of the deployment you are building, and does not point to the cloudfront distribution of the new portal stack, the portal will fail to build with the error \
 `Invalid request provided: AWS::CloudFront::Distribution: One or more aliases specified for the distribution includes an incorrectly configured DNS record that points to another CloudFront distribution.` \
-To bypass this error, 
+To bypass this error,
+
 - unset `DEPLOY_DOMAINS`
 - build the portal
 - set DNS record to new cloudfront domain name
