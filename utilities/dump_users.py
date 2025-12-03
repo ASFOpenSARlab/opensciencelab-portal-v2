@@ -36,12 +36,20 @@ _ = parser.add_argument(
     help="The Cognito User Pool ID for the migration destination",
 )
 _ = parser.add_argument(
+    "-w",
+    "--active-window-start",
+    dest="active_window_start",
+    type=int,
+    required=True,
+    help="The number of months in the past to start the 'active user' migration window",
+)
+_ = parser.add_argument(
     "-u",
     "--user-database-path",
     dest="user_database_path",
     default=pathlib.Path("/home/ec2-user/code/services/srv/useretc/db/useretc.db"),
     type=pathlib.Path,
-    help="The Cognito User Pool ID for the migration destination",
+    help="The POSIX file path of the user access database",
 )
 _ = parser.add_argument(
     "-a",
@@ -51,14 +59,7 @@ _ = parser.add_argument(
         "/home/ec2-user/code/services/srv/portal/jupyterhub/jupyterhub.sqlite"
     ),
     type=pathlib.Path,
-    help="The Cognito User Pool ID for the migration destination",
-)
-_ = parser.add_argument(
-    "-w",
-    "--active-window-start",
-    dest="active_window_start",
-    action="store_true",
-    help="The number of months in the past to start the 'active user' migration window",
+    help="The POSIX file path of the nativeauthenticator database",
 )
 args = parser.parse_args()
 
@@ -146,7 +147,7 @@ INNER JOIN
    users_info AS t2 ON t1.name == t2.username,
    useretc.profile AS p1 ON p1.username == t1.name
 WHERE
-   -- t1.name = 'bbuechle' and
+   -- t1.name = 'dgpalmieri' and
    -- User last logged in within the last 12 months
    t1.last_activity > date(current_date, '-{args.active_window_start} months') AND
 
