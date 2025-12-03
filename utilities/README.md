@@ -1,6 +1,6 @@
 # User Migration
 
-```
+```sh
 $ python3 dump_users.py -h
 usage: dump_users.py [-h] [-c] -t DYNAMO_TABLE -p USER_POOL_ID -w ACTIVE_WINDOW_START [-u USER_DATABASE_PATH]
                      [-a AUTH_DATABASE_PATH]
@@ -39,7 +39,7 @@ With the above pattern, the ideal usage is `make [cognito] | tee out.txt`, as
 the script catches and prints errors, rather than throwing and exiting in a
 failed state. For example:
 
-```
+```sh
 Created user dgpalmieri in DynamoDB
 EXCEPTION THROWN 
  An error occurred (UsernameExistsException) when calling the AdminCreateUser operation: User account already exists 
@@ -50,11 +50,10 @@ Created user bbuechle in Cognito
 
 A successful execution looks like:
 
-```
+```sh
 $ make cognito 
 AWS_ACCESS_KEY_ID="<ID>" AWS_SECRET_ACCESS_KEY="<KEY>" python3 dump_users.py -t "<TABLE_ID>" -p "<POOL_ID>" -w 13 --cognito
 Created user dgpalmieri in DynamoDB
 Created user dgpalmieri in Cognito
 $
 ```
-
