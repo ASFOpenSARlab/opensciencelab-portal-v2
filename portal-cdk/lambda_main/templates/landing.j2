@@ -57,9 +57,23 @@
             height: 25rem;
         }
 
+        #myPopover::backdrop {
+            background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent black for a grey effect */
+        }
+
         /* Styling for when the popover is open (optional, as default styling is often sufficient) */
         #myPopover:popover-open {
             /* Add specific styles for the open state if needed */
+        }
+
+        #myPopover button {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background: none;
+            border: none;
+            font-size: 1.2em;
+            cursor: pointer;
         }
 
         .custom-hr {
@@ -123,6 +137,7 @@
                                 <button class="link-button" popovertarget="myPopover">Reset MFA</button>
                                 <div id="myPopover" popover>
                                     <!--This is the popover content using the Popover API!-->
+                                    <button popovertarget="myPopover" popovertargetaction="hide">X</button>
                                     <h3>Reset MFA</h3>
                                     <p>
                                         We are currently developing a self-service workflow for resetting a user's
