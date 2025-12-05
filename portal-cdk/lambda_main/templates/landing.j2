@@ -51,15 +51,29 @@
             background-color: #fff;
             border: 1px solid #ddd;
             border-radius: 4px;
-            padding: 10px;
+            padding: 3rem;
             box-shadow: 0 10px 10px rgba(0, 0, 0, 0.2);
-            width: 20%;
-            height: 30rem;
+            width: 60rem;
+            height: 25rem;
+        }
+
+        #myPopover::backdrop {
+            background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent black for a grey effect */
         }
 
         /* Styling for when the popover is open (optional, as default styling is often sufficient) */
         #myPopover:popover-open {
             /* Add specific styles for the open state if needed */
+        }
+
+        #myPopover button {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background: none;
+            border: none;
+            font-size: 1.2em;
+            cursor: pointer;
         }
 
         .custom-hr {
@@ -123,9 +137,17 @@
                                 <button class="link-button" popovertarget="myPopover">Reset MFA</button>
                                 <div id="myPopover" popover>
                                     <!--This is the popover content using the Popover API!-->
-                                    <h3>To reset your MFA, please contact ASF Admins with your username.</h3>
-                                    <h3>It may take a few days to respond.</h3>
-                                    <h3>You will be emailed when your MFA is reset.</h3>
+                                    <button popovertarget="myPopover" popovertargetaction="hide">X</button>
+                                    <h2>Reset MFA</h2>
+                                    <p>
+                                        We are currently developing a self-service workflow for resetting a user's
+                                        MFA configuration.
+                                    </p>
+                                    <p>
+                                        In the meantime, please contact OpenScienceLab admins at
+                                        <a href="mailto:uaf-jupyterhub-admin@alaska.edu">uaf-jupyterhub-admin@alaska.edu</a>
+                                        with the email subject: "OpenScienceLab MFA Reset: <i>your_username</i>".
+                                    </p>
                                 </div>
                             </div>
                         </div>
