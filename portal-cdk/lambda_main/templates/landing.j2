@@ -46,36 +46,6 @@
             color: darkblue; /* Change color on hover */
         }
 
-        /* Basic styling for the popover element */
-        #myPopover {
-            background-color: #fff;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            padding: 10px;
-            box-shadow: 0 10px 10px rgba(0, 0, 0, 0.2);
-            width: 40rem;
-            height: 25rem;
-        }
-
-        #myPopover::backdrop {
-            background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent black for a grey effect */
-        }
-
-        /* Styling for when the popover is open (optional, as default styling is often sufficient) */
-        #myPopover:popover-open {
-            /* Add specific styles for the open state if needed */
-        }
-
-        #myPopover button {
-            position: absolute;
-            top: 5px;
-            right: 5px;
-            background: none;
-            border: none;
-            font-size: 1.2em;
-            cursor: pointer;
-        }
-
         .custom-hr {
             border-top: 1px solid #ccc; /* Creates a 1px solid light gray line */
             margin: 20px 0; /* Adds some vertical spacing */
@@ -134,21 +104,21 @@
                                 <a href="{{ forgot_password_url }}{{ return_path }}">Forgot Password?</a>
                             </div>
                             <div>
-                                <button class="link-button" popovertarget="myPopover">Reset MFA</button>
-                                <div id="myPopover" popover>
-                                    <!--This is the popover content using the Popover API!-->
-                                    <button popovertarget="myPopover" popovertargetaction="hide">X</button>
-                                    <h3>Reset MFA</h3>
+                                <a class="popup-trigger">Reset MFA</a>
+                            </div>
+                            <div class="modal" id="popup-modal">
+                                <div class="modal-content">
+                                    <span class="close-btn">×</span>
+                                    <h2>Reset MFA</h2>
                                     <p>
                                         We are currently developing a self-service workflow for resetting a user's
-                                        MFA configuration.
-                                    </p>
-                                    <p>
-                                        In the meantime, please contact OpenScienceLab admins at
+                                        MFA configuration. In the meantime, please contact OpenScienceLab admins at
                                         <a href="mailto:uaf-jupyterhub-admin@alaska.edu">uaf-jupyterhub-admin@alaska.edu</a>
-                                        with the email subject: "OpenScienceLab MFA Reset: <i>your_username</i>".
+                                        with the email subject: "OpenScienceLab MFA
+                                        Reset: <i>username</i>".
                                     </p>
                                 </div>
+                            </div>
                             </div>
                         </div>
                         <div class="pure-u-1-5"></div>
@@ -161,3 +131,23 @@
         </section>
     </body>
 </html>
+<script>
+    const popupTrigger = document.querySelector('.popup-trigger');
+    const modal = document.getElementById('popup-modal');
+    const closeBtn = document.querySelector('.close-btn');
+
+    popupTrigger.addEventListener('click', function(e) {
+        e.preventDefault();
+        modal.classList.add('show');
+    });
+
+    closeBtn.addEventListener('click', function() {
+        modal.classList.remove('show');
+    });
+
+    modal.addEventListener('click', function(e) {
+        if (e.target === modal) {
+            modal.classList.remove('show');
+        }
+    });
+</script>
