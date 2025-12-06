@@ -80,7 +80,7 @@ def generate_profile(designated_country_chance) -> dict:
     # Add random country, randomly designated countries
     profile["country_of_residence"] = random.choices(
         ["US", "HT"],
-        weights=[100-designated_country_chance, designated_country_chance],
+        weights=[100 - designated_country_chance, designated_country_chance],
     )
     # Add NASA affiliation
     if random.getrandbits(1):
