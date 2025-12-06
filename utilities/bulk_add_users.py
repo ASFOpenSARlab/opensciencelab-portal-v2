@@ -78,7 +78,10 @@ def validate_arguments(args) -> list[str]:
 def generate_profile(designated_country_chance) -> dict:
     profile = {}
     # Add random country, randomly designated countries
-    profile["country_of_residence"] = random.choices(["US", "HT"], weights=[100-designated_country_chance, designated_country_chance])
+    profile["country_of_residence"] = random.choices(
+        ["US", "HT"],
+        weights=[100-designated_country_chance, designated_country_chance],
+    )
     # Add NASA affiliation
     if random.getrandbits(1):
         profile["is_affiliated_with_nasa"] = "yes"
@@ -121,19 +124,14 @@ def generate_profile(designated_country_chance) -> dict:
             profile["graduate_student_affliated_with_university"] = "on"
     else:
         profile["is_affliated_with_university"] = "no"
-    
+
     return profile
 
 
 def add_random_profile(url, cookies, username, verbose, designated_country_chance):
     # Set profile
     profile = generate_profile(designated_country_chance)
-    res = requests.post(
-            url=url,
-            allow_redirects=False,
-            cookies=cookies,
-            data=profile
-        )
+    res = requests.post(url=url, allow_redirects=False, cookies=cookies, data=profile)
 
     # Print result
     if res.status_code == 302 and res.text == "\"{'Redirect to /portal'}\"":
@@ -142,7 +140,9 @@ def add_random_profile(url, cookies, username, verbose, designated_country_chanc
             print(f"Added profile to {username}")
     else:
         # Print error
-        print(f"Error adding profile for {username} Code: {res.status_code} Response: {res.text}")
+        print(
+            f"Error adding profile for {username} Code: {res.status_code} Response: {res.text}"
+        )
 
 
 def main():
@@ -196,14 +196,14 @@ def main():
     parser.add_argument(
         "--generate-user-profiles",
         action="store_true",
-        help="if provided will generate random user profiles"
+        help="if provided will generate random user profiles",
     )
 
     parser.add_argument(
         "-v",
         "--verbose",
         action="store_true",
-        help="If set will print every successful request. Otherwise print error messages and percentage completed"
+        help="If set will print every successful request. Otherwise print error messages and percentage completed",
     )
 
     parser.add_argument(
@@ -285,18 +285,20 @@ def main():
                 cookies,
                 username,
                 verbose=args.verbose,
-                designated_country_chance=args.designated_country_chance
+                designated_country_chance=args.designated_country_chance,
             )
 
         # Update completed count
         num_completed += 1
 
         # Print percentage if exceeds or matches next step
-        completed_percent = num_completed / len(users) 
+        completed_percent = num_completed / len(users)
         if completed_percent >= current_logging_threshold:
             print(f"Completed {completed_percent * 100:.2f}%")
             # Update logging threshold, capped at 100%
-            current_logging_threshold = min(current_logging_threshold + logging_step, 1.0)
+            current_logging_threshold = min(
+                current_logging_threshold + logging_step, 1.0
+            )
 
     # Print failure messages
     if failed_user_messages:
