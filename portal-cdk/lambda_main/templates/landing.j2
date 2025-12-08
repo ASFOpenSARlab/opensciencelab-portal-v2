@@ -81,12 +81,39 @@
             margin: 20px 0; /* Adds some vertical spacing */
             height: 0; /* Ensures the div itself doesn't take up vertical space beyond the border */
         }
+
+        .info-box {
+            background-color: #e0f2f7; /* Light blue background */
+            border: 1px solid #a7d9ed; /* Blue border */
+            padding: 2rem;
+            margin-bottom: 20px;
+            border-radius: 5px; /* Rounded corners */
+            color: #333;
+            font-family: Arial, sans-serif;
+        }
+
+        .info-box h3 {
+            color: #007bff; /* Blue heading color */
+            margin-top: 0;
+            margin-bottom: 10px;
+        }
+
     </style>
     <body>
         {% include './noscript.j2' %}
         <section>
+            <div class="info-box">
+                <h3>OpenScienceLab Portal has been updated!</h3>
+                <p>For registered users, your username has not changed. However, passwords have been reset. 
+                    If you received an email with a temporary password, you may use that. 
+                    Otherwise, click on the Forget Password reset link under the Log In button. 
+                    Note that MFA will also need to be redone.</p>
+            </div>
+        </section>
+        <section>
             <div class="pure-g outside-margins">
-                <div class="pure-u-1-6"></div>
+                <div class="pure-u-1-6">
+                </div>
                 <div class="pure-u-1-2">
                     <div class="pure-g top-margins">
                         <div class="pure-u-1-3">
