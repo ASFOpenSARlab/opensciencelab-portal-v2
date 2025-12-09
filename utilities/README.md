@@ -1,4 +1,11 @@
-# User Migration
+# Utility Scripts Documentation
+
+Table of Contents
+
+* [User Migration](#user-migration)
+* [Bulk Add Users](#bulk-add-users)
+
+## User Migration
 
 ```sh
 $ python3 dump_users.py -h
@@ -58,7 +65,7 @@ Created user dgpalmieri in Cognito
 $
 ```
 
-# Bulk Add Users
+## Bulk Add Users
 
 ```sh
 usage: bulk_add_users.py [-h] [--portal-jwt PORTAL_JWT] [--portal-username PORTAL_USERNAME]
@@ -91,12 +98,12 @@ options:
                         Percent chance user will have a designated country
 ```
 
-## Requirements
+### Requirements
 
 * An Admin user's `portal-jwt` and `portal-username` jwt cookies
 * A file of usernames delimited by newlines
 
-## Modes
+### Modes
 
 * Add users to lab (Default Behavior) (Creates new user)
   * Add the following flags
@@ -116,7 +123,7 @@ options:
     * --users-file
     * --remove-users
 
-## Running in Parallel
+### Running in Parallel
 
 You can run this script in parallel by following these steps
 
