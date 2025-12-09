@@ -5,6 +5,7 @@
 **/.coverage
 .venv
 .env
+__pycache__
 
 # Ignore Node stuff:
 node_modules/
