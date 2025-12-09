@@ -4,14 +4,14 @@ import random
 
 ## Run in parallel by using the following commands
 ## Make sure the last command ends in --users-file
-# split -l 500 users.txt users
+# split -l 200 users.txt users
 # ls users* | xargs -n1 -P20 python bulk_add_users.py --your-flags --users-file
 
 
 # usage: bulk_add_users.py [-h] [--portal-jwt PORTAL_JWT] [--portal-username PORTAL_USERNAME]
-#                          [--lab-shortname LAB_SHORTNAME] [--domain DOMAIN] [--users-file USERS_FILE] [--profiles PROFILES]
-#                          [--delete] [--generate-user-profiles] [-v] [--print-threshold PRINT_THRESHOLD]
-#                          [-dcc DESIGNATED_COUNTRY_CHANCE]
+#                          [--lab-shortname LAB_SHORTNAME] [--domain DOMAIN] [--users-file USERS_FILE]
+#                          [--profiles PROFILES] [--remove-users] [--generate-user-profiles] [-v]
+#                          [--print-threshold PRINT_THRESHOLD] [-dcc DESIGNATED_COUNTRY_CHANCE]
 
 # Bulk adds users to a lab with a set of default profiles
 
@@ -27,7 +27,7 @@ import random
 #   --users-file USERS_FILE
 #                         file where list of users to be modified is defined, file is of usernames separated by newlines
 #   --profiles PROFILES   profiles to be given to each user, comma separated string
-#   --delete              if provided will delete the provided users
+#   --remove-users        if provided will remove the provided users from the given lab
 #   --generate-user-profiles
 #                         if provided will generate random user profiles
 #   -v, --verbose         If set will print every successful request. Otherwise print error messages and percentage
@@ -66,7 +66,7 @@ def validate_arguments(args) -> list[str]:
         missing_args.append("--users_file")
 
     # validate required for adding users
-    if not args.delete:
+    if not args.remove_users:
         if not args.profiles:
             missing_args.append("--profiles")
     if missing_args:
@@ -188,9 +188,9 @@ def main():
     )
 
     parser.add_argument(
-        "--delete",
+        "--remove-users",
         action="store_true",
-        help="if provided will delete the provided users",
+        help="if provided will remove the provided users from the given lab",
     )
 
     parser.add_argument(
@@ -235,7 +235,7 @@ def main():
     }
 
     # Set action
-    action = "remove_user" if args.delete else "add_user"
+    action = "remove_user" if args.remove_users else "add_user"
 
     # Add or remove users
     users = read_user_file(args.users_file)
@@ -267,7 +267,7 @@ def main():
         ):
             # Print Success if verbose
             if args.verbose:
-                action_english = "Removed" if args.delete else "Added"
+                action_english = "Removed" if args.remove_users else "Added"
                 print(
                     f"{action_english} {username} to {args.lab_shortname} on {args.domain}"
                 )
