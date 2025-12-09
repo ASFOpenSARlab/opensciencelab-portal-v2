@@ -91,31 +91,35 @@ options:
                         Percent chance user will have a designated country
 ```
 
-### Requirements
+## Requirements
+
 * An Admin user's `portal-jwt` and `portal-username` jwt cookies
 * A file of usernames delimited by newlines
 
-### Modes
-* Add users to lab (Default Behavior) (Creates new user)
-    - Add the following flags
-        - --portal-jwt
-        - --portal-username
-        - --lab-shortname
-        - --domain
-        - --users-file
-    - Give provided users a random profile by adding this flag (useful for generating new users)
-        - --generate-user-profiles
-* Remove selected users from lab (Does not delete user)
-    - Add the following flags
-        - --portal-jwt
-        - --portal-username
-        - --lab-shortname
-        - --domain
-        - --users-file
-        - --remove-users
+## Modes
 
-### Running in Parallel
+* Add users to lab (Default Behavior) (Creates new user)
+  * Add the following flags
+    * --portal-jwt
+    * --portal-username
+    * --lab-shortname
+    * --domain
+    * --users-file
+  * Give provided users a random profile by adding this flag (useful for generating new users)
+    * --generate-user-profiles
+* Remove selected users from lab (Does not delete user)
+  * Add the following flags
+    * --portal-jwt
+    * --portal-username
+    * --lab-shortname
+    * --domain
+    * --users-file
+    * --remove-users
+
+## Running in Parallel
+
 You can run this script in parallel by following these steps
+
 1. Split your user file into equal parts with the command \
    `split -l 200 users.txt users` \
    This will split your `users.txt` file into a number of files of 200 lines each with a name matching the pattern `users*`
