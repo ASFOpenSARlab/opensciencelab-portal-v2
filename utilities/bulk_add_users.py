@@ -23,7 +23,7 @@ import random
 #                         active username cookie for portal
 #   --lab-shortname LAB_SHORTNAME
 #                         shortname of lab which users will be added to
-#   --domain DOMAIN       domain of lab deployment
+#   --domain DOMAIN       domain of portal deployment
 #   --users-file USERS_FILE
 #                         file where list of users to be modified is defined, file is of usernames separated by newlines
 #   --profiles PROFILES   profiles to be given to each user, comma separated string
@@ -172,7 +172,7 @@ def main():
     parser.add_argument(
         "--domain",
         type=str,
-        help="domain of lab deployment",
+        help="domain of portal deployment",
     )
 
     parser.add_argument(
