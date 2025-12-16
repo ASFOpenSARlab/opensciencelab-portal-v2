@@ -42,6 +42,7 @@ PROD_LABS = {
             "sudo",
         ],
         crypto_remediation_role_arn="arn:aws:iam::381492216607:role/service-role/cryptomining-remediation-role-b4sw3o86",
+        default_profiles=["m6a.large", "m6a.xlarge"],
     ),
     "azdwr-prod-opensarlab": BaseLab(
         short_lab_name="azdwr-prod-opensarlab",
@@ -59,6 +60,14 @@ PROD_LABS = {
             "AZDWR SAR 5",
             "sudo",
         ],
+        default_profiles=[
+            "AZDWR SAR 1",
+            "Debug Profile",
+            "AZDWR SAR 2",
+            "AZDWR SAR 3",
+            "AZDWR SAR 4",
+            "AZDWR SAR 5",
+        ],
     ),
     "avo-prod": BaseLab(
         short_lab_name="avo-prod",
@@ -73,6 +82,7 @@ PROD_LABS = {
             "Debug Server Profile",
             "sudo",
         ],
+        default_profiles=["SAR 1", "SAR 2", "SAR 3", "Debug Server Profile"],
     ),
     "geos636-2025": BaseLab(
         short_lab_name="geos636-2025",
@@ -96,6 +106,7 @@ PROD_LABS = {
             "m6a.large",
             "sudo",
         ],
+        default_profiles=["m6a.large"],
     ),
 }
 
@@ -136,6 +147,7 @@ NON_PROD_LABS = {
             "sudo",
         ],
         crypto_remediation_role_arn="arn:aws:iam::381492216607:role/service-role/cryptomining-remediation-role-b4sw3o86",
+        default_profiles=["m6a.large", "m6a.xlarge"],
     ),
     "test_protected": BaseLab(
         short_lab_name="test_protected",
@@ -145,6 +157,7 @@ NON_PROD_LABS = {
         deployment_url="http://smce-test-1433554573.us-west-2.elb.amazonaws.com",
         accessibility="protected",
         allowed_profiles=[],
+        default_profiles=["m6a.large", "m6a.xlarge"],
     ),
     "test_prohibited": BaseLab(
         short_lab_name="test_prohibited",
@@ -160,6 +173,7 @@ NON_PROD_LABS = {
         },
         accessibility="protected",
         allowed_profiles=[],
+        default_profiles=["m6a.large", "m6a.xlarge"],
     ),
 }
 

@@ -70,6 +70,7 @@ class TestAccessPages:
             )
             > -1
         )
+        assert ret["body"].find('value="m6a.large, m6a.xlarge"')
         assert ret["headers"].get("Content-Type") == "text/html"
 
     def test_admin_editing_user(self, monkeypatch, lambda_context, helpers, fake_auth):

@@ -23,6 +23,7 @@ class BaseLab:
         }
     )
     crypto_remediation_role_arn: str = None
+    default_profiles: list = field(default_factory=lambda: [])
 
 
 daac_limited_restricted_status = {
