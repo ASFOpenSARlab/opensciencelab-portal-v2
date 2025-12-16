@@ -215,6 +215,7 @@ class Helpers:
             allowed_profiles=["m6a.large"],
             accessibility="protected",
             deployment_url="https://example.com",
+            default_profiles=["m6a.large", "m6a.xlarge"],
         ),
         "noaccess": BaseLab(
             friendly_name="No Access Lab",

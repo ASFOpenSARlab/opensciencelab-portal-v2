@@ -54,7 +54,9 @@
                     <input type="text" name="username" placeholder="username">
                 </th>
                 <th>
-                    <input type="text" name="lab_profiles">
+                    <input type="text"
+                           name="lab_profiles"
+                           value="{{ ', '.join(lab.default_profiles) }}">
                 </th>
                 <input type="hidden" name="time_quota" placeholder="time_quota" value="">
                 <input type="hidden"
