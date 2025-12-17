@@ -26,6 +26,26 @@
             <th>Profiles</th>
             <th>Tools</th>
         </tr>
+        <tr>
+            <form method="post" action="{{ lab.short_lab_name }}/edituser">
+                <th>
+                    <input type="text" name="username" placeholder="username">
+                </th>
+                <th>
+                    <input type="text"
+                           name="lab_profiles"
+                           value="{{ ','.join(lab.default_profiles) }}">
+                </th>
+                <input type="hidden" name="time_quota" placeholder="time_quota" value="">
+                <input type="hidden"
+                       name="lab_country_status"
+                       placeholder="protected"
+                       value="unrestricted">
+                <th>
+                    <button type="submit" name="action" value="add_user">Add</button>
+                </th>
+            </form>
+        </tr>
         {% for user in users %}
             <tr>
                 <th>
@@ -48,26 +68,6 @@
                 </th>
             </tr>
         {% endfor %}
-        <tr>
-            <form method="post" action="{{ lab.short_lab_name }}/edituser">
-                <th>
-                    <input type="text" name="username" placeholder="username">
-                </th>
-                <th>
-                    <input type="text"
-                           name="lab_profiles"
-                           value="{{ ','.join(lab.default_profiles) }}">
-                </th>
-                <input type="hidden" name="time_quota" placeholder="time_quota" value="">
-                <input type="hidden"
-                       name="lab_country_status"
-                       placeholder="protected"
-                       value="unrestricted">
-                <th>
-                    <button type="submit" name="action" value="add_user">Add</button>
-                </th>
-            </form>
-        </tr>
     </table>
 </div>
 <div class="margin-left-30">
