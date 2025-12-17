@@ -181,3 +181,7 @@ if os.getenv("IS_PROD", "false").lower() == "true":
     LABS: dict[str, BaseLab] = PROD_LABS
 else:
     LABS: dict[str, BaseLab] = NON_PROD_LABS
+
+def is_lab_healthy(lab: BaseLab):
+    pass
+    # https://smce-prod-1240379463.us-west-2.elb.amazonaws.com/lab/smce-prod-opensarlab/hub/health
