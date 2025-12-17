@@ -1,6 +1,7 @@
 from .base_lab import BaseLab, daac_limited_restricted_status
 
 import os
+import requests
 
 PROD_LABS = {
     "smce-prod-opensarlab": BaseLab(
@@ -182,6 +183,8 @@ if os.getenv("IS_PROD", "false").lower() == "true":
 else:
     LABS: dict[str, BaseLab] = NON_PROD_LABS
 
-def is_lab_healthy(lab: BaseLab):
-    pass
-    # https://smce-prod-1240379463.us-west-2.elb.amazonaws.com/lab/smce-prod-opensarlab/hub/health
+def is_lab_healthy(lab: BaseLab) -> bool:
+    ret = requests.get(
+        url = f"{lab.deployment_url}/lab/{lab.short_lab_name}/hub/health"
+    )
+    return ret.status_code == 200
