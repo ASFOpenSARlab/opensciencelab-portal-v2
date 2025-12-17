@@ -24,16 +24,18 @@ Permissions for GH Actions when deploying, along with the CDK infrastructure.
 ### AWS Accounts
 
 | Maturity | Environment | AWS Account  |
-| -- | -- |--------------|
-| `dev` | Non-prod | 97********89 |
-| `test` | Non-Prod | 97********89 |
-| `prod` | Prod | 70********05 |
+|----------| -- |--------------|
+| `dev`    | Non-prod | 97********89 |
+| `test`   | Non-Prod | 97********89 |
+| `stage`  | Prod | 97********89 |
+| `prod`   | Prod | 70********05 |
 
 ### Maturities
 
 - Non-`main` branches with specified prefix/suffix (eg `ab/ticket.feature`) will deploy a matched
 prefix (ie `ab`) dev maturity ( and `dev` GitHub environment!) deployment.
 - Merges into `main` branch will create/update the `test` maturity deployment.
+- Merges from `main` into `stage` will create/update the `stage` maturity deployment.
 - Symantic Tags (where `v#.#.#` is `v[Major].[Minor].[Patch]`) will deploy to Prod.
 
 #### `Dev`/Development
@@ -199,7 +201,14 @@ to the home page and click "Go to Lab" you should see the lab "Start Server" int
 #### **`Test`**
 
 **`Test`** is intended to be the stable integration/validation environment. ONLY complete, tested code
-should be released to **`Test`**. `Dev` and `Test` exist in the same AWS account.
+should be released to **`Test`**. `Dev`, `Test`, and `Stage` exist in the same AWS account.
+
+#### **`Stage`**
+
+**`Stage`** is intended to a pre-release environment with data and structure equivalent
+to `Prod`, but isolated away from `Prod`. `Stage` should be used to internally vet what
+a production release will look like, without exposing our users. `Stage` can also be the
+origin for release tags. Ideally, **only** the main branch will be merged into `stage`.
 
 #### **`Prod`**
 
@@ -214,7 +223,7 @@ For testing, see the [Testing README](./portal-cdk/tests/README.md).
 
 #### GitHub Variables and Secrets
 
-Environments: `prod`, `test`, `dev` \
+Environments: `prod`, `stage`, `test`, `dev` \
 Required variables:
 
 - AWS_ACCOUNT_NUMBER
