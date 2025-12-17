@@ -205,7 +205,7 @@ should be released to **`Test`**. `Dev`, `Test`, and `Stage` exist in the same A
 
 #### **`Stage`**
 
-**`Stage`** is intended to a pre-release environment with data and structure equivalent 
+**`Stage`** is intended to a pre-release environment with data and structure equivalent
 to `Prod`, but isolated away from `Prod`. `Stage` should be used to internally vet what
 a production release will look like, without exposing our users. `Stage` can also be the
 origin for release tags. Ideally, **only** the main branch will be merged into `stage`.
