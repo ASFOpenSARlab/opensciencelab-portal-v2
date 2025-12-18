@@ -14,6 +14,7 @@ import boto3
 # options:
 #   -h, --help            show this help message and exit
 #   -u, --update          Execute password update
+#   -p, --print           Print expired users
 #   -d, --deployment DEPLOYMENT
 #                         Deployment prefix (bb, test, prod, etc)
 #   -b, --before BEFORE   YYYY-MM-DD date format to filter users
@@ -37,6 +38,9 @@ parser = argparse.ArgumentParser(
 )
 parser.add_argument(
     "-u", "--update", action="store_true", help="Execute password update"
+)
+parser.add_argument(
+    "-p", "--print", action="store_true", help="Print expired users"
 )
 parser.add_argument(
     "-d", "--deployment", type=str, help="Deployment prefix (bb, test, prod, etc)"
@@ -124,5 +128,7 @@ users_to_update, failed_users = update_expired(
     args.deployment, args.update, args.before
 )
 print(f"Found {len(users_to_update)} expired Cognito users")
+if args.print:
+    print(users_to_update)
 if failed_users:
     print(f"Failed to update these users: {failed_users}")
