@@ -30,7 +30,7 @@ class TestPortalIntegrations:
         assert ret["statusCode"] == 404
 
     def test_static_image(self, lambda_context, helpers):
-        event = helpers.get_event(path="/static/img/jh_logo.png")
+        event = helpers.get_event(path="/static/img/osl_logo_v2_long.png")
         ret = main.lambda_handler(event, lambda_context)
         assert ret["statusCode"] == 200
         assert ret["headers"].get("Content-Type") == "image/png"
