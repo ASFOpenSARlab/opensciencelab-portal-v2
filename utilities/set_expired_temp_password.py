@@ -1,6 +1,8 @@
 from datetime import datetime
 import pytz
 import argparse
+import random
+import string
 import boto3
 
 ###############################################################################
@@ -75,17 +77,52 @@ def get_all_users(user_pool_id):
     return users
 
 
+def generate_random_string(length):
+    characters = string.ascii_letters + string.digits + string.punctuation
+    random_string = "".join(random.choices(characters, k=length))
+    return random_string
+
+
+def set_user_password(user, user_pool_id):
+    try:
+        updated_password = generate_random_string(32)
+        cog_client.admin_set_user_password(
+            UserPoolId=user_pool_id,
+            Username=user,
+            Password=updated_password,
+            Permanent=True,
+        )
+        print(f"Updated {user}")
+        return True
+    except Exception as e:
+        print(f"Failed to update user {user}: {e}")
+    return False
+
+
 def update_expired(deployment, update_flag, before_date_filter):
     before_date = datetime.strptime(before_date_filter, "%Y-%m-%d").replace(tzinfo=utc)
-    user_pool_id = get_user_pool(args.deployment)
+    user_pool_id = get_user_pool(deployment)
     all_users = get_all_users(user_pool_id)
     expired_users = [u for u in all_users if u["UserStatus"] == "FORCE_CHANGE_PASSWORD"]
     last_updated_before = [
         u for u in expired_users if u["UserLastModifiedDate"] < before_date
     ]
-    return [u["Username"] for u in last_updated_before]
+    users_to_update = [u["Username"] for u in last_updated_before]
+    failed_users = []
+
+    if update_flag:
+        for user in users_to_update:
+            if not set_user_password(user, user_pool_id):
+                failed_users.append(user)
+    else:
+        print("Skipping password set (See --update flag)")
+
+    return users_to_update, failed_users
 
 
-result = update_expired(args.deployment, args.update, args.before)
-# print(json.dumps(result, indent=2, default=str))
-print(f"Found {len(result)} expired Cognito users")
+users_to_update, failed_users = update_expired(
+    args.deployment, args.update, args.before
+)
+print(f"Found {len(users_to_update)} expired Cognito users")
+if failed_users:
+    print(f"Failed to update these users: {failed_users}")
