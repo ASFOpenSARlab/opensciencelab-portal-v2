@@ -42,6 +42,7 @@ BUILD_DEPS ?= /tmp/.build/lambda/python
 IMAGE_NAME ?= ghcr.io/asfopensarlab/osl-utils:main
 AWS_DEFAULT_PROFILE := $(AWS_DEFAULT_PROFILE)
 AWS_REGION ?= us-west-2
+IS_PROD ?= false
 
 .PHONY := all
 all: help

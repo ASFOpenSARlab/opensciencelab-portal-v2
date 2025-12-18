@@ -103,7 +103,9 @@ class PortalCdkStack(Stack):
                 environment={
                     "POWERTOOLS_SERVICE_NAME": "APP",
                     "DEBUG": str(vars["deploy_prefix"] != "prod").lower(),
-                    "IS_PROD": str(vars["deploy_prefix"] == "prod").lower(),
+                    "IS_PROD": str(
+                        os.getenv("IS_PROD", "false").lower() == "true"
+                    ).lower(),
                     "SES_EMAIL": str(os.getenv("SES_EMAIL")),
                     "SES_DOMAIN": str(os.getenv("SES_DOMAIN")),
                 },
