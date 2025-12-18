@@ -182,9 +182,3 @@ if os.getenv("IS_PROD", "false").lower() == "true":
     LABS: dict[str, BaseLab] = PROD_LABS
 else:
     LABS: dict[str, BaseLab] = NON_PROD_LABS
-
-def is_lab_healthy(lab: BaseLab) -> bool:
-    ret = requests.get(
-        url = f"{lab.deployment_url}/lab/{lab.short_lab_name}/hub/health"
-    )
-    return ret.status_code == 200

@@ -1,4 +1,5 @@
 from dataclasses import dataclass, field
+import requests
 
 
 @dataclass
@@ -24,6 +25,14 @@ class BaseLab:
     )
     crypto_remediation_role_arn: str = None
     default_profiles: list = field(default_factory=lambda: [])
+
+
+    def is_healthy(self) -> bool:
+        ret = requests.get(
+            url = f"{self.deployment_url}/lab/{self.short_lab_name}/hub/health",
+            timeout=0.5,
+        )
+        return ret.status_code == 200
 
 
 daac_limited_restricted_status = {
