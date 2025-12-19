@@ -1,7 +1,6 @@
 from .base_lab import BaseLab, daac_limited_restricted_status
 
 import os
-import requests
 
 PROD_LABS = {
     "smce-prod-opensarlab": BaseLab(

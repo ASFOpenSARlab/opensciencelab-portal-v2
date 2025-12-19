@@ -26,11 +26,10 @@ class BaseLab:
     crypto_remediation_role_arn: str = None
     default_profiles: list = field(default_factory=lambda: [])
 
-
     def is_healthy(self) -> bool:
         try:
             ret = requests.get(
-                url = f"{self.deployment_url}/lab/{self.short_lab_name}/hub/health",
+                url=f"{self.deployment_url}/lab/{self.short_lab_name}/hub/health",
                 timeout=0.1,
             )
         except requests.exceptions.ReadTimeout:
