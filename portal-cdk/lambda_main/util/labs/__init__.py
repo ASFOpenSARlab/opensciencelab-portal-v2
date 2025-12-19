@@ -103,7 +103,7 @@ NON_PROD_LABS = {
             result in suspension or loss of access privileges, disciplinary action, and civil and/or criminal penalties. </p>
         </div>
         """,
-        deployment_url="https://smce-test-1433554573.us-west-2.elb.amazonaws.com",
+        deployment_url="http://smce-test-1433554573.us-west-2.elb.amazonaws.com",
         logo="ASFLogo-Blue2.png",
         about_page_url="https://opensarlab-docs.asf.alaska.edu/",
         about_page_button_label="Info",
@@ -140,7 +140,7 @@ NON_PROD_LABS = {
         friendly_name="Test Prohibited Lab",
         description="",
         logo="OpenSARLab_logo.png",
-        deployment_url="http://smce-test-1433554573.us-west-2.elb.amazonaws.com",
+        deployment_url="https://smce-test-1433554573.us-west-2.elb.amazonaws.com",
         ip_country_status={
             "limited": [],
             "prohibited": [
