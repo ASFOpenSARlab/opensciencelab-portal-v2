@@ -31,8 +31,11 @@ class BaseLab:
             ret = requests.get(
                 url=f"{self.deployment_url}/lab/{self.short_lab_name}/hub/health",
                 timeout=0.1,
+                verify=False,
             )
         except requests.exceptions.ReadTimeout:
+            return False
+        except requests.exceptions.ConnectionError:
             return False
         return ret.status_code == 200
 

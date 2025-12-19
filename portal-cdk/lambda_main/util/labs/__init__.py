@@ -140,7 +140,7 @@ NON_PROD_LABS = {
         friendly_name="Test Prohibited Lab",
         description="",
         logo="OpenSARLab_logo.png",
-        deployment_url="http://smce-test-1433554573.us-west-2.elb.amazonaws.com",
+        deployment_url="https://smce-test-1433554573.us-west-2.elb.amazonaws.com",
         ip_country_status={
             "limited": [],
             "prohibited": [
