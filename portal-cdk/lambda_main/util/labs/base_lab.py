@@ -35,6 +35,8 @@ class BaseLab:
             )
         except requests.exceptions.ReadTimeout:
             return False
+        except requests.exceptions.ConnectionError:
+            return False
         return ret.status_code == 200
 
 
