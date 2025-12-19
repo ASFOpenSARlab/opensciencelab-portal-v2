@@ -31,12 +31,12 @@
                                 <fieldset class="fieldset-border-red">
                                 {% endif %}
                                 <legend class="legend-border-text font-30">{{ lab.friendly_name }}</legend>
-                                {# {% if lab.is_lab_deployment_healthy is defined and not lab.is_lab_deployment_healthy -%}
-                        <p class="alert alert-danger show">
-                            The lab url is either unhealthy or no longer exists. Please contact the <a href="mailto:uaf-jupyterhub-asf+help@alaska.edu">OpenScienceLab Team</a>.
-                            <br />
-                        </p> 
-                        {% endif %}#}
+                                {% if not lab.is_healthy() -%}
+                                <p class="alert alert-danger show">
+                                    The lab url is either unhealthy or no longer exists. Please contact the <a href="mailto:uaf-jupyterhub-asf+help@alaska.edu">OpenScienceLab Team</a>.
+                                    <br />
+                                </p> 
+                                {% endif %}
                                 <div class="lab-logo">
                                     <span>
                                         {% if lab.logo is defined and lab.logo != None -%}
@@ -67,17 +67,17 @@
                                         <a id="start-{{ lab.short_lab_name }}"
                                            role="button"
                                            class="btn btn-lg btn-primary go-to-lab-btn"
-                                           {% if not accessable -%}
+                                        {% if not accessable -%}
                                            href="#"
                                            title="You do not have access to the lab"
                                            disabled>
                                             <i>Restricted</i>
-                                            {# {% elif lab.is_lab_deployment_healthy is defined and not lab.is_lab_deployment_healthy -%}
+                                        {% elif not lab.is_healthy() -%}
                                             href="#"
                                             title="The lab url is either unhealthy or the lab no longer exists"
                                             disabled 
                                             >
-                                                <i>Unavailable</i>#}
+                                                <i>Unavailable</i>
                                         {% else -%}
                                             href="/lab/{{ lab.short_lab_name }}/hub/login"
                                             title="Click to go to the lab {{ lab.short_lab_name }}"

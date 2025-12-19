@@ -84,30 +84,6 @@ PROD_LABS = {
         ],
         default_profiles=["SAR 1", "SAR 2", "SAR 3", "Debug Server Profile"],
     ),
-    "geos636-2025": BaseLab(
-        short_lab_name="geos636-2025",
-        friendly_name="GEOS 636 - Programming and Automation for Geoscientists",
-        description="""
-        <p>
-            Basic concepts of computer programming and effective task automation for computers,
-            with an emphasis on tools and problems common to the geosciences and other physical sciences.
-            Use of Python, Jupyter Notebooks, shell scripting and command line tools,
-            making scientific figures, maps and visualizations. Provided asynchronously remotely.
-        </p> <p>
-            Class lab, powered by ASF OpenScienceLab.
-        </p>
-        """,
-        deployment_url="http://geos636-224946823.us-west-2.elb.amazonaws.com",
-        # about_page_url="",
-        # about_page_button_label="Course",
-        accessibility="private",
-        allowed_profiles=[
-            "Debug Server Profile",
-            "m6a.large",
-            "sudo",
-        ],
-        default_profiles=["m6a.large"],
-    ),
 }
 
 NON_PROD_LABS = {
