@@ -1,5 +1,7 @@
 from dataclasses import dataclass, field
+from os import getenv
 import requests
+
 
 
 @dataclass
@@ -29,7 +31,7 @@ class BaseLab:
     def is_healthy(self) -> bool:
         try:
             ret = requests.get(
-                url=f"{os.getenv('DEPLOYMENT_HOSTNAME')}/lab/{self.short_lab_name}/hub/health",
+                url=f"{getenv('DEPLOYMENT_HOSTNAME')}/lab/{self.short_lab_name}/hub/health",
                 timeout=0.1,
             )
         except requests.exceptions.ReadTimeout:
