@@ -1,10 +1,12 @@
 import importlib
 
+import main
 import util.labs
 from util.labs import BaseLab, NON_PROD_LABS, PROD_LABS
 
 import pytest
 import pathlib
+from bs4 import BeautifulSoup
 
 
 class TestLabs:
@@ -60,3 +62,19 @@ class TestLabs:
         LAMBDA_MAIN_PATH = pathlib.Path(__file__).resolve().parents[2]
         for logo in used_logos:
             assert pathlib.Path(LAMBDA_MAIN_PATH / "static" / "img" / logo).exists()
+
+    def test_lab_not_healthy(self, lambda_context, fake_auth, helpers, monkeypatch):
+        user = helpers.FakeUser()
+        monkeypatch.setattr("portal.User", lambda *args, **kwargs: user)
+        monkeypatch.setattr("util.auth.User", lambda *args, **kwargs: user)
+
+        monkeypatch.setattr("util.user.user.LABS", helpers.FAKE_LABS)
+
+        event = helpers.get_event(path="/portal", cookies=fake_auth)
+        ret = main.lambda_handler(event, lambda_context)
+
+        soup = BeautifulSoup(ret["body"], "html.parser")
+        test_lab_goto_button = soup.find("a", id="start-testlab")
+        assert test_lab_goto_button["href"] == "#"
+        assert test_lab_goto_button.get("disabled") is not None
+        assert test_lab_goto_button["title"] == "The lab url is either unhealthy or the lab no longer exists"

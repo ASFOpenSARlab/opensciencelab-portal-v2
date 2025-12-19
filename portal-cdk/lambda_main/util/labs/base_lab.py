@@ -28,10 +28,13 @@ class BaseLab:
 
 
     def is_healthy(self) -> bool:
-        ret = requests.get(
-            url = f"{self.deployment_url}/lab/{self.short_lab_name}/hub/health",
-            timeout=0.5,
-        )
+        try:
+            ret = requests.get(
+                url = f"{self.deployment_url}/lab/{self.short_lab_name}/hub/health",
+                timeout=0.1,
+            )
+        except requests.exceptions.ReadTimeout:
+            return False
         return ret.status_code == 200
 
 
