@@ -89,6 +89,19 @@ def root():
     )
 
 
+# This endpoint exists primarily for dumping to html/mhtml
+@app.get("/error", include_in_schema=False)
+def error():
+    return wrap_response(
+        render_template(
+            content="An unexpected error has occurred",
+            name="error.j2",
+            title="OpenScienceLab: Something went wrong",
+        ),
+        code=401,
+    )
+
+
 @app.get("/logout", include_in_schema=False)
 def logout():
     # Revoke this refresh token, kill session
