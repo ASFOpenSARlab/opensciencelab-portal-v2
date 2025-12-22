@@ -3,117 +3,23 @@
 <html lang="en">
     {% include 'head.j2' %}
     {% include 'voice-atlas.j2' %}
-    <link rel="stylesheet"
-          href="https://cdn.jsdelivr.net/npm/purecss@3.0.0/build/pure-min.css"
-          integrity="sha384-X38yfunGUhNzHpBaEBsWLO+A0HDYOQi8ufWDkZ0k9e0eXz/tH3II7uKZ9msv++Ls"
-          crossorigin="anonymous" />
-    <style>
-        .outside-margins {
-            margin: 10rem;
-        }
-
-        .top-margins {
-            margin-top: 10rem;
-        }
-
-        .middle-margins {
-            margin-top: 5rem;
-        }
-
-        .bump-margin {
-            margin-top: 1rem;
-        }
-
-        .button-warning {
-            color: white;
-            border-radius: 4px;
-            text-shadow: 0 1px 1px rgba(0, 0, 0, 0.2);
-            font-size: 125%;
-            background: #b64d0a;
-        }
-
-        .link-button {
-            background: none; /* Remove background color */
-            border: none; /* Remove border */
-            padding: 0; /* Remove padding */
-            font: inherit; /* Inherit font styles from parent */
-            color: #2c7bb6; /* Set link color */
-            cursor: pointer; /* Change cursor to pointer on hover */
-            text-align: left; /* Align text to the left */
-        }
-
-        .link-button:hover {
-            color: darkblue; /* Change color on hover */
-        }
-
-        /* Basic styling for the popover element */
-        #myPopover {
-            background-color: #fff;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            padding: 3rem;
-            box-shadow: 0 10px 10px rgba(0, 0, 0, 0.2);
-            width: 60rem;
-            height: 25rem;
-        }
-
-        #myPopover::backdrop {
-            background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent black for a grey effect */
-        }
-
-        /* Styling for when the popover is open (optional, as default styling is often sufficient) */
-        #myPopover:popover-open {
-            /* Add specific styles for the open state if needed */
-        }
-
-        #myPopover button {
-            position: absolute;
-            top: 5px;
-            right: 5px;
-            background: none;
-            border: none;
-            font-size: 1.2em;
-            cursor: pointer;
-        }
-
-        .custom-hr {
-            border-top: 1px solid #ccc; /* Creates a 1px solid light gray line */
-            margin: 20px 0; /* Adds some vertical spacing */
-            height: 0; /* Ensures the div itself doesn't take up vertical space beyond the border */
-        }
-
-        .info-box {
-            background-color: #e0f2f7; /* Light blue background */
-            border: 1px solid #a7d9ed; /* Blue border */
-            padding: 2rem;
-            margin-bottom: 20px;
-            border-radius: 5px; /* Rounded corners */
-            color: #333;
-            font-family: Arial, sans-serif;
-        }
-
-        .info-box h3 {
-            color: #007bff; /* Blue heading color */
-            margin-top: 0;
-            margin-bottom: 10px;
-        }
-
-    </style>
+    {% include 'basic_style.j2' %}
     <body>
         {% include './noscript.j2' %}
         <section>
             <div class="info-box">
                 <h3>OpenScienceLab Portal has been updated!</h3>
-                <p>For registered users, your username has not changed. However, passwords have been reset. 
-                    If you received an email with a temporary password, you may use that. 
-                    Otherwise, click on the Forget Password reset link under the Log In button. 
-                    Note that MFA will also need to be redone.</p>
+                <p>
+                    For registered users, your username has not changed. However, passwords have been reset.
+                    If you received an email with a temporary password, you may use that.
+                    Otherwise, click on the Forget Password reset link under the Log In button.
+                    Note that MFA will also need to be redone.
+                </p>
             </div>
         </section>
         <section>
             <div class="pure-g outside-margins">
-                <div class="pure-u-1-6">
-                </div>
+                <div class="pure-u-1-6"></div>
                 <div class="pure-u-1-2">
                     <div class="pure-g top-margins">
                         <div class="pure-u-1-3">
