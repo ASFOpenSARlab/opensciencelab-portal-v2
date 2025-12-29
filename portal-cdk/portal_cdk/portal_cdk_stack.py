@@ -190,8 +190,8 @@ class PortalCdkStack(Stack):
             "DeployErrorFile",
             sources=[s3deploy.Source.asset("./lambda_main/static/html")],
             destination_bucket=error_bucket,
-            content_type = "text/html",
-            content_disposition = "inline",
+            content_type="text/html",
+            content_disposition="inline",
         )
 
         # https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_cloudfront.Distribution.html
