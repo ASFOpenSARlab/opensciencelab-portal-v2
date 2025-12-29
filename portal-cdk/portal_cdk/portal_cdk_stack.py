@@ -188,9 +188,8 @@ class PortalCdkStack(Stack):
         s3deploy.BucketDeployment(
             self,
             "DeployErrorFile",
-            sources=[s3deploy.Source.asset("./lambda_main/static/mhtml")],
+            sources=[s3deploy.Source.asset("./lambda_main/static/html")],
             destination_bucket=error_bucket,
-            # content_type = "multipart/related",
             content_type = "text/html",
             content_disposition = "inline",
         )
@@ -216,7 +215,7 @@ class PortalCdkStack(Stack):
             additional_behaviors={
                 "/error*.html": cloudfront.BehaviorOptions(
                     origin=origins.S3Origin(error_bucket),
-                    origin_request_policy=cloudfront.OriginRequestPolicy.ALL_VIEWER,
+                    origin_request_policy=cloudfront.OriginRequestPolicy.ALL_VIEWER_EXCEPT_HOST_HEADER,
                     viewer_protocol_policy=cloudfront.ViewerProtocolPolicy.ALLOW_ALL,
                     allowed_methods=cloudfront.AllowedMethods.ALLOW_GET_HEAD,
                     cache_policy=cloudfront.CachePolicy.CACHING_DISABLED,
