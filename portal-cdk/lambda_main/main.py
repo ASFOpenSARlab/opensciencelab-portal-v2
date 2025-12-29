@@ -89,7 +89,7 @@ def root():
     )
 
 
-# This endpoint exists primarily for dumping to html/mhtml
+# This endpoint exists primarily for dumping to html
 @app.get("/error", include_in_schema=False)
 def error():
     return wrap_response(
