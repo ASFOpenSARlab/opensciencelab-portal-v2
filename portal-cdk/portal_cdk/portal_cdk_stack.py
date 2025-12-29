@@ -224,12 +224,6 @@ class PortalCdkStack(Stack):
             },
             error_responses=[
                 cloudfront.ErrorResponse(
-                    http_status=404,
-                    response_page_path="/error.html",
-                    response_http_status=200,
-                    ttl=Duration.minutes(5),
-                ),
-                cloudfront.ErrorResponse(
                     http_status=503,
                     response_page_path="/error.html",
                     response_http_status=200,
