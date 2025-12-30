@@ -172,16 +172,8 @@ class PortalCdkStack(Stack):
         error_bucket = s3.Bucket(
             self,
             "ErrorPages",
-            auto_delete_objects=True,
             removal_policy=RemovalPolicy.DESTROY,
             versioned=False,
-            block_public_access=s3.BlockPublicAccess(
-                block_public_acls=False,
-                block_public_policy=False,
-                ignore_public_acls=False,
-                restrict_public_buckets=False,
-            ),
-            public_read_access=True,
         )
 
         # Deploy error pages to bucket, in portal-cdk directory
@@ -224,9 +216,15 @@ class PortalCdkStack(Stack):
             },
             error_responses=[
                 cloudfront.ErrorResponse(
+                    http_status=500,
+                    response_page_path="/error.html",
+                    response_http_status=500,
+                    ttl=Duration.minutes(5),
+                ),
+                cloudfront.ErrorResponse(
                     http_status=503,
                     response_page_path="/error.html",
-                    response_http_status=200,
+                    response_http_status=503,
                     ttl=Duration.minutes(5),
                 ),
             ],
