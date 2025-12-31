@@ -218,7 +218,7 @@ class PortalCdkStack(Stack):
                 cloudfront.ErrorResponse(
                     http_status=500,
                     response_page_path="/error.html",
-                    response_http_status=500,
+                    response_http_status=503,
                     ttl=Duration.minutes(5),
                 ),
                 cloudfront.ErrorResponse(
