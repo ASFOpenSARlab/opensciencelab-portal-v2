@@ -6,6 +6,7 @@ import base64
 import json
 
 from aws_cdk import (
+    Duration,
     Stack,
     aws_lambda,
     CfnOutput,
@@ -16,6 +17,8 @@ from aws_cdk import (
     aws_dynamodb as dynamodb,
     aws_ses as ses,
     aws_apigatewayv2_integrations as apigwv2_integrations,
+    aws_s3 as s3,
+    aws_s3_deployment as s3deploy,
     aws_cloudfront as cloudfront,
     aws_cloudfront_origins as origins,
     aws_iam as iam,
@@ -166,6 +169,23 @@ class PortalCdkStack(Stack):
         else:
             custom_domain_args = {}
 
+        error_bucket = s3.Bucket(
+            self,
+            "ErrorPages",
+            removal_policy=RemovalPolicy.DESTROY,
+            versioned=False,
+        )
+
+        # Deploy error pages to bucket, in portal-cdk directory
+        s3deploy.BucketDeployment(
+            self,
+            "DeployErrorFile",
+            sources=[s3deploy.Source.asset("./lambda_main/static/html")],
+            destination_bucket=error_bucket,
+            content_type="text/html",
+            content_disposition="inline",
+        )
+
         # https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_cloudfront.Distribution.html
         portal_cloudfront = cloudfront.Distribution(
             self,
@@ -184,6 +204,30 @@ class PortalCdkStack(Stack):
                 cache_policy=cloudfront.CachePolicy.CACHING_DISABLED,
                 response_headers_policy=cloudfront.ResponseHeadersPolicy.CORS_ALLOW_ALL_ORIGINS_WITH_PREFLIGHT_AND_SECURITY_HEADERS,
             ),
+            additional_behaviors={
+                "/error*.html": cloudfront.BehaviorOptions(
+                    origin=origins.S3Origin(error_bucket),
+                    origin_request_policy=cloudfront.OriginRequestPolicy.ALL_VIEWER_EXCEPT_HOST_HEADER,
+                    viewer_protocol_policy=cloudfront.ViewerProtocolPolicy.ALLOW_ALL,
+                    allowed_methods=cloudfront.AllowedMethods.ALLOW_GET_HEAD,
+                    cache_policy=cloudfront.CachePolicy.CACHING_DISABLED,
+                    response_headers_policy=cloudfront.ResponseHeadersPolicy.CORS_ALLOW_ALL_ORIGINS_WITH_PREFLIGHT,
+                ),
+            },
+            error_responses=[
+                cloudfront.ErrorResponse(
+                    http_status=500,
+                    response_page_path="/error.html",
+                    response_http_status=503,
+                    ttl=Duration.minutes(5),
+                ),
+                cloudfront.ErrorResponse(
+                    http_status=503,
+                    response_page_path="/error.html",
+                    response_http_status=503,
+                    ttl=Duration.minutes(5),
+                ),
+            ],
             **custom_domain_args,
         )
 
