@@ -84,6 +84,20 @@ PROD_LABS = {
         ],
         default_profiles=["SAR 1", "SAR 2", "SAR 3", "Debug Server Profile"],
     ),
+    "geos669": BaseLab(
+        short_lab_name="geos669",
+        friendly_name="GEOS669 Geodesy & Geodetic Methods",
+        description="GEOS669 Geodesy & Geodetic Methods for Spring 2026, powered by ASF OpenScienceLab",
+        deployment_url="https://geos669-2032234544.us-west-2.elb.amazonaws.com",
+        accessibility="private",
+        allowed_profiles=[
+            "m6a.large",
+            "m6a.xlarge",
+            "Debug Server Profile",
+            "sudo",
+        ],
+        default_profiles=["m6a.large", "m6a.xlarge"],
+    ),
 }
 
 NON_PROD_LABS = {
@@ -150,6 +164,16 @@ NON_PROD_LABS = {
         accessibility="protected",
         allowed_profiles=[],
         default_profiles=["m6a.large", "m6a.xlarge"],
+    ),
+    "geos669": BaseLab(
+        short_lab_name="geos669",
+        friendly_name="GEOS669 Lab",
+        description="Most Recent Class Lab",
+        logo="OpenSARLab_logo.png",
+        deployment_url="https://geos669-2032234544.us-west-2.elb.amazonaws.com",
+        accessibility="private",
+        allowed_profiles=["m6a.large", "m6a.xlarge"],
+        default_profiles=["m6a.large"],
     ),
 }
 
