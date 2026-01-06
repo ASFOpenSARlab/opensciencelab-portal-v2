@@ -417,6 +417,9 @@ class PortalCdkStack(Stack):
             ),
         )
 
+        # Add to lambda_main env
+        lambda_dynamo.lambda_function.add_environment("USER_POOL_ID", user_pool.user_pool_id)
+
         ## User Pool Client, AKA App Client:
         # https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_cognito.UserPoolClient.html
         callback_hosts = [
@@ -512,7 +515,7 @@ class PortalCdkStack(Stack):
             lambda_role = iam.Role(
                 self,
                 "CrossAccountLambdaToCognito",
-                assumed_by=iam.CompositePrincipal(*arn_principals),
+                assumed_by=iam.CompositePrincipal(*arn_principals, iam.ArnPrincipal("arn:aws:sts::979581550289:assumed-role/PortalCdkStack-sg-testlambdadynamodbstackLambdaFunc-ebsXVG4jxz87/PortalCdkStack-sg-testlambdadynamodbstackLambdaFun-udfknQ4fjDP0")),
                 role_name=role_name,
                 description="IAM Role for cross account crypto remediation lambda access to cognito",
             )
@@ -520,10 +523,14 @@ class PortalCdkStack(Stack):
                 iam.PolicyStatement(
                     actions=[
                         "cognito-idp:AdminDisableUser",
+                        "cognito-idp:AdminEnableUser",
                     ],
                     resources=[user_pool.user_pool_arn],
                 )
             )
+
+            # Add to lambda_main env
+            lambda_dynamo.lambda_function.add_environment("ROLE_ARN", lambda_role.role_arn)
 
         ### Secrets Manager
         sso_token_secret = secretsmanager.Secret(

@@ -1,4 +1,7 @@
 import traceback
+import boto3
+import os
+from concurrent.futures import ThreadPoolExecutor
 
 from util.format import (
     portal_template,
@@ -62,8 +65,70 @@ def _user_set_lock(username, lock: bool) -> bool:
             user_to_toggle.username,
         )
         return False
-    user_to_toggle.is_locked = lock
+
+    # Assume Role
+    sts_client = boto3.client("sts")
+    try:
+        response = sts_client.assume_role(
+            RoleArn=os.environ.get("ROLE_ARN"),
+            RoleSessionName="LOCK_USER",
+        )
+    except Exception as e:
+        
+        print(f"Error assuming role: {e}")
+
+    credentials = response["Credentials"]
+    access_key_id = credentials["AccessKeyId"]
+    secret_access_key = credentials["SecretAccessKey"]
+    session_token = credentials["SessionToken"]
+
+    assumed_role_session = boto3.Session(
+        aws_access_key_id=access_key_id,
+        aws_secret_access_key=secret_access_key,
+        aws_session_token=session_token,
+    )
+
+    cognito_client = assumed_role_session.client("cognito-idp")
+
+    # Lock/Unlock User
+    try: 
+        if lock:
+            cognito_client.admin_disable_user(
+                UserPoolId=os.environ.get('USER_POOL_ID'),
+                Username=username,
+            )
+        else:
+            cognito_client.admin_enable_user(
+                UserPoolId=os.environ.get('USER_POOL_ID'),
+                Username=username,
+            )
+    except Exception as e:
+        print("ERROR TOGGLING USER LOCK:", e)
+    
     return True
+
+def are_users_locked(usernames:list[str]) -> dict[str, bool]:
+
+    cognito_client = boto3.client("cognito-idp")
+    def get_user_enabled(username):
+        try:
+            res = cognito_client.admin_get_user(
+                UserPoolId=os.environ.get('USER_POOL_ID'),
+                Username=username
+            )
+            return username, res["Enabled"]
+        except cognito_client.exceptions.UserNotFoundException:
+            return username, None
+        
+    users_enabled = {}
+
+    with ThreadPoolExecutor(max_workers=5) as executor:
+        for username, enabled in executor.map(
+            lambda u: get_user_enabled(u),
+            usernames
+        ):
+            users_enabled[username] = enabled
+    return users_enabled
 
 
 @users_router.get("", include_in_schema=False)
@@ -81,6 +146,12 @@ def users_root():
     # Fetch all users
     all_users = get_all_items(limit=row_limit, username_filter=user_filter)
     all_users_sorted = sorted(all_users, key=lambda x: x["username"])
+    
+    users_locked_status = are_users_locked([user["username"] for user in all_users_sorted])
+    for user in all_users_sorted:
+        # map cognito enabled to is_locked
+        # True: enabled, False: disabled, None: does not exist -> False, True, True
+        user["is_locked"] = not users_locked_status[user["username"]]
 
     template_input = {
         "all_users_sorted": all_users_sorted,
