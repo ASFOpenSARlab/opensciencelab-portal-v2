@@ -83,7 +83,7 @@ def root():
     return wrap_response(
         render_template(
             content="Welcome to OpenScienceLab",
-            title="OpenScience",
+            title="OpenScienceLab",
             name="landing.j2",
         )
     )
