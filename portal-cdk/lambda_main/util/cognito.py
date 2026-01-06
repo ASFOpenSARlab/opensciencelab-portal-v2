@@ -76,3 +76,29 @@ def delete_user_from_user_pool(username) -> bool:
         # If we get a response, the user was NOT delete.
         return False
     return True
+
+
+def verify_user_password(username, password) -> bool:
+    # Verify cognito user & password without MFA
+    try:
+        response = _COGNITO_CLIENT.initiate_auth(
+            AuthFlow="USER_PASSWORD_AUTH",
+            AuthParameters={
+                "USERNAME": username,
+                "PASSWORD": password,
+            },
+            ClientId=COGNITO_CLIENT_ID,
+        )
+    except (
+        _COGNITO_CLIENT.exceptions.UserNotFoundException,
+        _COGNITO_CLIENT.exceptions.NotAuthorizedException,
+    ):
+        # Could not verify user
+        return False
+
+    if "Session" in response:
+        # Username & Password match in cognito
+        return True
+
+    # Unknown other scenario
+    return False

@@ -436,6 +436,11 @@ class PortalCdkStack(Stack):
                 # Where to redirect after log OUT:
                 logout_urls=[f"{host}/logout" for host in callback_hosts],
             ),
+            auth_flows=cognito.AuthFlow(
+                custom=True,
+                user_password=True,
+            ),
+            generate_secret=False,
             # supported_identity_providers=[
             #     cognito.UserPoolClientIdentityProvider.COGNITO
             # ],
@@ -552,6 +557,7 @@ class PortalCdkStack(Stack):
                     "cognito-idp:AdminCreateUser",
                     "cognito-idp:AdminDeleteUser",
                     "cognito-idp:AdminGetUser",
+                    "cognito-idp:InitiateAuth",
                 ],
                 resources=[user_pool.user_pool_arn],
             )

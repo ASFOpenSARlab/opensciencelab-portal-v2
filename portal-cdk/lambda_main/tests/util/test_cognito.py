@@ -4,6 +4,7 @@ from moto import mock_aws
 import boto3
 
 REGION = os.getenv("STACK_REGION", "us-west-2")
+TEST_USER_PASSWORD = "This_Is_Test_Users_Password_9"
 
 
 @mock_aws
@@ -37,6 +38,7 @@ class TestCognitoClass:
         util.cognito._COGNITO_CLIENT.admin_create_user(
             UserPoolId=mock_up_id,
             Username="test_user",
+            TemporaryPassword=TEST_USER_PASSWORD,
         )
 
         # Back populate values
@@ -61,3 +63,12 @@ class TestCognitoClass:
         assert delete_user_from_user_pool("test_user")
 
         assert not get_user_from_user_pool("test_user")
+
+    def test_user_password_validation(self):
+        from util.cognito import verify_user_password
+
+        assert verify_user_password("test_user", TEST_USER_PASSWORD)
+
+        assert not verify_user_password("test_user", "KnownBad")
+
+        assert not verify_user_password("dne_user", TEST_USER_PASSWORD)
