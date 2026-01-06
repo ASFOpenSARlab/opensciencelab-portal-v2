@@ -1,4 +1,6 @@
 import os
+from datetime import datetime
+import pytz
 
 from moto import mock_aws
 import boto3
@@ -20,6 +22,29 @@ class TestCognitoClass:
         # Mock the user pool
         mock_up = util.cognito._COGNITO_CLIENT.create_user_pool(PoolName="MockUserPool")
         mock_up_id = mock_up["UserPool"]["Id"]
+
+        # Add custom attributes:
+        util.cognito._COGNITO_CLIENT.add_custom_attributes(
+            UserPoolId=mock_up_id,
+            CustomAttributes=[
+                {
+                    "Name": "mfa_reset_code",
+                    "AttributeDataType": "String",
+                    "Mutable": True,
+                    "Required": False,
+                    "StringAttributeConstraints": {
+                        "MinLength": "10",
+                        "MaxLength": "10",
+                    },
+                },
+                {
+                    "Name": "mfa_reset_date",
+                    "AttributeDataType": "DateTime",
+                    "Mutable": True,
+                    "Required": False,
+                },
+            ],
+        )
 
         # Mock the Client
         mock_upc = util.cognito._COGNITO_CLIENT.create_user_pool_client(
@@ -72,3 +97,83 @@ class TestCognitoClass:
         assert not verify_user_password("test_user", "KnownBad")
 
         assert not verify_user_password("dne_user", TEST_USER_PASSWORD)
+
+    def test_set_cognito_user_password(self):
+        from util.cognito import set_cognito_user_password, verify_user_password
+
+        assert not set_cognito_user_password("dne_user", "bad_pass")
+
+        assert verify_user_password("test_user", TEST_USER_PASSWORD)
+
+        assert set_cognito_user_password("test_user", TEST_USER_PASSWORD + "_padding")
+
+        assert not verify_user_password("test_user", TEST_USER_PASSWORD)
+
+        assert verify_user_password("test_user", TEST_USER_PASSWORD + "_padding")
+
+    def test_user_mfa_reset(self):
+        from util.cognito import verify_user_password, reset_user_mfa
+
+        assert not reset_user_mfa("dne_user")
+
+        # reset user to unknown password
+        reset_user_mfa("test_user")
+        assert not verify_user_password("test_user", TEST_USER_PASSWORD)
+
+        # reset user to known password
+        reset_user_mfa("test_user", TEST_USER_PASSWORD)
+        assert verify_user_password("test_user", TEST_USER_PASSWORD)
+
+    def test_get_set_cognito_user_attribute(self):
+        from util.cognito import get_cognito_user_attribute, set_cognito_user_attribute
+
+        assert get_cognito_user_attribute("dne_user", "mfa_reset_code") is False
+        assert get_cognito_user_attribute("test_user", "mfa_reset_code") is None
+
+        # Moto does NOT respect format/constraints
+        # assert not set_cognito_user_attribute("test_user", "mfa_reset_code", "1")
+        # assert not set_cognito_user_attribute("test_user", "mfa_reset_date", "bla")
+
+        assert set_cognito_user_attribute("test_user", "mfa_reset_code", "1234567890")
+        assert get_cognito_user_attribute("test_user", "mfa_reset_code") == "1234567890"
+        assert (
+            not get_cognito_user_attribute("test_user", "mfa_reset_code")
+            == "badcodevalue"
+        )
+        assert set_cognito_user_attribute("test_user", "mfa_reset_code")
+        assert get_cognito_user_attribute("test_user", "mfa_reset_code") is None
+
+        current_time = datetime.now(pytz.UTC).replace(microsecond=0)
+        assert set_cognito_user_attribute("test_user", "mfa_reset_date", current_time)
+        assert get_cognito_user_attribute("test_user", "mfa_reset_date") == current_time
+        assert get_cognito_user_attribute("test_user", "mfa_reset_date") < datetime.now(
+            pytz.UTC
+        )
+
+    def test_reset_mfa_with_password(self):
+        from util.cognito import (
+            set_mfa_reset_values,
+            reset_user_mfa_with_password,
+            verify_user_password,
+            get_cognito_user_attribute,
+        )
+
+        assert not reset_user_mfa_with_password("test_user", "badpass", "badcode")
+
+        # Make sure we know the right password
+        assert verify_user_password("test_user", TEST_USER_PASSWORD)
+        assert not verify_user_password("test_user", "badpassword")
+
+        # Set up a reset validation
+        set_mfa_reset_values("test_user", "1234567890")
+
+        # test resetting
+        assert not reset_user_mfa_with_password("test_user", "badpass", "badcode")
+        assert not reset_user_mfa_with_password("test_user", TEST_USER_PASSWORD, "1")
+        assert reset_user_mfa_with_password(
+            "test_user", TEST_USER_PASSWORD, "1234567890"
+        )
+
+        # Confirm user has been recreated w/ password
+        assert verify_user_password("test_user", TEST_USER_PASSWORD)
+        assert get_cognito_user_attribute("test_user", "mfa_reset_code") is None

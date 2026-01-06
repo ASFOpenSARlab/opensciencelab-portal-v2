@@ -362,6 +362,12 @@ class PortalCdkStack(Stack):
                     mutable=True,
                 ),
             ),
+            custom_attributes={
+                "mfa_reset_code": cognito.StringAttribute(
+                    min_len=10, max_len=10, mutable=True
+                ),
+                "mfa_reset_date": cognito.DateTimeAttribute(mutable=True),
+            },
             # https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_cognito.UserPoolEmail.html
             # https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_cognito.UserPoolSESOptions.html
             email=cognito.UserPoolEmail.with_ses(
