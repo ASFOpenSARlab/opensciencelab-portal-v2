@@ -83,9 +83,22 @@ def root():
     return wrap_response(
         render_template(
             content="Welcome to OpenScienceLab",
-            title="OpenScience",
+            title="OpenScienceLab",
             name="landing.j2",
         )
+    )
+
+
+# This endpoint exists primarily for dumping to html
+@app.get("/error", include_in_schema=False)
+def error():
+    return wrap_response(
+        render_template(
+            content="An unexpected error has occurred",
+            name="error.j2",
+            title="OpenScienceLab: Something went wrong",
+        ),
+        code=401,
     )
 
 
