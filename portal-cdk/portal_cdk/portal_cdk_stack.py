@@ -102,7 +102,7 @@ class PortalCdkStack(Stack):
                 runtime=LAMBDA_RUNTIME,
                 handler="main.lambda_handler",
                 layers=[powertools_layer, requirements_layer],
-                memory_size=1024,
+                memory_size=1769,
                 timeout=Duration.seconds(10),
                 environment={
                     "POWERTOOLS_SERVICE_NAME": "APP",
