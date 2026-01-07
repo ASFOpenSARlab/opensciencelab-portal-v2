@@ -20,7 +20,11 @@
                 background-color: lightcoral;
                 width:95%;
                 vertical-align: middle">
-        Search results limited to {{ rowcount }}. Try filtering with <code>?filter=value</code>
+        <form action="/portal/users">
+            Search results limited to {{ rowcount }}. Try filtering by username:
+            <input type="input" name="filter">
+            <input type="submit" hidden />
+        </form>
     </div>
 {% endif %}
 <table style="width:100%" border=1>
