@@ -116,10 +116,11 @@ def verify_user_password(username, password) -> bool:
     return False
 
 
-def recreate_cognito_user(user) -> bool:
+def recreate_cognito_user(user, suppress_email=True) -> bool:
     response = _COGNITO_CLIENT.admin_create_user(
         UserPoolId=COGNITO_POOL_ID,
         Username=user["Username"],
+        MessageAction="SUPPRESS" if suppress_email else "RESEND",
         UserAttributes=[
             attr for attr in user["UserAttributes"] if attr["Name"] != "sub"
         ],
@@ -153,13 +154,16 @@ def reset_user_mfa(username, password=None) -> bool:
     if not existing_user.get("Username"):
         return False
 
+    logger.info(f"Deleting {username} from userpool")
     if not delete_user_from_user_pool(username):
         return False
 
+    logger.info(f"Recreating {username}")
     if not recreate_cognito_user(existing_user):
         return False
 
     if password:
+        logger.info(f"Setting password for {username}")
         if not set_cognito_user_password(username, password):
             return False
 
@@ -189,7 +193,7 @@ def set_cognito_user_attribute(username, attribute_name, attribute_value=None) -
         return False
 
     except Exception as E:
-        logger.warning(
+        logger.error(
             f"Problem updating Attr {attribute_name} to {attribute_value}: {E}"
         )
         return False

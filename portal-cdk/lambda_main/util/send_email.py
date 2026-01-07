@@ -131,14 +131,17 @@ def _parse_email_message(data: dict) -> dict:
     return email_meta
 
 
+def send_user_email_encrypted(request_data):
+    decrypted_data: dict = decrypt_data(request_data)
+    return send_user_email(decrypted_data)
+
+
 def send_user_email(request_data):
     sesv2: boto3.client = get_sesv2()
     reason: str = None
 
     try:
-        decrypted_data: dict = decrypt_data(request_data)
-
-        parsed_data: dict = _parse_email_message(decrypted_data)
+        parsed_data: dict = _parse_email_message(request_data)
 
         response = sesv2.send_email(
             FromEmailAddress=parsed_data.get("from", ""),

@@ -103,6 +103,7 @@ class PortalCdkStack(Stack):
                 handler="main.lambda_handler",
                 layers=[powertools_layer, requirements_layer],
                 memory_size=1024,
+                timeout=Duration.seconds(10),
                 environment={
                     "POWERTOOLS_SERVICE_NAME": "APP",
                     "DEBUG": str(vars["deploy_prefix"] != "prod").lower(),
@@ -564,6 +565,9 @@ class PortalCdkStack(Stack):
                     "cognito-idp:AdminDeleteUser",
                     "cognito-idp:AdminGetUser",
                     "cognito-idp:InitiateAuth",
+                    "cognito-idp:AdminUpdateUserAttributes",
+                    "cognito-idp:AdminDeleteUserAttributes",
+                    "cognito-idp:AdminSetUserPassword",
                 ],
                 resources=[user_pool.user_pool_arn],
             )
