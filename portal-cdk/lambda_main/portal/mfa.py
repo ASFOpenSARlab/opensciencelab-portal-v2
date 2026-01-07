@@ -52,7 +52,6 @@ def do_mfa_reset(username):
             "username": [
                 username,
             ],
-            "email": [],
         },
         "html_body": (
             f"MFA Reset code is <code>{mfa_reset_code}</code>."
@@ -149,8 +148,8 @@ def reset_code_post():
                 "username": username,
                 "mfa_reset_code": mfa_reset_code,
                 "warning": (
-                    f"Error resetting MFA. Please verify username, "
-                    f"password and reset code."
+                    "Error resetting MFA. Please verify username, "
+                    "password and reset code."
                 ),
             },
             content="",

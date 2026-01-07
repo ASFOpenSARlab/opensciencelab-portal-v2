@@ -105,7 +105,7 @@ def render_template(content, input=None, name=None, title=None):
         "signup_url": SIGNUP_URL,
         "return_path": f"&state={return_path}" if return_path else "",
         "reset_password_url": FORGOT_PASSWORD_URL,
-        "reset_mfa_url": "",  # TODO add functionality
+        "reset_mfa_url": "/mfa",
     }
     if input:
         template_input.update(input)

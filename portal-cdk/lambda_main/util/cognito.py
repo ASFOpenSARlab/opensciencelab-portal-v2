@@ -79,7 +79,7 @@ def delete_user_from_user_pool(username) -> bool:
         _COGNITO_CLIENT.admin_delete_user(UserPoolId=COGNITO_POOL_ID, Username=username)
     except _COGNITO_CLIENT.exceptions.UserNotFoundException:
         # Could not find the user to delete it
-        logger.warning(f"User {username} could not be deleted")
+        logger.error(f"User {username} could not be deleted")
         return False
 
     if get_user_from_user_pool(username).get("Username"):
@@ -112,7 +112,7 @@ def verify_user_password(username, password) -> bool:
         return True
 
     # Unknown other scenario
-    logger.warning(f"Received unexpect response from initiate_auth(): {response}")
+    logger.error(f"Received unexpect response from initiate_auth(): {response}")
     return False
 
 
@@ -130,7 +130,7 @@ def recreate_cognito_user(user, suppress_email=True) -> bool:
         return True
 
     # Could not recreate user?
-    logger.warning(f"Could not recreate User {user['Username']}: {response}.")
+    logger.error(f"Could not recreate User {user['Username']}: {response}.")
     return False
 
 
@@ -143,7 +143,7 @@ def set_cognito_user_password(username, password) -> bool:
             Permanent=True,
         )
     except Exception as E:
-        logger.warning(f"Could not set password for User {username}: {E}")
+        logger.error(f"Could not set password for User {username}: {E}")
         return False
 
     return True
@@ -201,7 +201,7 @@ def set_cognito_user_attribute(username, attribute_name, attribute_value=None) -
     return True
 
 
-def get_cognito_user_attribute(username, attribute_name) -> bool:
+def get_cognito_user_attribute(username, attribute_name) -> bool | None | datetime:
     existing_user = get_user_from_user_pool(username)
     if not existing_user.get("Username"):
         return False
