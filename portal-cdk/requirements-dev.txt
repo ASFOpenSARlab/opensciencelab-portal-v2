@@ -7,3 +7,5 @@ aws_lambda_powertools==3.13.0
 moto[dynamodb,cognito-idp]==5.1.6
 joserfc==1.1.0
 boto3==1.40.36
+pytz==2025.2
+

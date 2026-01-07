@@ -173,7 +173,7 @@ def send_user_email():
 
     request_data_decoded = base64.b64decode(request_data)
 
-    result, reason = send_email.send_user_email(request_data_decoded)
+    result, reason = send_email.send_user_email_encrypted(request_data_decoded)
 
     # If the response fails, say why:
     response = {"result": result}

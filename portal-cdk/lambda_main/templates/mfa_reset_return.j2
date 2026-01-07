@@ -1,0 +1,40 @@
+{# djlint:off H021 #}
+<div style="width:50%; margin:0 auto; margin-bottom: 50px;">
+    <h3>OpenScienceLab MFA Reset form</h3>
+    <hr>
+    {% if warning %}<p class="warning">{{ warning }}</p>{% endif %}
+    <table>
+        <form action="/mfa/reset-code" method="post">
+            <tr>
+                <td>
+                    <h4>Username:</h4>
+                </td>
+                <td>
+                    <input name="username" value="{{ username }}">
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <h4>Password:</h4>
+                </td>
+                <td>
+                    <input name="password" type="password">
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <h4>Code:</h4>
+                </td>
+                <td>
+                    <input name="mfa_reset_code" value="{{ mfa_reset_code }}">
+                </td>
+            </tr>
+            <tr>
+                <td></td>
+                <td>
+                    <input type="submit" value="Request Reset">
+                </td>
+            </tr>
+        </form>
+    </table>
+</div>

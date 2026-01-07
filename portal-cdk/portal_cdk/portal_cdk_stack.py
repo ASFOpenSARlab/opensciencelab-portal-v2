@@ -103,6 +103,7 @@ class PortalCdkStack(Stack):
                 handler="main.lambda_handler",
                 layers=[powertools_layer, requirements_layer],
                 memory_size=1024,
+                timeout=Duration.seconds(10),
                 environment={
                     "POWERTOOLS_SERVICE_NAME": "APP",
                     "DEBUG": str(vars["deploy_prefix"] != "prod").lower(),
@@ -362,6 +363,12 @@ class PortalCdkStack(Stack):
                     mutable=True,
                 ),
             ),
+            custom_attributes={
+                "mfa_reset_code": cognito.StringAttribute(
+                    min_len=10, max_len=10, mutable=True
+                ),
+                "mfa_reset_date": cognito.DateTimeAttribute(mutable=True),
+            },
             # https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_cognito.UserPoolEmail.html
             # https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_cognito.UserPoolSESOptions.html
             email=cognito.UserPoolEmail.with_ses(
@@ -436,6 +443,11 @@ class PortalCdkStack(Stack):
                 # Where to redirect after log OUT:
                 logout_urls=[f"{host}/logout" for host in callback_hosts],
             ),
+            auth_flows=cognito.AuthFlow(
+                custom=True,
+                user_password=True,
+            ),
+            generate_secret=False,
             # supported_identity_providers=[
             #     cognito.UserPoolClientIdentityProvider.COGNITO
             # ],
@@ -552,6 +564,10 @@ class PortalCdkStack(Stack):
                     "cognito-idp:AdminCreateUser",
                     "cognito-idp:AdminDeleteUser",
                     "cognito-idp:AdminGetUser",
+                    "cognito-idp:InitiateAuth",
+                    "cognito-idp:AdminUpdateUserAttributes",
+                    "cognito-idp:AdminDeleteUserAttributes",
+                    "cognito-idp:AdminSetUserPassword",
                 ],
                 resources=[user_pool.user_pool_arn],
             )

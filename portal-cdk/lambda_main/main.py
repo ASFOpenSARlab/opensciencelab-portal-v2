@@ -194,14 +194,22 @@ def handle_not_found(error):
 # THIS SHOULD BE THE ONLY ONE! Other exceptions inherit from this one:
 @app.exception_handler(GenericFatalError)
 def handle_generic_fatal_error(exception):
+    # Hide errors in prod
+    ret_code = exception.error_code
+    if os.getenv("IS_PROD", "false").lower() != "true":
+        if exception.error_code >= 500:
+            ret_code = 400
+
+    dump_dict = {
+        "error": exception.message,
+        "extra_info": exception.extra_info,
+    }
+
+    logger.fatal(dump_dict)
+
     return wrap_response(
-        json.dumps(
-            {
-                "error": exception.message,
-                "extra_info": exception.extra_info,
-            }
-        ),
-        code=exception.error_code,
+        json.dumps(dump_dict),
+        code=ret_code,
         content_type=content_types.APPLICATION_JSON,
     )
 
