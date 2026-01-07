@@ -1,3 +1,10 @@
+"""
+For information on MFA reset mechanics, see docs/mfa_reset_workflow.png
+
+/mfa -> /mfa/reset -> /mfa/return -> /reset-code
+
+"""
+
 import os
 import random
 import string
