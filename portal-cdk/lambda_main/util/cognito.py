@@ -261,7 +261,7 @@ def disable_user(username):
         # Could not find the user to delete it
         return False
     except Exception as e:
-        print("ERROR Disabling user: ", e)
+        logger.warning(f"ERROR Disabling user: {e}")
 
 def enable_user(username):
     # trigger enable user
@@ -271,4 +271,4 @@ def enable_user(username):
         # Could not find the user to delete it
         return False
     except Exception as e:
-        print("ERROR Enabling user: ", e)
+        logger.warning(f"ERROR Enabling user: {e}")
