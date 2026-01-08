@@ -148,26 +148,25 @@ def get_record_counter(table, username) -> int:
     return int(response["Item"]["_rec_counter"])
 
 
-def filter_username(items, username_filter):
-    """
-    Helper function to filter dynamo pagination return
-    """
-    if not username_filter:
-        return items
-    return [x for x in items if username_filter in x["username"]]
-
-
 def pull_all_pagination(table, limit, username_filter, filterexpr=None):
     table_scan_params = {}
+
+    if username_filter:
+        username_filter = Attr("username").contains(username_filter)
+        if filterexpr:
+            filterexpr = filterexpr & username_filter
+        else:
+            filterexpr = username_filter
+
     if filterexpr:
         table_scan_params["FilterExpression"] = filterexpr
 
     response = table.scan(**table_scan_params)
-    items = filter_username(response.get("Items", []), username_filter)
+    items = response.get("Items", [])
     while "LastEvaluatedKey" in response:
         table_scan_params["ExclusiveStartKey"] = response["LastEvaluatedKey"]
         response = table.scan(**table_scan_params)
-        items.extend(filter_username(response.get("Items", []), username_filter))
+        items.extend(response.get("Items", []))
 
         # Break if we meet a set limit, and we're not filtering
         if limit and len(items) >= limit:
