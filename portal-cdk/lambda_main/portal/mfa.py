@@ -147,7 +147,9 @@ def reset_code_post():
 
     if reset_user_mfa_with_password(username, password, mfa_reset_code):
         logger.info(f"MFA successfully reset for {username}")
-        req_content = "MFA Reset Completed, <a href='/'>Log In</a> to configure your new MFA code"
+        req_content = (
+            "MFA Reset Completed, <a href='/'>Log In</a> to configure your new MFA code"
+        )
     else:
         req_content = render_template(
             name="mfa_reset_return.j2",
