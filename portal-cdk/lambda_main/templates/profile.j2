@@ -259,97 +259,110 @@
                     </div>
                 </fieldset>
             </form>
-        </div>
-        <script>
-        window.addEventListener('load', function () {
-            // Get all select elements
-            const allSelects = document.querySelectorAll('select');
-            // Run expandSelect on each element
-            allSelects.forEach(select => {
-                expandSelect(select);
+            <script>
+            window.addEventListener('load', function () {
+                // Get all select elements
+                const allSelects = document.querySelectorAll('select');
+                // Run expandSelect on each element
+                allSelects.forEach(select => {
+                    expandSelect(select);
+                });
             });
-        });
-        // Remove option with value === "default" if it is not selected
-        function removeDropdownDefault(selectElement){
-            if (selectElement.value !== "default") {
-                const defaultOption = selectElement.querySelector('option[value="default"]');
-                if (defaultOption) {
-                    selectElement.remove(defaultOption.index);
+            // Remove option with value === "default" if it is not selected
+            function removeDropdownDefault(selectElement){
+                if (selectElement.value !== "default") {
+                    const defaultOption = selectElement.querySelector('option[value="default"]');
+                    if (defaultOption) {
+                        selectElement.remove(defaultOption.index);
+                    }
                 }
             }
-        }
-        // Displays element with id provided by option element data field if provided
-        function expandSelect(selectElement){
-            // Get the selected option element
-            const selectedOption = selectElement.options[selectElement.selectedIndex];
-            // Get data fields
-            const idToShow = selectedOption.dataset.idToShow;
-            const elementToReveal = document.getElementById(idToShow);
-            const elementToHide = document.getElementById(selectElement.dataset.idToHide);
-            // Update visibilities
-            if(elementToHide !== null){
-                elementToHide.hidden = true;
+            // Displays element with id provided by option element data field if provided
+            function expandSelect(selectElement){
+                // Get the selected option element
+                const selectedOption = selectElement.options[selectElement.selectedIndex];
+                // Get data fields
+                const idToShow = selectedOption.dataset.idToShow;
+                const elementToReveal = document.getElementById(idToShow);
+                const elementToHide = document.getElementById(selectElement.dataset.idToHide);
+                // Update visibilities
+                if(elementToHide !== null){
+                    elementToHide.hidden = true;
+                }
+                if(elementToReveal !== null){
+                    elementToReveal.hidden = false;
+                }
+                // Update data field in selectElement
+                selectElement.dataset.idToHide = idToShow;
             }
-            if(elementToReveal !== null){
-                elementToReveal.hidden = false;
-            }
-            // Update data field in selectElement
-            selectElement.dataset.idToHide = idToShow;
-        }
-        </script>
-        {% if user_logged_in.is_admin() %}
-            <h3>Admin Settings</h3>
-            <table style="width:100%" border=1>
-                <tr>
-                    <th>Lab Short Name</th>
-                    <th>Access</th>
-                    <th>Available Profiles</th>
-                </tr>
-                {% for lab in labs.values() %}
+            </script>
+            {% if user_logged_in.is_admin() %}
+                <hr>
+                <table style="width:90%" border=1>
                     <tr>
                         <td>
-                            <b><a href="/portal/access/manage/{{ lab.short_lab_name }}">{{ lab.short_lab_name }}</a></b>
+                            <h3>User Email:</h3>
                         </td>
                         <td>
-                            {% if user_profile.is_admin() %}
-                                <b>ADMIN</b>
-                            {% elif lab.short_lab_name in user_profile.labs %}
-                                <b>YES</b>
-                            {% else %}
-                                No
-                            {% endif %}
-                        </td>
-                        <td>
-                            {% if lab.short_lab_name in user_profile.labs %}
-                                {% for profile in lab.allowed_profiles %}
-                                    {% if profile in user_profile.labs[lab.short_lab_name]["lab_profiles"] %}
-                                        <span style="border: 1px solid black; padding: 1px 4px; color: green;">{{ profile }}</span>,
-                                    {% else %}
-                                        <span style="border: 1px solid black; padding: 1px 4px; color: red;">{{ profile }}</span>,
-                                    {% endif %}
-                                {% endfor %}
-                            {% elif user_profile.is_admin() %}
-                                Admin not in Lab...
-                            {% endif %}
+                            <h5>
+                                <code>{{ user_logged_in.email }}</code>
+                            </h5>
                         </td>
                     </tr>
-                {% endfor %}
-            </table>
-            <h3>IP Info</h3>
-            <table style="width:100%" border=1>
-                <tr>
-                    <th>Timestamp</th>
-                    <th>Country Code</th>
-                    <th>IP Address</th>
-                </tr>
-                {% for res in user_ip_results -%}
+                </table>
+                <h3>Admin Settings</h3>
+                <table style="width:90%" border=1>
                     <tr>
-                        <td>{{ res['@timestamp'] }}</td>
-                        <td>{{ res['country_code'] }}</td>
-                        <td>{{ res['ip_address'] }}</td>
+                        <th>Lab Short Name</th>
+                        <th>Access</th>
+                        <th>Available Profiles</th>
                     </tr>
-                {% endfor %}
-            </table>
-        {% endif %}
+                    {% for lab in labs.values() %}
+                        <tr>
+                            <td>
+                                <b><a href="/portal/access/manage/{{ lab.short_lab_name }}">{{ lab.short_lab_name }}</a></b>
+                            </td>
+                            <td>
+                                {% if user_profile.is_admin() %}
+                                    <b>ADMIN</b>
+                                {% elif lab.short_lab_name in user_profile.labs %}
+                                    <b>YES</b>
+                                {% else %}
+                                    No
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if lab.short_lab_name in user_profile.labs %}
+                                    {% for profile in lab.allowed_profiles %}
+                                        {% if profile in user_profile.labs[lab.short_lab_name]["lab_profiles"] %}
+                                            <span style="border: 1px solid black; padding: 1px 4px; color: green;">{{ profile }}</span>,
+                                        {% else %}
+                                            <span style="border: 1px solid black; padding: 1px 4px; color: red;">{{ profile }}</span>,
+                                        {% endif %}
+                                    {% endfor %}
+                                {% elif user_profile.is_admin() %}
+                                    Admin not in Lab...
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </table>
+                <h3>IP Info</h3>
+                <table style="width:90%" border=1>
+                    <tr>
+                        <th>Timestamp</th>
+                        <th>Country Code</th>
+                        <th>IP Address</th>
+                    </tr>
+                    {% for res in user_ip_results -%}
+                        <tr>
+                            <td>{{ res['@timestamp'] }}</td>
+                            <td>{{ res['country_code'] }}</td>
+                            <td>{{ res['ip_address'] }}</td>
+                        </tr>
+                    {% endfor %}
+                </table>
+            {% endif %}
+        </div>
     </body>
 </html>

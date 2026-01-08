@@ -11,6 +11,7 @@ USER_TABLE_DATA = [
         "username": "GeneralUser",
         "require_profile_update": False,
         "is_locked": False,
+        "email": "GeneralUser@GeneralUser.com",
     },
     {
         # Admin User
@@ -22,6 +23,7 @@ USER_TABLE_DATA = [
         "username": "AdminUser",
         "require_profile_update": False,
         "is_locked": False,
+        "email": "AdminUser@AdminUser.com",
     },
     {
         # New, incomplete User
@@ -33,6 +35,7 @@ USER_TABLE_DATA = [
         "username": "NewUser",
         "require_profile_update": True,
         "is_locked": False,
+        "email": "NewUser@NewUser.com",
     },
     {
         # Locked User
@@ -44,6 +47,7 @@ USER_TABLE_DATA = [
         "username": "TotallyNotCryptoMiner",
         "require_profile_update": False,
         "is_locked": True,
+        "email": "CryptoMiner@CryptoMiner.com",
     },
 ]
 
