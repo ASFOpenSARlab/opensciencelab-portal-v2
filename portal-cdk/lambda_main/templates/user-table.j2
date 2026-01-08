@@ -30,6 +30,7 @@
 <table style="width:100%" border=1>
     <tr>
         <th>Username</th>
+        <th>Email</th>
         <th>Created</th>
         <th>Last Login</th>
         <th>Access</th>
@@ -42,6 +43,7 @@
             <td>
                 <b><a href="/portal/profile/form/{{ user["username" ] }}">{{ user["username"] }}</a></b>
             </td>
+            <td>{{ user['email'] }}</td>
             <td>{{ user['created_at'] }}</td>
             <td>{{ user['last_cookie_assignment'] }}</td>
             <td>{{ user['access']|join(", ") }}</td>
