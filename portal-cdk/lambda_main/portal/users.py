@@ -1,3 +1,4 @@
+from faulthandler import disable
 import traceback
 import boto3
 import os
@@ -7,6 +8,7 @@ from util.format import (
     portal_template,
 )
 from util.auth import require_access
+from util.cognito import enable_user, disable_user
 from util.session import current_session
 from util.user.dynamo_db import get_all_items
 from util.format import jinja_template
@@ -66,45 +68,10 @@ def _user_set_lock(username, lock: bool) -> bool:
         )
         return False
 
-    # Assume Role
-    sts_client = boto3.client("sts")
-    try:
-        response = sts_client.assume_role(
-            RoleArn=os.environ.get("ROLE_ARN"),
-            RoleSessionName="LOCK_USER",
-        )
-    except Exception as e:
-        
-        print(f"Error assuming role: {e}")
-
-    credentials = response["Credentials"]
-    access_key_id = credentials["AccessKeyId"]
-    secret_access_key = credentials["SecretAccessKey"]
-    session_token = credentials["SessionToken"]
-
-    assumed_role_session = boto3.Session(
-        aws_access_key_id=access_key_id,
-        aws_secret_access_key=secret_access_key,
-        aws_session_token=session_token,
-    )
-
-    cognito_client = assumed_role_session.client("cognito-idp")
-
-    # Lock/Unlock User
-    try: 
-        if lock:
-            cognito_client.admin_disable_user(
-                UserPoolId=os.environ.get('USER_POOL_ID'),
-                Username=username,
-            )
-        else:
-            cognito_client.admin_enable_user(
-                UserPoolId=os.environ.get('USER_POOL_ID'),
-                Username=username,
-            )
-    except Exception as e:
-        print("ERROR TOGGLING USER LOCK:", e)
-    
+    if lock:
+        disable_user(username)
+    else:
+        enable_user(username)
     return True
 
 def are_users_locked(usernames:list[str]) -> dict[str, bool]:

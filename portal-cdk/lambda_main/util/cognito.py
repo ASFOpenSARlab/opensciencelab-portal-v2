@@ -51,7 +51,6 @@ LOGOUT_URL = (
     + f"logout_uri=https://{DEPLOYMENT_HOSTNAME}/logout"
 )
 
-
 def get_user_from_user_pool(username) -> dict:
     try:
         return _COGNITO_CLIENT.admin_get_user(
@@ -76,3 +75,23 @@ def delete_user_from_user_pool(username) -> bool:
         # If we get a response, the user was NOT delete.
         return False
     return True
+
+def disable_user(username):
+    # trigger disable user
+    try:
+        _COGNITO_CLIENT.admin_disable_user(UserPoolId=COGNITO_POOL_ID, Username=username)
+    except _COGNITO_CLIENT.exceptions.UserNotFoundException:
+        # Could not find the user to delete it
+        return False
+    except Exception as e:
+        print("ERROR Disabling user: ", e)
+
+def enable_user(username):
+    # trigger enable user
+    try:
+        _COGNITO_CLIENT.admin_enable_user(UserPoolId=COGNITO_POOL_ID, Username=username)
+    except _COGNITO_CLIENT.exceptions.UserNotFoundException:
+        # Could not find the user to delete it
+        return False
+    except Exception as e:
+        print("ERROR Enabling user: ", e)
