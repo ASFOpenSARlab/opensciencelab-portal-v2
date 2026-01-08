@@ -11,6 +11,11 @@ from boto3.dynamodb.conditions import Attr
 from util.labs import LABS
 from util.exceptions import LabDoesNotExist
 
+from aws_lambda_powertools import Logger
+
+
+logger = Logger(child=True)
+
 _DYNAMO_CLIENT = None
 _DYNAMO_DB = None
 _DYNAMO_TABLE = None
@@ -181,7 +186,9 @@ def get_all_items(limit=None, username_filter=None) -> list:
 
     """
     _client, _db, table = _get_dynamo()
+    logger.info(f"Pulling rows from {table}, limit={limit}, filter={username_filter}")
     items = pull_all_pagination(table, limit, username_filter)
+    logger.info(f"Fetched {len(items)} rows from {table} w/ filter={username_filter}")
 
     # Bound the return set if limit provided
     if limit:
