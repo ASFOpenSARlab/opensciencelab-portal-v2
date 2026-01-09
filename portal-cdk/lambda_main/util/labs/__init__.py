@@ -98,6 +98,20 @@ PROD_LABS = {
         ],
         default_profiles=["m6a.large", "m6a.xlarge"],
     ),
+    "geos626": BaseLab(
+        short_lab_name="geos626",
+        friendly_name="GEOS626 Applied Seismology",
+        description="GEOS626 Applied Seismology for Spring 2026, powered by ASF OpenScienceLab",
+        deployment_url="https://geos626-1705112830.us-west-2.elb.amazonaws.com/",
+        accessibility="private",
+        allowed_profiles=[
+            "m6a.large",
+            "m6a.xlarge",
+            "Debug Server Profile",
+            "sudo",
+        ],
+        default_profiles=["m6a.large", "m6a.xlarge"],
+    ),
 }
 
 NON_PROD_LABS = {
@@ -174,6 +188,20 @@ NON_PROD_LABS = {
         accessibility="private",
         allowed_profiles=["m6a.large", "m6a.xlarge"],
         default_profiles=["m6a.large"],
+    ),
+    "geos626": BaseLab(
+        short_lab_name="geos626",
+        friendly_name="GEOS626 Applied Seismology",
+        description="GEOS626 Applied Seismology for Spring 2026, powered by ASF OpenScienceLab",
+        deployment_url="https://geos626-1705112830.us-west-2.elb.amazonaws.com/",
+        accessibility="private",
+        allowed_profiles=[
+            "m6a.large",
+            "m6a.xlarge",
+            "Debug Server Profile",
+            "sudo",
+        ],
+        default_profiles=["m6a.large", "m6a.xlarge"],
     ),
 }
 
