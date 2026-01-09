@@ -102,7 +102,7 @@ PROD_LABS = {
         short_lab_name="geos626",
         friendly_name="GEOS626 Applied Seismology",
         description="GEOS626 Applied Seismology for Spring 2026, powered by ASF OpenScienceLab",
-        deployment_url="https://geos626-1705112830.us-west-2.elb.amazonaws.com/",
+        deployment_url="https://geos626-1705112830.us-west-2.elb.amazonaws.com",
         accessibility="private",
         allowed_profiles=[
             "m6a.large",
@@ -193,7 +193,7 @@ NON_PROD_LABS = {
         short_lab_name="geos626",
         friendly_name="GEOS626 Applied Seismology",
         description="GEOS626 Applied Seismology for Spring 2026, powered by ASF OpenScienceLab",
-        deployment_url="https://geos626-1705112830.us-west-2.elb.amazonaws.com/",
+        deployment_url="https://geos626-1705112830.us-west-2.elb.amazonaws.com",
         accessibility="private",
         allowed_profiles=[
             "m6a.large",
