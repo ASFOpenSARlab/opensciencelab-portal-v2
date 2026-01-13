@@ -7,7 +7,10 @@ PROD_LABS = {
         short_lab_name="smce-prod-opensarlab",
         friendly_name="OpenSARLab (ASF DAAC)",
         description="""
-        <p>NASA JupyterHub operated by the Alaska Satellite Facility</p> <p>Users not affiliated with NASA should apply for access here: <a href="https://forms.gle/LNBCwe8JohYitvfy6">OpenSARLab Access Application</a></p> <p style="color: orangered;">User storage is permanently deleted after 30 days of inactivity. Users can request a temporary extension by contacting the OSL Admins.</p> <hr style="border-top: 1px solid grey;"> <div style="font-size: 12px;margin: 10px 0 0 0;text-align: justify;">
+            <p>NASA JupyterHub operated by the Alaska Satellite Facility</p>
+            <p>Users working on a NASA-funded project may <a href="mailto:uso@asf.alaska.edu?subject=NASA-affiliate%20OSL%20access%20request">request OpenSARLab access from ASF User Support.</a></p>
+            <p>Users not affiliated with a NASA-funded project should apply for access here: <a href="https://forms.gle/LNBCwe8JohYitvfy6">OpenSARLab Access Application</a></p>
+            <p style="color: orangered;">User storage is permanently deleted after 30 days of inactivity. Users can request a temporary extension by contacting the OSL Admins.</p> <hr style="border-top: 1px solid grey;"> <div style="font-size: 12px;margin: 10px 0 0 0;text-align: justify;">
             <p>By accessing and using this information system, you acknowledge and consent to the following:</p>
             <p>You are accessing a U.S. Government information system, which includes: (1) this computer; (2) this computer network; (3) all computers connected to
             this network including end user systems; (4) all devices and storage media attached to this network or to any computer on this network; and
