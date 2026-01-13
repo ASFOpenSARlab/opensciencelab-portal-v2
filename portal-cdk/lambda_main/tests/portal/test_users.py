@@ -1,4 +1,3 @@
-from cffi.pkgconfig import call
 import main
 
 USER_TABLE_DATA = [

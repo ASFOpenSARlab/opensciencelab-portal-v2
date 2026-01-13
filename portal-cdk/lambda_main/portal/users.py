@@ -1,4 +1,3 @@
-from faulthandler import disable
 import traceback
 import boto3
 import os

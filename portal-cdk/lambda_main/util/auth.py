@@ -13,7 +13,6 @@ from util.exceptions import (
     UserProfileIncomplete,
 )
 from util.session import current_session, PortalAuth
-from util.format import render_template
 import util.cognito
 from util.user_ip_logs_stream import send_user_ip_logs, update_user_ip_in_db
 
