@@ -73,13 +73,14 @@ def _user_set_lock(username, lock: bool) -> bool:
         enable_user(username)
     return True
 
+
 def are_users_locked(usernames: list[str]) -> dict[str, bool]:
     cognito_client = boto3.client("cognito-idp")
 
     def get_user_enabled(username):
         try:
             res = cognito_client.admin_get_user(
-                UserPoolId=os.environ.get('USER_POOL_ID'), Username=username
+                UserPoolId=os.environ.get("USER_POOL_ID"), Username=username
             )
             return username, res["Enabled"]
         except cognito_client.exceptions.UserNotFoundException:

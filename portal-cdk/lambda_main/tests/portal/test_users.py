@@ -90,7 +90,7 @@ class TestUsersPages:
         ret = main.lambda_handler(event, lambda_context)
 
         mocked_users_locked.assert_called_once_with(
-            ['AdminUser', 'GeneralUser', 'NewUser', 'TotallyNotCryptoMiner']
+            ["AdminUser", "GeneralUser", "NewUser", "TotallyNotCryptoMiner"]
         )
         assert ret["statusCode"] == 200
         assert ret["body"].find("<b>YES</b>") != -1
