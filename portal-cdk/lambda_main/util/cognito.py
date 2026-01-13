@@ -253,15 +253,19 @@ def reset_user_mfa_with_password(username, password, reset_code) -> bool:
 
     return reset_user_mfa(username, password)
 
+
 def disable_user(username):
     # trigger disable user
     try:
-        _COGNITO_CLIENT.admin_disable_user(UserPoolId=COGNITO_POOL_ID, Username=username)
+        _COGNITO_CLIENT.admin_disable_user(
+            UserPoolId=COGNITO_POOL_ID, Username=username
+        )
     except _COGNITO_CLIENT.exceptions.UserNotFoundException:
         # Could not find the user to delete it
         return False
     except Exception as e:
         logger.warning(f"ERROR Disabling user: {e}")
+
 
 def enable_user(username):
     # trigger enable user

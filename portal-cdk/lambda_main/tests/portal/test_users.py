@@ -89,7 +89,9 @@ class TestUsersPages:
 
         ret = main.lambda_handler(event, lambda_context)
 
-        mocked_users_locked.assert_called_once_with(['AdminUser', 'GeneralUser', 'NewUser', 'TotallyNotCryptoMiner'])
+        mocked_users_locked.assert_called_once_with(
+            ['AdminUser', 'GeneralUser', 'NewUser', 'TotallyNotCryptoMiner']
+        )
         assert ret["statusCode"] == 200
         assert ret["body"].find("<b>YES</b>") != -1
         assert (
@@ -99,45 +101,6 @@ class TestUsersPages:
             != -1
         )
         assert ret["headers"].get("Content-Type") == "text/html"
-
-    # def test_user_is_locked(self, lambda_context, monkeypatch, fake_auth, helpers):
-    #     user = helpers.FakeUser(access=["admin", "user"])
-
-    #     # monkeypatch.setenv("UserPoolId", "TestValue")
-
-    #     monkeypatch.setattr("portal.users.User", lambda *args, **kwargs: user)
-    #     monkeypatch.setattr("util.auth.User", lambda *args, **kwargs: user)
-    #     monkeypatch.setattr(
-    #         "portal.users.get_all_items", lambda *args, **kwargs: USER_TABLE_DATA
-    #     )
-
-    #     event = helpers.get_event(path="/portal/users", cookies=fake_auth)
-
-    #     ret = main.lambda_handler(event, lambda_context)
-    #     assert ret["statusCode"] == 200
-    #     assert ret["headers"].get("Content-Type") == "text/html"
-
-    #     # Since the message is asking to unlock, this user is LOCKED here:
-    #     assert (
-    #         ret["body"].find("Do you really want to unlock `TotallyNotCryptoMiner`?")
-    #         != -1
-    #     )
-    #     assert (
-    #         ret["body"].find(
-    #             '<a href="/portal/profile/form/TotallyNotCryptoMiner">TotallyNotCryptoMiner</a>'
-    #         )
-    #         != -1
-    #     )
-    #     assert ret["body"].find("<b>Locked</b>") != -1
-
-    #     # And same thing for a UNLOCKED User:
-    #     assert ret["body"].find("Do you really want to lock `GeneralUser`?") != -1
-    #     assert (
-    #         ret["body"].find(
-    #             '<a href="/portal/profile/form/GeneralUser">GeneralUser</a>'
-    #         )
-    #         != -1
-    #     )
 
     def test_delete_invalid_cognito_user(
         self, lambda_context, monkeypatch, fake_auth, helpers
@@ -279,7 +242,9 @@ class TestUsersPages:
         assert ret["statusCode"] == 302
         assert ret["headers"].get("Location", "").find("success=False") != -1
 
-    def test_lock_valid_user(self, lambda_context, monkeypatch, fake_auth, helpers, mocker):
+    def test_lock_valid_user(
+        self, lambda_context, monkeypatch, fake_auth, helpers, mocker
+    ):
         acting_user = helpers.FakeUser(access=["admin", "user"])
         lock_user = helpers.FakeUser(username="GeneralUser")
 

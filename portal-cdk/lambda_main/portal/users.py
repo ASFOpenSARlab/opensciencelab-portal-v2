@@ -73,26 +73,22 @@ def _user_set_lock(username, lock: bool) -> bool:
         enable_user(username)
     return True
 
-def are_users_locked(usernames:list[str]) -> dict[str, bool]:
-
+def are_users_locked(usernames: list[str]) -> dict[str, bool]:
     cognito_client = boto3.client("cognito-idp")
+
     def get_user_enabled(username):
         try:
             res = cognito_client.admin_get_user(
-                UserPoolId=os.environ.get('USER_POOL_ID'),
-                Username=username
+                UserPoolId=os.environ.get('USER_POOL_ID'), Username=username
             )
             return username, res["Enabled"]
         except cognito_client.exceptions.UserNotFoundException:
             return username, None
-        
+
     users_enabled = {}
 
     with ThreadPoolExecutor(max_workers=5) as executor:
-        for username, enabled in executor.map(
-            lambda u: get_user_enabled(u),
-            usernames
-        ):
+        for username, enabled in executor.map(lambda u: get_user_enabled(u), usernames):
             users_enabled[username] = enabled
     return users_enabled
 
@@ -112,8 +108,10 @@ def users_root():
     # Fetch all users
     all_users = get_all_items(limit=row_limit, username_filter=user_filter)
     all_users_sorted = sorted(all_users, key=lambda x: x["username"])
-    
-    users_locked_status = are_users_locked([user["username"] for user in all_users_sorted])
+
+    users_locked_status = are_users_locked(
+        [user["username"] for user in all_users_sorted]
+    )
     for user in all_users_sorted:
         # map cognito enabled to is_locked
         # True: enabled, False: disabled, None: does not exist -> False, True, True

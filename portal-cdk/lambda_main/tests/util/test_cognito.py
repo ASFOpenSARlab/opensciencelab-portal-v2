@@ -177,14 +177,15 @@ class TestCognitoClass:
         # Confirm user has been recreated w/ password
         assert verify_user_password("test_user", TEST_USER_PASSWORD)
         assert get_cognito_user_attribute("test_user", "mfa_reset_code") is None
-    
+
     def test_enable_user(self):
-        from util.cognito import(
+        from util.cognito import (
             get_user_from_user_pool,
             enable_user,
             _COGNITO_CLIENT,
             COGNITO_POOL_ID,
         )
+
         _COGNITO_CLIENT.admin_disable_user(
             UserPoolId=COGNITO_POOL_ID,
             Username="test_user",
@@ -194,12 +195,13 @@ class TestCognitoClass:
         enable_user("test_user")
         user = get_user_from_user_pool("test_user")
         assert user["Enabled"]
-    
+
     def test_disable_user(self):
-        from util.cognito import(
+        from util.cognito import (
             get_user_from_user_pool,
             disable_user,
         )
+
         disable_user("test_user")
         user = get_user_from_user_pool("test_user")
         assert not user["Enabled"]
