@@ -111,6 +111,7 @@ PROD_LABS = {
             "m6a.large",
             "m6a.xlarge",
             "Debug Server Profile",
+            "noistio",
             "sudo",
         ],
         default_profiles=["m6a.large", "m6a.xlarge"],
