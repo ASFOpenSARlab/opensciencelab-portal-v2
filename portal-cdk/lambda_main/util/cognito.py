@@ -259,7 +259,6 @@ def are_users_locked(usernames: list[str]) -> dict[str, bool]:
     # Get all disabled users
     all_disabled_res = _COGNITO_CLIENT.list_users(
         UserPoolId=os.environ.get("USER_POOL_ID"),
-        AttributesToGet=['email'],
         Filter='status = "false"'
     )
     all_disabled_users = set([r["Username"] for r in all_disabled_res["Users"]])
