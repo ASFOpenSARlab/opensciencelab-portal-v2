@@ -13,7 +13,6 @@ from util.exceptions import (
     UserProfileIncomplete,
 )
 from util.session import current_session, PortalAuth
-from util.format import render_template
 import util.cognito
 from util.user_ip_logs_stream import send_user_ip_logs, update_user_ip_in_db
 
@@ -385,21 +384,6 @@ def require_access(access="user", human: bool = False):
                         }
                     )
 
-            # Check if user is disabled:
-            if current_session.user.is_locked:
-                logger.warning("User %s is locked", username)
-                if not human:
-                    raise UserIsNotAuthorized(message="User is locked")
-                return wrap_response(
-                    body=render_template(
-                        content=(
-                            "Sorry, your account isn't available right now. "
-                            f"Please reach out to {os.getenv('SES_EMAIL')} if you have any questions or concerns."
-                        ),
-                        title="OSL Portal - Account Locked",
-                    ),
-                    code=403,
-                )
             # Ensure user has access they are trying to achieve
             if access not in current_session.user.access:
                 logger.warning(

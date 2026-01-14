@@ -252,3 +252,42 @@ def reset_user_mfa_with_password(username, password, reset_code) -> bool:
     set_cognito_user_attribute(username, "mfa_reset_date")
 
     return reset_user_mfa(username, password)
+
+
+def all_locked_users() -> set[str]:
+    # Get all disabled users
+    all_disabled_res = _COGNITO_CLIENT.list_users(
+        UserPoolId=os.environ.get("USER_POOL_ID"), Filter='status = "false"'
+    )
+    locked_users = set([r["Username"] for r in all_disabled_res["Users"]])
+
+    if len(locked_users) > 50:
+        logger.warning(
+            "Too many locked users, either increase Limit in list_users call, add pagination, or delete locked users"
+        )
+
+    return locked_users
+
+
+def disable_user(username):
+    # trigger disable user
+    try:
+        _COGNITO_CLIENT.admin_disable_user(
+            UserPoolId=COGNITO_POOL_ID, Username=username
+        )
+    except _COGNITO_CLIENT.exceptions.UserNotFoundException:
+        # Could not find the user to delete it
+        return False
+    except Exception as e:
+        logger.warning(f"ERROR Disabling user: {e}")
+
+
+def enable_user(username):
+    # trigger enable user
+    try:
+        _COGNITO_CLIENT.admin_enable_user(UserPoolId=COGNITO_POOL_ID, Username=username)
+    except _COGNITO_CLIENT.exceptions.UserNotFoundException:
+        # Could not find the user to delete it
+        return False
+    except Exception as e:
+        logger.warning(f"ERROR Enabling user: {e}")
