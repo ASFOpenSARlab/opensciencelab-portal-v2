@@ -77,7 +77,7 @@ class TestUsersPages:
     ):
         user = helpers.FakeUser(access=["admin", "user"])
 
-        mocked_users_locked = mocker.patch("portal.users.are_users_locked")
+        mocked_users_locked = mocker.patch("portal.users.all_locked_users")
 
         monkeypatch.setattr("portal.users.User", lambda *args, **kwargs: user)
         monkeypatch.setattr("util.auth.User", lambda *args, **kwargs: user)

@@ -4,7 +4,7 @@ from util.format import (
     portal_template,
 )
 from util.auth import require_access
-from util.cognito import enable_user, disable_user, are_users_locked
+from util.cognito import enable_user, disable_user, all_locked_users
 from util.session import current_session
 from util.user.dynamo_db import get_all_items
 from util.format import jinja_template
@@ -88,11 +88,9 @@ def users_root():
     all_users_sorted = sorted(all_users, key=lambda x: x["username"])
 
     # Get all users locked status 
-    users_locked_status = are_users_locked(
-        [user["username"] for user in all_users_sorted]
-    )
+    locked_users = all_locked_users()
     for user in all_users_sorted:
-        user["is_locked"] = users_locked_status[user["username"]]
+        user["is_locked"] = user in locked_users
 
     template_input = {
         "all_users_sorted": all_users_sorted,

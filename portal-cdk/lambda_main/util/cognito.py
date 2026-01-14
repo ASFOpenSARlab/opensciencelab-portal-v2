@@ -255,20 +255,12 @@ def reset_user_mfa_with_password(username, password, reset_code) -> bool:
     return reset_user_mfa(username, password)
 
 
-def are_users_locked(usernames: list[str]) -> dict[str, bool]:
+def all_locked_users() -> set[str]:
     # Get all disabled users
     all_disabled_res = _COGNITO_CLIENT.list_users(
-        UserPoolId=os.environ.get("USER_POOL_ID"),
-        Filter='status = "false"'
+        UserPoolId=os.environ.get("USER_POOL_ID"), Filter='status = "false"'
     )
-    all_disabled_users = set([r["Username"] for r in all_disabled_res["Users"]])
-
-    # Create dictionary mapping usernames to if they are locked
-    are_users_locked = {}
-    for username in usernames:
-        are_users_locked[username] = username in all_disabled_users
-
-    return are_users_locked
+    return set([r["Username"] for r in all_disabled_res["Users"]])
 
 
 def disable_user(username):
