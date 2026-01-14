@@ -542,9 +542,6 @@ class PortalCdkStack(Stack):
                 )
             )
 
-            # # Add to lambda_main env
-            # lambda_dynamo.lambda_function.add_environment("ROLE_ARN", lambda_role.role_arn)
-
         ### Secrets Manager
         sso_token_secret = secretsmanager.Secret(
             self,
