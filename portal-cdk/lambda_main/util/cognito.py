@@ -3,6 +3,7 @@ from datetime import datetime, timedelta
 import pytz
 import boto3
 from aws_lambda_powertools import Logger
+from concurrent.futures import ThreadPoolExecutor
 
 
 logger = Logger(child=True)
@@ -252,6 +253,26 @@ def reset_user_mfa_with_password(username, password, reset_code) -> bool:
     set_cognito_user_attribute(username, "mfa_reset_date")
 
     return reset_user_mfa(username, password)
+
+
+def are_users_locked(usernames: list[str]) -> dict[str, bool]:
+    cognito_client = boto3.client("cognito-idp")
+
+    def get_user_enabled(username):
+        try:
+            res = cognito_client.admin_get_user(
+                UserPoolId=os.environ.get("USER_POOL_ID"), Username=username
+            )
+            return username, res["Enabled"]
+        except cognito_client.exceptions.UserNotFoundException:
+            return username, None
+
+    users_enabled = {}
+
+    with ThreadPoolExecutor(max_workers=5) as executor:
+        for username, enabled in executor.map(lambda u: get_user_enabled(u), usernames):
+            users_enabled[username] = enabled
+    return users_enabled
 
 
 def disable_user(username):

@@ -1,13 +1,10 @@
 import traceback
-import boto3
-import os
-from concurrent.futures import ThreadPoolExecutor
 
 from util.format import (
     portal_template,
 )
 from util.auth import require_access
-from util.cognito import enable_user, disable_user
+from util.cognito import enable_user, disable_user, are_users_locked
 from util.session import current_session
 from util.user.dynamo_db import get_all_items
 from util.format import jinja_template
@@ -72,26 +69,6 @@ def _user_set_lock(username, lock: bool) -> bool:
     else:
         enable_user(username)
     return True
-
-
-def are_users_locked(usernames: list[str]) -> dict[str, bool]:
-    cognito_client = boto3.client("cognito-idp")
-
-    def get_user_enabled(username):
-        try:
-            res = cognito_client.admin_get_user(
-                UserPoolId=os.environ.get("USER_POOL_ID"), Username=username
-            )
-            return username, res["Enabled"]
-        except cognito_client.exceptions.UserNotFoundException:
-            return username, None
-
-    users_enabled = {}
-
-    with ThreadPoolExecutor(max_workers=5) as executor:
-        for username, enabled in executor.map(lambda u: get_user_enabled(u), usernames):
-            users_enabled[username] = enabled
-    return users_enabled
 
 
 @users_router.get("", include_in_schema=False)
