@@ -87,7 +87,7 @@ def users_root():
     all_users = get_all_items(limit=row_limit, username_filter=user_filter)
     all_users_sorted = sorted(all_users, key=lambda x: x["username"])
 
-    # Get all users locked status 
+    # Get all users locked status
     locked_users = all_locked_users()
     for user in all_users_sorted:
         user["is_locked"] = user in locked_users

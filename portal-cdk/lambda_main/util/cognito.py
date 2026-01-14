@@ -3,7 +3,6 @@ from datetime import datetime, timedelta
 import pytz
 import boto3
 from aws_lambda_powertools import Logger
-from concurrent.futures import ThreadPoolExecutor
 
 
 logger = Logger(child=True)
