@@ -256,23 +256,20 @@ def reset_user_mfa_with_password(username, password, reset_code) -> bool:
 
 
 def are_users_locked(usernames: list[str]) -> dict[str, bool]:
-    cognito_client = boto3.client("cognito-idp")
+    # Get all disabled users
+    all_disabled_res = _COGNITO_CLIENT.list_users(
+        UserPoolId=os.environ.get("USER_POOL_ID"),
+        AttributesToGet=['email'],
+        Filter='status = "false"'
+    )
+    all_disabled_users = set([r["Username"] for r in all_disabled_res["Users"]])
 
-    def get_user_enabled(username):
-        try:
-            res = cognito_client.admin_get_user(
-                UserPoolId=os.environ.get("USER_POOL_ID"), Username=username
-            )
-            return username, res["Enabled"]
-        except cognito_client.exceptions.UserNotFoundException:
-            return username, None
+    # Create dictionary mapping usernames to if they are locked
+    are_users_locked = {}
+    for username in usernames:
+        are_users_locked[username] = username in all_disabled_users
 
-    users_enabled = {}
-
-    with ThreadPoolExecutor(max_workers=5) as executor:
-        for username, enabled in executor.map(lambda u: get_user_enabled(u), usernames):
-            users_enabled[username] = enabled
-    return users_enabled
+    return are_users_locked
 
 
 def disable_user(username):

@@ -87,13 +87,12 @@ def users_root():
     all_users = get_all_items(limit=row_limit, username_filter=user_filter)
     all_users_sorted = sorted(all_users, key=lambda x: x["username"])
 
+    # Get all users locked status 
     users_locked_status = are_users_locked(
         [user["username"] for user in all_users_sorted]
     )
     for user in all_users_sorted:
-        # map cognito enabled to is_locked
-        # True: enabled, False: disabled, None: does not exist -> False, True, True
-        user["is_locked"] = not users_locked_status[user["username"]]
+        user["is_locked"] = users_locked_status[user["username"]]
 
     template_input = {
         "all_users_sorted": all_users_sorted,
