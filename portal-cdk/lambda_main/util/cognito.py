@@ -260,7 +260,14 @@ def all_locked_users() -> set[str]:
     all_disabled_res = _COGNITO_CLIENT.list_users(
         UserPoolId=os.environ.get("USER_POOL_ID"), Filter='status = "false"'
     )
-    return set([r["Username"] for r in all_disabled_res["Users"]])
+    locked_users = set([r["Username"] for r in all_disabled_res["Users"]])
+
+    if len(locked_users) > 50:
+        logger.warning(
+            "Too many locked users, either increase Limit in list_users call, add pagination, or delete locked users"
+        )
+
+    return locked_users
 
 
 def disable_user(username):
