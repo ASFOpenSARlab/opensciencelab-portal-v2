@@ -77,9 +77,11 @@ class TestUsersPages:
         assert ret["headers"].get("Location") == "/portal"
 
     def test_users_admin_logged_in(
-        self, lambda_context, monkeypatch, fake_auth, helpers
+        self, lambda_context, monkeypatch, fake_auth, helpers, mocker
     ):
         user = helpers.FakeUser(access=["admin", "user"])
+
+        mocked_users_locked = mocker.patch("portal.users.all_locked_users")
 
         monkeypatch.setattr("portal.users.User", lambda *args, **kwargs: user)
         monkeypatch.setattr("util.auth.User", lambda *args, **kwargs: user)
@@ -90,6 +92,8 @@ class TestUsersPages:
         event = helpers.get_event(path="/portal/users", cookies=fake_auth)
 
         ret = main.lambda_handler(event, lambda_context)
+
+        assert mocked_users_locked.call_count == 1
         assert ret["statusCode"] == 200
         assert ret["body"].find("<b>YES</b>") != -1
         assert (
@@ -99,43 +103,6 @@ class TestUsersPages:
             != -1
         )
         assert ret["headers"].get("Content-Type") == "text/html"
-
-    def test_user_is_locked(self, lambda_context, monkeypatch, fake_auth, helpers):
-        user = helpers.FakeUser(access=["admin", "user"])
-
-        monkeypatch.setattr("portal.users.User", lambda *args, **kwargs: user)
-        monkeypatch.setattr("util.auth.User", lambda *args, **kwargs: user)
-        monkeypatch.setattr(
-            "portal.users.get_all_items", lambda *args, **kwargs: USER_TABLE_DATA
-        )
-
-        event = helpers.get_event(path="/portal/users", cookies=fake_auth)
-
-        ret = main.lambda_handler(event, lambda_context)
-        assert ret["statusCode"] == 200
-        assert ret["headers"].get("Content-Type") == "text/html"
-
-        # Since the message is asking to unlock, this user is LOCKED here:
-        assert (
-            ret["body"].find("Do you really want to unlock `TotallyNotCryptoMiner`?")
-            != -1
-        )
-        assert (
-            ret["body"].find(
-                '<a href="/portal/profile/form/TotallyNotCryptoMiner">TotallyNotCryptoMiner</a>'
-            )
-            != -1
-        )
-        assert ret["body"].find("<b>Locked</b>") != -1
-
-        # And same thing for a UNLOCKED User:
-        assert ret["body"].find("Do you really want to lock `GeneralUser`?") != -1
-        assert (
-            ret["body"].find(
-                '<a href="/portal/profile/form/GeneralUser">GeneralUser</a>'
-            )
-            != -1
-        )
 
     def test_delete_invalid_cognito_user(
         self, lambda_context, monkeypatch, fake_auth, helpers
@@ -248,10 +215,13 @@ class TestUsersPages:
         assert ret["headers"].get("Location", "").find("success=True") != -1
 
     def test_lock_invalid_admin_user(
-        self, lambda_context, monkeypatch, fake_auth, helpers
+        self, lambda_context, monkeypatch, fake_auth, helpers, mocker
     ):
         user = helpers.FakeUser(access=["admin", "user"])
         lock_user = "AdminUser"
+
+        mock_disable = mocker.patch("portal.users.disable_user")
+        mock_enable = mocker.patch("portal.users.enable_user")
 
         monkeypatch.setattr("portal.users.User", lambda *args, **kwargs: user)
         monkeypatch.setattr("util.auth.User", lambda *args, **kwargs: user)
@@ -269,14 +239,19 @@ class TestUsersPages:
         )
 
         ret = main.lambda_handler(event, lambda_context)
+        assert mock_disable.call_count == 0
+        assert mock_enable.call_count == 0
         assert ret["statusCode"] == 302
         assert ret["headers"].get("Location", "").find("success=False") != -1
-        assert not user.is_locked, "Admin user should not be locked"
 
-    def test_lock_valid_user(self, lambda_context, monkeypatch, fake_auth, helpers):
+    def test_lock_valid_user(
+        self, lambda_context, monkeypatch, fake_auth, helpers, mocker
+    ):
         acting_user = helpers.FakeUser(access=["admin", "user"])
         lock_user = helpers.FakeUser(username="GeneralUser")
-        assert not lock_user.is_locked, "User should not be locked yet"
+
+        mock_disable = mocker.patch("portal.users.disable_user")
+        mock_enable = mocker.patch("portal.users.enable_user")
 
         monkeypatch.setattr("portal.users.User", lambda *args, **kwargs: lock_user)
         monkeypatch.setattr("util.auth.User", lambda *args, **kwargs: acting_user)
@@ -291,16 +266,19 @@ class TestUsersPages:
         )
 
         ret = main.lambda_handler(event, lambda_context)
+        mock_disable.assert_called_once_with("GeneralUser")
+        assert mock_enable.call_count == 0
         assert ret["statusCode"] == 302
         assert ret["headers"].get("Location", "").find("success=True") != -1
-        assert lock_user.is_locked, "User should be locked"
 
     def test_locking_a_locked_user(
-        self, lambda_context, monkeypatch, fake_auth, helpers
+        self, lambda_context, monkeypatch, fake_auth, helpers, mocker
     ):
         acting_user = helpers.FakeUser(access=["admin", "user"])
-        locked_user = helpers.FakeUser(username="GeneralUser", is_locked=True)
-        assert locked_user.is_locked, "User should be locked"
+        locked_user = helpers.FakeUser(username="GeneralUser")
+
+        mock_disable = mocker.patch("portal.users.disable_user")
+        mock_enable = mocker.patch("portal.users.enable_user")
 
         monkeypatch.setattr("portal.users.User", lambda *args, **kwargs: locked_user)
         monkeypatch.setattr("util.auth.User", lambda *args, **kwargs: acting_user)
@@ -315,16 +293,19 @@ class TestUsersPages:
         )
 
         ret = main.lambda_handler(event, lambda_context)
+        mock_disable.assert_called_once_with("GeneralUser")
+        assert mock_enable.call_count == 0
         assert ret["statusCode"] == 302
         assert ret["headers"].get("Location", "").find("success=True") != -1
-        assert locked_user.is_locked, "User should be locked"
 
     def test_unlocking_a_locked_user(
-        self, lambda_context, monkeypatch, fake_auth, helpers
+        self, lambda_context, monkeypatch, fake_auth, helpers, mocker
     ):
         acting_user = helpers.FakeUser(access=["admin", "user"])
-        locked_user = helpers.FakeUser(username="GeneralUser", is_locked=True)
-        assert locked_user.is_locked, "User should be locked"
+        locked_user = helpers.FakeUser(username="GeneralUser")
+
+        mock_disable = mocker.patch("portal.users.disable_user")
+        mock_enable = mocker.patch("portal.users.enable_user")
 
         monkeypatch.setattr("portal.users.User", lambda *args, **kwargs: locked_user)
         monkeypatch.setattr("util.auth.User", lambda *args, **kwargs: acting_user)
@@ -339,6 +320,7 @@ class TestUsersPages:
         )
 
         ret = main.lambda_handler(event, lambda_context)
+        assert mock_disable.call_count == 0
+        mock_enable.assert_called_once_with("GeneralUser")
         assert ret["statusCode"] == 302
         assert ret["headers"].get("Location", "").find("success=True") != -1
-        assert not locked_user.is_locked, "User should not be locked"

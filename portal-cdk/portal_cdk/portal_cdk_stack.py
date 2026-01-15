@@ -424,6 +424,11 @@ class PortalCdkStack(Stack):
             ),
         )
 
+        # Add to lambda_main env
+        lambda_dynamo.lambda_function.add_environment(
+            "USER_POOL_ID", user_pool.user_pool_id
+        )
+
         ## User Pool Client, AKA App Client:
         # https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_cognito.UserPoolClient.html
         callback_hosts = [
@@ -568,6 +573,8 @@ class PortalCdkStack(Stack):
                     "cognito-idp:AdminUpdateUserAttributes",
                     "cognito-idp:AdminDeleteUserAttributes",
                     "cognito-idp:AdminSetUserPassword",
+                    "cognito-idp:AdminEnableUser",
+                    "cognito-idp:AdminDisableUser",
                 ],
                 resources=[user_pool.user_pool_arn],
             )
