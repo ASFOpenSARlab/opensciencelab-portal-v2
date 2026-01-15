@@ -111,11 +111,15 @@ def reset_post():
         )
     else:
         if not do_mfa_reset(username):
+            warning = (
+                "Could not send MFA Reset email, please email the OSL admins at "
+                "<a href='mailto:uaf-jupyterhub-asf@alaska.edu'>uaf-jupyterhub-asf@alaska.edu</a>"
+            )
             req_content = render_template(
                 name="mfa_reset_request.j2",
                 input={
                     "username": username,
-                    "warning": "Could not send MFA Reset email.",
+                    "warning": warning,
                 },
                 content="",
             )
