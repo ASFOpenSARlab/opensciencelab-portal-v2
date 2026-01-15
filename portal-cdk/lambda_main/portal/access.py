@@ -9,6 +9,7 @@ from util.user.user import filter_lab_access
 from util.user import User
 from util.responses import wrap_response, form_body_to_dict, json_body_to_dict
 from util.labs import LABS
+from util.exceptions import MalformedRequest
 
 from aws_lambda_powertools.event_handler.api_gateway import Router
 from aws_lambda_powertools.event_handler import content_types
@@ -94,14 +95,14 @@ def edit_user(shortname):
     if body is None:
         error = "Body not provided to edit_user"
         logger.error(error)
-        raise ValueError(error)
+        raise MalformedRequest(error)
     body = form_body_to_dict(body)
 
     # Validate request
     success, message = validate_edit_user_request(body=body)
     if not success:
         logger.error(message)
-        raise ValueError(message)
+        raise MalformedRequest(message)
 
     # Edit user
     user = User(body["username"])
@@ -122,7 +123,7 @@ def edit_user(shortname):
     else:
         error = f"Invalid edit_user action {body['action']}"
         logger.error(error)
-        raise ValueError(error)
+        raise MalformedRequest(error)
 
     # Send the user to the management page
     next_url = f"/portal/access/manage/{shortname}"

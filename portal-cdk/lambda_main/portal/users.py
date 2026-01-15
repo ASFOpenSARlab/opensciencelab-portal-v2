@@ -89,8 +89,9 @@ def users_root():
 
     # Get all users locked status
     locked_users = all_locked_users()
+    logger.debug(f"Found {len(locked_users)} locked users")
     for user in all_users_sorted:
-        user["is_locked"] = user in locked_users
+        user["is_locked"] = user["username"] in locked_users
 
     template_input = {
         "all_users_sorted": all_users_sorted,
