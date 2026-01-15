@@ -4,7 +4,6 @@ from moto import mock_aws
 import boto3
 import os
 import json
-import pytest
 
 
 @mock_aws
@@ -148,10 +147,9 @@ class TestAccessPages:
             method="POST",
         )
 
-        with pytest.raises(ValueError) as exc_info:
-            ret = main.lambda_handler(event, lambda_context)
-
-        assert str(exc_info.value) == "Invalid action"
+        ret = main.lambda_handler(event, lambda_context)
+        assert ret["statusCode"] == 400
+        assert "Invalid action" in ret["body"]
 
     def test_get_labs_of_a_user_admin_correct(
         self, monkeypatch, lambda_context, helpers, fake_auth
