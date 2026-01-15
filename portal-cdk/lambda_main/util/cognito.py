@@ -206,15 +206,19 @@ def get_cognito_user_attribute(username, attribute_name) -> bool | None | dateti
     if not existing_user.get("Username"):
         return False
 
+    # Non-custom attributes
+    if attribute_name not in ("email"):
+        attribute_name = "custom:" + attribute_name
+
     for attribute in existing_user.get("UserAttributes", []):
-        if attribute["Name"] == "custom:" + attribute_name:
-            if attribute_name == "mfa_reset_date":
+        if attribute["Name"] == attribute_name:
+            if attribute_name.endswith("mfa_reset_date"):
                 return pytz.utc.localize(
                     datetime.strptime(attribute["Value"], COGNITO_DATETIME_FORMAT)
                 )
             return attribute["Value"]
 
-    logger.warning(f"Attribute custom:{attribute_name} not found in {existing_user}")
+    logger.warning(f"Attribute {attribute_name} not found in {existing_user}")
 
     return None
 
