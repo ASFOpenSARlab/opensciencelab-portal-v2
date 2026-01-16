@@ -148,7 +148,7 @@ def get_record_counter(table, username) -> int:
     return int(response["Item"]["_rec_counter"])
 
 
-def pull_all_pagination(table, limit, username_filter, filterexpr=None):
+def pull_all_pagination(table, limit, username_filter, email_filter, filterexpr=None):
     table_scan_params = {}
 
     if username_filter:
@@ -157,6 +157,13 @@ def pull_all_pagination(table, limit, username_filter, filterexpr=None):
             filterexpr = filterexpr & username_filter
         else:
             filterexpr = username_filter
+
+    if email_filter:
+        email_filter = Attr("email").contains(email_filter)
+        if filterexpr:
+            filterexpr = filterexpr & email_filter
+        else:
+            filterexpr = email_filter
 
     if filterexpr:
         table_scan_params["FilterExpression"] = filterexpr
@@ -175,19 +182,24 @@ def pull_all_pagination(table, limit, username_filter, filterexpr=None):
     return items
 
 
-def get_all_items(limit=None, username_filter=None) -> list:
+def get_all_items(limit=None, username_filter=None, email_filter=None) -> list:
     """
     Returns all items in the DB.
     Need to page because there's a 100 item limit.
 
     limit: A maximum list return length
-    username_filter: Only return users matching filter
+    username_filter: Only return users with usernames matching filter
+    email_filter: Only return users with emails matching filter
 
     """
     _client, _db, table = _get_dynamo()
-    logger.info(f"Pulling rows from {table}, limit={limit}, filter={username_filter}")
-    items = pull_all_pagination(table, limit, username_filter)
-    logger.info(f"Fetched {len(items)} rows from {table} w/ filter={username_filter}")
+    logger.info(
+        f"Pulling rows from {table}, limit={limit}, user_filter={username_filter}, email_filter={email_filter}"
+    )
+    items = pull_all_pagination(table, limit, username_filter, email_filter)
+    logger.info(
+        f"Fetched {len(items)} rows from {table} w/ user_filter={username_filter}, email_filter={email_filter}"
+    )
 
     # Bound the return set if limit provided
     if limit:
@@ -265,7 +277,10 @@ def update_username(old_username: str, new_username: str) -> bool:
 
 # Returns a list of users usernames that have access to a given lab
 def get_users_with_lab(
-    lab_short_name: str, limit: int | None = None, username_filter: str | None = None
+    lab_short_name: str,
+    limit: int | None = None,
+    username_filter: str | None = None,
+    email_filter: str | None = None,
 ) -> list[dict]:
     # Check if lab exists
     if lab_short_name not in LABS:
@@ -275,7 +290,7 @@ def get_users_with_lab(
     _client, _db, table = _get_dynamo()
     filterexpr = Attr(f"labs.{lab_short_name}").exists()
 
-    items = pull_all_pagination(table, limit, username_filter, filterexpr)
+    items = pull_all_pagination(table, limit, username_filter, email_filter, filterexpr)
 
     if limit:
         return items[:limit]

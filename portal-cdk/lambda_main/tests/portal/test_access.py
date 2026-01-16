@@ -479,6 +479,7 @@ class TestAccessPages:
         from util.user.user import User
 
         user1 = User("test_user")
+        setattr(user1, "email", "test@example.com")
         user1.add_lab(
             lab_short_name="testlab",
             lab_profiles="m6a.large",
@@ -486,6 +487,7 @@ class TestAccessPages:
             lab_country_status="something",
         )
         user2 = User("test_user2")
+        setattr(user2, "email", "test@mailhot.com")
         user2.add_lab(
             lab_short_name="testlab",
             lab_profiles="m6a.large",
@@ -493,6 +495,7 @@ class TestAccessPages:
             lab_country_status="something",
         )
         user3 = User("super_cool_guy")
+        setattr(user3, "email", "test@mailhot.com")
         user3.add_lab(
             lab_short_name="testlab",
             lab_profiles="m6a.large",
@@ -510,7 +513,7 @@ class TestAccessPages:
             path="/portal/access/users/testlab",
             cookies=fake_auth,
             method="GET",
-            qparams={"filter": "test_user"},
+            qparams={"user_filter": "test_user"},
         )
         ret = main.lambda_handler(event, lambda_context)
         body = json.loads(ret["body"])
@@ -520,6 +523,30 @@ class TestAccessPages:
         assert unique_users == ["test_user", "test_user2"]
         assert body["message"] == "OK"
         assert ret["headers"].get("Content-Type") == "application/json"
+
+        event = helpers.get_event(
+            path="/portal/access/users/testlab",
+            cookies=fake_auth,
+            method="GET",
+            qparams={"email_filter": "mailhot.com"},
+        )
+        ret = main.lambda_handler(event, lambda_context)
+        body = json.loads(ret["body"])
+
+        unique_users = [entry["username"] for entry in body["users"]]
+        assert unique_users == ["super_cool_guy", "test_user2"]
+
+        event = helpers.get_event(
+            path="/portal/access/users/testlab",
+            cookies=fake_auth,
+            method="GET",
+            qparams={"user_filter": "test", "email_filter": "mailhot.com"},
+        )
+        ret = main.lambda_handler(event, lambda_context)
+        body = json.loads(ret["body"])
+
+        unique_users = [entry["username"] for entry in body["users"]]
+        assert unique_users == ["test_user2"]
 
     def test_set_user_labs_correct(
         self, monkeypatch, lambda_context, helpers, fake_auth

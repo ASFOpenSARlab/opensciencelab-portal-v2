@@ -79,12 +79,17 @@ def users_root():
     message = users_router.current_event.query_string_parameters.get("message")
     success = users_router.current_event.query_string_parameters.get("success", "false")
     username = users_router.current_event.query_string_parameters.get("username")
-    user_filter = users_router.current_event.query_string_parameters.get("filter")
+    user_filter = users_router.current_event.query_string_parameters.get("user_filter")
+    email_filter = users_router.current_event.query_string_parameters.get(
+        "email_filter"
+    )
 
     row_limit = 200
 
     # Fetch all users
-    all_users = get_all_items(limit=row_limit, username_filter=user_filter)
+    all_users = get_all_items(
+        limit=row_limit, username_filter=user_filter, email_filter=email_filter
+    )
     all_users_sorted = sorted(all_users, key=lambda x: x["username"])
 
     # Get all users locked status
