@@ -105,7 +105,9 @@ def error():
 
 @app.get("/soft-error", include_in_schema=False)
 def soft_error():
-    raise GenericFatalError("A GenericFatalError was intentionally triggered")
+    raise GenericFatalError(
+        "A GenericFatalError was intentionally triggered", error_code=400
+    )
 
 
 @app.get("/hard-error", include_in_schema=False)
