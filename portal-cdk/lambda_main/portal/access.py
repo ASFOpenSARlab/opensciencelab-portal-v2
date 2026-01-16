@@ -47,11 +47,15 @@ def add_lab():
 def manage_lab(shortname):
     template_input = {}
 
-    user_filter = access_router.current_event.query_string_parameters.get("filter")
+    user_filter = access_router.current_event.query_string_parameters.get("user_filter")
     row_limit = 200
 
     # Get users of lab, check if lab exists
-    users = get_users_with_lab(shortname, limit=row_limit, username_filter=user_filter)
+    users = get_users_with_lab(
+        shortname,
+        limit=row_limit,
+        username_filter=user_filter,
+    )
     users = sorted(users, key=lambda x: x["username"])
     template_input["users"] = users
 
@@ -237,11 +241,19 @@ def get_user_labs(username):
 )
 @require_access("admin", human=False)
 def get_labs_users(shortname):
-    user_filter = access_router.current_event.query_string_parameters.get("filter")
+    user_filter = access_router.current_event.query_string_parameters.get("user_filter")
+    email_filter = access_router.current_event.query_string_parameters.get(
+        "email_filter"
+    )
     row_limit = 200
 
     # Get users of lab, check if lab exists
-    users = get_users_with_lab(shortname, limit=row_limit, username_filter=user_filter)
+    users = get_users_with_lab(
+        shortname,
+        limit=row_limit,
+        username_filter=user_filter,
+        email_filter=email_filter,
+    )
 
     out_payload = {
         "users": users,
