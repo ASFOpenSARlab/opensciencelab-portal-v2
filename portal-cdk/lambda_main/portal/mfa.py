@@ -16,6 +16,7 @@ from util.cognito import (
     verify_user_password,
     set_mfa_reset_values,
     reset_user_mfa_with_password,
+    get_cognito_user_attribute,
 )
 from util import send_email
 
@@ -53,11 +54,14 @@ def do_mfa_reset(username):
         f"username={username}"
     )
 
+    cog_email = get_cognito_user_attribute(username, "email")
+    logger.debug(f"User {username}'s email is {cog_email}")
+
     # Create email
     email_dict = {
         "to": {
-            "username": [
-                username,
+            "email": [
+                cog_email,
             ],
         },
         "html_body": (
@@ -69,8 +73,13 @@ def do_mfa_reset(username):
     }
 
     # Send email
-    send_email.send_user_email(email_dict)
+    result, reason = send_email.send_user_email(email_dict)
+    if result == "Error":
+        logger.error(f"Email failed to send: {reason}")
+        return False
+
     logger.info("Email sent")
+    return True
 
 
 @mfa_router.get("/", include_in_schema=False)
@@ -101,8 +110,21 @@ def reset_post():
             content="",
         )
     else:
-        do_mfa_reset(username)
-        req_content = "MFA Reset processed, check your email"
+        if not do_mfa_reset(username):
+            warning = (
+                "Could not send MFA Reset email, please email the OSL admins at "
+                "<a href='mailto:uaf-jupyterhub-asf@alaska.edu'>uaf-jupyterhub-asf@alaska.edu</a>"
+            )
+            req_content = render_template(
+                name="mfa_reset_request.j2",
+                input={
+                    "username": username,
+                    "warning": warning,
+                },
+                content="",
+            )
+        else:
+            req_content = "MFA Reset processed, check your email"
 
     return wrap_response(
         render_template(

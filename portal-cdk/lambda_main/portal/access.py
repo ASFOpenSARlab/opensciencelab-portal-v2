@@ -9,6 +9,7 @@ from util.user.user import filter_lab_access
 from util.user import User
 from util.responses import wrap_response, form_body_to_dict, json_body_to_dict
 from util.labs import LABS
+from util.exceptions import MalformedRequest
 
 from aws_lambda_powertools.event_handler.api_gateway import Router
 from aws_lambda_powertools.event_handler import content_types
@@ -46,11 +47,15 @@ def add_lab():
 def manage_lab(shortname):
     template_input = {}
 
-    user_filter = access_router.current_event.query_string_parameters.get("filter")
+    user_filter = access_router.current_event.query_string_parameters.get("user_filter")
     row_limit = 200
 
     # Get users of lab, check if lab exists
-    users = get_users_with_lab(shortname, limit=row_limit, username_filter=user_filter)
+    users = get_users_with_lab(
+        shortname,
+        limit=row_limit,
+        username_filter=user_filter,
+    )
     users = sorted(users, key=lambda x: x["username"])
     template_input["users"] = users
 
@@ -94,14 +99,14 @@ def edit_user(shortname):
     if body is None:
         error = "Body not provided to edit_user"
         logger.error(error)
-        raise ValueError(error)
+        raise MalformedRequest(error)
     body = form_body_to_dict(body)
 
     # Validate request
     success, message = validate_edit_user_request(body=body)
     if not success:
         logger.error(message)
-        raise ValueError(message)
+        raise MalformedRequest(message)
 
     # Edit user
     user = User(body["username"])
@@ -122,7 +127,7 @@ def edit_user(shortname):
     else:
         error = f"Invalid edit_user action {body['action']}"
         logger.error(error)
-        raise ValueError(error)
+        raise MalformedRequest(error)
 
     # Send the user to the management page
     next_url = f"/portal/access/manage/{shortname}"
@@ -236,11 +241,19 @@ def get_user_labs(username):
 )
 @require_access("admin", human=False)
 def get_labs_users(shortname):
-    user_filter = access_router.current_event.query_string_parameters.get("filter")
+    user_filter = access_router.current_event.query_string_parameters.get("user_filter")
+    email_filter = access_router.current_event.query_string_parameters.get(
+        "email_filter"
+    )
     row_limit = 200
 
     # Get users of lab, check if lab exists
-    users = get_users_with_lab(shortname, limit=row_limit, username_filter=user_filter)
+    users = get_users_with_lab(
+        shortname,
+        limit=row_limit,
+        username_filter=user_filter,
+        email_filter=email_filter,
+    )
 
     out_payload = {
         "users": users,

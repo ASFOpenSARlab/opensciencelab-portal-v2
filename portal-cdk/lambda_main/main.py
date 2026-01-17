@@ -2,6 +2,7 @@
 
 import os
 import json
+import traceback
 
 from portal import routes
 
@@ -100,6 +101,18 @@ def error():
         ),
         code=401,
     )
+
+
+@app.get("/soft-error", include_in_schema=False)
+def soft_error():
+    raise GenericFatalError(
+        "A GenericFatalError was intentionally triggered", error_code=400
+    )
+
+
+@app.get("/hard-error", include_in_schema=False)
+def hard_error():
+    raise ValueError("An Uncaught exception was intentionally triggered")
 
 
 @app.get("/logout", include_in_schema=False)
@@ -210,6 +223,28 @@ def handle_generic_fatal_error(exception):
     return wrap_response(
         json.dumps(dump_dict),
         code=ret_code,
+        content_type=content_types.APPLICATION_JSON,
+    )
+
+
+@app.exception_handler(Exception)
+def handle_all_fatal_error(exception):
+    logger.exception(f"Uncaught Exception: {exception}")
+
+    # If we're in production, log and raise.
+    if os.getenv("IS_PROD", "false").lower() == "true":
+        # Trigger sad face.
+        raise exception
+
+    dump_dict = {
+        "exception": str(exception),
+        "traceback": traceback.format_exc(),
+    }
+
+    # Only render
+    return wrap_response(
+        json.dumps(dump_dict),
+        code=400,
         content_type=content_types.APPLICATION_JSON,
     )
 
