@@ -3,6 +3,7 @@ from portal.access import access_route
 from portal.hub import hub_route
 from portal.users import users_route
 from portal.mfa import mfa_route
+from portal.notifications import notifications_route
 from util.format import portal_template, jinja_template
 from util.auth import require_access
 from util.session import current_session
@@ -31,6 +32,7 @@ for route in (
     hub_route,
     users_route,
     mfa_route,
+    notifications_route,
 ):
     routes[route["prefix"]] = route["router"]
 
