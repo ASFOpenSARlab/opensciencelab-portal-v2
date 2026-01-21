@@ -13,7 +13,6 @@ logger = Logger(child=True)
 CALENDAR_URL: str = os.getenv("CALENDAR_URL")
 
 
-# def get_notifications(notification_source:str, display_locations:str):
 def get_notifications(scope: str, tag: str | None = None):
     try:
         # Download Calendar
