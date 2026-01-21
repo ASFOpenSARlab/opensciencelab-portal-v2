@@ -3,6 +3,7 @@ from datetime import datetime, timedelta
 import pytz
 import boto3
 from aws_lambda_powertools import Logger
+import time
 
 
 logger = Logger(child=True)
@@ -63,9 +64,13 @@ MFA_RESET_WINDOW_MINUTES = 10
 
 def get_user_from_user_pool(username) -> dict:
     try:
-        return _COGNITO_CLIENT.admin_get_user(
+        start_time = time.perf_counter()
+        user = _COGNITO_CLIENT.admin_get_user(
             UserPoolId=COGNITO_POOL_ID, Username=username
         )
+        logger.info(f"Fetching Cognito user took {time.time() - start_time} seconds")
+
+        return user
     except _COGNITO_CLIENT.exceptions.UserNotFoundException:
         logger.warning(f"User {username} does not exist")
         pass
@@ -76,7 +81,9 @@ def get_user_from_user_pool(username) -> dict:
 def delete_user_from_user_pool(username) -> bool:
     # trigger user delete
     try:
+        start_time = time.perf_counter()
         _COGNITO_CLIENT.admin_delete_user(UserPoolId=COGNITO_POOL_ID, Username=username)
+        logger.info(f"Deleting Cognito user took {time.time() - start_time} seconds")
     except _COGNITO_CLIENT.exceptions.UserNotFoundException:
         # Could not find the user to delete it
         logger.error(f"User {username} could not be deleted")
@@ -91,6 +98,7 @@ def delete_user_from_user_pool(username) -> bool:
 def verify_user_password(username, password) -> bool:
     # Verify cognito user & password without MFA
     try:
+        start_time = time.perf_counter()
         response = _COGNITO_CLIENT.initiate_auth(
             AuthFlow="USER_PASSWORD_AUTH",
             AuthParameters={
@@ -98,6 +106,9 @@ def verify_user_password(username, password) -> bool:
                 "PASSWORD": password,
             },
             ClientId=COGNITO_CLIENT_ID,
+        )
+        logger.info(
+            f"Verifying Cognito user password took {time.time() - start_time} seconds"
         )
     except (
         _COGNITO_CLIENT.exceptions.UserNotFoundException,
@@ -117,6 +128,7 @@ def verify_user_password(username, password) -> bool:
 
 
 def recreate_cognito_user(user, suppress_email=True) -> bool:
+    start_time = time.perf_counter()
     response = _COGNITO_CLIENT.admin_create_user(
         UserPoolId=COGNITO_POOL_ID,
         Username=user["Username"],
@@ -125,6 +137,7 @@ def recreate_cognito_user(user, suppress_email=True) -> bool:
             attr for attr in user["UserAttributes"] if attr["Name"] != "sub"
         ],
     ).get("User")
+    logger.info(f"Creating Cognito user took {time.time() - start_time} seconds")
 
     if response.get("Username") == user["Username"]:
         return True
@@ -136,11 +149,15 @@ def recreate_cognito_user(user, suppress_email=True) -> bool:
 
 def set_cognito_user_password(username, password) -> bool:
     try:
+        start_time = time.perf_counter()
         _COGNITO_CLIENT.admin_set_user_password(
             UserPoolId=COGNITO_POOL_ID,
             Username=username,
             Password=password,
             Permanent=True,
+        )
+        logger.info(
+            f"Setting Cognito user password took {time.time() - start_time} seconds"
         )
     except Exception as E:
         logger.error(f"Could not set password for User {username}: {E}")
@@ -175,6 +192,7 @@ def set_cognito_user_attribute(username, attribute_name, attribute_value=None) -
         if attribute_value:
             if isinstance(attribute_value, datetime):
                 attribute_value = attribute_value.strftime(COGNITO_DATETIME_FORMAT)
+            start_time = time.perf_counter()
             _COGNITO_CLIENT.admin_update_user_attributes(
                 UserPoolId=COGNITO_POOL_ID,
                 Username=username,
@@ -182,11 +200,18 @@ def set_cognito_user_attribute(username, attribute_name, attribute_value=None) -
                     {"Name": "custom:" + attribute_name, "Value": attribute_value},
                 ],
             )
+            logger.info(
+                f"Setting Cognito user custom attribute took {time.time() - start_time} seconds"
+            )
         else:
+            start_time = time.perf_counter()
             _COGNITO_CLIENT.admin_delete_user_attributes(
                 UserPoolId=COGNITO_POOL_ID,
                 Username=username,
                 UserAttributeNames=["custom:" + attribute_name],
+            )
+            logger.info(
+                f"Deleting Cognito user custom attribute took {time.time() - start_time} seconds"
             )
 
     except _COGNITO_CLIENT.exceptions.UserNotFoundException:
@@ -260,9 +285,14 @@ def reset_user_mfa_with_password(username, password, reset_code) -> bool:
 
 def all_locked_users() -> set[str]:
     # Get all disabled users
+    start_time = time.perf_counter()
     all_disabled_res = _COGNITO_CLIENT.list_users(
         UserPoolId=os.environ.get("USER_POOL_ID"), Filter='status = "false"'
     )
+    logger.info(
+        f"Getting list of locked Cognito users took {time.time() - start_time} seconds"
+    )
+
     locked_users = set([r["Username"] for r in all_disabled_res["Users"]])
 
     if len(locked_users) > 50:
@@ -276,9 +306,11 @@ def all_locked_users() -> set[str]:
 def disable_user(username):
     # trigger disable user
     try:
+        start_time = time.perf_counter()
         _COGNITO_CLIENT.admin_disable_user(
             UserPoolId=COGNITO_POOL_ID, Username=username
         )
+        logger.info(f"Locking Cognito user took {time.time() - start_time} seconds")
     except _COGNITO_CLIENT.exceptions.UserNotFoundException:
         # Could not find the user to delete it
         return False
@@ -289,7 +321,9 @@ def disable_user(username):
 def enable_user(username):
     # trigger enable user
     try:
+        start_time = time.perf_counter()
         _COGNITO_CLIENT.admin_enable_user(UserPoolId=COGNITO_POOL_ID, Username=username)
+        logger.info(f"Unlocking Cognito user took {time.time() - start_time} seconds")
     except _COGNITO_CLIENT.exceptions.UserNotFoundException:
         # Could not find the user to delete it
         return False
