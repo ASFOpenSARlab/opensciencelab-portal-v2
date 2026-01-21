@@ -4,6 +4,7 @@ from dataclasses import asdict
 from util import swagger
 from util.format import portal_template, jinja_template
 from util.auth import require_access
+from util.session import current_session
 from util.user.dynamo_db import get_users_with_lab
 from util.user.user import filter_lab_access
 from util.user import User
@@ -15,7 +16,7 @@ from aws_lambda_powertools.event_handler.api_gateway import Router
 from aws_lambda_powertools.event_handler import content_types
 from aws_lambda_powertools import Logger
 
-logger = Logger(service="APP", level="DEBUG")
+logger = Logger(child=True)
 
 access_router = Router()
 
@@ -93,6 +94,8 @@ def validate_edit_user_request(body: dict) -> tuple[bool, str]:
 @access_router.post("/manage/<shortname>/edituser", include_in_schema=False)
 @require_access("admin", human=True)
 def edit_user(shortname):
+    # Grab the username of the user making the request
+    admin_username = current_session.auth.cognito.username
     # Parse request
     body = access_router.current_event.body
 
@@ -118,11 +121,13 @@ def edit_user(shortname):
             time_quota=body["time_quota"].strip() or None,
             lab_country_status=body["lab_country_status"],
         )
-        logger.info(f'Added user "{body["username"]}" to {shortname}')
+        logger.info(f'{admin_username} added user "{body["username"]}" to {shortname}')
 
     elif body["action"] == "remove_user":
         user.remove_lab(shortname)
-        logger.info(f'Removed user "{body["username"]}" from {shortname}')
+        logger.info(
+            f'{admin_username} removed user "{body["username"]}" from {shortname}'
+        )
 
     else:
         error = f"Invalid edit_user action {body['action']}"

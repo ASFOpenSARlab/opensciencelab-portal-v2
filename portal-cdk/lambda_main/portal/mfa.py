@@ -78,7 +78,7 @@ def do_mfa_reset(username):
         logger.error(f"Email failed to send: {reason}")
         return False
 
-    logger.info("Email sent")
+    logger.info("MFA Email sent to cog_email")
     return True
 
 
