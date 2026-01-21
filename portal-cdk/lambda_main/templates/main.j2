@@ -2,6 +2,11 @@
 <!DOCTYPE html>
 <html lang="en">
     {% include 'head.j2' %}
+    {% with -%}
+        {% set scope='portal' %}
+        {% set tag='main' %}
+        {% include 'notifications.j2' %}
+    {% endwith -%}
     <body>
         {% include './noscript.j2' %}
         {% include './navbar.j2' %}

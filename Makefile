@@ -91,6 +91,7 @@ cdk-shell:
 		-e SES_EMAIL \
 		-e SSL_CERT_ARN \
 		-e DEPLOY_DOMAINS \
+		-e CALENDAR_URL \
 		--pull always \
 		${IMAGE_NAME} || \
 		(  echo -e "" && echo  'If docker run fails with "no matching manifest", ' \

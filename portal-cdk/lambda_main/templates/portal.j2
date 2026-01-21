@@ -4,6 +4,11 @@
     inside of <a> tag with id="start-{{ currentlab.short_lab_name }}"
 #}
 {% include 'voice-atlas.j2' %}
+{% with -%}
+    {% set scope='portal' %}
+    {% set tag='home' %}
+    {% include 'notifications.j2' %}
+{% endwith -%}
 <div class="container margin-top-10">
     <h2 class="title">Welcome To OpenScienceLab</h2>
     <p>
