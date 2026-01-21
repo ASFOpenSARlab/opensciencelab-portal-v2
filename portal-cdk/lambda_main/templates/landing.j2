@@ -4,13 +4,11 @@
     {% include 'head.j2' %}
     {% include 'voice-atlas.j2' %}
     {% include 'basic_style.j2' %}
-
     {% with -%}
-        {% set scope='portal' %}
-        {% set tag='landing' %}
+        {% set scope = "portal" %}
+        {% set tag = "landing" %}
         {% include 'notifications.j2' %}
     {% endwith -%}
-
     <body>
         {% include './noscript.j2' %}
         <!--section>
@@ -23,7 +21,7 @@
                     Note that MFA will also need to be redone.
                 </p>
             </div>
-        </section-->
+        </section -->
         <section>
             <div class="pure-g outside-margins">
                 <div class="pure-u-1-6"></div>

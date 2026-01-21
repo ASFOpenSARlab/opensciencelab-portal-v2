@@ -12,8 +12,9 @@ logger = Logger(child=True)
 
 CALENDAR_URL: str = os.getenv("CALENDAR_URL")
 
+
 # def get_notifications(notification_source:str, display_locations:str):
-def get_notifications(scope:str, tag: str | None = None):
+def get_notifications(scope: str, tag: str | None = None):
     try:
         # Download Calendar
         resp = requests.get(CALENDAR_URL)
@@ -28,17 +29,15 @@ def get_notifications(scope:str, tag: str | None = None):
         now_time = datetime.datetime.now(datetime.UTC).replace(tzinfo=None)
         compiled_regex = re.compile("---(.*)---(.*)$", re.DOTALL)
         for event in list(cal.events):
-
             begin_time = event.begin.to("utc").datetime.replace(tzinfo=None)
             end_time = event.end.to("utc").datetime.replace(tzinfo=None)
-            
+
             if begin_time <= now_time <= end_time:
                 # Process event description
                 groups = compiled_regex.search(event.description)
-                
+
                 # TODO ERROR HANDLING
-                
-                
+
                 meta: dict = yaml.safe_load(html2text.html2text(groups.group(1)))
                 message: str = html2text.html2text(groups.group(2))
 
@@ -51,15 +50,13 @@ def get_notifications(scope:str, tag: str | None = None):
                 allowed_tags = [tag.strip() for tag in meta["tags"].split(",")]
                 if tag and tag not in allowed_tags:
                     continue
-                
+
                 active_events.append(
                     {
                         "title": event.name,
                         "message": message.strip(),
                         "type": meta["type"].strip(),
-                        "placement": meta.get(
-                            "placement", "top-full-width"
-                        ).strip(),
+                        "placement": meta.get("placement", "top-full-width").strip(),
                     }
                 )
     except Exception as e:
