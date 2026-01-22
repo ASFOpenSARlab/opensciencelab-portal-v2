@@ -13,7 +13,7 @@ logger = Logger(child=True)
 CALENDAR_URL: str = os.getenv("CALENDAR_URL")
 
 
-def get_notifications(scope: str, tag: str | None = None):
+def get_notifications(scope: str, filter_tag: str = "all"):
     try:
         # Download Calendar
         resp = requests.get(CALENDAR_URL)
@@ -22,7 +22,6 @@ def get_notifications(scope: str, tag: str | None = None):
 
         cal = Calendar(resp.text)
 
-        # Process calendar events
         active_events = []
 
         now_time = datetime.datetime.now(datetime.UTC).replace(tzinfo=None)
@@ -35,19 +34,24 @@ def get_notifications(scope: str, tag: str | None = None):
                 # Process event description
                 groups = compiled_regex.search(event.description)
 
-                # TODO ERROR HANDLING
-
+                # If the event description is not formatted properly then either the grouping will fail or the yaml parser
+                # Then an expection will be thrown
                 meta: dict = yaml.safe_load(html2text.html2text(groups.group(1)))
                 message: str = html2text.html2text(groups.group(2))
 
                 # Check if requested scope in allowed scopes for notification
-                allowed_scopes = [scope.strip() for scope in meta["scopes"].split(",")]
+                allowed_scopes = [s.strip() for s in meta["scopes"].split(",")]
                 if scope not in allowed_scopes:
                     continue
 
                 # Check if requested tag in allowed tags for notification
-                allowed_tags = [tag.strip() for tag in meta["tags"].split(",")]
-                if tag and tag not in allowed_tags:
+                # If requested tag is 'all' or cal tags have 'all', keep event
+                allowed_tags = [t.strip() for t in meta.get("tags", "all").split(",")]
+                if (
+                    filter_tag != "all"
+                    and "all" not in allowed_tags
+                    and filter_tag not in allowed_tags
+                ):
                     continue
 
                 active_events.append(

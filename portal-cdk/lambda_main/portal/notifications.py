@@ -18,7 +18,7 @@ notifications_route = {
 def notifications_deprecated(scope) -> str:
     query_params = notifications_router.current_event.query_string_parameters
 
-    return get_notifications(scope, query_params.get("profile", None))
+    return get_notifications(scope, query_params.get("profile", "all"))
 
 
 @notifications_router.get("/notifications/<scope>", include_in_schema=False)
@@ -26,4 +26,4 @@ def notifications_deprecated(scope) -> str:
 def notifications(scope) -> str:
     query_params = notifications_router.current_event.query_string_parameters
 
-    return get_notifications(scope, query_params.get("tag", None))
+    return get_notifications(scope, query_params.get("tag", "all"))

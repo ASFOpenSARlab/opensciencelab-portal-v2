@@ -27,7 +27,11 @@
                 "hideMethod": "fadeOut"
             }
 
-            fetch(window.location.origin + '/notifications/'+encodeURIComponent(scope)+'?tag='+encodeURIComponent(tag) )
+            const URL = window.location.origin + '/notifications/'+encodeURIComponent(scope)+'?tag='+encodeURIComponent(tag)
+
+            console.debug(URL)
+
+            fetch(URL)
                 .then( response => response.json() )
                 .then( notifications => {
                     console.log("Start toastr")
@@ -37,7 +41,7 @@
                         toastr[entry['type']](entry['message'], entry['title'])
                     })
                 })
-                .catch( error => console.log(error) )
+                .catch( error => console.error(error) )
         });
     }
 
