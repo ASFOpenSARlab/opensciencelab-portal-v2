@@ -15,6 +15,9 @@ CALENDAR_URL: str = os.getenv("CALENDAR_URL")
 
 def get_notifications(scope: str, filter_tag: str = "all"):
     try:
+        logger.info(f"Notification calendar URL: {CALENDAR_URL}")
+        logger.info(f"Notification calendar requested {scope=} {filter_tag=}")
+
         # Download Calendar
         resp = requests.get(CALENDAR_URL)
         if resp.status_code != 200:
@@ -42,6 +45,9 @@ def get_notifications(scope: str, filter_tag: str = "all"):
                 # Check if requested scope in allowed scopes for notification
                 allowed_scopes = [s.strip() for s in meta["scopes"].split(",")]
                 if scope not in allowed_scopes:
+                    logger.info(
+                        f"Notification calendar non-matching scope: {meta=} {message=}"
+                    )
                     continue
 
                 # Check if requested tag in allowed tags for notification
@@ -52,16 +58,20 @@ def get_notifications(scope: str, filter_tag: str = "all"):
                     or "all" in allowed_tags
                     or filter_tag in allowed_tags
                 ):
+                    logger.info(
+                        f"Notification calendar non-matching tag: {meta=} {message=}"
+                    )
                     continue
 
-                active_events.append(
-                    {
-                        "title": event.name,
-                        "message": message.strip(),
-                        "type": meta["type"].strip(),
-                        "placement": meta.get("placement", "top-full-width").strip(),
-                    }
-                )
+                active_event = {
+                    "title": event.name,
+                    "message": message.strip(),
+                    "type": meta["type"].strip(),
+                    "placement": meta.get("placement", "top-full-width").strip(),
+                }
+                logger.info(f"Notification calendar event: {meta=} {message=}")
+
+                active_events.append(active_event)
 
         # Remove duplicates and order
         unique_events = [dict(t) for t in set(tuple(d.items()) for d in active_events)]

@@ -22,7 +22,6 @@ def notifications_deprecated(scope) -> str:
 
 
 @notifications_router.get("/notifications/<scope>", include_in_schema=False)
-# @portal_template()
 def notifications(scope) -> str:
     query_params = notifications_router.current_event.query_string_parameters
 
