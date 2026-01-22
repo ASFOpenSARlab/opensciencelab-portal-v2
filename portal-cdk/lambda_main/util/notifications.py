@@ -45,12 +45,12 @@ def get_notifications(scope: str, filter_tag: str = "all"):
                     continue
 
                 # Check if requested tag in allowed tags for notification
-                # If requested tag is 'all' or cal tags have 'all', keep event
+                # If requested tag is 'all' or calendar tags have 'all', always keep event
                 allowed_tags = [t.strip() for t in meta.get("tags", "all").split(",")]
-                if (
-                    filter_tag != "all"
-                    and "all" not in allowed_tags
-                    and filter_tag not in allowed_tags
+                if not (
+                    filter_tag == "all"
+                    or "all" in allowed_tags
+                    or filter_tag in allowed_tags
                 ):
                     continue
 
@@ -62,8 +62,14 @@ def get_notifications(scope: str, filter_tag: str = "all"):
                         "placement": meta.get("placement", "top-full-width").strip(),
                     }
                 )
+
+        # Remove duplicates and order
+        unique_events = [dict(t) for t in set(tuple(d.items()) for d in active_events)]
+        active_events = sorted(unique_events, key=lambda x: x["title"], reverse=True)
+
     except Exception as e:
         err_str = f"Something went wrong: {e}"
         logger.error(err_str)
         raise ValueError(err_str)
+
     return active_events
