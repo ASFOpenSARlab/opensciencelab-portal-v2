@@ -1,0 +1,47 @@
+<link href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/2.1.4/toastr.min.css"
+      rel="stylesheet" />
+<style> #toast-container > div { opacity: 1; } </style>
+<script>
+    function notifications(scope, tag) {
+
+        require.config({paths: {toastr: "https://cdnjs.cloudflare.com/ajax/libs/toastr.js/2.1.4/toastr.min"}});
+
+        require([
+            'jquery',
+            'toastr'
+        ], function ($, toastr) {
+
+            toastr.options = {
+                "closeButton": true,
+                "newestOnTop": true,
+                "progressBar": true,
+                "preventDuplicates": false,
+                "onclick": null,
+                "showDuration": "30",
+                "hideDuration": "10",
+                "timeOut": "0",
+                "extendedTimeOut": "0",
+                "showEasing": "swing",
+                "hideEasing": "linear",
+                "showMethod": "fadeIn",
+                "hideMethod": "fadeOut"
+            }
+
+            const URL = window.location.origin + '/notifications/'+encodeURIComponent(scope)+'?tag='+encodeURIComponent(tag)
+
+            console.debug("Notifications: " + URL)
+
+            fetch(URL)
+                .then( response => response.json() )
+                .then( notifications => {
+                    notifications.forEach( (entry) => {
+                        toastr.options.positionClass = "toast-"+entry["placement"]
+                        toastr[entry['type']](entry['message'], entry['title'])
+                    })
+                })
+                .catch( error => console.error(error) )
+        });
+    }
+
+    notifications('{{ scope | default(None) }}', '{{ tag | default(None) }}')
+</script>
