@@ -16,7 +16,7 @@ from util.user_ip_logs_stream import get_user_ip_logs
 from aws_lambda_powertools import Logger
 from aws_lambda_powertools.event_handler.api_gateway import Router
 
-logger = Logger(service="APP", level="DEBUG")
+logger = Logger(child=True)
 
 users_router = Router()
 

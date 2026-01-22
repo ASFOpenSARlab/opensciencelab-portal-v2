@@ -48,7 +48,7 @@ def get_portal_hub_auth():
     # /portal/hub/auth?next_url=%2Flab%2Fsmce-test-opensarlab%2Fhub%2Fhome
     next_url = hub_router.current_event.query_string_parameters.get("next_url", None)
     username = current_session.auth.cognito.username
-    logger.info(f"GET auth: {next_url=}, (username = {username}")
+    logger.debug(f"GET auth: {next_url=}, (username = {username}")
 
     return wrap_response(
         body={"Redirect": next_url},
@@ -95,7 +95,7 @@ def post_portal_hub_auth():
     post_data = hub_router.current_event.body
     post_data_decoded = json.loads(base64.b64decode(post_data).decode("utf-8"))
     username = post_data_decoded["username"]
-    logger.info(f"Request user info = {username=}")
+    logger.debug(f"Request user info = {username=}")
 
     user = User(username=username, create_if_missing=False)
 
