@@ -29,13 +29,11 @@
 
             const URL = window.location.origin + '/notifications/'+encodeURIComponent(scope)+'?tag='+encodeURIComponent(tag)
 
-            console.debug(URL)
+            console.debug("Notifications: " + URL)
 
             fetch(URL)
                 .then( response => response.json() )
                 .then( notifications => {
-                    console.log("Start toastr")
-                    console.log(notifications)
                     notifications.forEach( (entry) => {
                         toastr.options.positionClass = "toast-"+entry["placement"]
                         toastr[entry['type']](entry['message'], entry['title'])
