@@ -22,7 +22,9 @@
                 vertical-align: middle">
         <form action="/portal/users">
             Search results limited to {{ rowcount }}. Try filtering by username:
-            <input type="input" name="filter">
+            <input type="input" name="user_filter">
+            Or by email:
+            <input type="input" name="email_filter">
             <input type="submit" hidden />
         </form>
     </div>

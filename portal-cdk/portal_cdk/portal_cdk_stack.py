@@ -112,6 +112,7 @@ class PortalCdkStack(Stack):
                     ).lower(),
                     "SES_EMAIL": str(os.getenv("SES_EMAIL")),
                     "SES_DOMAIN": str(os.getenv("SES_DOMAIN")),
+                    "CALENDAR_URL": str(os.getenv("CALENDAR_URL")),
                 },
             ),
             # https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_dynamodb.TableProps.html

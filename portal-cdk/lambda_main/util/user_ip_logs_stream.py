@@ -10,7 +10,7 @@ from .exceptions import EnvironmentNotSet
 
 from aws_lambda_powertools import Logger
 
-logger = Logger(log_uncaught_exceptions=True)
+logger = Logger(child=True)
 
 _logs_client = None
 
