@@ -301,10 +301,13 @@ def enable_user(username):
     except Exception as e:
         logger.warning(f"ERROR Enabling user: {e}")
 
+
 def sign_out_user(username):
     # trigger enable user
     try:
-        _COGNITO_CLIENT.admin_user_global_sign_out(UserPoolId=COGNITO_POOL_ID, Username=username)
+        _COGNITO_CLIENT.admin_user_global_sign_out(
+            UserPoolId=COGNITO_POOL_ID, Username=username
+        )
     except _COGNITO_CLIENT.exceptions.UserNotFoundException:
         return False
     except Exception as e:

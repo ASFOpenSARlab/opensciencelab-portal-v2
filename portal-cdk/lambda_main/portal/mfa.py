@@ -179,13 +179,13 @@ def reset_code_post():
 
         # Confirm MFA Reset success
         return wrap_response(
-                body=render_template(
-                    content=render_template(
-                        title="",
-                        name="mfa_reset_success.j2",
-                        content="",
-                        input={"logout_url": LOGOUT_URL}
-                    ),
+            body=render_template(
+                content=render_template(
+                    title="",
+                    name="mfa_reset_success.j2",
+                    content="",
+                    input={"logout_url": LOGOUT_URL},
+                ),
                 title="OpenScienceLab - MFA successfully reset",
                 name="logged-out.j2",
             ),
@@ -200,8 +200,7 @@ def reset_code_post():
             "username": username,
             "mfa_reset_code": mfa_reset_code,
             "warning": (
-                "Error resetting MFA. Please verify username, "
-                "password and reset code."
+                "Error resetting MFA. Please verify username, password and reset code."
             ),
         },
         content="",
