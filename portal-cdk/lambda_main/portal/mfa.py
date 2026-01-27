@@ -18,6 +18,7 @@ from util.cognito import (
     reset_user_mfa_with_password,
     get_cognito_user_attribute,
     sign_out_user,
+    LOGOUT_URL,
 )
 from util import send_email
 from util.auth import delete_cookies
@@ -183,6 +184,7 @@ def reset_code_post():
                         title="",
                         name="mfa_reset_success.j2",
                         content="",
+                        input={"logout_url": LOGOUT_URL}
                     ),
                 title="OpenScienceLab - MFA successfully reset",
                 name="logged-out.j2",
