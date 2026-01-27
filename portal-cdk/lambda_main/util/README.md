@@ -1,3 +1,59 @@
 # Notifications
 
 Here lies dragons!!
+
+## Adding event to calendar
+
+### Create Google Calendar event
+
+### Event schema
+
+#### Event Title
+
+The event title will be placed as the title of the event in the popup toast.
+
+#### Event Description
+
+The event description contains two sections: meta and message.
+
+1. The meta section tells the poral where and how to show the message.
+2. The message can be any HTML compatible text. It will be the main message within the toast.
+
+[!NOTE]
+Note that Google Calendar wants to automagically make hyperlinks linkable. That means that any hyperlinks will need to be delinked before saving changes. Otherwise, hyperlinks will not work as expected.
+
+[!TIP]
+Make it easier on users and color blue any hyperlink text.
+
+[!TIP]
+Open hyperlinks into another browser tab via `target="_blank"`.
+
+[!IMPORTANT]
+The placement of the multiple toasts might not have the expected behavior. The first toast render on the page will determine the position of subsequent toasts irrespective of how they are defined in the event meta. Therefore, it might be more prudent to decide early on where the toasts will be stacked.
+
+```
+---
+scopes: scope1, scope2
+tags: tag1, tag2, all
+type: info | success | error | warning
+placement: top-right | bottom-right | bottom-left | top-left | top-full-width | bottom-full-width | top-center | bottom-center
+---
+<p> This is a message </p>
+
+<p>This is a <a href="#" target="_blank">
+    <span style="color: blue">
+        link
+    </span>
+</a>
+```
+
+`scopes`: Comma-seperated string with values of `portal` or the lab short name of the cluster.
+`tags`: Comma-seperated string represents the location/page where to show the notifications. The special value `all` means all profiles are available.  
+`type`: String giving status of toast: `info` (blue) | `success` (green) | `error` (red) | `warning` (yellow).
+`placement`: String giving placement of toast. See example above for options.
+
+### Calendar URL environment variable
+
+## Getting events via portal URL
+
+## Adding notification hook to page
