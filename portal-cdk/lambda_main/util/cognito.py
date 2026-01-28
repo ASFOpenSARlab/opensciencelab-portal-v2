@@ -225,6 +225,11 @@ def get_cognito_user_attribute(username, attribute_name) -> bool | None | dateti
 
 def check_mfa_reset_window(username) -> bool:
     reset_time = get_cognito_user_attribute(username, "mfa_reset_date")
+
+    if not reset_time:
+        # Reset process may have been interrupted
+        return False
+
     return reset_time >= datetime.now(pytz.UTC) - timedelta(
         minutes=MFA_RESET_WINDOW_MINUTES
     )
@@ -295,3 +300,15 @@ def enable_user(username):
         return False
     except Exception as e:
         logger.warning(f"ERROR Enabling user: {e}")
+
+
+def sign_out_user(username):
+    # trigger enable user
+    try:
+        _COGNITO_CLIENT.admin_user_global_sign_out(
+            UserPoolId=COGNITO_POOL_ID, Username=username
+        )
+    except _COGNITO_CLIENT.exceptions.UserNotFoundException:
+        return False
+    except Exception as e:
+        logger.warning(f"ERROR signing out user: {e}")
