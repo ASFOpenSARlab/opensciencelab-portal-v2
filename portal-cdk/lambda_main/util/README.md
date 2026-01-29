@@ -37,10 +37,7 @@ The event description contains two sections: meta and message.
 
 > [!TIP]
 > Make it easier on users by coloring blue any hyperlink text. This can be accomplished via adding `<span style="color: blue"></span>`.
-
-&nbsp;
-
-> [!TIP]
+>
 > Open hyperlinks into another browser tab via `target="_blank"`.
 
 &nbsp;
