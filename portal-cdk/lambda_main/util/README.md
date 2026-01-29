@@ -1,7 +1,5 @@
 # Notifications
 
-Here lies dragons!!
-
 The notifications system is broadly divided into three different parts:
 
 - [Google Calendar](#adding-event-to-calendar)
@@ -35,11 +33,17 @@ The event description contains two sections: meta and message.
 > [!NOTE]
 > Note that Google Calendar wants to automagically make hyperlinks linkable. That means that any hyperlinks will need to be delinked before saving changes. Otherwise, hyperlinks will not work as expected.
 
+&nbsp;
+
 > [!TIP]
-> Make it easier on users and color blue any hyperlink text.
+> Make it easier on users by coloring blue any hyperlink text. This can be accomplished via adding `<span style="color: blue"></span>`.
+
+&nbsp;
 
 > [!TIP]
 > Open hyperlinks into another browser tab via `target="_blank"`.
+
+&nbsp;
 
 > [!IMPORTANT]
 > The placement of the multiple toasts might not have the expected behavior. The first toast render on the page will determine the position of subsequent toasts irrespective of how they are defined in the event meta. Therefore, it might be more prudent to decide early on where the toasts will be stacked.
