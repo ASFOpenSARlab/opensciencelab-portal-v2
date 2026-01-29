@@ -2,15 +2,28 @@
 
 Here lies dragons!!
 
+The notifications system is broadly divided into three different parts:
+
+- [Google Calendar](#adding-event-to-calendar)
+- [Notification URL](#getting-events-via-portal-url)
+- [Notification page hooks](#adding-notification-hook-to-page)
+
 ## Adding event to calendar
 
 ### Create Google Calendar event
+
+Create Calendar event in Google Calendar. The calendar must be public with a publicly available ICAL-compatible URL.
+By default, calendars should be by maturity. The production calendar should be used by the all production portal and labs.
 
 ### Event schema
 
 #### Event Title
 
 The event title will be placed as the title of the event in the popup toast.
+
+#### Event Dates
+
+The event dates will be based on the calendar. Times will be parsed as UTC.
 
 #### Event Description
 
@@ -19,19 +32,19 @@ The event description contains two sections: meta and message.
 1. The meta section tells the poral where and how to show the message.
 2. The message can be any HTML compatible text. It will be the main message within the toast.
 
-[!NOTE]
-Note that Google Calendar wants to automagically make hyperlinks linkable. That means that any hyperlinks will need to be delinked before saving changes. Otherwise, hyperlinks will not work as expected.
+> [!NOTE]
+> Note that Google Calendar wants to automagically make hyperlinks linkable. That means that any hyperlinks will need to be delinked before saving changes. Otherwise, hyperlinks will not work as expected.
 
-[!TIP]
-Make it easier on users and color blue any hyperlink text.
+> [!TIP]
+> Make it easier on users and color blue any hyperlink text.
 
-[!TIP]
-Open hyperlinks into another browser tab via `target="_blank"`.
+> [!TIP]
+> Open hyperlinks into another browser tab via `target="_blank"`.
 
-[!IMPORTANT]
-The placement of the multiple toasts might not have the expected behavior. The first toast render on the page will determine the position of subsequent toasts irrespective of how they are defined in the event meta. Therefore, it might be more prudent to decide early on where the toasts will be stacked.
+> [!IMPORTANT]
+> The placement of the multiple toasts might not have the expected behavior. The first toast render on the page will determine the position of subsequent toasts irrespective of how they are defined in the event meta. Therefore, it might be more prudent to decide early on where the toasts will be stacked.
 
-```
+```yaml
 ---
 scopes: scope1, scope2
 tags: tag1, tag2, all
@@ -48,11 +61,22 @@ placement: top-right | bottom-right | bottom-left | top-left | top-full-width | 
 ```
 
 `scopes`: Comma-seperated string with values of `portal` or the lab short name of the cluster.
-`tags`: Comma-seperated string represents the location/page where to show the notifications. The special value `all` means all profiles are available.  
+
+`tags`: Comma-seperated string represents the location/page where to show the notifications. The special value `all` means provide all available profiles.
+
 `type`: String giving status of toast: `info` (blue) | `success` (green) | `error` (red) | `warning` (yellow).
+
 `placement`: String giving placement of toast. See example above for options.
 
 ### Calendar URL environment variable
+
+The public calendar URL will need to be added to the build via the `CALENDAR_URL` environment variable.
+
+For local builds, this can be accomplished by setting `CALENDAR_URL` within your [Makefile](../../../Makefile#94) environment for `make cdk-shell`.
+
+For GitHub builds, `CALENDAR_URL` within GitHub Actions is set from {repo} > `Settings` > `Environments` > {maturity} > `Environment variables`.
+
+Note the Test Calendar URL is hardcoded as a default within [Makefile](../../../Makefile#43).
 
 ## Getting events via portal URL
 
