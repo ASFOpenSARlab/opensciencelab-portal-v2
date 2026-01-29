@@ -73,12 +73,11 @@ def refresh_map(refresh_token):
         tokens = REFRESH_CACHE[refresh_token]
         access_token = tokens["access_token"]
         if validate_jwt(access_token):
-            logger.info("Access token found in refresh map")
+            logger.debug("Access token found in refresh map")
             return tokens
 
     tokens = get_tokens_from_refresh(refresh_token)
     if not tokens.get("access_token"):
-        logger.warning("Refresh token exchange failed")
         return {}
 
     access_token = tokens.get("access_token")
@@ -142,7 +141,7 @@ def revoke_refresh_token(refresh_token):
     data, headers = get_token_data_and_headers()
     data["token"] = refresh_token
     response = requests.post(REVOKE_TOKEN_URL, data=data, headers=headers).content
-    logger.info("Revoke token response: %s", response)
+    logger.debug("Revoke token response: %s", response)
 
 
 def get_tokens_from_refresh(refresh_token):
@@ -318,6 +317,10 @@ def process_auth(handler, event, context):
     else:
         logger.debug(f"No {COGNITO_JWT_COOKIE} cookie provided")
 
+    # If we know the username, attach it to the logs
+    if current_session.auth.cognito.username:
+        logger.append_keys(username=current_session.auth.cognito.username)
+
     # process the actual request
     return handler(event, context)
 
@@ -422,7 +425,7 @@ def require_access(access="user", human: bool = False):
                     code=302,
                     headers={"Location": requested_url},
                 )
-            logger.info("User %s has %s access", username, access)
+            logger.debug("User %s has %s access", username, access)
             # Run the endpoint
             return func(*args, **kwargs)
 

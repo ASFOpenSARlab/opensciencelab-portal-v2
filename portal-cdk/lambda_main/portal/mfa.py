@@ -17,8 +17,11 @@ from util.cognito import (
     set_mfa_reset_values,
     reset_user_mfa_with_password,
     get_cognito_user_attribute,
+    sign_out_user,
+    LOGOUT_URL,
 )
 from util import send_email
+from util.auth import delete_cookies
 
 from aws_lambda_powertools import Logger
 from aws_lambda_powertools.event_handler.api_gateway import Router
@@ -78,7 +81,7 @@ def do_mfa_reset(username):
         logger.error(f"Email failed to send: {reason}")
         return False
 
-    logger.info("Email sent")
+    logger.info(f"MFA Email sent to {cog_email}")
     return True
 
 
@@ -168,23 +171,41 @@ def reset_code_post():
     mfa_reset_code = form.get("mfa_reset_code")
 
     if reset_user_mfa_with_password(username, password, mfa_reset_code):
+        # Successful reset, delete users cookies and redirect to login
         logger.info(f"MFA successfully reset for {username}")
-        req_content = (
-            "MFA Reset Completed, <a href='/'>Log In</a> to configure your new MFA code"
-        )
-    else:
-        req_content = render_template(
-            name="mfa_reset_return.j2",
-            input={
-                "username": username,
-                "mfa_reset_code": mfa_reset_code,
-                "warning": (
-                    "Error resetting MFA. Please verify username, "
-                    "password and reset code."
+
+        # Log user out of their cognito session
+        sign_out_user(username)
+
+        # Confirm MFA Reset success
+        return wrap_response(
+            body=render_template(
+                content=render_template(
+                    title="",
+                    name="mfa_reset_success.j2",
+                    content="",
+                    input={"logout_url": LOGOUT_URL},
                 ),
-            },
-            content="",
+                title="OpenScienceLab - MFA successfully reset",
+                name="logged-out.j2",
+            ),
+            code=200,
+            cookies=delete_cookies(),
         )
+
+    # MFA Reset failed
+    req_content = render_template(
+        name="mfa_reset_return.j2",
+        input={
+            "username": username,
+            "mfa_reset_code": mfa_reset_code,
+            "warning": (
+                "Error resetting MFA. Please verify username, password and reset code."
+            ),
+        },
+        content="",
+    )
+
     return wrap_response(
         render_template(
             content=req_content,

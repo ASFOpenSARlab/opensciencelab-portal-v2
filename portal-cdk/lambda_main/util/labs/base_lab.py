@@ -9,6 +9,7 @@ class BaseLab:
     accessibility: str
     allowed_profiles: list
     deployment_url: str
+    calendar_url: str = None
     description: str = None
     logo: str = None
     about_page_url: str = None

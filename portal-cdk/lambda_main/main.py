@@ -258,5 +258,12 @@ def handle_all_fatal_error(exception):
 )
 @process_auth
 def lambda_handler(event, context):
+    # Record the request with all logs
+    request_uri = event.get("rawPath", "/")[0:1000]
+    raw_query = event.get("rawQueryString")
+    if raw_query:
+        request_uri += f"?{raw_query[0:1000]}"
+    logger.append_keys(request_uri=request_uri)
+
     current_session.app = app  # Pass app into downstream functions
     return app.resolve(event, context)
