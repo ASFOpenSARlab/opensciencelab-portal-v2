@@ -80,4 +80,36 @@ Note the Test Calendar URL is hardcoded as a default within [Makefile](../../../
 
 ## Getting events via portal URL
 
+When properly configured, the events for a particular `scope` and `tag` can be found via the path GET `/notifications/{scope}?tag={tag}`. If `tag` is not included or if `tag` has the special value `all` then all possible tags for that scope will be used.
+
+The returned object is a json dictionary of the example format
+
+```json
+[
+  {
+    "title": "Calendar Event Title",
+    "message": "Calendar Event Description",
+    "type": "info",
+    "placement": "top-full-width"
+  }
+]
+```
+
+This format is easy for the javascript toast library to parse and use.
+
+> [!WARNING]
+> For reverse compatibility with systems that expect Portal v1, the path schema `/user/notifications/{lab_short_name}?profile={profile}` is also provided. This is to be considered deprecated.
+
 ## Adding notification hook to page
+
+Within the portal, [notifications.j2](../../../portal-cdk/lambda_main/templates/notifications.j2) provides the needed javascript and css methods for the toast to work. To use the notifications jinja template, within another jinja template add the following:
+
+```jinja
+{% with -%}
+    {% set scope = "scope" %}
+    {% set tag = "tag" %}
+    {% include 'notifications.j2' %}
+{% endwith -%}
+```
+
+[Example code](../../../portal-cdk/lambda_main/templates/portal.j2#7)
