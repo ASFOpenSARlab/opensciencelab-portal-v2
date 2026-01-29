@@ -72,11 +72,11 @@ placement: top-right | bottom-right | bottom-left | top-left | top-full-width | 
 
 The public calendar URL will need to be added to the build via the `CALENDAR_URL` environment variable.
 
-For local builds, this can be accomplished by setting `CALENDAR_URL` within your [Makefile](../../../Makefile#94) environment for `make cdk-shell`.
+For local builds, this can be accomplished by setting `CALENDAR_URL` within your [Makefile](../../../Makefile#L94) environment for `make cdk-shell`.
 
 For GitHub builds, `CALENDAR_URL` within GitHub Actions is set from {repo} > `Settings` > `Environments` > {maturity} > `Environment variables`.
 
-Note the Test Calendar URL is hardcoded as a default within [Makefile](../../../Makefile#43).
+Note the Test Calendar URL is hardcoded as a default within [Makefile](../../../Makefile#L43).
 
 ## Getting events via portal URL
 
@@ -112,4 +112,4 @@ Within the portal, [notifications.j2](../../../portal-cdk/lambda_main/templates/
 {% endwith -%}
 ```
 
-[Example code](../../../portal-cdk/lambda_main/templates/portal.j2#7)
+[Example code](../../../portal-cdk/lambda_main/templates/portal.j2#L7)
