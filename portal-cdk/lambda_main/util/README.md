@@ -33,14 +33,14 @@ The event description contains two sections: meta and message.
 > [!NOTE]
 > Note that Google Calendar wants to automagically make hyperlinks linkable. That means that any hyperlinks will need to be delinked before saving changes. Otherwise, hyperlinks will not work as expected.
 
-&nbsp;
+<!-- MD028/no-blanks-blockquote -->
 
 > [!TIP]
 > Make it easier on users by coloring blue any hyperlink text. This can be accomplished via adding `<span style="color: blue"></span>`.
 >
 > Open hyperlinks into another browser tab via `target="_blank"`.
 
-&nbsp;
+<!-- MD028/no-blanks-blockquote -->
 
 > [!IMPORTANT]
 > The placement of the multiple toasts might not have the expected behavior. The first toast render on the page will determine the position of subsequent toasts irrespective of how they are defined in the event meta. Therefore, it might be more prudent to decide early on where the toasts will be stacked.
