@@ -1,6 +1,8 @@
 from dataclasses import dataclass, field
 import requests
 
+from util.log_timer import measure_time
+
 
 @dataclass
 class BaseLab:
@@ -29,11 +31,14 @@ class BaseLab:
 
     def is_healthy(self) -> bool:
         try:
-            ret = requests.get(
-                url=f"{self.deployment_url}/lab/{self.short_lab_name}/hub/health",
-                timeout=0.1,
-                verify=False,
-            )
+            with measure_time(
+                service="healthcheck", action=f"ping {self.short_lab_name}"
+            ):
+                ret = requests.get(
+                    url=f"{self.deployment_url}/lab/{self.short_lab_name}/hub/health",
+                    timeout=0.1,
+                    verify=False,
+                )
         except requests.exceptions.ReadTimeout:
             return False
         except requests.exceptions.ConnectionError:

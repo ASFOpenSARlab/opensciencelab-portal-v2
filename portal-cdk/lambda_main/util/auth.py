@@ -15,6 +15,7 @@ from util.exceptions import (
 from util.session import current_session, PortalAuth
 import util.cognito
 from util.user_ip_logs_stream import send_user_ip_logs, update_user_ip_in_db
+from util.log_timer import measure_time
 
 import requests
 import jwt
@@ -97,7 +98,8 @@ def get_key_validation():
     if not JWT_VALIDATION:
         public_keys = {}
         logger.debug({"keys": util.cognito.COGNITO_PUBLIC_KEYS_URL})
-        jwks = requests.get(util.cognito.COGNITO_PUBLIC_KEYS_URL).json()
+        with measure_time(service="cognito-direct", action="load jwks"):
+            jwks = requests.get(util.cognito.COGNITO_PUBLIC_KEYS_URL).json()
         for jwk in jwks["keys"]:
             kid = jwk["kid"]
             public_keys[kid] = RSAAlgorithm.from_jwk(json.dumps(jwk))
@@ -140,7 +142,8 @@ def get_token_data_and_headers():
 def revoke_refresh_token(refresh_token):
     data, headers = get_token_data_and_headers()
     data["token"] = refresh_token
-    response = requests.post(REVOKE_TOKEN_URL, data=data, headers=headers).content
+    with measure_time(service="cognito-direct", action="revoke token"):
+        response = requests.post(REVOKE_TOKEN_URL, data=data, headers=headers).content
     logger.debug("Revoke token response: %s", response)
 
 
@@ -152,7 +155,8 @@ def get_tokens_from_refresh(refresh_token):
     logger.debug("Refresh Token exchange @ %s w/ %s", TOKEN_URL, data)
 
     # Attempt to exchange a code for a Token
-    token_data = requests.post(TOKEN_URL, data=data, headers=headers).json()
+    with measure_time(service="cognito-direct", action="token exchange"):
+        token_data = requests.post(TOKEN_URL, data=data, headers=headers).json()
     logger.debug("post response token_data: %s", token_data)
     if token_data.get("access_token"):
         logger.debug("Successfully converted refresh to access token")
@@ -178,7 +182,8 @@ def validate_code(code, request_host):
     )
 
     # Attempt to exchange a code for a Token
-    token_data = requests.post(TOKEN_URL, data=data, headers=headers).json()
+    with measure_time(service="cognito-direct", action="validate token"):
+        token_data = requests.post(TOKEN_URL, data=data, headers=headers).json()
 
     if token_data.get("id_token"):
         return token_data
