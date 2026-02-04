@@ -135,12 +135,12 @@ def get_item(username: str) -> dict:
 
 
 def get_record_counter(table, username) -> int:
-    with measure_time(service="dynamo", action="get rec_counter by username"):
-        response = table.get_item(
-            Key={"username": username},
-            ProjectionExpression="#rec_counter",
-            ExpressionAttributeNames={"#rec_counter": "_rec_counter"},
-        )
+    # no timing here, too much noise.
+    response = table.get_item(
+        Key={"username": username},
+        ProjectionExpression="#rec_counter",
+        ExpressionAttributeNames={"#rec_counter": "_rec_counter"},
+    )
 
     if "Item" not in response:
         # Item doesn't have a record yet

@@ -273,6 +273,16 @@ def delete_cookies():
 
 @lambda_handler_decorator
 def process_auth(handler, event, context):
+    # Skip auth for /static/
+    request_uri = event.get("rawPath", "/")[0:1000]
+    if request_uri.startswith("/static"):
+        return handler(event, context)
+
+    # Tag logger with IP/Country
+    ip_address, country_code = get_ip_and_country(event)
+    logger.append_keys(ip=ip_address)
+    logger.append_keys(country_code=country_code)
+
     # Cookies we care about:
     cookies = get_cookies_from_event(event)
     current_session.auth = PortalAuth()
@@ -330,6 +340,16 @@ def process_auth(handler, event, context):
     return handler(event, context)
 
 
+def get_ip_and_country(event):
+    ip_address_with_port = event.get("headers", {}).get(
+        "cloudfront-viewer-address", "0.0.0.0"
+    )
+    country_code = event.get("headers", {}).get("cloudfront-viewer-country", "ZZ")
+
+    ip_address = ip_address_with_port.rsplit(":", 1)[0]
+    return (ip_address, country_code)
+
+
 def require_access(access="user", human: bool = False):
     def inner(func):
         def wrapper(*args, **kwargs):
@@ -366,14 +386,9 @@ def require_access(access="user", human: bool = False):
             # Makes sure that capture IPs for human endpoints only.
             # Access role is included in log so that we can filter admin traffic
             if human:
-                ip_address_with_port = current_session.app.current_event.get(
-                    "headers", {}
-                ).get("cloudfront-viewer-address", "0.0.0.0")
-                country_code = current_session.app.current_event.get("headers", {}).get(
-                    "cloudfront-viewer-country", "ZZ"
+                ip_address, country_code = get_ip_and_country(
+                    current_session.app.current_event
                 )
-
-                ip_address = ip_address_with_port.rsplit(":", 1)[0]
 
                 if ip_address != "0.0.0.0" and country_code != "ZZ":
                     send_user_ip_logs(

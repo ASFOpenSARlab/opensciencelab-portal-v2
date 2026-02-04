@@ -1,7 +1,7 @@
 from dataclasses import dataclass, field
 import requests
 
-from util.log_timer import measure_time
+from ..log_timer import measure_time
 
 
 @dataclass
