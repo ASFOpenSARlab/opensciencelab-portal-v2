@@ -1,60 +1,74 @@
-<footer class="bg-primary d-flex">
+<style>
+    .asf-footer{
+        border: 1px solid #e7e7e7;
+        background-color: #f8f8f8;
+    }
+    .footer-text{
+        color: #777;
+        line-height: 50px;
+    }
+    .footer-row-element{
+        height: 50px;
+    }
+</style>
+
+<footer class="asf-footer">
     <div class="container-fluid">
         <div class="row text-light text-center">
             <span class="col-md-2"></span>
-            <div class="col-md-1" style="height: 60px; display: table; text-align: center;">
+            <div class="col-md-1 footer-row-element" style="display: table; text-align: center;">
                 <div style="display: table-cell; vertical-align: middle;">
-                    <img src="/static/img/ASF_logo.svg"
+                    <img src="/static/img/ASFLogo-Blue2.png"
                         alt="JupyterHub"
                         title="Home"
                         style="height: 50px; max-width: 100%;" />
                 </div>
             </div>
-            <div class="col-md-2" style="height: 60px;">
-                <p class="h4" style="margin: 0; line-height: 60px;">
+            <div class="col-md-2 footer-row-element">
+                <p class="h4 footer-text" style="margin: 0;">
                     Alaska Satellite Facility
                 </p>
             </div>
-            <div class="col-md-4" style="height: 60px; line-height: 60px;">
+            <div class="col-md-4 footer-row-element">
                 <ul class="list-inline">
-                    <li class="list-inline-item me-3">
+                    <li class="list-inline-item me-3 footer-text">
                         <i class="fas fa-phone me-1"></i>
                         <span>(907)474-5041</span>
                     </li>
-                    <li class="list-inline-item me-3">
+                    <li class="list-inline-item me-3 footer-text">
                         <i class="fas fa-envelope me-1"></i>
                         <span>uso@asf.alaska.edu</span>
                     </li>
                     <li class="list-inline-item">
-                        <i class="fas fa-map-marker-alt"></i>
+                        <i class="fas fa-map-marker-alt footer-text"></i>
                         <span>2156 Koyukuk Drive, Fairbanks, AK 99775</span>
                     </li>
                 </ul>
             </div>
-            <div class="col-md-1" style="height: 60px; line-height: 60px;">
+            <div class="col-md-1 footer-row-element">
                 <ul class="list-inline">
 
-                    <li class="list-inline-item me-2">
+                    <li class="list-inline-item me-2 footer-text">
                         <a href="https://twitter.com/Ak_Satellite" aria-label="Twitter">
-                            <i class="fa-brands fa-x-twitter h4" style="color: white;"></i>
+                            <i class="fa-brands fa-x-twitter h4" style="color: #777;"></i>
                         </a>
                     </li>
 
-                    <li class="list-inline-item me-2">
+                    <li class="list-inline-item me-2 footer-text">
                         <a href="https://www.facebook.com/AKSatellite" aria-label="Facebook">
-                            <i class="fab fa-facebook-f h4" style="color: white;"></i>
+                            <i class="fab fa-facebook-f h4" style="color: #777;"></i>
                         </a>
                     </li>
 
-                    <li class="list-inline-item me-2">
+                    <li class="list-inline-item me-2 footer-text">
                         <a href="https://www.youtube.com/channel/UChCfI0oVWw4qDwEidnDskJQ" aria-label="YouTube">
-                            <i class="fab fa-youtube h4" style="color: white;"></i>
+                            <i class="fab fa-youtube h4" style="color: #777;"></i>
                         </a>
                     </li>
 
-                    <li class="list-inline-item">
+                    <li class="list-inline-item footer-text">
                         <a href="https://www.linkedin.com/company/aksatellite" aria-label="LinkedIn">
-                            <i class="fab fa-linkedin-in h4" style="color: white;"></i>
+                            <i class="fab fa-linkedin-in h4" style="color: #777;"></i>
                         </a>
                     </li>
 
@@ -63,63 +77,4 @@
             <span class="col-md-2"></span>
         </div>
     </div>
-
-
-    <!--
-    <div class="container">
-        <div class="row">
-
-            <div class="col-md-2 bg-warning">
-                <p class="fw-semibold text-center">Alaska Satellite Facility</p>
-            </div>
-
-            <div class="col-md-8 text-center">
-                <ul class="list-inline">
-                    <li class="list-inline-item me-3">
-                        <i class="fas fa-phone me-1"></i>
-                        <span>(907)474-5041</span>
-                    </li>
-                    <li class="list-inline-item me-3">
-                        <i class="fas fa-envelope me-1"></i>
-                        <span>uso@asf.alaska.edu</span>
-                    </li>
-                    <li class="list-inline-item">
-                        <i class="fas fa-map-marker-alt"></i>
-                        <span>2156 Koyukuk Drive, Fairbanks, AK 99775</span>
-                    </li>
-                </ul>
-            </div>
-
-            <div class="col-md-2 d-flex justify-content-center">
-                <ul class="list-inline">
-
-                    <li class="list-inline-item me-2">
-                        <a href="https://twitter.com/Ak_Satellite" aria-label="Twitter">
-                            <i class="fa-brands fa-x-twitter" style="color: white;"></i>
-                        </a>
-                    </li>
-
-                    <li class="list-inline-item me-2">
-                        <a href="https://www.facebook.com/AKSatellite" aria-label="Facebook">
-                            <i class="fab fa-facebook-f" style="color: white;"></i>
-                        </a>
-                    </li>
-
-                    <li class="list-inline-item me-2">
-                        <a href="https://www.youtube.com/channel/UChCfI0oVWw4qDwEidnDskJQ" aria-label="YouTube">
-                            <i class="fab fa-youtube" style="color: white;"></i>
-                        </a>
-                    </li>
-
-                    <li class="list-inline-item">
-                        <a href="https://www.linkedin.com/company/aksatellite" aria-label="LinkedIn">
-                            <i class="fab fa-linkedin-in" style="color: white;"></i>
-                        </a>
-                    </li>
-
-                </ul>
-            </div>
-
-        </div>
-    </div>-->
 </footer>
