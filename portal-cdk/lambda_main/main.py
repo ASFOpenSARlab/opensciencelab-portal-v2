@@ -3,6 +3,7 @@
 import os
 import json
 import traceback
+import time
 
 from portal import routes
 
@@ -266,4 +267,28 @@ def lambda_handler(event, context):
     logger.append_keys(request_uri=request_uri)
 
     current_session.app = app  # Pass app into downstream functions
-    return app.resolve(event, context)
+
+    # Don't bother timing static endpoint
+    if request_uri.startswith("/static"):
+        return app.resolve(event, context)
+
+    # track timing
+    start_time = time.perf_counter()
+    response = app.resolve(event, context)
+    elapsed_time_ms = round((time.perf_counter() - start_time) * 1000)
+
+    # Using the 'extra' parameter
+    additional_attributes = {
+        "times_ms": elapsed_time_ms,
+    }
+
+    # Extract response info
+    if "statusCode" in response:
+        additional_attributes["response_code"] = response["statusCode"]
+
+    # Log request w/ timing info
+    logger.info(
+        f"Request: {elapsed_time_ms}ms",
+        extra=additional_attributes,
+    )
+    return response
