@@ -118,7 +118,7 @@ class PortalCdkStack(Stack):
             # https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_dynamodb.TableProps.html
             dynamo_table_props=dynamodb.TableProps(
                 partition_key=dynamodb.Attribute(
-                    name="username",
+                    name="labname",
                     type=dynamodb.AttributeType.STRING,
                 ),
                 deletion_protection=bool(vars["deploy_prefix"] == "prod"),
@@ -132,7 +132,28 @@ class PortalCdkStack(Stack):
         )
         # Need to do this after, since doing it inside lambda_dynamo would be a circular dependency:
         lambda_dynamo.lambda_function.add_environment(
-            "DYNAMO_TABLE_NAME", lambda_dynamo.dynamo_table.table_name
+            "DYNAMO_TABLE_USER_NAME", lambda_dynamo.dynamo_table.table_name
+        )
+        # Another table to hold labs
+        labs_table = dynamodb.Table(
+            self,
+            "LabsTable",
+            partition_key=dynamodb.Attribute(
+                name="lab",
+                type=dynamodb.AttributeType.STRING,
+            ),
+            deletion_protection=bool(vars["deploy_prefix"] == "prod"),
+            # Default removal_policy is always RETAIN:
+            removal_policy=(
+                RemovalPolicy.RETAIN
+                if vars["deploy_prefix"] == "prod"
+                else RemovalPolicy.DESTROY
+            ),
+        )
+        # Allow access from Lambda
+        labs_table.grant_full_access(lambda_dynamo.lambda_function)
+        lambda_dynamo.lambda_function.add_environment(
+            "DYNAMO_TABLE_LAB_NAME", labs_table.table_name
         )
 
         ### Integration is after the request is validated:

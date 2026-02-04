@@ -5,8 +5,8 @@ from util import swagger
 from util.format import portal_template, jinja_template
 from util.auth import require_access
 from util.session import current_session
-from util.user.dynamo_db import get_users_with_lab
-from util.user.user import filter_lab_access
+from util.user import get_users_with_lab
+from util.user import filter_lab_access
 from util.user import User
 from util.responses import wrap_response, form_body_to_dict, json_body_to_dict
 from util.labs import LABS

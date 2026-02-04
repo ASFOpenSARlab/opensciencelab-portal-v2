@@ -118,9 +118,7 @@ class TestUsersPages:
         monkeypatch.setattr(
             "util.cognito.delete_user_from_user_pool", lambda *args, **kwargs: True
         )
-        monkeypatch.setattr(
-            "util.user.dynamo_db.delete_item", lambda *args, **kwargs: False
-        )
+        monkeypatch.setattr("util.dynamo_db.delete_item", lambda *args, **kwargs: False)
 
         event = helpers.get_event(
             path=f"/portal/users/delete/{delete_user}",
@@ -146,9 +144,7 @@ class TestUsersPages:
         monkeypatch.setattr(
             "util.cognito.delete_user_from_user_pool", lambda *args, **kwargs: True
         )
-        monkeypatch.setattr(
-            "util.user.dynamo_db.delete_item", lambda *args, **kwargs: False
-        )
+        monkeypatch.setattr("util.dynamo_db.delete_item", lambda *args, **kwargs: False)
 
         event = helpers.get_event(
             path=f"/portal/users/delete/{delete_user}",
@@ -174,9 +170,7 @@ class TestUsersPages:
         monkeypatch.setattr(
             "util.cognito.delete_user_from_user_pool", lambda *args, **kwargs: True
         )
-        monkeypatch.setattr(
-            "util.user.dynamo_db.delete_item", lambda *args, **kwargs: True
-        )
+        monkeypatch.setattr("util.dynamo_db.delete_item", lambda *args, **kwargs: True)
 
         event = helpers.get_event(
             path=f"/portal/users/delete/{delete_user}",
@@ -200,9 +194,7 @@ class TestUsersPages:
         monkeypatch.setattr(
             "util.cognito.delete_user_from_user_pool", lambda *args, **kwargs: True
         )
-        monkeypatch.setattr(
-            "util.user.dynamo_db.delete_item", lambda *args, **kwargs: True
-        )
+        monkeypatch.setattr("util.dynamo_db.delete_item", lambda *args, **kwargs: True)
 
         event = helpers.get_event(
             path=f"/portal/users/delete/{delete_user.username}",
