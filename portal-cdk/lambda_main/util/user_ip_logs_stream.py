@@ -6,6 +6,7 @@ import datetime
 import boto3
 
 from util.user import User
+from util.log_timer import measure_time
 from .exceptions import EnvironmentNotSet
 
 from aws_lambda_powertools import Logger
@@ -64,11 +65,12 @@ def send_user_ip_logs(
         )
 
     # https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/logs/client/put_log_events.html
-    response = logs_client.put_log_events(
-        logGroupName=log_group_name,
-        logStreamName=log_stream_name,
-        logEvents=[event],
-    )
+    with measure_time(service="cwlogs", action="put log event"):
+        response = logs_client.put_log_events(
+            logGroupName=log_group_name,
+            logStreamName=log_stream_name,
+            logEvents=[event],
+        )
 
     return response
 
@@ -179,27 +181,28 @@ def get_user_ip_logs(
         )
 
     # https://boto3.amazonaws.com/v1/documentation/api/1.26.82/reference/services/logs/client/start_query.html
-    start_query_response = logs_client.start_query(
-        logGroupName=log_group_name,
-        startTime=start_date_int,
-        endTime=end_date_int,
-        queryString=query,
-    )
+    with measure_time(service="cwlogs", action="query user IP logs"):
+        start_query_response = logs_client.start_query(
+            logGroupName=log_group_name,
+            startTime=start_date_int,
+            endTime=end_date_int,
+            queryString=query,
+        )
 
-    query_id = start_query_response["queryId"]
+        query_id = start_query_response["queryId"]
 
-    response = {}
+        response = {}
 
-    while response.get("status", None) not in [
-        "Cancelled",
-        "Complete",
-        "Failed",
-        "Timeout",
-        "Unknown",
-    ]:
-        time.sleep(1)
-        # https://boto3.amazonaws.com/v1/documentation/api/1.26.82/reference/services/logs/client/get_query_results.html
-        response = logs_client.get_query_results(queryId=query_id)
+        while response.get("status", None) not in [
+            "Cancelled",
+            "Complete",
+            "Failed",
+            "Timeout",
+            "Unknown",
+        ]:
+            time.sleep(1)
+            # https://boto3.amazonaws.com/v1/documentation/api/1.26.82/reference/services/logs/client/get_query_results.html
+            response = logs_client.get_query_results(queryId=query_id)
 
     results = response["results"]
 

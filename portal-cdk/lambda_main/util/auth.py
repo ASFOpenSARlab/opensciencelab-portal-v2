@@ -15,6 +15,7 @@ from util.exceptions import (
 from util.session import current_session, PortalAuth
 import util.cognito
 from util.user_ip_logs_stream import send_user_ip_logs, update_user_ip_in_db
+from util.log_timer import measure_time
 
 import requests
 import jwt
@@ -97,7 +98,8 @@ def get_key_validation():
     if not JWT_VALIDATION:
         public_keys = {}
         logger.debug({"keys": util.cognito.COGNITO_PUBLIC_KEYS_URL})
-        jwks = requests.get(util.cognito.COGNITO_PUBLIC_KEYS_URL).json()
+        with measure_time(service="cognito-direct", action="load jwks"):
+            jwks = requests.get(util.cognito.COGNITO_PUBLIC_KEYS_URL).json()
         for jwk in jwks["keys"]:
             kid = jwk["kid"]
             public_keys[kid] = RSAAlgorithm.from_jwk(json.dumps(jwk))
@@ -140,7 +142,8 @@ def get_token_data_and_headers():
 def revoke_refresh_token(refresh_token):
     data, headers = get_token_data_and_headers()
     data["token"] = refresh_token
-    response = requests.post(REVOKE_TOKEN_URL, data=data, headers=headers).content
+    with measure_time(service="cognito-direct", action="revoke token"):
+        response = requests.post(REVOKE_TOKEN_URL, data=data, headers=headers).content
     logger.debug("Revoke token response: %s", response)
 
 
@@ -152,7 +155,8 @@ def get_tokens_from_refresh(refresh_token):
     logger.debug("Refresh Token exchange @ %s w/ %s", TOKEN_URL, data)
 
     # Attempt to exchange a code for a Token
-    token_data = requests.post(TOKEN_URL, data=data, headers=headers).json()
+    with measure_time(service="cognito-direct", action="token exchange"):
+        token_data = requests.post(TOKEN_URL, data=data, headers=headers).json()
     logger.debug("post response token_data: %s", token_data)
     if token_data.get("access_token"):
         logger.debug("Successfully converted refresh to access token")
@@ -178,7 +182,8 @@ def validate_code(code, request_host):
     )
 
     # Attempt to exchange a code for a Token
-    token_data = requests.post(TOKEN_URL, data=data, headers=headers).json()
+    with measure_time(service="cognito-direct", action="validate token"):
+        token_data = requests.post(TOKEN_URL, data=data, headers=headers).json()
 
     if token_data.get("id_token"):
         return token_data
@@ -268,6 +273,16 @@ def delete_cookies():
 
 @lambda_handler_decorator
 def process_auth(handler, event, context):
+    # Skip auth for /static/
+    request_uri = event.get("rawPath", "/")[0:1000]
+    if request_uri.startswith("/static"):
+        return handler(event, context)
+
+    # Tag logger with IP/Country
+    ip_address, country_code = get_ip_and_country(event)
+    logger.append_keys(ip=ip_address)
+    logger.append_keys(country_code=country_code)
+
     # Cookies we care about:
     cookies = get_cookies_from_event(event)
     current_session.auth = PortalAuth()
@@ -325,6 +340,16 @@ def process_auth(handler, event, context):
     return handler(event, context)
 
 
+def get_ip_and_country(event):
+    ip_address_with_port = event.get("headers", {}).get(
+        "cloudfront-viewer-address", "0.0.0.0"
+    )
+    country_code = event.get("headers", {}).get("cloudfront-viewer-country", "ZZ")
+
+    ip_address = ip_address_with_port.rsplit(":", 1)[0]
+    return (ip_address, country_code)
+
+
 def require_access(access="user", human: bool = False):
     def inner(func):
         def wrapper(*args, **kwargs):
@@ -361,14 +386,9 @@ def require_access(access="user", human: bool = False):
             # Makes sure that capture IPs for human endpoints only.
             # Access role is included in log so that we can filter admin traffic
             if human:
-                ip_address_with_port = current_session.app.current_event.get(
-                    "headers", {}
-                ).get("cloudfront-viewer-address", "0.0.0.0")
-                country_code = current_session.app.current_event.get("headers", {}).get(
-                    "cloudfront-viewer-country", "ZZ"
+                ip_address, country_code = get_ip_and_country(
+                    current_session.app.current_event
                 )
-
-                ip_address = ip_address_with_port.rsplit(":", 1)[0]
 
                 if ip_address != "0.0.0.0" and country_code != "ZZ":
                     send_user_ip_logs(
