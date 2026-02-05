@@ -4,13 +4,24 @@ import json
 import datetime
 import frozendict
 from typing import Any
-from util.exceptions import DbError, CognitoError, UserNotFound
+from util.exceptions import DbError, CognitoError, UserNotFound, LabDoesNotExist
 from util.cognito import delete_user_from_user_pool
 from util.labs import LABS
 
-from .dynamo_db import get_item, create_item, update_item, delete_item
+from ..dynamo_db import (
+    get_item,
+    create_item,
+    update_item,
+    delete_item,
+    dynamo_filter,
+    get_all_items,
+    combine_all_dynamo_filters,
+)
 from .defaults import defaults
 from .validator_map import validator_map, validate
+
+USER_TABLE_ID = "user"
+USER_TABLE_KEY = "username"
 
 
 def create_lab_structure(
@@ -30,10 +41,12 @@ class User:
     def __init__(self, username: str, create_if_missing: bool = True):
         ## Using super to avoid setattr validation. 'username'
         #  should NOT be modified like the other attributes.
-        super().__setattr__("username", username)
+        super().__setattr__(USER_TABLE_KEY, username)
 
         ## Apply anything in the DB:
-        db_info = get_item(self.username)
+        db_info = get_item(
+            self.username, key_name=USER_TABLE_KEY, table_name=USER_TABLE_ID
+        )
 
         if not db_info and not create_if_missing:
             raise UserNotFound(
@@ -42,7 +55,12 @@ class User:
 
         ## If it doesn't exist, create it with the defaults:
         if not db_info:
-            create_item(self.username, defaults)
+            create_item(
+                self.username,
+                defaults,
+                key_name=USER_TABLE_KEY,
+                table_name=USER_TABLE_ID,
+            )
             db_info = {}
 
         ## Load all attributes in to the class:
@@ -78,7 +96,12 @@ class User:
         super().__setattr__(key, frozendict.deepfreeze(value))
         ## Update the DB:
         if _save:
-            update_item(self.username, {key: value})
+            update_item(
+                self.username,
+                updates={key: value},
+                key_name=USER_TABLE_KEY,
+                table_name=USER_TABLE_ID,
+            )
 
     def __str__(self):
         """What to display if you print this object."""
@@ -86,7 +109,7 @@ class User:
 
     def __iter__(self):
         """Used when casting to a dict, what keys to show."""
-        yield "username", self.username
+        yield USER_TABLE_KEY, self.username
         for key in validator_map:
             yield key, self.__getattribute__(key)
 
@@ -140,10 +163,10 @@ class User:
             raise CognitoError(f"Could not delete Cognito user {self.username}")
 
         # Delete item from dynamodb
-        delete_item(self.username)
+        delete_item(self.username, key_name=USER_TABLE_KEY, table_name=USER_TABLE_ID)
 
         # ensure item is deleted
-        if get_item(self.username):
+        if get_item(self.username, key_name=USER_TABLE_KEY, table_name=USER_TABLE_ID):
             raise DbError(f"Could not delete db user {self.username}")
 
         return True
@@ -199,3 +222,43 @@ def filter_lab_access(user: User) -> dict:
             if user_lab_permissions[labname]["can_user_see_lab"]
         },
     }
+
+
+def user_email_filters(username_filter, email_filter):
+    # Combine all filters
+    filters = []
+    if username_filter:
+        filters.append(
+            dynamo_filter(attr_name=USER_TABLE_KEY, filter_value=username_filter)
+        )
+    if email_filter:
+        filters.append(dynamo_filter(attr_name="email", filter_value=email_filter))
+
+    return combine_all_dynamo_filters(filters)
+
+
+# Returns a list of users usernames that have access to a given lab
+def get_users_with_lab(
+    lab_short_name: str,
+    limit: int | None = None,
+    username_filter: str | None = None,
+    email_filter: str | None = None,
+) -> list[dict]:
+    # Check if lab exists
+    if lab_short_name not in LABS:
+        raise LabDoesNotExist(message=f'"{lab_short_name}" lab does not exist')
+
+    # combine filters
+    exist_filter = dynamo_filter(
+        attr_name=f"labs.{lab_short_name}", filter_action="exists"
+    )
+    user_email_filter = user_email_filters(username_filter, email_filter)
+    filter_expr = combine_all_dynamo_filters([exist_filter, user_email_filter])
+
+    # Get filtered results
+    items = get_all_items(USER_TABLE_ID, limit, filters=filter_expr)
+
+    if limit:
+        return items[:limit]
+
+    return items

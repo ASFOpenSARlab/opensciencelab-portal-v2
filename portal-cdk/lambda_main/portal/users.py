@@ -6,11 +6,11 @@ from util.format import (
 from util.auth import require_access
 from util.cognito import enable_user, disable_user, all_locked_users
 from util.session import current_session
-from util.user.dynamo_db import get_all_items
+from util.dynamo_db import get_all_items
 from util.format import jinja_template
 from util.responses import wrap_response
 from util.exceptions import CognitoError, DbError
-from util.user import User
+from util.user import User, user_email_filters
 from util.user_ip_logs_stream import get_user_ip_logs
 
 from aws_lambda_powertools import Logger
@@ -79,7 +79,9 @@ def users_root():
     message = users_router.current_event.query_string_parameters.get("message")
     success = users_router.current_event.query_string_parameters.get("success", "false")
     username = users_router.current_event.query_string_parameters.get("username")
-    user_filter = users_router.current_event.query_string_parameters.get("user_filter")
+    username_filter = users_router.current_event.query_string_parameters.get(
+        "user_filter"
+    )
     email_filter = users_router.current_event.query_string_parameters.get(
         "email_filter"
     )
@@ -88,7 +90,9 @@ def users_root():
 
     # Fetch all users
     all_users = get_all_items(
-        limit=row_limit, username_filter=user_filter, email_filter=email_filter
+        table="user",
+        limit=row_limit,
+        filters=user_email_filters(username_filter, email_filter),
     )
     all_users_sorted = sorted(all_users, key=lambda x: x["username"])
 

@@ -449,33 +449,37 @@ class TestAccessPages:
         # https://stackoverflow.com/a/12496239/11650472
         import util
 
-        util.user.dynamo_db._DYNAMO_CLIENT = boto3.client(
+        util.dynamo_db._DYNAMO_CLIENT = boto3.client(
             "dynamodb",
             region_name=REGION,
         )
-        util.user.dynamo_db._DYNAMO_DB = boto3.resource(
+        util.dynamo_db._DYNAMO_DB = boto3.resource(
             "dynamodb",
             region_name=REGION,
         )
 
-        from util.user.dynamo_db import get_all_items
+        from util.dynamo_db import get_all_items
 
         ## These imports have to be the long forum, to let us modify the values here:
         # https://stackoverflow.com/a/12496239/11650472
         import util
 
         user_table_name = "TestUserTable"
-        util.user.dynamo_db._DYNAMO_DB.create_table(
+        lab_table_name = "TestLabTable"
+        util.dynamo_db._DYNAMO_DB.create_table(
             TableName=user_table_name,
             BillingMode="PAY_PER_REQUEST",
             KeySchema=[{"AttributeName": "username", "KeyType": "HASH"}],
             AttributeDefinitions=[{"AttributeName": "username", "AttributeType": "S"}],
         )
         ## No need to delete the table between methods, it goes out of scope anyways.
-        util.user.dynamo_db._DYNAMO_TABLE = util.user.dynamo_db._DYNAMO_DB.Table(
+        util.dynamo_db._DYNAMO_TABLE_USER = util.dynamo_db._DYNAMO_DB.Table(
             user_table_name
         )
-        assert get_all_items() == [], "DB should be empty at the start"
+        util.dynamo_db._DYNAMO_TABLE_LAB = util.dynamo_db._DYNAMO_DB.Table(
+            lab_table_name
+        )
+        assert get_all_items(table_name="user") == [], "DB should be empty at the start"
         from util.user.user import User
 
         user1 = User("test_user")
@@ -507,7 +511,7 @@ class TestAccessPages:
         monkeypatch.setattr("util.auth.User", lambda *args, **kwargs: user)
         monkeypatch.setattr("portal.access.User", lambda *args, **kwargs: user)
         monkeypatch.setattr("portal.access.LABS", helpers.FAKE_LABS)
-        monkeypatch.setattr("util.user.dynamo_db.LABS", helpers.FAKE_LABS)
+        monkeypatch.setattr("util.user.user.LABS", helpers.FAKE_LABS)
 
         event = helpers.get_event(
             path="/portal/access/users/testlab",
