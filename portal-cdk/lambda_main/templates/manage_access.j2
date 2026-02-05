@@ -1,0 +1,26 @@
+{# djlint:off H006,H021 #}
+<div>
+    <legend>{{ labname }}</legend>
+</div>
+<div class="margin-left-30">
+    <table>
+        <tr class="tr-highlight">
+            <th>Username</th>
+            <th>User Request Data</th>
+            <th>Request Status</th>
+        </tr>
+        {% for user in requests %}
+            <tr>
+                <td>
+                    <b><a href="/portal/profile/form/{{ user["username"] }}">{{ user["username"] }}</a></b>
+                </td>
+                <td>
+                    {{ user["request_data"] }}</a>
+                </td>
+                <td>
+                    {{ user["status"] }}</a>
+                </td>
+            </tr>
+        {% endfor %}
+    </table>
+</div>

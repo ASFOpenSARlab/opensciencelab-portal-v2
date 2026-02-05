@@ -5,7 +5,7 @@ import datetime
 
 import boto3
 
-from util.user import User
+from objs.user import User
 from util.log_timer import measure_time
 from .exceptions import EnvironmentNotSet
 

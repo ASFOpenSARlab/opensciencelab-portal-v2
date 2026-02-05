@@ -5,11 +5,10 @@ from util import swagger
 from util.format import portal_template, jinja_template
 from util.auth import require_access
 from util.session import current_session
-from util.user import get_users_with_lab
-from util.user import filter_lab_access
-from util.user import User
+from objs.user import User, get_users_with_lab, filter_lab_access
 from util.responses import wrap_response, form_body_to_dict, json_body_to_dict
 from util.labs import LABS
+from objs.lab import Lab
 from util.exceptions import MalformedRequest
 
 from aws_lambda_powertools.event_handler.api_gateway import Router
@@ -453,3 +452,19 @@ def delete_user_labs(username):
         code=200 if success else 422,
         content_type=content_types.APPLICATION_JSON,
     )
+
+@access_router.get("/manage/<shortname>/requests/", include_in_schema=False)
+@require_access("admin", human=True)
+@portal_template()
+def list_access_requests(shortname):
+    lab = Lab(labname=shortname, create_if_missing=False)
+
+    template_input = {
+        "labname": shortname,
+        "requests": lab.access_requests,
+        "tokens": lab.access_tokens,
+    }
+
+    logger.info(f"Access requests = {lab.access_requests}")
+
+    return jinja_template(template_input, "manage_access.j2")

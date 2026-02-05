@@ -158,7 +158,7 @@ class TestAccessPages:
         monkeypatch.setattr("portal.access.User", lambda *args, **kwargs: user)
         monkeypatch.setattr("util.auth.User", lambda *args, **kwargs: user)
 
-        monkeypatch.setattr("util.user.user.LABS", helpers.FAKE_LABS)
+        monkeypatch.setattr("objs.user.user.LABS", helpers.FAKE_LABS)
 
         event = helpers.get_event(
             path="/portal/access/labs/test_user",
@@ -195,7 +195,7 @@ class TestAccessPages:
         )
         monkeypatch.setattr("portal.access.User", lambda *args, **kwargs: targetuser)
 
-        monkeypatch.setattr("util.user.user.LABS", helpers.FAKE_LABS)
+        monkeypatch.setattr("objs.user.user.LABS", helpers.FAKE_LABS)
 
         event = helpers.get_event(
             path="/portal/access/labs/test_user2",
@@ -232,7 +232,7 @@ class TestAccessPages:
         )
         monkeypatch.setattr("portal.access.User", lambda *args, **kwargs: targetuser)
 
-        monkeypatch.setattr("util.user.user.LABS", helpers.FAKE_LABS)
+        monkeypatch.setattr("objs.user.user.LABS", helpers.FAKE_LABS)
 
         event = helpers.get_event(
             path="/portal/access/labs/test_user2",
@@ -263,7 +263,7 @@ class TestAccessPages:
         )
         monkeypatch.setattr("portal.access.User", lambda *args, **kwargs: targetuser)
 
-        monkeypatch.setattr("util.user.user.LABS", helpers.FAKE_LABS)
+        monkeypatch.setattr("objs.user.user.LABS", helpers.FAKE_LABS)
 
         event = helpers.get_event(
             path="/portal/access/labs/test_admin2",
@@ -309,7 +309,7 @@ class TestAccessPages:
         )
         monkeypatch.setattr("portal.access.User", lambda *args, **kwargs: targetuser)
 
-        monkeypatch.setattr("util.user.user.LABS", helpers.FAKE_LABS)
+        monkeypatch.setattr("objs.user.user.LABS", helpers.FAKE_LABS)
 
         event = helpers.get_event(
             path=f"/portal/access/labs/{targetuser.username}",
@@ -345,7 +345,7 @@ class TestAccessPages:
         )
         monkeypatch.setattr("portal.access.User", lambda *args, **kwargs: targetuser)
 
-        monkeypatch.setattr("util.user.user.LABS", helpers.FAKE_LABS)
+        monkeypatch.setattr("objs.user.user.LABS", helpers.FAKE_LABS)
 
         event = helpers.get_event(
             path="/portal/access/labs/test_georestricted_admin",
@@ -480,7 +480,7 @@ class TestAccessPages:
             lab_table_name
         )
         assert get_all_items(table_name="user") == [], "DB should be empty at the start"
-        from util.user.user import User
+        from objs.user.user import User
 
         user1 = User("test_user")
         setattr(user1, "email", "test@example.com")
@@ -511,7 +511,7 @@ class TestAccessPages:
         monkeypatch.setattr("util.auth.User", lambda *args, **kwargs: user)
         monkeypatch.setattr("portal.access.User", lambda *args, **kwargs: user)
         monkeypatch.setattr("portal.access.LABS", helpers.FAKE_LABS)
-        monkeypatch.setattr("util.user.user.LABS", helpers.FAKE_LABS)
+        monkeypatch.setattr("objs.user.user.LABS", helpers.FAKE_LABS)
 
         event = helpers.get_event(
             path="/portal/access/users/testlab",

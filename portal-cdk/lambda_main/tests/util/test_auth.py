@@ -260,7 +260,7 @@ class TestPortalAuth:
         monkeypatch.setattr("portal.User", lambda *args, **kwargs: user)
         monkeypatch.setattr("util.auth.User", lambda *args, **kwargs: user)
 
-        monkeypatch.setattr("util.user.user.LABS", helpers.FAKE_LABS)
+        monkeypatch.setattr("objs.user.user.LABS", helpers.FAKE_LABS)
 
         event = helpers.get_event(path="/portal", cookies=fake_auth)
         ret = main.lambda_handler(event, lambda_context)

@@ -17,7 +17,7 @@ os.environ["COGNITO_CLIENT_ID"] = "fake-cognito-id"
 os.environ["COGNITO_POOL_ID"] = "fake-pool-id"
 from util.auth import PORTAL_USER_COOKIE, COGNITO_JWT_COOKIE
 from util.labs import BaseLab
-from util.user import filter_lab_access, create_lab_structure
+from objs.user import filter_lab_access, create_lab_structure
 from jwt import decode as unpatched_jwt_decode
 
 

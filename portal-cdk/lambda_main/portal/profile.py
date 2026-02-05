@@ -3,7 +3,7 @@ from util.format import (
 )
 from util.auth import require_access
 from util.session import current_session
-from util.user import User
+from objs.user import User
 from util.responses import wrap_response, form_body_to_dict
 from util.labs import LABS
 from util.user_ip_logs_stream import get_user_ip_logs

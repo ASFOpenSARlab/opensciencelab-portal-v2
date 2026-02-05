@@ -54,7 +54,7 @@ class TestUserClass:
         assert get_all_items(table_name="user") == [], "DB should be empty at the start"
 
     def test_creating_user_updates_db(self):
-        from util.user.user import User
+        from objs.user.user import User
         from util.dynamo_db import get_all_items
 
         username = "test_user"
@@ -73,7 +73,7 @@ class TestUserClass:
         assert get_all_items(table_name="user")[0]["email"] == email
 
     def test_username_immutable(self):
-        from util.user.user import User
+        from objs.user.user import User
         from util.exceptions import DbError
 
         # Username attr exists:
@@ -90,7 +90,7 @@ class TestUserClass:
 
     def test_class_method_is_default(self):
         # Test this early, so we can use it in future tests
-        from util.user.user import User
+        from objs.user.user import User
 
         username = "test_user"
         user = User(username)
@@ -101,9 +101,9 @@ class TestUserClass:
         )
 
     def test_defaults_applied(self):
-        from util.user.user import User
-        from util.user.validator_map import validator_map
-        from util.user.defaults import defaults
+        from objs.user.user import User
+        from objs.user.validator_map import validator_map
+        from objs.user.defaults import defaults
         from frozendict import deepfreeze
 
         username = "test_user"
@@ -121,7 +121,7 @@ class TestUserClass:
                 )
 
     def test_cant_append_list_directly(self):
-        from util.user.user import User
+        from objs.user.user import User
 
         username = "test_user"
         user = User(username)
@@ -132,7 +132,7 @@ class TestUserClass:
         assert "'tuple' object has no attribute 'append'" in str(excinfo.value)
 
     def test_can_modify_list_by_assignment(self):
-        from util.user.user import User
+        from objs.user.user import User
         from util.dynamo_db import get_all_items
 
         username = "test_user"
@@ -154,8 +154,8 @@ class TestUserClass:
         )
 
     def test_limit_user_return(self):
-        from util.user.user import User
-        from util.user.user import user_email_filters
+        from objs.user.user import User
+        from objs.user.user import user_email_filters
         from util.dynamo_db import get_all_items
 
         # Create some users to filter
@@ -181,10 +181,10 @@ class TestUserClass:
         ), "There should be 5 matched and filtered users"
 
     def test_get_users_with_lab(self, monkeypatch, helpers):
-        from util.user.user import User
-        from util.user import get_users_with_lab
+        from objs.user.user import User
+        from objs.user import get_users_with_lab
 
-        monkeypatch.setattr("util.user.user.LABS", helpers.FAKE_LABS)
+        monkeypatch.setattr("objs.user.user.LABS", helpers.FAKE_LABS)
 
         user1 = User(username="test_user1")
         user1.labs = {"testlab": {}}
@@ -213,12 +213,12 @@ class TestUserClass:
         ), "Filtered and limited results should be limited to 2"
 
     def test_delete_user(self, monkeypatch):
-        from util.user.user import User
+        from objs.user.user import User
         from util.dynamo_db import get_all_items
 
         # Don't try to actually delete the user from userpool
         monkeypatch.setattr(
-            "util.user.user.delete_user_from_user_pool", lambda *args, **kwargs: True
+            "objs.user.user.delete_user_from_user_pool", lambda *args, **kwargs: True
         )
 
         # Create user
@@ -231,11 +231,11 @@ class TestUserClass:
         assert username not in [x["username"] for x in get_all_items(table_name="user")]
 
     def test_user_profile_in_cache(self, monkeypatch):
-        from util.user.user import User
+        from objs.user.user import User
         from util.dynamo_db import is_cached
 
         monkeypatch.setattr(
-            "util.user.user.delete_user_from_user_pool", lambda *args, **kwargs: True
+            "objs.user.user.delete_user_from_user_pool", lambda *args, **kwargs: True
         )
 
         username = "test_user_cache1"
@@ -270,7 +270,7 @@ class TestUserClass:
         assert user_copy_4._rec_counter != uc3_counter_initial
 
     def test_user_create_if_missing_false(self):
-        from util.user.user import User
+        from objs.user.user import User
 
         with pytest.raises(UserNotFound) as exc_info:
             User(username="NotRealUser", create_if_missing=False)
@@ -280,7 +280,7 @@ class TestUserClass:
         )
 
     def test_user_is_authorized_lab(self):
-        from util.user.user import User
+        from objs.user.user import User
 
         user = User(username="test_user")
         user.labs = {"testlab": {}}
@@ -294,7 +294,7 @@ class TestUserClass:
         )
 
     def test_user_is_authorized_lab_admin(self):
-        from util.user.user import User
+        from objs.user.user import User
 
         user = User(username="test_user")
         user.access = list(user.access) + ["admin"]
@@ -304,7 +304,7 @@ class TestUserClass:
         )
 
     def test_user_update_ip_address(self):
-        from util.user.user import User
+        from objs.user.user import User
 
         message = {
             "username": "test_user",
