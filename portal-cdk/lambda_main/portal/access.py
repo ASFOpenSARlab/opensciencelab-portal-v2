@@ -453,6 +453,7 @@ def delete_user_labs(username):
         content_type=content_types.APPLICATION_JSON,
     )
 
+
 @access_router.get("/manage/<shortname>/requests/", include_in_schema=False)
 @require_access("admin", human=True)
 @portal_template()

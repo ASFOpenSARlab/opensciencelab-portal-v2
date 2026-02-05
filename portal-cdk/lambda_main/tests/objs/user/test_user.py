@@ -44,6 +44,12 @@ class TestUserClass:
             KeySchema=[{"AttributeName": "username", "KeyType": "HASH"}],
             AttributeDefinitions=[{"AttributeName": "username", "AttributeType": "S"}],
         )
+        util.dynamo_db._DYNAMO_DB.create_table(
+            TableName=lab_table_name,
+            BillingMode="PAY_PER_REQUEST",
+            KeySchema=[{"AttributeName": "labname", "KeyType": "HASH"}],
+            AttributeDefinitions=[{"AttributeName": "labname", "AttributeType": "S"}],
+        )
         ## No need to delete the table between methods, it goes out of scope anyways.
         util.dynamo_db._DYNAMO_TABLE_USER = util.dynamo_db._DYNAMO_DB.Table(
             user_table_name

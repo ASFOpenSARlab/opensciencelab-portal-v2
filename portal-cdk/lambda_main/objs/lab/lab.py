@@ -2,7 +2,7 @@
 
 import json
 import frozendict
-from util.exceptions import DbError, CognitoError, LabDoesNotExist
+from util.exceptions import DbError, LabDoesNotExist
 from util.labs import LABS
 
 from util.dynamo_db import (
@@ -28,7 +28,7 @@ class Lab:
             self.labname, key_name=LAB_TABLE_KEY, table_name=LAB_TABLE_ID
         )
 
-        if not db_info and not self.labname in LABS:
+        if not db_info and self.labname not in LABS:
             raise LabDoesNotExist(
                 f"Lab {self.labname} does not exist.",
             )
@@ -97,11 +97,3 @@ class Lab:
         """Returns if the value is the default for the key."""
         default_val = defaults.get(key, None)
         return value == default_val
-
-def get_lab_by_name(labname):
-    all_users = get_all_items(
-        table="user",
-        limit=row_limit,
-        filters=user_email_filters(username_filter, email_filter),
-    )
-    all_users_sorted = sorted(all_users, key=lambda x: x["username"])
