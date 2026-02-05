@@ -1,7 +1,9 @@
 <style>
     .asf-footer{
-        height: 50px;
+        /* If editing height or border, change value content-wrapper margin size as well */
+        height: 52px;
         border: 1px solid #e7e7e7;
+        box-sizing: border-box;
         background-color: #f8f8f8;
     }
     .footer-text{
@@ -15,12 +17,16 @@
         vertical-align: middle;
     }
 </style>
-
-<footer class="asf-footer footer">
+<link rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"
+      integrity="sha512-2SwdPD6INVrV/lHTZbO2nodKhrnDdJK9/kg2XD1r9uGqPo1cUbujc+IYdlYdEErWNu69gVcYgdxlmVmzTWnetw=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer" />
+<footer class="asf-footer">
     <div class="container-fluid">
         <div class="row text-light text-center">
             <span class="col-md-2"></span>
-            <div class="col-md-3 footer-row-element">
+            <div class="col-md-2 footer-row-element">
                     <ul class="list-inline">
                         <li class="list-inline-item me-5">
                             <div style="display: table-cell; vertical-align: middle;">
@@ -34,7 +40,7 @@
                         </li>
                         <li class="list-inline-item">
                             <a target="_blank" href="https://asf.alaska.edu/">
-                                <p class="h4 footer-text" style="margin: 0;">
+                                <p class="h5 footer-text" style="margin: 0;">
                                     Alaska Satellite Facility
                                 </p>
                             </a>
@@ -63,7 +69,7 @@
                     </li>
                 </ul>
             </div>
-            <div class="col-md-1 footer-row-element">
+            <div class="col-md-2 footer-row-element">
                 <ul class="list-inline">
 
                     <li class="list-inline-item me-2 footer-text">
@@ -74,19 +80,19 @@
 
                     <li class="list-inline-item me-2 footer-text">
                         <a target="_blank" href="https://www.facebook.com/AKSatellite" aria-label="Facebook">
-                            <i class="fab fa-facebook-f h4" style="color: #777;"></i>
+                            <i class="fa-brands fa-facebook-f h4" style="color: #777;"></i>
                         </a>
                     </li>
 
                     <li class="list-inline-item me-2 footer-text">
                         <a target="_blank" href="https://www.youtube.com/channel/UChCfI0oVWw4qDwEidnDskJQ" aria-label="YouTube">
-                            <i class="fab fa-youtube h4" style="color: #777;"></i>
+                            <i class="fa-brands fa-youtube h4" style="color: #777;"></i>
                         </a>
                     </li>
 
                     <li class="list-inline-item footer-text">
                         <a target="_blank" href="https://www.linkedin.com/company/aksatellite" aria-label="LinkedIn">
-                            <i class="fab fa-linkedin-in h4" style="color: #777;"></i>
+                            <i class="fa-brands fa-linkedin-in h4" style="color: #777;"></i>
                         </a>
                     </li>
 
