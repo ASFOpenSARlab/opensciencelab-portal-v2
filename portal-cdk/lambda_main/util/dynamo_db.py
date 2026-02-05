@@ -8,6 +8,8 @@ from cachetools import TTLCache
 import boto3
 from boto3.dynamodb.conditions import Attr
 
+from util.log_timer import measure_time
+
 from aws_lambda_powertools import Logger
 
 
@@ -125,7 +127,8 @@ def create_item(key: str, item: dict, key_name: str, table_name: str) -> bool:
     item[key_name] = key
     item["created_at"] = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     item["last_update"] = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    table.put_item(Item=item)
+    with measure_time(service="dynamo", action="put item"):
+        table.put_item(Item=item)
 
     # Add new item to profile cache
     _add_cache(key, item, table_name)
@@ -143,7 +146,9 @@ def get_item(key: str, key_name: str, table_name: str) -> dict:
         if _check_cache_counter(key, key_name, table, table_name):
             return get_cache(key, table_name)
 
-    response = table.get_item(Key={key_name: key})
+    with measure_time(service="dynamo", action="get item by username key"):
+        response = table.get_item(Key={key_name: key})
+
     if "Item" in response:
         # Add response to cache & Return
         return _add_cache(key, response["Item"], table_name)
@@ -151,6 +156,7 @@ def get_item(key: str, key_name: str, table_name: str) -> dict:
 
 
 def get_record_counter(table, key, key_name) -> int:
+    # no timing here, too much noise.
     response = table.get_item(
         Key={key_name: key},
         ProjectionExpression="#rec_counter",
@@ -183,16 +189,17 @@ def pull_all_pagination(table, limit, filterexpr=None):
     if filterexpr:
         table_scan_params["FilterExpression"] = filterexpr
 
-    response = table.scan(**table_scan_params)
-    items = response.get("Items", [])
-    while "LastEvaluatedKey" in response:
-        table_scan_params["ExclusiveStartKey"] = response["LastEvaluatedKey"]
+    with measure_time(service="dynamo", action="get all filtered user items"):
         response = table.scan(**table_scan_params)
-        items.extend(response.get("Items", []))
+        items = response.get("Items", [])
+        while "LastEvaluatedKey" in response:
+            table_scan_params["ExclusiveStartKey"] = response["LastEvaluatedKey"]
+            response = table.scan(**table_scan_params)
+            items.extend(response.get("Items", []))
 
-        # Break if we meet a set limit, and we're not filtering
-        if limit and len(items) >= limit:
-            break
+            # Break if we meet a set limit, and we're not filtering
+            if limit and len(items) >= limit:
+                break
 
     return items
 
@@ -262,12 +269,13 @@ def update_item(key: str, updates: dict, key_name: str, table_name: str) -> bool
         # (It'll look up the real value in the map above.)
         [f"#{alpha(k)}=:{alpha(k)}" for k in updates.keys()]
     )
-    table.update_item(
-        Key={key_name: key},
-        ExpressionAttributeNames=expression_attribute_names,
-        ExpressionAttributeValues=expression_attribute_values,
-        UpdateExpression=update_expression,
-    )
+    with measure_time(service="dynamo", action="update user item"):
+        table.update_item(
+            Key={key_name: key},
+            ExpressionAttributeNames=expression_attribute_names,
+            ExpressionAttributeValues=expression_attribute_values,
+            UpdateExpression=update_expression,
+        )
 
     # Profile was mutated, lets invalidate
     _del_cache(key, table_name)
@@ -281,7 +289,8 @@ def delete_item(key: str, key_name: str, table_name: str) -> None:
     """
     _client, _db, table = _get_dynamo(table_name)
     _del_cache(key, table_name)
-    table.delete_item(Key={key_name: key})
+    with measure_time(service="dynamo", action="delete user item"):
+        table.delete_item(Key={key_name: key})
 
 
 def update_username(old_key: str, new_key: str, key_name: str, table_name: str) -> bool:
@@ -294,7 +303,8 @@ def update_username(old_key: str, new_key: str, key_name: str, table_name: str) 
     item = get_item(old_key, key_name=key_name, table_name=table_name)
     if item:
         item[key_name] = new_key
-        table.put_item(Item=item)
+        with measure_time(service="dynamo", action="update user's Username"):
+            table.put_item(Item=item)
         delete_item(old_key, key_name=key_name, table_name=table_name)
         return True
     return False

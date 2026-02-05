@@ -7,6 +7,7 @@ import html2text
 import re
 
 from aws_lambda_powertools import Logger
+from util.log_timer import measure_time
 
 logger = Logger(child=True)
 
@@ -19,7 +20,8 @@ def get_notifications(scope: str, filter_tag: str = "all"):
         logger.info(f"Notification calendar requested {scope=} {filter_tag=}")
 
         # Download Calendar
-        resp = requests.get(CALENDAR_URL)
+        with measure_time(service="calendar", action="load calendar data"):
+            resp = requests.get(CALENDAR_URL)
         if resp.status_code != 200:
             return []
 
