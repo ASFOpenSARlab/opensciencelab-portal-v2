@@ -1,6 +1,4 @@
-from util.format import (
-    portal_template, jinja_template
-)
+from util.format import  portal_template, jinja_template
 from util.auth import require_access
 from util.session import current_session
 from util.user import User
