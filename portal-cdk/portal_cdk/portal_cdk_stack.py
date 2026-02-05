@@ -118,7 +118,7 @@ class PortalCdkStack(Stack):
             # https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_dynamodb.TableProps.html
             dynamo_table_props=dynamodb.TableProps(
                 partition_key=dynamodb.Attribute(
-                    name="labname",
+                    name="username",
                     type=dynamodb.AttributeType.STRING,
                 ),
                 deletion_protection=bool(vars["deploy_prefix"] == "prod"),
@@ -139,7 +139,7 @@ class PortalCdkStack(Stack):
             self,
             "LabsTable",
             partition_key=dynamodb.Attribute(
-                name="lab",
+                name="labname",
                 type=dynamodb.AttributeType.STRING,
             ),
             deletion_protection=bool(vars["deploy_prefix"] == "prod"),

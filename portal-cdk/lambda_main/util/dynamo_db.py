@@ -25,7 +25,7 @@ _DYNAMO_TABLE_LAB = None
 # Todo: Consider moving this to object specific location
 RESTRICTED_KEYS = {
     "user": ["username", "created_at", "last_update"],
-    "lab": ["lab", "created_at", "last_update"],
+    "lab": ["labname", "created_at", "last_update"],
 }
 
 # Profile cache, upto 100 items, max life 5mins
