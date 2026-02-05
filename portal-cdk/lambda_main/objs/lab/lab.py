@@ -3,6 +3,7 @@
 import json
 import frozendict
 from util.exceptions import DbError, CognitoError, LabDoesNotExist
+from util.labs import LABS
 
 from util.dynamo_db import (
     get_item,
@@ -17,7 +18,7 @@ LAB_TABLE_KEY = "labname"
 
 
 class Lab:
-    def __init__(self, labname: str, create_if_missing: bool = True):
+    def __init__(self, labname: str):
         ## Using super to avoid setattr validation. 'labname'
         #  should NOT be modified like the other attributes.
         super().__setattr__(LAB_TABLE_KEY, labname)
@@ -27,9 +28,9 @@ class Lab:
             self.labname, key_name=LAB_TABLE_KEY, table_name=LAB_TABLE_ID
         )
 
-        if not db_info and not create_if_missing:
+        if not db_info and not self.labname in LABS:
             raise LabDoesNotExist(
-                f"Lab {self.labname} does not exist and was not created",
+                f"Lab {self.labname} does not exist.",
             )
 
         ## If it doesn't exist, create it with the defaults:

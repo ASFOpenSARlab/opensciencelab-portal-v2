@@ -53,7 +53,7 @@ help:
 	@echo "$$HELP"
 
 .PHONY := lint
-lint:
+lint: remove-cdk-out
 	echo "Starting Docker Shell..."
 	echo ""
 	docker run \
@@ -136,8 +136,12 @@ bundle-deps:
 		echo "Skipping deps bundled in ${BUILD_DEPS}. Remove to rebuild."; \
 	fi
 
+.PHONY := remove-cdk-out
+remove-cdk-out:
+	find . -name "cdk.out" | xargs -n 1 rm -rf
+
 .PHONY := test
-test: install-reqs bundle-deps
+test: remove-cdk-out install-reqs bundle-deps
 	@echo "Running tests for Portal (${DEPLOY_PREFIX})"
 	pip install -r portal-cdk/requirements-dev.txt && \
 	pip install -r portal-cdk/lambda_main/requirements.txt && \

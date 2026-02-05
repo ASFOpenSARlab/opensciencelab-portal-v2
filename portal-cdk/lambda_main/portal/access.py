@@ -457,7 +457,7 @@ def delete_user_labs(username):
 @require_access("admin", human=True)
 @portal_template()
 def list_access_requests(shortname):
-    lab = Lab(labname=shortname, create_if_missing=False)
+    lab = Lab(labname=shortname)
 
     template_input = {
         "labname": shortname,
