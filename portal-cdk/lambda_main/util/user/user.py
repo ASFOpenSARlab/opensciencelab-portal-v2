@@ -4,10 +4,9 @@ import json
 import datetime
 import frozendict
 from typing import Any
-from util.exceptions import DbError, CognitoError, UserNotFound
+from util.exceptions import DbError, CognitoError, UserNotFound, LabDoesNotExist
 from util.cognito import delete_user_from_user_pool
 from util.labs import LABS
-from util.exceptions import LabDoesNotExist
 
 from ..dynamo_db import (
     get_item,
