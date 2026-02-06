@@ -5,7 +5,7 @@ from util.auth import require_access
 from util.session import current_session
 from objs.user import User
 from util.responses import wrap_response, form_body_to_dict
-from util.labs import LABS
+from util.labs import LAB_CONFIGS
 from util.user_ip_logs_stream import get_user_ip_logs
 
 from pathlib import Path
@@ -103,7 +103,7 @@ def profile_user(username: str):
         "input": {
             "user_logged_in": user_logged_in,
             "user_profile": user_profile,
-            "labs": LABS,
+            "labs": LAB_CONFIGS,
             "user_ip_results": user_ip_results,
             "default_value": "Choose...",
             "warning_missing": "Value is missing",

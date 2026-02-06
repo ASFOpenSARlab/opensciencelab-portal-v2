@@ -6,7 +6,7 @@ import frozendict
 from typing import Any
 from util.exceptions import DbError, CognitoError, UserNotFound, LabDoesNotExist
 from util.cognito import delete_user_from_user_pool
-from util.labs import LABS
+from util.labs import LAB_CONFIGS
 
 from util.dynamo_db import (
     get_item,
@@ -45,7 +45,7 @@ class User:
 
         ## Apply anything in the DB:
         db_info = get_item(
-            self.username, key_name=USER_TABLE_KEY, table_name=USER_TABLE_ID
+            self.username, key_name=USER_TABLE_KEY, table_id=USER_TABLE_ID
         )
 
         if not db_info and not create_if_missing:
@@ -59,7 +59,7 @@ class User:
                 self.username,
                 defaults,
                 key_name=USER_TABLE_KEY,
-                table_name=USER_TABLE_ID,
+                table_id=USER_TABLE_ID,
             )
             db_info = {}
 
@@ -100,7 +100,7 @@ class User:
                 self.username,
                 updates={key: value},
                 key_name=USER_TABLE_KEY,
-                table_name=USER_TABLE_ID,
+                table_id=USER_TABLE_ID,
             )
 
     def __str__(self):
@@ -163,10 +163,10 @@ class User:
             raise CognitoError(f"Could not delete Cognito user {self.username}")
 
         # Delete item from dynamodb
-        delete_item(self.username, key_name=USER_TABLE_KEY, table_name=USER_TABLE_ID)
+        delete_item(self.username, key_name=USER_TABLE_KEY, table_id=USER_TABLE_ID)
 
         # ensure item is deleted
-        if get_item(self.username, key_name=USER_TABLE_KEY, table_name=USER_TABLE_ID):
+        if get_item(self.username, key_name=USER_TABLE_KEY, table_id=USER_TABLE_ID):
             raise DbError(f"Could not delete db user {self.username}")
 
         return True
@@ -199,7 +199,7 @@ def _can_user_access_lab(user: User, lab) -> bool:
 def filter_lab_access(user: User) -> dict:
     # Dynamically create can_user_x flags
     user_lab_permissions = {}
-    for labname, lab_info in LABS.items():
+    for labname, lab_info in LAB_CONFIGS.items():
         user_lab_permissions[labname] = {
             "can_user_see_lab": _can_user_see_lab(user, lab_info),
             "can_user_access_lab": _can_user_access_lab(user, lab_info),
@@ -212,7 +212,7 @@ def filter_lab_access(user: User) -> dict:
 
     return {
         "viewable_labs_config": {
-            labname: LABS[labname]
+            labname: LAB_CONFIGS[labname]
             for labname in user_lab_permissions.keys()
             if user_lab_permissions[labname]["can_user_see_lab"]
         },
@@ -245,7 +245,7 @@ def get_users_with_lab(
     email_filter: str | None = None,
 ) -> list[dict]:
     # Check if lab exists
-    if lab_short_name not in LABS:
+    if lab_short_name not in LAB_CONFIGS:
         raise LabDoesNotExist(message=f'"{lab_short_name}" lab does not exist')
 
     # combine filters

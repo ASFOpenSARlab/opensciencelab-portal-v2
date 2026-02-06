@@ -56,22 +56,21 @@ class TestUserClass:
         util.dynamo_db._DYNAMO_TABLE_LAB = util.dynamo_db._DYNAMO_DB.Table(
             lab_table_name
         )
-        assert get_all_items(table_name="lab") == [], "DB should be empty at the start"
+        assert get_all_items(table_id="lab") == [], "DB should be empty at the start"
 
     def test_load_lab_creates_db_row(self, helpers, monkeypatch):
         from objs.lab.lab import Lab
         from util.dynamo_db import get_all_items
 
-        LABS = helpers.FAKE_LABS
-        # monkeypatch.setattr("portal.access.LABS", LABS)
-        monkeypatch.setattr("objs.lab.lab.LABS", LABS)
+        LAB_CONFIGS = helpers.FAKE_LAB_CONFIGS
+        monkeypatch.setattr("objs.lab.lab.LAB_CONFIGS", LAB_CONFIGS)
 
         # testlab exists as a fake lab
         lab1 = Lab("testlab")
         assert not lab1.allow_request_access, (
             "Lab allow_request_access does not match default"
         )
-        assert len(get_all_items(table_name="lab")) == 1, (
+        assert len(get_all_items(table_id="lab")) == 1, (
             "Lab was NOT inserted into the DB"
         )
 
@@ -80,7 +79,7 @@ class TestUserClass:
             _lab2 = Lab("doesnotexist")
         assert "Lab doesnotexist does not exist." in str(excinfo.value)
 
-        assert "doesnotexist" not in get_all_items(table_name="lab"), (
+        assert "doesnotexist" not in get_all_items(table_id="lab"), (
             "invalid lab doesnotexist mistakenly added to Labs table"
         )
 

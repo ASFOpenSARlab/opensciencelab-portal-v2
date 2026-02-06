@@ -32,8 +32,8 @@ class TestAccessPages:
         monkeypatch.setattr("portal.User", lambda *args, **kwargs: user)
         monkeypatch.setattr("util.auth.User", lambda *args, **kwargs: user)
 
-        labs = helpers.FAKE_LABS
-        monkeypatch.setattr("portal.access.LABS", labs)
+        labs = helpers.FAKE_LAB_CONFIGS
+        monkeypatch.setattr("portal.access.LAB_CONFIGS", labs)
 
         def lab_users_static(*args, **kwargs):
             return [
@@ -158,7 +158,7 @@ class TestAccessPages:
         monkeypatch.setattr("portal.access.User", lambda *args, **kwargs: user)
         monkeypatch.setattr("util.auth.User", lambda *args, **kwargs: user)
 
-        monkeypatch.setattr("objs.user.user.LABS", helpers.FAKE_LABS)
+        monkeypatch.setattr("objs.user.user.LAB_CONFIGS", helpers.FAKE_LAB_CONFIGS)
 
         event = helpers.get_event(
             path="/portal/access/labs/test_user",
@@ -195,7 +195,7 @@ class TestAccessPages:
         )
         monkeypatch.setattr("portal.access.User", lambda *args, **kwargs: targetuser)
 
-        monkeypatch.setattr("objs.user.user.LABS", helpers.FAKE_LABS)
+        monkeypatch.setattr("objs.user.user.LAB_CONFIGS", helpers.FAKE_LAB_CONFIGS)
 
         event = helpers.get_event(
             path="/portal/access/labs/test_user2",
@@ -232,7 +232,7 @@ class TestAccessPages:
         )
         monkeypatch.setattr("portal.access.User", lambda *args, **kwargs: targetuser)
 
-        monkeypatch.setattr("objs.user.user.LABS", helpers.FAKE_LABS)
+        monkeypatch.setattr("objs.user.user.LAB_CONFIGS", helpers.FAKE_LAB_CONFIGS)
 
         event = helpers.get_event(
             path="/portal/access/labs/test_user2",
@@ -263,7 +263,7 @@ class TestAccessPages:
         )
         monkeypatch.setattr("portal.access.User", lambda *args, **kwargs: targetuser)
 
-        monkeypatch.setattr("objs.user.user.LABS", helpers.FAKE_LABS)
+        monkeypatch.setattr("objs.user.user.LAB_CONFIGS", helpers.FAKE_LAB_CONFIGS)
 
         event = helpers.get_event(
             path="/portal/access/labs/test_admin2",
@@ -309,7 +309,7 @@ class TestAccessPages:
         )
         monkeypatch.setattr("portal.access.User", lambda *args, **kwargs: targetuser)
 
-        monkeypatch.setattr("objs.user.user.LABS", helpers.FAKE_LABS)
+        monkeypatch.setattr("objs.user.user.LAB_CONFIGS", helpers.FAKE_LAB_CONFIGS)
 
         event = helpers.get_event(
             path=f"/portal/access/labs/{targetuser.username}",
@@ -345,7 +345,7 @@ class TestAccessPages:
         )
         monkeypatch.setattr("portal.access.User", lambda *args, **kwargs: targetuser)
 
-        monkeypatch.setattr("objs.user.user.LABS", helpers.FAKE_LABS)
+        monkeypatch.setattr("objs.user.user.LAB_CONFIGS", helpers.FAKE_LAB_CONFIGS)
 
         event = helpers.get_event(
             path="/portal/access/labs/test_georestricted_admin",
@@ -479,7 +479,7 @@ class TestAccessPages:
         util.dynamo_db._DYNAMO_TABLE_LAB = util.dynamo_db._DYNAMO_DB.Table(
             lab_table_name
         )
-        assert get_all_items(table_name="user") == [], "DB should be empty at the start"
+        assert get_all_items(table_id="user") == [], "DB should be empty at the start"
         from objs.user.user import User
 
         user1 = User("test_user")
@@ -510,8 +510,8 @@ class TestAccessPages:
         user = helpers.FakeUser(access=["user", "admin"])
         monkeypatch.setattr("util.auth.User", lambda *args, **kwargs: user)
         monkeypatch.setattr("portal.access.User", lambda *args, **kwargs: user)
-        monkeypatch.setattr("portal.access.LABS", helpers.FAKE_LABS)
-        monkeypatch.setattr("objs.user.user.LABS", helpers.FAKE_LABS)
+        monkeypatch.setattr("portal.access.LAB_CONFIGS", helpers.FAKE_LAB_CONFIGS)
+        monkeypatch.setattr("objs.user.user.LAB_CONFIGS", helpers.FAKE_LAB_CONFIGS)
 
         event = helpers.get_event(
             path="/portal/access/users/testlab",
@@ -559,7 +559,7 @@ class TestAccessPages:
         monkeypatch.setattr("util.auth.User", lambda *args, **kwargs: user)
         monkeypatch.setattr("portal.access.User", lambda *args, **kwargs: user)
 
-        monkeypatch.setattr("portal.access.LABS", helpers.FAKE_LABS)
+        monkeypatch.setattr("portal.access.LAB_CONFIGS", helpers.FAKE_LAB_CONFIGS)
 
         body = {
             "labs": {
@@ -597,7 +597,7 @@ class TestAccessPages:
         monkeypatch.setattr("util.auth.User", lambda *args, **kwargs: user)
         monkeypatch.setattr("portal.access.User", lambda *args, **kwargs: user)
 
-        monkeypatch.setattr("portal.access.LABS", helpers.FAKE_LABS)
+        monkeypatch.setattr("portal.access.LAB_CONFIGS", helpers.FAKE_LAB_CONFIGS)
 
         body = {
             "labs": {
@@ -637,7 +637,7 @@ class TestAccessPages:
             ),
         )
 
-        monkeypatch.setattr("portal.access.LABS", helpers.FAKE_LABS)
+        monkeypatch.setattr("portal.access.LAB_CONFIGS", helpers.FAKE_LAB_CONFIGS)
 
         body = {
             "labs": {
@@ -669,7 +669,7 @@ class TestAccessPages:
 
         monkeypatch.setattr("portal.access.User", lambda *args, **kwargs: user)
 
-        monkeypatch.setattr("portal.access.LABS", helpers.FAKE_LABS)
+        monkeypatch.setattr("portal.access.LAB_CONFIGS", helpers.FAKE_LAB_CONFIGS)
 
         body = "gadhahaafsdfsa"
 
@@ -693,7 +693,7 @@ class TestAccessPages:
 
         monkeypatch.setattr("portal.access.User", lambda *args, **kwargs: user)
 
-        monkeypatch.setattr("portal.access.LABS", helpers.FAKE_LABS)
+        monkeypatch.setattr("portal.access.LAB_CONFIGS", helpers.FAKE_LAB_CONFIGS)
 
         # Missing "labs" key
         body = {}
@@ -810,7 +810,7 @@ class TestAccessPages:
 
         monkeypatch.setattr("portal.access.User", lambda *args, **kwargs: user)
 
-        monkeypatch.setattr("portal.access.LABS", helpers.FAKE_LABS)
+        monkeypatch.setattr("portal.access.LAB_CONFIGS", helpers.FAKE_LAB_CONFIGS)
 
         body = {"labs": {}}
 
@@ -833,7 +833,7 @@ class TestAccessPages:
         monkeypatch.setattr("util.auth.User", lambda *args, **kwargs: user)
         monkeypatch.setattr("portal.access.User", lambda *args, **kwargs: user)
 
-        monkeypatch.setattr("portal.access.LABS", helpers.FAKE_LABS)
+        monkeypatch.setattr("portal.access.LAB_CONFIGS", helpers.FAKE_LAB_CONFIGS)
         assert "testlab" in user.labs, (
             "Default lab should be in the user object already."
         )
@@ -865,7 +865,7 @@ class TestAccessPages:
 
         monkeypatch.setattr("portal.access.User", lambda *args, **kwargs: user)
 
-        monkeypatch.setattr("portal.access.LABS", helpers.FAKE_LABS)
+        monkeypatch.setattr("portal.access.LAB_CONFIGS", helpers.FAKE_LAB_CONFIGS)
 
         body = "gadhahaafsdfsa"
 
@@ -889,7 +889,7 @@ class TestAccessPages:
 
         monkeypatch.setattr("portal.access.User", lambda *args, **kwargs: user)
 
-        monkeypatch.setattr("portal.access.LABS", helpers.FAKE_LABS)
+        monkeypatch.setattr("portal.access.LAB_CONFIGS", helpers.FAKE_LAB_CONFIGS)
 
         # Missing "labs" key
         body = {}
@@ -948,7 +948,7 @@ class TestAccessPages:
 
         monkeypatch.setattr("portal.access.User", lambda *args, **kwargs: user)
 
-        monkeypatch.setattr("portal.access.LABS", helpers.FAKE_LABS)
+        monkeypatch.setattr("portal.access.LAB_CONFIGS", helpers.FAKE_LAB_CONFIGS)
 
         body = {"labs": {"testlab": {}}}
 

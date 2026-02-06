@@ -3,7 +3,7 @@
 import json
 import frozendict
 from util.exceptions import DbError, LabDoesNotExist
-from util.labs import LABS
+from util.labs import LAB_CONFIGS
 
 from util.dynamo_db import (
     get_item,
@@ -24,11 +24,9 @@ class Lab:
         super().__setattr__(LAB_TABLE_KEY, labname)
 
         ## Apply anything in the DB:
-        db_info = get_item(
-            self.labname, key_name=LAB_TABLE_KEY, table_name=LAB_TABLE_ID
-        )
+        db_info = get_item(self.labname, key_name=LAB_TABLE_KEY, table_id=LAB_TABLE_ID)
 
-        if not db_info and self.labname not in LABS:
+        if not db_info and self.labname not in LAB_CONFIGS:
             raise LabDoesNotExist(
                 f"Lab {self.labname} does not exist.",
             )
@@ -39,7 +37,7 @@ class Lab:
                 self.labname,
                 defaults,
                 key_name=LAB_TABLE_KEY,
-                table_name=LAB_TABLE_ID,
+                table_id=LAB_TABLE_ID,
             )
             db_info = {}
 
@@ -80,7 +78,7 @@ class Lab:
                 self.labname,
                 updates={key: value},
                 key_name=LAB_TABLE_KEY,
-                table_name=LAB_TABLE_ID,
+                table_id=LAB_TABLE_ID,
             )
 
     def __str__(self):

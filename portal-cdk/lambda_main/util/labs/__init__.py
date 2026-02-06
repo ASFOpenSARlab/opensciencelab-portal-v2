@@ -1,9 +1,9 @@
-from .base_lab import BaseLab, daac_limited_restricted_status
+from objs.base_lab_config import BaseLabConfig, daac_limited_restricted_status
 
 import os
 
-PROD_LABS = {
-    "smce-prod-opensarlab": BaseLab(
+PROD_LAB_CONFIGS = {
+    "smce-prod-opensarlab": BaseLabConfig(
         short_lab_name="smce-prod-opensarlab",
         friendly_name="OpenSARLab (ASF DAAC)",
         description="""
@@ -47,7 +47,7 @@ PROD_LABS = {
         crypto_remediation_role_arn="arn:aws:iam::381492216607:role/service-role/cryptomining-remediation-role-b4sw3o86",
         default_profiles=["m6a.large", "m6a.xlarge"],
     ),
-    "azdwr-prod-opensarlab": BaseLab(
+    "azdwr-prod-opensarlab": BaseLabConfig(
         short_lab_name="azdwr-prod-opensarlab",
         friendly_name="AZ Department of Water Resources",
         description="OpenSARLab Deployment",
@@ -72,7 +72,7 @@ PROD_LABS = {
             "AZDWR SAR 5",
         ],
     ),
-    "avo-prod": BaseLab(
+    "avo-prod": BaseLabConfig(
         short_lab_name="avo-prod",
         friendly_name="AVO",
         description="Alaska Volcano Observatory deployment, powered by ASF OpenScienceLab",
@@ -87,7 +87,7 @@ PROD_LABS = {
         ],
         default_profiles=["SAR 1", "SAR 2", "SAR 3", "Debug Server Profile"],
     ),
-    "geos626": BaseLab(
+    "geos626": BaseLabConfig(
         short_lab_name="geos626",
         friendly_name="GEOS626 Applied Seismology",
         description="GEOS626 Applied Seismology for Spring 2026, powered by ASF OpenScienceLab",
@@ -104,8 +104,8 @@ PROD_LABS = {
     ),
 }
 
-NON_PROD_LABS = {
-    "smce-test-opensarlab": BaseLab(
+NON_PROD_LAB_CONFIGS = {
+    "smce-test-opensarlab": BaseLabConfig(
         short_lab_name="smce-test-opensarlab",
         friendly_name="SMCE Test (US Unrestricted, Lab Protected)",
         description="""
@@ -143,7 +143,7 @@ NON_PROD_LABS = {
         crypto_remediation_role_arn="arn:aws:iam::381492216607:role/service-role/cryptomining-remediation-role-b4sw3o86",
         default_profiles=["m6a.large", "m6a.xlarge"],
     ),
-    "test_protected": BaseLab(
+    "test_protected": BaseLabConfig(
         short_lab_name="test_protected",
         friendly_name="Test Protected Lab",
         description="",
@@ -153,7 +153,7 @@ NON_PROD_LABS = {
         allowed_profiles=[],
         default_profiles=["m6a.large", "m6a.xlarge"],
     ),
-    "test_prohibited": BaseLab(
+    "test_prohibited": BaseLabConfig(
         short_lab_name="test_prohibited",
         friendly_name="Test Prohibited Lab",
         description="",
@@ -169,7 +169,7 @@ NON_PROD_LABS = {
         allowed_profiles=[],
         default_profiles=["m6a.large", "m6a.xlarge"],
     ),
-    "geos669": BaseLab(
+    "geos669": BaseLabConfig(
         short_lab_name="geos669",
         friendly_name="GEOS669 Lab",
         description="Most Recent Class Lab",
@@ -179,7 +179,7 @@ NON_PROD_LABS = {
         allowed_profiles=["m6a.large", "m6a.xlarge"],
         default_profiles=["m6a.large"],
     ),
-    "geos626": BaseLab(
+    "geos626": BaseLabConfig(
         short_lab_name="geos626",
         friendly_name="GEOS626 Applied Seismology",
         description="GEOS626 Applied Seismology for Spring 2026, powered by ASF OpenScienceLab",
@@ -196,6 +196,6 @@ NON_PROD_LABS = {
 }
 
 if os.getenv("IS_PROD", "false").lower() == "true":
-    LABS: dict[str, BaseLab] = PROD_LABS
+    LAB_CONFIGS: dict[str, BaseLabConfig] = PROD_LAB_CONFIGS
 else:
-    LABS: dict[str, BaseLab] = NON_PROD_LABS
+    LAB_CONFIGS: dict[str, BaseLabConfig] = NON_PROD_LAB_CONFIGS

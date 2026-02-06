@@ -57,7 +57,7 @@ class TestUserClass:
         util.dynamo_db._DYNAMO_TABLE_LAB = util.dynamo_db._DYNAMO_DB.Table(
             lab_table_name
         )
-        assert get_all_items(table_name="user") == [], "DB should be empty at the start"
+        assert get_all_items(table_id="user") == [], "DB should be empty at the start"
 
     def test_creating_user_updates_db(self):
         from objs.user.user import User
@@ -68,15 +68,15 @@ class TestUserClass:
 
         user = User(username)
         user.email = email
-        assert len(get_all_items(table_name="user")) == 1, (
+        assert len(get_all_items(table_id="user")) == 1, (
             "User was NOT inserted into the DB"
         )
         assert user.username == username, "Username attr doesn't match init"
         # Only one item, verify it's what we expect IN the DB too.
-        assert get_all_items(table_name="user")[0]["access"] == ["user"], (
+        assert get_all_items(table_id="user")[0]["access"] == ["user"], (
             "Access should be just 'user' by default"
         )
-        assert get_all_items(table_name="user")[0]["email"] == email
+        assert get_all_items(table_id="user")[0]["email"] == email
 
     def test_username_immutable(self):
         from objs.user.user import User
@@ -152,10 +152,10 @@ class TestUserClass:
             "Access should now contain 'admin'"
         )
         assert user.is_admin()
-        assert len(get_all_items(table_name="user")) == 1, (
+        assert len(get_all_items(table_id="user")) == 1, (
             "There should still only be one item in the DB"
         )
-        assert get_all_items(table_name="user")[0]["access"] == ["user", "admin"], (
+        assert get_all_items(table_id="user")[0]["access"] == ["user", "admin"], (
             "Access should be updated in the DB too"
         )
 
@@ -172,25 +172,25 @@ class TestUserClass:
             username = f"test_user_filter_{i}"
             User(username)
 
-        assert len(get_all_items(table_name="user")) == 20, (
+        assert len(get_all_items(table_id="user")) == 20, (
             "There should be 20 users in the DB"
         )
-        assert len(get_all_items(table_name="user", limit=5)) == 5, (
+        assert len(get_all_items(table_id="user", limit=5)) == 5, (
             "There should be a limit of 5 users"
         )
         test_filter = user_email_filters(username_filter="filter", email_filter=None)
-        assert len(get_all_items(table_name="user", filters=test_filter)) == 10, (
+        assert len(get_all_items(table_id="user", filters=test_filter)) == 10, (
             "There should be 10 matched users"
         )
-        assert (
-            len(get_all_items(table_name="user", limit=5, filters=test_filter)) == 5
-        ), "There should be 5 matched and filtered users"
+        assert len(get_all_items(table_id="user", limit=5, filters=test_filter)) == 5, (
+            "There should be 5 matched and filtered users"
+        )
 
     def test_get_users_with_lab(self, monkeypatch, helpers):
         from objs.user.user import User
         from objs.user import get_users_with_lab
 
-        monkeypatch.setattr("objs.user.user.LABS", helpers.FAKE_LABS)
+        monkeypatch.setattr("objs.user.user.LAB_CONFIGS", helpers.FAKE_LAB_CONFIGS)
 
         user1 = User(username="test_user1")
         user1.labs = {"testlab": {}}
@@ -230,11 +230,11 @@ class TestUserClass:
         # Create user
         username = "test_user1"
         user1 = User(username=username)
-        assert username in [x["username"] for x in get_all_items(table_name="user")]
+        assert username in [x["username"] for x in get_all_items(table_id="user")]
 
         # Remove user
         user1.remove_user()
-        assert username not in [x["username"] for x in get_all_items(table_name="user")]
+        assert username not in [x["username"] for x in get_all_items(table_id="user")]
 
     def test_user_profile_in_cache(self, monkeypatch):
         from objs.user.user import User
