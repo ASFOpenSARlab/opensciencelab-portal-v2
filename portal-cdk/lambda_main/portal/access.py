@@ -5,11 +5,10 @@ from util import swagger
 from util.format import portal_template, jinja_template
 from util.auth import require_access
 from util.session import current_session
-from util.user import get_users_with_lab
-from util.user import filter_lab_access
-from util.user import User
+from objs.user import User, get_users_with_lab, filter_lab_access
 from util.responses import wrap_response, form_body_to_dict, json_body_to_dict
-from util.labs import LABS
+from util.labs import LAB_CONFIGS
+from objs.lab import Lab
 from util.exceptions import MalformedRequest
 
 from aws_lambda_powertools.event_handler.api_gateway import Router
@@ -60,7 +59,7 @@ def manage_lab(shortname):
     users = sorted(users, key=lambda x: x["username"])
     template_input["users"] = users
 
-    lab = LABS[shortname]
+    lab = LAB_CONFIGS[shortname]
     template_input["lab"] = lab
     template_input["rowcount"] = len(users)
     template_input["exceeded"] = len(users) >= row_limit
@@ -289,7 +288,7 @@ def validate_set_lab_access(put_lab_request: dict) -> tuple[bool, str]:
 
     for lab_name in put_lab_request["labs"].keys():
         # Ensure lab exist
-        if lab_name not in LABS:
+        if lab_name not in LAB_CONFIGS:
             return False, f"Lab does not exist: {lab_name}"
 
         # Check all lab fields exist and are correct type
@@ -310,7 +309,7 @@ def validate_set_lab_access(put_lab_request: dict) -> tuple[bool, str]:
         # Ensure all profiles exist for a given lab
         for profile in put_lab_request["labs"][lab_name]["lab_profiles"]:
             # If the lab doesn't have the profile you're trying to set:
-            if profile not in LABS[lab_name].allowed_profiles:
+            if profile not in LAB_CONFIGS[lab_name].allowed_profiles:
                 return False, f"Profile '{profile}' not allowed for lab {lab_name}"
 
     return True, "Success"
@@ -329,7 +328,7 @@ def validate_delete_lab_access(
 
     for lab_name, lab_data in delete_lab_request["labs"].items():
         # Ensure lab exist
-        if lab_name not in LABS:
+        if lab_name not in LAB_CONFIGS:
             return False, f"Lab does not exist: {lab_name}"
 
         if not isinstance(lab_data, dict):
@@ -453,3 +452,20 @@ def delete_user_labs(username):
         code=200 if success else 422,
         content_type=content_types.APPLICATION_JSON,
     )
+
+
+@access_router.get("/manage/<shortname>/requests/", include_in_schema=False)
+@require_access("admin", human=True)
+@portal_template()
+def list_access_requests(shortname):
+    lab = Lab(labname=shortname)
+
+    template_input = {
+        "labname": shortname,
+        "requests": lab.access_requests,
+        "tokens": lab.access_tokens,
+    }
+
+    logger.info(f"Access requests = {lab.access_requests}")
+
+    return jinja_template(template_input, "manage_access.j2")

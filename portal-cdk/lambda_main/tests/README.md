@@ -16,7 +16,7 @@ You can use [conftest.py](https://docs.pytest.org/en/stable/reference/fixtures.h
 
 We use [moto](https://docs.getmoto.org/en/latest/) for this. You can use it to easily patch any boto3 client/resource/whatever, and it'll create a virtual version for you to work against. This is useful for testing code that interacts with AWS services, like S3, DynamoDB, etc.
 
-For a complete example, see the [test_user.py](./util/user/test_user.py) file on testing with classes.
+For a complete example, see the [test_user.py](./objs/user/test_user.py) file on testing with classes.
 
 ## Hitting the API with the `requests` Library
 

@@ -5,7 +5,7 @@ import boto3
 from aws_lambda_powertools import Logger
 
 from util.auth import decrypt_data
-from util.user import User
+from objs.user import User
 from util.format import jinja_template
 from util.log_timer import measure_time
 

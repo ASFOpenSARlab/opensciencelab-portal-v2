@@ -44,6 +44,12 @@ class TestUserClass:
             KeySchema=[{"AttributeName": "username", "KeyType": "HASH"}],
             AttributeDefinitions=[{"AttributeName": "username", "AttributeType": "S"}],
         )
+        util.dynamo_db._DYNAMO_DB.create_table(
+            TableName=lab_table_name,
+            BillingMode="PAY_PER_REQUEST",
+            KeySchema=[{"AttributeName": "labname", "KeyType": "HASH"}],
+            AttributeDefinitions=[{"AttributeName": "labname", "AttributeType": "S"}],
+        )
         ## No need to delete the table between methods, it goes out of scope anyways.
         util.dynamo_db._DYNAMO_TABLE_USER = util.dynamo_db._DYNAMO_DB.Table(
             user_table_name
@@ -51,10 +57,10 @@ class TestUserClass:
         util.dynamo_db._DYNAMO_TABLE_LAB = util.dynamo_db._DYNAMO_DB.Table(
             lab_table_name
         )
-        assert get_all_items(table_name="user") == [], "DB should be empty at the start"
+        assert get_all_items(table_id="user") == [], "DB should be empty at the start"
 
     def test_creating_user_updates_db(self):
-        from util.user.user import User
+        from objs.user.user import User
         from util.dynamo_db import get_all_items
 
         username = "test_user"
@@ -62,18 +68,18 @@ class TestUserClass:
 
         user = User(username)
         user.email = email
-        assert len(get_all_items(table_name="user")) == 1, (
+        assert len(get_all_items(table_id="user")) == 1, (
             "User was NOT inserted into the DB"
         )
         assert user.username == username, "Username attr doesn't match init"
         # Only one item, verify it's what we expect IN the DB too.
-        assert get_all_items(table_name="user")[0]["access"] == ["user"], (
+        assert get_all_items(table_id="user")[0]["access"] == ["user"], (
             "Access should be just 'user' by default"
         )
-        assert get_all_items(table_name="user")[0]["email"] == email
+        assert get_all_items(table_id="user")[0]["email"] == email
 
     def test_username_immutable(self):
-        from util.user.user import User
+        from objs.user.user import User
         from util.exceptions import DbError
 
         # Username attr exists:
@@ -90,7 +96,7 @@ class TestUserClass:
 
     def test_class_method_is_default(self):
         # Test this early, so we can use it in future tests
-        from util.user.user import User
+        from objs.user.user import User
 
         username = "test_user"
         user = User(username)
@@ -101,9 +107,9 @@ class TestUserClass:
         )
 
     def test_defaults_applied(self):
-        from util.user.user import User
-        from util.user.validator_map import validator_map
-        from util.user.defaults import defaults
+        from objs.user.user import User
+        from objs.user.validator_map import validator_map
+        from objs.user.defaults import defaults
         from frozendict import deepfreeze
 
         username = "test_user"
@@ -121,7 +127,7 @@ class TestUserClass:
                 )
 
     def test_cant_append_list_directly(self):
-        from util.user.user import User
+        from objs.user.user import User
 
         username = "test_user"
         user = User(username)
@@ -132,7 +138,7 @@ class TestUserClass:
         assert "'tuple' object has no attribute 'append'" in str(excinfo.value)
 
     def test_can_modify_list_by_assignment(self):
-        from util.user.user import User
+        from objs.user.user import User
         from util.dynamo_db import get_all_items
 
         username = "test_user"
@@ -146,16 +152,16 @@ class TestUserClass:
             "Access should now contain 'admin'"
         )
         assert user.is_admin()
-        assert len(get_all_items(table_name="user")) == 1, (
+        assert len(get_all_items(table_id="user")) == 1, (
             "There should still only be one item in the DB"
         )
-        assert get_all_items(table_name="user")[0]["access"] == ["user", "admin"], (
+        assert get_all_items(table_id="user")[0]["access"] == ["user", "admin"], (
             "Access should be updated in the DB too"
         )
 
     def test_limit_user_return(self):
-        from util.user.user import User
-        from util.user.user import user_email_filters
+        from objs.user.user import User
+        from objs.user.user import user_email_filters
         from util.dynamo_db import get_all_items
 
         # Create some users to filter
@@ -166,25 +172,25 @@ class TestUserClass:
             username = f"test_user_filter_{i}"
             User(username)
 
-        assert len(get_all_items(table_name="user")) == 20, (
+        assert len(get_all_items(table_id="user")) == 20, (
             "There should be 20 users in the DB"
         )
-        assert len(get_all_items(table_name="user", limit=5)) == 5, (
+        assert len(get_all_items(table_id="user", limit=5)) == 5, (
             "There should be a limit of 5 users"
         )
         test_filter = user_email_filters(username_filter="filter", email_filter=None)
-        assert len(get_all_items(table_name="user", filters=test_filter)) == 10, (
+        assert len(get_all_items(table_id="user", filters=test_filter)) == 10, (
             "There should be 10 matched users"
         )
-        assert (
-            len(get_all_items(table_name="user", limit=5, filters=test_filter)) == 5
-        ), "There should be 5 matched and filtered users"
+        assert len(get_all_items(table_id="user", limit=5, filters=test_filter)) == 5, (
+            "There should be 5 matched and filtered users"
+        )
 
     def test_get_users_with_lab(self, monkeypatch, helpers):
-        from util.user.user import User
-        from util.user import get_users_with_lab
+        from objs.user.user import User
+        from objs.user import get_users_with_lab
 
-        monkeypatch.setattr("util.user.user.LABS", helpers.FAKE_LABS)
+        monkeypatch.setattr("objs.user.user.LAB_CONFIGS", helpers.FAKE_LAB_CONFIGS)
 
         user1 = User(username="test_user1")
         user1.labs = {"testlab": {}}
@@ -213,29 +219,29 @@ class TestUserClass:
         ), "Filtered and limited results should be limited to 2"
 
     def test_delete_user(self, monkeypatch):
-        from util.user.user import User
+        from objs.user.user import User
         from util.dynamo_db import get_all_items
 
         # Don't try to actually delete the user from userpool
         monkeypatch.setattr(
-            "util.user.user.delete_user_from_user_pool", lambda *args, **kwargs: True
+            "objs.user.user.delete_user_from_user_pool", lambda *args, **kwargs: True
         )
 
         # Create user
         username = "test_user1"
         user1 = User(username=username)
-        assert username in [x["username"] for x in get_all_items(table_name="user")]
+        assert username in [x["username"] for x in get_all_items(table_id="user")]
 
         # Remove user
         user1.remove_user()
-        assert username not in [x["username"] for x in get_all_items(table_name="user")]
+        assert username not in [x["username"] for x in get_all_items(table_id="user")]
 
     def test_user_profile_in_cache(self, monkeypatch):
-        from util.user.user import User
+        from objs.user.user import User
         from util.dynamo_db import is_cached
 
         monkeypatch.setattr(
-            "util.user.user.delete_user_from_user_pool", lambda *args, **kwargs: True
+            "objs.user.user.delete_user_from_user_pool", lambda *args, **kwargs: True
         )
 
         username = "test_user_cache1"
@@ -270,7 +276,7 @@ class TestUserClass:
         assert user_copy_4._rec_counter != uc3_counter_initial
 
     def test_user_create_if_missing_false(self):
-        from util.user.user import User
+        from objs.user.user import User
 
         with pytest.raises(UserNotFound) as exc_info:
             User(username="NotRealUser", create_if_missing=False)
@@ -280,7 +286,7 @@ class TestUserClass:
         )
 
     def test_user_is_authorized_lab(self):
-        from util.user.user import User
+        from objs.user.user import User
 
         user = User(username="test_user")
         user.labs = {"testlab": {}}
@@ -294,7 +300,7 @@ class TestUserClass:
         )
 
     def test_user_is_authorized_lab_admin(self):
-        from util.user.user import User
+        from objs.user.user import User
 
         user = User(username="test_user")
         user.access = list(user.access) + ["admin"]
@@ -304,7 +310,7 @@ class TestUserClass:
         )
 
     def test_user_update_ip_address(self):
-        from util.user.user import User
+        from objs.user.user import User
 
         message = {
             "username": "test_user",

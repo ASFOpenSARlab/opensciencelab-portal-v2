@@ -16,8 +16,8 @@ os.environ["STACK_REGION"] = "us-west-2"
 os.environ["COGNITO_CLIENT_ID"] = "fake-cognito-id"
 os.environ["COGNITO_POOL_ID"] = "fake-pool-id"
 from util.auth import PORTAL_USER_COOKIE, COGNITO_JWT_COOKIE
-from util.labs import BaseLab
-from util.user import filter_lab_access, create_lab_structure
+from objs.base_lab_config import BaseLabConfig
+from objs.user import filter_lab_access, create_lab_structure
 from jwt import decode as unpatched_jwt_decode
 
 
@@ -198,39 +198,39 @@ class Helpers:
     # differentlab not initialized in FakeUser.labs
     # this is to allow labs to test against a lab the user does not have access too
     # unless used for other purpose in a given test
-    FAKE_LABS = {
-        "protectedlab": BaseLab(
+    FAKE_LAB_CONFIGS = {
+        "protectedlab": BaseLabConfig(
             friendly_name="A lab protected from being used",
             short_lab_name="protectedlab",
             logo="ASF_logo.svg",
             allowed_profiles=["m6a.large"],
             accessibility="protected",
-            deployment_url="https://example.com",
+            deployment_url="https://this-host-does-not-exist.fake",
         ),
-        "testlab": BaseLab(
+        "testlab": BaseLabConfig(
             friendly_name="Test Lab",
             short_lab_name="testlab",
             logo="ASFLogo-Blue2.png",
             allowed_profiles=["m6a.large"],
             accessibility="protected",
-            deployment_url="https://example.com",
+            deployment_url="https://this-host-does-not-exist.fake",
             default_profiles=["m6a.large", "m6a.xlarge"],
         ),
-        "noaccess": BaseLab(
+        "noaccess": BaseLabConfig(
             friendly_name="No Access Lab",
             short_lab_name="noaccess",
             allowed_profiles=[],
             accessibility="private",
-            deployment_url="https://example.com",
+            deployment_url="https://this-host-does-not-exist.fake",
         ),
-        "differentlab": BaseLab(
+        "differentlab": BaseLabConfig(
             friendly_name="Different Lab",
             short_lab_name="differentlab",
             allowed_profiles=["m6a.large"],
             accessibility="protected",
-            deployment_url="https://example.com",
+            deployment_url="https://this-host-does-not-exist.fake",
         ),
-        "openlab": BaseLab(
+        "openlab": BaseLabConfig(
             friendly_name="Open Lab",
             short_lab_name="openlab",
             allowed_profiles=["m6a.large"],
@@ -239,7 +239,7 @@ class Helpers:
                 "limited": [],
                 "prohibited": [],
             },
-            deployment_url="https://example.com",
+            deployment_url="https://this-host-does-not-exist.fake",
         ),
     }
 
