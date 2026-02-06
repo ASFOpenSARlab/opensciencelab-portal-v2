@@ -7,7 +7,7 @@ from util.responses import wrap_response
 from util.format import portal_template
 from util.auth import encrypt_data, require_access
 from util.session import current_session
-from util.user import User
+from objs.user import User
 
 from aws_lambda_powertools import Logger
 from aws_lambda_powertools.event_handler.api_gateway import Router

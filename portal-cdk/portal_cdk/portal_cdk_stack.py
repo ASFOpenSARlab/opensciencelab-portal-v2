@@ -4,6 +4,10 @@ from urllib.parse import urlparse
 import pathlib
 import base64
 import json
+import sys
+
+# Add lambda_main as a lookup for importing modules labs
+sys.path.insert(0, "./lambda_main/")
 
 from aws_cdk import (
     Duration,
@@ -28,7 +32,7 @@ from aws_cdk import (
 )
 from aws_solutions_constructs.aws_lambda_dynamodb import LambdaToDynamoDB
 
-from lambda_main.util.labs import LABS
+from util.labs import LAB_CONFIGS
 
 LAMBDA_RUNTIME = aws_lambda.Runtime.PYTHON_3_11
 
@@ -263,7 +267,7 @@ class PortalCdkStack(Stack):
 
         crypto_remediation_arns = []
         # Loop over Labs and add proxy behaviors
-        for lab in LABS.values():
+        for lab in LAB_CONFIGS.values():
             parsed_url = urlparse(lab.deployment_url)
             # https://docs.aws.amazon.com/cdk/api/v2/python/aws_cdk.aws_cloudfront_origins/HttpOrigin.html
             lab_origin = origins.HttpOrigin(

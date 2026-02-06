@@ -10,7 +10,7 @@ from util.dynamo_db import get_all_items
 from util.format import jinja_template
 from util.responses import wrap_response
 from util.exceptions import CognitoError, DbError
-from util.user import User, user_email_filters
+from objs.user import User, user_email_filters
 from util.user_ip_logs_stream import get_user_ip_logs
 
 from aws_lambda_powertools import Logger

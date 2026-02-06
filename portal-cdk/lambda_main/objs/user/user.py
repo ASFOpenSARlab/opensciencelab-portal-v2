@@ -1,24 +1,21 @@
 """User Class to abstract the rest of the code using the database."""
 
-import json
 import datetime
-import frozendict
 from typing import Any
 from util.exceptions import DbError, CognitoError, UserNotFound, LabDoesNotExist
 from util.cognito import delete_user_from_user_pool
-from util.labs import LABS
-
-from ..dynamo_db import (
+from util.labs import LAB_CONFIGS
+from util.dynamo_db import (
     get_item,
     create_item,
-    update_item,
     delete_item,
     dynamo_filter,
     get_all_items,
     combine_all_dynamo_filters,
 )
+from objs.base_db_table import Table
 from .defaults import defaults
-from .validator_map import validator_map, validate
+from .validator_map import validator_map
 
 USER_TABLE_ID = "user"
 USER_TABLE_KEY = "username"
@@ -37,15 +34,22 @@ def create_lab_structure(
     }
 
 
-class User:
+class User(Table):
     def __init__(self, username: str, create_if_missing: bool = True):
-        ## Using super to avoid setattr validation. 'username'
-        #  should NOT be modified like the other attributes.
+        # Create a User Table
+        super().__init__(
+            unique_key_value=username,
+            unique_key_name=USER_TABLE_KEY,
+            table_id=USER_TABLE_ID,
+            defaults=defaults,
+            validator_map=validator_map,
+        )
+
         super().__setattr__(USER_TABLE_KEY, username)
 
         ## Apply anything in the DB:
         db_info = get_item(
-            self.username, key_name=USER_TABLE_KEY, table_name=USER_TABLE_ID
+            self.username, key_name=USER_TABLE_KEY, table_id=USER_TABLE_ID
         )
 
         if not db_info and not create_if_missing:
@@ -59,7 +63,7 @@ class User:
                 self.username,
                 defaults,
                 key_name=USER_TABLE_KEY,
-                table_name=USER_TABLE_ID,
+                table_id=USER_TABLE_ID,
             )
             db_info = {}
 
@@ -71,52 +75,6 @@ class User:
                 self.__setattr__(key, db_info[key], _save=False)
             else:
                 self.__setattr__(key, None)
-
-    def __setattr__(self, key, value, _save=True):
-        # If it's already that value, do nothing:
-        if hasattr(self, key) and self.__getattribute__(key) == value:
-            return
-        # NOTE: If you use self.__setattr__ here, it will be infinite recursion.
-        if key not in validator_map:
-            raise DbError(
-                f"Key '{key}' not in validator_map for user {self.username}.",
-                error_code=500,
-                extra_info=dict(self),
-            )
-        ## Set the Value (if key is the default or None, don't do validation):
-        if value is None or self.is_default(key, value):
-            # If the val is None AND in defaults, change to default:
-            value = defaults[key] if key in defaults else None
-            super().__setattr__(key, value)
-        else:
-            super().__setattr__(key, validate(key, value))
-        # Update value, in-case 'validate' or defaults changed it:
-        value = self.__getattribute__(key)
-        ## Freeze any lists/dicts inside it, so they can't be modified directly:
-        super().__setattr__(key, frozendict.deepfreeze(value))
-        ## Update the DB:
-        if _save:
-            update_item(
-                self.username,
-                updates={key: value},
-                key_name=USER_TABLE_KEY,
-                table_name=USER_TABLE_ID,
-            )
-
-    def __str__(self):
-        """What to display if you print this object."""
-        return json.dumps(dict(self), indent=4, default=str)
-
-    def __iter__(self):
-        """Used when casting to a dict, what keys to show."""
-        yield USER_TABLE_KEY, self.username
-        for key in validator_map:
-            yield key, self.__getattribute__(key)
-
-    def is_default(self, key, value) -> bool:
-        """Returns if the value is the default for the key."""
-        default_val = defaults.get(key, None)
-        return value == default_val
 
     def update_last_cookie_assignment(self) -> None:
         self.last_cookie_assignment = datetime.datetime.now().strftime(
@@ -163,10 +121,10 @@ class User:
             raise CognitoError(f"Could not delete Cognito user {self.username}")
 
         # Delete item from dynamodb
-        delete_item(self.username, key_name=USER_TABLE_KEY, table_name=USER_TABLE_ID)
+        delete_item(self.username, key_name=USER_TABLE_KEY, table_id=USER_TABLE_ID)
 
         # ensure item is deleted
-        if get_item(self.username, key_name=USER_TABLE_KEY, table_name=USER_TABLE_ID):
+        if get_item(self.username, key_name=USER_TABLE_KEY, table_id=USER_TABLE_ID):
             raise DbError(f"Could not delete db user {self.username}")
 
         return True
@@ -199,7 +157,7 @@ def _can_user_access_lab(user: User, lab) -> bool:
 def filter_lab_access(user: User) -> dict:
     # Dynamically create can_user_x flags
     user_lab_permissions = {}
-    for labname, lab_info in LABS.items():
+    for labname, lab_info in LAB_CONFIGS.items():
         user_lab_permissions[labname] = {
             "can_user_see_lab": _can_user_see_lab(user, lab_info),
             "can_user_access_lab": _can_user_access_lab(user, lab_info),
@@ -212,7 +170,7 @@ def filter_lab_access(user: User) -> dict:
 
     return {
         "viewable_labs_config": {
-            labname: LABS[labname]
+            labname: LAB_CONFIGS[labname]
             for labname in user_lab_permissions.keys()
             if user_lab_permissions[labname]["can_user_see_lab"]
         },
@@ -245,7 +203,7 @@ def get_users_with_lab(
     email_filter: str | None = None,
 ) -> list[dict]:
     # Check if lab exists
-    if lab_short_name not in LABS:
+    if lab_short_name not in LAB_CONFIGS:
         raise LabDoesNotExist(message=f'"{lab_short_name}" lab does not exist')
 
     # combine filters

@@ -3,7 +3,7 @@ import os
 import datetime
 from cachetools import TTLCache
 
-from util.user import User
+from objs.user import User
 from util.responses import wrap_response
 from util.exceptions import (
     BadSsoToken,

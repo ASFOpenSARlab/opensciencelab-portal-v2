@@ -26,7 +26,7 @@ from util.auth import (
 )
 from util.exceptions import GenericFatalError
 from util.session import current_session
-from util.user import User
+from objs.user import User
 
 from static import get_static_object
 
