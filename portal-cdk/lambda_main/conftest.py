@@ -205,7 +205,7 @@ class Helpers:
             logo="ASF_logo.svg",
             allowed_profiles=["m6a.large"],
             accessibility="protected",
-            deployment_url="https://example.com",
+            deployment_url="https://this-host-does-not-exist.fake",
         ),
         "testlab": BaseLabConfig(
             friendly_name="Test Lab",
@@ -213,7 +213,7 @@ class Helpers:
             logo="ASFLogo-Blue2.png",
             allowed_profiles=["m6a.large"],
             accessibility="protected",
-            deployment_url="https://example.com",
+            deployment_url="https://this-host-does-not-exist.fake",
             default_profiles=["m6a.large", "m6a.xlarge"],
         ),
         "noaccess": BaseLabConfig(
@@ -221,14 +221,14 @@ class Helpers:
             short_lab_name="noaccess",
             allowed_profiles=[],
             accessibility="private",
-            deployment_url="https://example.com",
+            deployment_url="https://this-host-does-not-exist.fake",
         ),
         "differentlab": BaseLabConfig(
             friendly_name="Different Lab",
             short_lab_name="differentlab",
             allowed_profiles=["m6a.large"],
             accessibility="protected",
-            deployment_url="https://example.com",
+            deployment_url="https://this-host-does-not-exist.fake",
         ),
         "openlab": BaseLabConfig(
             friendly_name="Open Lab",
@@ -239,7 +239,7 @@ class Helpers:
                 "limited": [],
                 "prohibited": [],
             },
-            deployment_url="https://example.com",
+            deployment_url="https://this-host-does-not-exist.fake",
         ),
     }
 
