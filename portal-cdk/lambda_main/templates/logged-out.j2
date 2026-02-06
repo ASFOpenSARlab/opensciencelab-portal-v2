@@ -4,45 +4,48 @@
     {% include 'head.j2' %}
     {% include 'voice-atlas.j2' %}
     <body>
-        {% include './noscript.j2' %}
-        <nav class="navbar navbar-default">
-            <div class="container-fluid">
-                <div class="navbar-header">
-                    <span id="jupyterhub-logo" class="pull-left">
-                        <a href="/portal">
-                            <img src="/static/img/osl_logo_v2_long.png"
-                                 alt="JupyterHub"
-                                 class="jpy-logo"
-                                 title="Home" />
-                        </a>
-                    </span>
-                    <button type="button"
-                            class="navbar-toggle collapsed"
-                            data-toggle="collapse"
-                            data-target="#thenavbar"
-                            aria-expanded="false">
-                        <span class="sr-only">Toggle navigation</span>
-                        <span class="icon-bar"></span>
-                        <span class="icon-bar"></span>
-                        <span class="icon-bar"></span>
-                    </button>
+        <div class="content-wrapper">
+            {% include './noscript.j2' %}
+            <nav class="navbar navbar-default">
+                <div class="container-fluid">
+                    <div class="navbar-header">
+                        <span id="jupyterhub-logo" class="pull-left">
+                            <a href="/portal">
+                                <img src="/static/img/osl_logo_v2_long.png"
+                                    alt="JupyterHub"
+                                    class="jpy-logo"
+                                    title="Home" />
+                            </a>
+                        </span>
+                        <button type="button"
+                                class="navbar-toggle collapsed"
+                                data-toggle="collapse"
+                                data-target="#thenavbar"
+                                aria-expanded="false">
+                            <span class="sr-only">Toggle navigation</span>
+                            <span class="icon-bar"></span>
+                            <span class="icon-bar"></span>
+                            <span class="icon-bar"></span>
+                        </button>
+                    </div>
+                    <div>
+                        <ul class="nav navbar-nav navbar-right">
+                            <li>
+                                <span id="login_widget">
+                                    <a id="login"
+                                    role="button"
+                                    class="navbar-btn btn-sm btn btn-default"
+                                    href="{{ login_url }}{{ return_path }}">
+                                        Log in
+                                    </a>
+                                </span>
+                            </li>
+                        </ul>
+                    </div>
                 </div>
-                <div>
-                    <ul class="nav navbar-nav navbar-right">
-                        <li>
-                            <span id="login_widget">
-                                <a id="login"
-                                   role="button"
-                                   class="navbar-btn btn-sm btn btn-default"
-                                   href="{{ login_url }}{{ return_path }}">
-                                    Log in
-                                </a>
-                            </span>
-                        </li>
-                    </ul>
-                </div>
-            </div>
-        </nav>
-        <div>{{ content }}</div>
+            </nav>
+            <div>{{ content }}</div>
+        </div>
+        {% include 'asf_footer.j2' %}
     </body>
 </html>
