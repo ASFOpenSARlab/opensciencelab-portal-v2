@@ -30,19 +30,20 @@ def validate_access_requests(requests: list) -> list:
               {
                 "username": "osl-username",
                 "answers":[   # List of Dicts so we can allow updating and keep a record.
-                    {
-                        "sar_experience": "...",
-                        "osl_experience": "...",
-                        "use_case": "...",
-                        "personal_impacts": "...",
-                        "community_impacts": "...",
-                        "research_impacts": "...",
-                        "submission_date": "...",
-                        "submission_ip": "...",
-                        "submission_cc": "...",
-                    }
+                  {
+                    "sar_experience": "...",
+                    "osl_experience": "...",
+                    "use_case": "...",
+                    "personal_impacts": "...",
+                    "community_impacts": "...",
+                    "research_impacts": "...",
+                    "submission_date": "...",
+                    "submission_ip": "...",
+                    "submission_cc": "...",
+                  }
                 ],
                 "status": "new|approved|rejected|pending",
+              }
             ]
 
     Returns:

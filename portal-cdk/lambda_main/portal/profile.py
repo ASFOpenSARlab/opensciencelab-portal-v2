@@ -100,11 +100,10 @@ def profile_user(username: str):
     template_input = {
         "user_logged_in": user_logged_in,
         "user_profile": user_profile,
-        "labs": LABS_CONFIGS,
+        "labs": LAB_CONFIGS,
         "user_ip_results": user_ip_results,
         "default_value": "Choose...",
         "warning_missing": "Value is missing",
-
     }
 
     CWD = Path(__file__).parent.resolve().absolute()

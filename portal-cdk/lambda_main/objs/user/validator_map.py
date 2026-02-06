@@ -1,16 +1,6 @@
 """A list of attributes, and what to validate them with."""
 
-from util.exceptions import DbError
-
 from .validators import validate_profile
-
-
-def validate(key, value):
-    try:
-        return validator_map[key](value)
-    except ValueError as e:
-        raise DbError(f"Invalid value for {key}: {value}. Error: {e}") from e
-
 
 validator_map = {
     "access": list,
