@@ -1,6 +1,4 @@
-from util.format import (
-    portal_template,
-)
+from util.format import portal_template, jinja_template
 from util.auth import require_access
 from util.session import current_session
 from objs.user import User
@@ -92,27 +90,26 @@ def profile_bob():
 @profile_router.get("/form/<username>", include_in_schema=False)
 @require_access(human=True)
 @enforce_profile_access()
-@portal_template(name="profile.j2")
+@portal_template()
 def profile_user(username: str):
     user_ip_results = get_user_ip_logs(username=username, limit=5)
 
     user_logged_in = current_session.user
     user_profile = User(username=username, create_if_missing=False)
-    page_dict = {
-        "content": f"Profile for user {user_profile.username}",
-        "input": {
-            "user_logged_in": user_logged_in,
-            "user_profile": user_profile,
-            "labs": LAB_CONFIGS,
-            "user_ip_results": user_ip_results,
-            "default_value": "Choose...",
-            "warning_missing": "Value is missing",
-        },
+
+    template_input = {
+        "user_logged_in": user_logged_in,
+        "user_profile": user_profile,
+        "labs": LABS_CONFIGS,
+        "user_ip_results": user_ip_results,
+        "default_value": "Choose...",
+        "warning_missing": "Value is missing",
+
     }
 
     CWD = Path(__file__).parent.resolve().absolute()
     with open(CWD / "../data/countries.json", "r", encoding="utf-8") as f:
-        page_dict["input"]["countries"] = json.loads(f.read())
+        template_input["countries"] = json.loads(f.read())
 
     # Get query string if present
     query_params = profile_router.current_event.query_string_parameters
@@ -127,8 +124,8 @@ def profile_user(username: str):
 
     # Append profile to page_dict and return
     if profile:
-        page_dict["input"]["profile"] = profile
-    return page_dict
+        template_input["profile"] = profile
+    return jinja_template(template_input, "profile.j2")
 
 
 def validate_profile_dict(query_dict: dict) -> tuple[bool, dict[str, str]]:
