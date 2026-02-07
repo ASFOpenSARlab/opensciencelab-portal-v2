@@ -6,6 +6,7 @@
 2. [Directoy Structure](#directory-structure)
 3. [Deployments](#deployments)
 4. [Notifications](#notifications)
+5. [Setup Google Form POSTing](#google-form-posting)
 
 ## Architecture
 
@@ -245,3 +246,7 @@ Required variables:
 ## Notifications
 
 For setting up and using the toastr notifications, see the [Notifications README](./portal-cdk/lambda_main/util/README.md#notifications).
+
+## Google Form POSTing
+
+To receive Google Form submissions at a Portal endpoint, see the [Google Form POSTing README](./GoogleFormPost.md)
