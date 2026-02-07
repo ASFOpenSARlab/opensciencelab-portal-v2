@@ -150,7 +150,7 @@ class TestPortalNotifications:
             return MockResponse()
 
         monkeypatch.setattr("util.notifications.requests.get", mock_get)
-        
+
         with pytest.raises(ValueError) as err:
             get_notifications("test")
         assert (
