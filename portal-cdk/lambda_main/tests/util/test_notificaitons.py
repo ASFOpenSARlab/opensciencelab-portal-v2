@@ -1,19 +1,10 @@
-import os
 import pytest
 import logging
-import json
-
-import boto3
-from moto import mock_aws
 
 from util.notifications import get_notifications
 
-REGION = os.getenv("STACK_REGION", "us-west-2")
-USER_IP_LOGS_GROUP_NAME = "FAKE_USER_IP_LOGS_GROUP_NAME"
-USER_IP_LOGS_STREAM_NAME = "FAKE_USER_IP_LOGS_STREAM_NAME"
-
 # This will break tests in 2046
-MOCK_CALENDAR_CONTENT="""
+MOCK_CALENDAR_CONTENT = """
 BEGIN:VCALENDAR
 X-WR-CALNAME:test-cal
 X-WR-TIMEZONE:America/Anchorage
@@ -75,12 +66,12 @@ UID:18ncht0pnm4hct8icu05g54g81@google.com
 END:VEVENT
 """
 
-MOCK_CALENDAR_MALFORMED_CONTENT="""
+MOCK_CALENDAR_MALFORMED_CONTENT = """
 BEGIN:VCALENDAR
 X-WR-CALNAME:test-cal
 """
 
-MOCK_CALENDAR_MALFORMED_EVENT_CONTENT="""
+MOCK_CALENDAR_MALFORMED_EVENT_CONTENT = """
 BEGIN:VCALENDAR
 X-WR-CALNAME:test-cal
 X-WR-TIMEZONE:America/Anchorage
@@ -116,7 +107,7 @@ UID:18ncht0pnm4hct8icu05g54g81@google.com
 END:VEVENT
 """
 
-@mock_aws
+
 class TestPortalNotifications:
     def test_get_active_events(self, monkeypatch):
         # Test that only active events for "test" scope are returned
@@ -127,21 +118,24 @@ class TestPortalNotifications:
                     self.ok = True
                     self.status_code = 200
                     self.text = MOCK_CALENDAR_CONTENT
+
             return MockResponse()
+
         monkeypatch.setattr("util.notifications.requests.get", mock_get)
+
         active_events = get_notifications("test")
         assert active_events == [
             {
-                'title': 'Second active event on "test" scope',
-                'message': '<p>This is a test notification</p>',
-                'type': 'info',
-                'placement': 'top-full-width'
+                "title": 'Second active event on "test" scope',
+                "message": "<p>This is a test notification</p>",
+                "type": "info",
+                "placement": "top-full-width"
             },
             {
-                'title': 'Active event on "test" scope',
-                'message': '<p>This is a test notification</p>',
-                'type': 'info',
-                'placement': 'top-full-width'
+                "title": 'Active event on "test" scope',
+                "message": "<p>This is a test notification</p>",
+                "type": "info",
+                "placement": "top-full-width"
             }
         ]
 
@@ -152,7 +146,9 @@ class TestPortalNotifications:
                     self.ok = True
                     self.status_code = 200
                     self.text = MOCK_CALENDAR_MALFORMED_CONTENT
+
             return MockResponse()
+
         monkeypatch.setattr("util.notifications.requests.get", mock_get)
         
         with pytest.raises(ValueError) as err:
@@ -173,13 +169,15 @@ class TestPortalNotifications:
             active_events = get_notifications("test")
         assert len(caplog.records) == 1
         assert caplog.records[0].levelname == "ERROR"
-        assert caplog.records[0].message == "Malformed event description: I AM MALFORMED"
+        assert (
+            caplog.records[0].message == "Malformed event description: I AM MALFORMED"
+        )
         assert active_events == [
             {
-                'title': 'Active correctly formatted event',
-                'message': '<p>This is a test notification</p>',
-                'type': 'info',
-                'placement': 'top-full-width'
+                "title": "Active correctly formatted event",
+                "message": "<p>This is a test notification</p>",
+                "type": "info",
+                "placement": "top-full-width"
             }
         ]
 
@@ -191,16 +189,18 @@ class TestPortalNotifications:
                     self.ok = True
                     self.status_code = 200
                     self.text = MOCK_CALENDAR_CONTENT
+
             return MockResponse()
+
         monkeypatch.setattr("util.notifications.requests.get", mock_get)
 
         active_events = get_notifications("test", "test_tag")
         assert active_events == [
             {
-                'title': 'Second active event on "test" scope',
-                'message': '<p>This is a test notification</p>',
-                'type': 'info',
-                'placement': 'top-full-width'
+                "title": 'Second active event on "test" scope',
+                "message": "<p>This is a test notification</p>",
+                "type": "info",
+                "placement": "top-full-width"
             }
         ]
 
@@ -211,7 +211,9 @@ class TestPortalNotifications:
                     self.ok = False
                     self.status_code = 400
                     self.text = ""
+
             return MockResponse()
+
         monkeypatch.setattr("util.notifications.requests.get", mock_get)
 
         active_events = get_notifications("test", "test_tag")
