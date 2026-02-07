@@ -129,14 +129,14 @@ class TestPortalNotifications:
                 "title": 'Second active event on "test" scope',
                 "message": "<p>This is a test notification</p>",
                 "type": "info",
-                "placement": "top-full-width"
+                "placement": "top-full-width",
             },
             {
                 "title": 'Active event on "test" scope',
                 "message": "<p>This is a test notification</p>",
                 "type": "info",
                 "placement": "top-full-width",
-            }
+            },
         ]
 
     def test_error_handling(self, monkeypatch):
@@ -153,7 +153,10 @@ class TestPortalNotifications:
         
         with pytest.raises(ValueError) as err:
             get_notifications("test")
-        assert str(err.value) == "Something went wrong: A VCALENDAR must have at least one PRODID"
+        assert (
+            str(err.value)
+            == "Something went wrong: A VCALENDAR must have at least one PRODID"
+        )
 
     def test_malformed_event_description(self, monkeypatch, caplog):
         def mock_get(url):
@@ -162,7 +165,9 @@ class TestPortalNotifications:
                     self.ok = True
                     self.status_code = 200
                     self.text = MOCK_CALENDAR_MALFORMED_EVENT_CONTENT
+
             return MockResponse()
+
         monkeypatch.setattr("util.notifications.requests.get", mock_get)
 
         with caplog.at_level(logging.ERROR):
