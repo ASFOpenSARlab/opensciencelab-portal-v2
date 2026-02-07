@@ -3,11 +3,9 @@
 Sometimes there are cases where the Portal will need to receive in near-realtime Google Form submissions.
 This page will explain how to setup Google Forms to POST submissions to a Portal endpoint.
 
-# Setup Google Form
-
 The following was adapted from [this online article](https://medium.com/@eyalgershon/sending-a-webhook-for-each-google-forms-submission-a0e73f72b397).
 
-## Setup Form
+## Setup Your Google Form
 
 Setup the Google Form that will be pushed on each user submission. Don't forget to _Publish_.
 
@@ -19,7 +17,7 @@ On the top right three-dot menu of the Form (in admin mode) there is an entry fo
 
 Once opened, make sure to name the Project at the top.
 
-## Add Custom Function to Google Apps Script
+### Add Custom Function to Google Apps Script
 
 Within the Apps Editor (`<>`), you will see
 
@@ -70,7 +68,7 @@ Here the following will need to be updated for the particular situation:
 
 Don't forget to save. However, you do not need to run or _Deploy_ the code. It is automatically available to the form.
 
-## Create a trigger for auto-POSTing
+### Create a trigger for auto-POSTing
 
 Though the code is available, we need to set up a trigger so that javascript function is executed on form submission.
 
@@ -88,7 +86,7 @@ There is nothing else that needs to be done to set up a trigger. You do not need
 
 Any form submissions will run the Apps code on submit. The code will POST the form answers to the given Portal endpoiont.
 
-# Setup Portal Endpoint
+## Setup Portal Endpoint
 
 Example code of the Portal endpoint. Actual code will need to be placed in the proper router.
 
@@ -114,7 +112,7 @@ This allows for multiple forms to be made for multiple labs.
 
 The `body` of the event will be the json formatted answers to the form.
 
-# Logs and Metrics
+## Logs and Metrics
 
 The Google App menu item `Overview` will show the number of users and triggered executions.
 
