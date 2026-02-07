@@ -135,7 +135,7 @@ class TestPortalNotifications:
                 "title": 'Active event on "test" scope',
                 "message": "<p>This is a test notification</p>",
                 "type": "info",
-                "placement": "top-full-width"
+                "placement": "top-full-width",
             }
         ]
 
@@ -177,7 +177,7 @@ class TestPortalNotifications:
                 "title": "Active correctly formatted event",
                 "message": "<p>This is a test notification</p>",
                 "type": "info",
-                "placement": "top-full-width"
+                "placement": "top-full-width",
             }
         ]
 
@@ -200,7 +200,7 @@ class TestPortalNotifications:
                 "title": 'Second active event on "test" scope',
                 "message": "<p>This is a test notification</p>",
                 "type": "info",
-                "placement": "top-full-width"
+                "placement": "top-full-width",
             }
         ]
 
