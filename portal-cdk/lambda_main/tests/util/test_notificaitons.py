@@ -203,3 +203,16 @@ class TestPortalNotifications:
                 'placement': 'top-full-width'
             }
         ]
+
+    def test_get_calendar_error(self, monkeypatch):
+        def mock_get(url):
+            class MockResponse:
+                def __init__(self):
+                    self.ok = False
+                    self.status_code = 400
+                    self.text = ""
+            return MockResponse()
+        monkeypatch.setattr("util.notifications.requests.get", mock_get)
+
+        active_events = get_notifications("test", "test_tag")
+        assert active_events == []
