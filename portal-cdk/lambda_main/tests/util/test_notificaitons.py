@@ -27,10 +27,23 @@ SEQUENCE:0
 DTSTART;VALUE=DATE:20260116
 DTEND;VALUE=DATE:20460125
 DTSTAMP:20260206T231124Z
-DESCRIPTION:---<br>sc<span>opes: test</span><span><span><span><span><span><span> </span></span></span></span></span></span><span><span><span><span><span><span><br>type: info<br>placement: bottom-full-width<br>---<br>&lt\;p&gt\;</span></span></span></span>This is a test notification&lt\;/p&gt\;</span></span><br>&lt\;p&gt\;Its cool<span><span><span><span><span><span>&lt\;/p&gt\;</span></span></span></span></span></span>
+DESCRIPTION:---<br>scopes: test <br>tags: home<br>type: info<br>placement: top-full-width<br>---<br>&lt\;p&gt\;This is a test notification&lt\;/p&gt\;
 LAST-MODIFIED:20260122T183908Z
 STATUS:CONFIRMED
-SUMMARY:Active Event on "test" Scope
+SUMMARY:Active event on "test" scope
+TRANSP:TRANSPARENT
+UID:18ncht0pnm4hct8icu05g54g81@google.com
+END:VEVENT
+BEGIN:VEVENT
+CREATED:20260121T215531Z
+SEQUENCE:0
+DTSTART;VALUE=DATE:20260116
+DTEND;VALUE=DATE:20460125
+DTSTAMP:20260206T231124Z
+DESCRIPTION:---<br>scopes: test <br>tags: test_tag<br>type: info<br>placement: top-full-width<br>---<br>&lt\;p&gt\;This is a test notification&lt\;/p&gt\;
+LAST-MODIFIED:20260122T183908Z
+STATUS:CONFIRMED
+SUMMARY:Second active event on "test" scope
 TRANSP:TRANSPARENT
 UID:18ncht0pnm4hct8icu05g54g81@google.com
 END:VEVENT
@@ -40,7 +53,7 @@ SEQUENCE:0
 DTSTART;VALUE=DATE:20160116
 DTEND;VALUE=DATE:20160125
 DTSTAMP:20260206T231124Z
-DESCRIPTION:---<br>sc<span>opes: test</span><span><span><span><span><span><span> </span></span></span></span></span></span><span><span><span><span><span><span><br>type: info<br>placement: bottom-full-width<br>---<br>&lt\;p&gt\;</span></span></span></span>This is a test notification&lt\;/p&gt\;</span></span><br>&lt\;p&gt\;Its cool<span><span><span><span><span><span>&lt\;/p&gt\;</span></span></span></span></span></span>
+DESCRIPTION:---<br>scopes: test <br>tags: other_tag<br>type: info<br>placement: top-full-width<br>---<br>&lt\;p&gt\;This is a test notification&lt\;/p&gt\;
 LAST-MODIFIED:20260122T183908Z
 STATUS:CONFIRMED
 SUMMARY:Expired Event
@@ -53,7 +66,7 @@ SEQUENCE:0
 DTSTART;VALUE=DATE:20260116
 DTEND;VALUE=DATE:20460125
 DTSTAMP:20260206T231124Z
-DESCRIPTION:---<br>sc<span>opes: otherscope</span><span><span><span><span><span><span> </span></span></span></span></span></span><span><span><span><span><span><span><br>type: info<br>placement: bottom-full-width<br>---<br>&lt\;p&gt\;</span></span></span></span>This is a test notification&lt\;/p&gt\;</span></span><br>&lt\;p&gt\;Its cool<span><span><span><span><span><span>&lt\;/p&gt\;</span></span></span></span></span></span>
+DESCRIPTION:---<br>scopes: otherscope <br>tags: home<br>type: info<br>placement: top-full-width<br>---<br>&lt\;p&gt\;This is a test notification&lt\;/p&gt\;
 LAST-MODIFIED:20260122T183908Z
 STATUS:CONFIRMED
 SUMMARY:Active Event on "otherscope" Scope
@@ -81,7 +94,7 @@ SEQUENCE:0
 DTSTART;VALUE=DATE:20260116
 DTEND;VALUE=DATE:20460125
 DTSTAMP:20260206T231124Z
-DESCRIPTION:---<br>sc<span>opes: test</span><span><span><span><span><span><span> </span></span></span></span></span></span><span><span><span><span><span><span><br>type: info<br>placement: bottom-full-width<br>---<br>&lt\;p&gt\;</span></span></span></span>This is a test notification&lt\;/p&gt\;</span></span><br>&lt\;p&gt\;Its cool<span><span><span><span><span><span>&lt\;/p&gt\;</span></span></span></span></span></span>
+DESCRIPTION:---<br>scopes: test <br>tags: home<br>type: info<br>placement: top-full-width<br>---<br>&lt\;p&gt\;This is a test notification&lt\;/p&gt\;
 LAST-MODIFIED:20260122T183908Z
 STATUS:CONFIRMED
 SUMMARY:Active correctly formatted event
@@ -106,7 +119,7 @@ END:VEVENT
 @mock_aws
 class TestPortalNotifications:
     def test_get_active_events(self, monkeypatch):
-        # Test that only active event for "test" scope is returned
+        # Test that only active events for "test" scope are returned
         # Expired event and event on "otherscope" scope are not returned
         def mock_get(url):
             class MockResponse:
@@ -118,10 +131,17 @@ class TestPortalNotifications:
         monkeypatch.setattr("util.notifications.requests.get", mock_get)
         active_events = get_notifications("test")
         assert active_events == [
-            {'title': 'Active Event on "test" Scope',
-             'message': '<p>This is a test notification</p>  \n<p>Its cool</p>',
-             'type': 'info',
-             'placement': 'bottom-full-width'
+            {
+                'title': 'Second active event on "test" scope',
+                'message': '<p>This is a test notification</p>',
+                'type': 'info',
+                'placement': 'top-full-width'
+            },
+            {
+                'title': 'Active event on "test" scope',
+                'message': '<p>This is a test notification</p>',
+                'type': 'info',
+                'placement': 'top-full-width'
             }
         ]
 
@@ -151,12 +171,35 @@ class TestPortalNotifications:
 
         with caplog.at_level(logging.ERROR):
             active_events = get_notifications("test")
+        assert len(caplog.records) == 1
         assert caplog.records[0].levelname == "ERROR"
         assert caplog.records[0].message == "Malformed event description: I AM MALFORMED"
         assert active_events == [
-            {'title': 'Active correctly formatted event',
-             'message': '<p>This is a test notification</p>  \n<p>Its cool</p>',
-             'type': 'info',
-             'placement': 'bottom-full-width'
+            {
+                'title': 'Active correctly formatted event',
+                'message': '<p>This is a test notification</p>',
+                'type': 'info',
+                'placement': 'top-full-width'
+            }
+        ]
+
+    def test_event_filtering(self, monkeypatch):
+        # Only active event with "test_tag" is returned
+        def mock_get(url):
+            class MockResponse:
+                def __init__(self):
+                    self.ok = True
+                    self.status_code = 200
+                    self.text = MOCK_CALENDAR_CONTENT
+            return MockResponse()
+        monkeypatch.setattr("util.notifications.requests.get", mock_get)
+
+        active_events = get_notifications("test", "test_tag")
+        assert active_events == [
+            {
+                'title': 'Second active event on "test" scope',
+                'message': '<p>This is a test notification</p>',
+                'type': 'info',
+                'placement': 'top-full-width'
             }
         ]
