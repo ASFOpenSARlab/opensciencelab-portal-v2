@@ -13,6 +13,7 @@ Setup the Google Form that will be pushed on each user submission. Don't forget 
 
 On the top right three-dot menu of the Form (in admin mode) there is an entry for Google Apps Script.
 
+<!-- markdownlint-disable-next-line MD033 -->
 <img src="./docs/GoogleFormPosting/ApssScriptWithinMenu.png" alt="Location of Google Apps in Form menu" width="300" height="200">
 
 Once opened, make sure to name the Project at the top.
@@ -74,6 +75,7 @@ Though the code is available, we need to set up a trigger so that javascript fun
 
 Go to the Apps Triggers menu on the left.
 
+<!-- markdownlint-disable-next-line MD033 -->
 <img src="./docs/GoogleFormPosting/AppsTriggersMenu.png" alt="Location of Triggers menu in Google Apps" width="200" height="400">
 
 Click the `+ Add Trigger` button on the bottom right.
