@@ -131,7 +131,9 @@ class User(Table):
 
         if status:
             if isinstance(status, str):
-                status = [status,]
+                status = [
+                    status,
+                ]
 
             filters = filters & dynamo_filter(
                 attr_name="status",
@@ -232,5 +234,3 @@ def get_users_with_lab(
         return items[:limit]
 
     return items
-
-

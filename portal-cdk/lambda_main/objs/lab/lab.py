@@ -6,7 +6,13 @@ from util.exceptions import LabDoesNotExist, InvalidLabRequestStatus
 from util.labs import LAB_CONFIGS
 from util.session import current_session
 from util.auth import get_ip_and_country
-from util.dynamo_db import get_item, create_item, update_item, get_all_items, dynamo_filter
+from util.dynamo_db import (
+    get_item,
+    create_item,
+    update_item,
+    get_all_items,
+    dynamo_filter,
+)
 from objs.base_db_table import Table
 
 from .defaults import defaults
@@ -218,7 +224,9 @@ class Lab(Table):
 
         if status:
             if isinstance(status, str):
-                status = [status,]
+                status = [
+                    status,
+                ]
 
             filters = filters & dynamo_filter(
                 attr_name="status",

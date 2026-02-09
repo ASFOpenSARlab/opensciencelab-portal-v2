@@ -263,8 +263,6 @@ class TestUserClass:
         # should now have a request
         assert len(user.get_requests()) == 1
 
-
-
     def test_delete_user(self, monkeypatch):
         from objs.user.user import User
         from util.dynamo_db import get_all_items
