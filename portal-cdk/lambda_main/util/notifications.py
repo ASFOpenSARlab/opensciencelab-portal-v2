@@ -38,6 +38,9 @@ def get_notifications(scope: str, filter_tag: str = "all"):
             if begin_time <= now_time <= end_time:
                 # Process event description
                 groups = compiled_regex.search(event.description)
+                if not groups:
+                    logger.error(f"Malformed event description: {event.description}")
+                    continue
 
                 # If the event description is not formatted properly then either the grouping will fail or the yaml parser
                 # Then an expection will be thrown
