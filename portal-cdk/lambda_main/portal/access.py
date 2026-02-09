@@ -462,10 +462,10 @@ def list_access_requests(shortname):
 
     template_input = {
         "labname": shortname,
-        "requests": lab.access_requests,
+        "requests": lab.get_requests(),
         "tokens": lab.access_tokens,
     }
 
-    logger.info(f"Access requests = {lab.access_requests}")
+    logger.info(f"Access requests = {lab.get_requests()}")
 
     return jinja_template(template_input, "manage_access.j2")

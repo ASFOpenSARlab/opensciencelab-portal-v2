@@ -158,7 +158,7 @@ class TestUserClass:
 
         lab1.add_access_request(
             answers={
-                "sar_experience": "SAR Export",
+                "sar_experience": "SAR Expert",
                 "osl_experience": "I'm an OSL Developer",
                 "use_case": "Pro-level OSL Development",
             },
@@ -188,3 +188,53 @@ class TestUserClass:
         with pytest.raises(InvalidLabRequestStatus) as excinfo:
             lab1.set_access_request_status(username="joe-bob", status="pending")
         assert "has not requested access to" in str(excinfo.value)
+
+    def test_fetch_lab_requests(self, helpers, monkeypatch):
+        from objs.lab.lab import Lab
+
+        LAB_CONFIGS = helpers.FAKE_LAB_CONFIGS
+        monkeypatch.setattr("objs.lab.lab.LAB_CONFIGS", LAB_CONFIGS)
+
+        username1 = "testuser"
+        username2 = "rejectuser"
+
+        # testlab exists as a fake lab
+        lab1 = Lab("testlab")
+        lab2 = Lab("protectedlab")
+
+        # Add record
+        lab1.add_access_request(
+            answers={
+                "sar_experience": "I have no experience",
+                "osl_experience": "I don't know what OSL is",
+            },
+            username=username2,
+        )
+
+        lab2.add_access_request(
+            answers={
+                "sar_experience": "SAR Expert",
+                "osl_experience": "I'm an OSL Developer",
+                "use_case": "Pro-level OSL Development",
+            },
+            username=username1,
+        )
+
+        lab2.add_access_request(
+            answers={
+                "sar_experience": "Bad Request",
+                "osl_experience": "Zero",
+                "use_case": "Pro-level OSL Development",
+            },
+            username=username2,
+        )
+
+        lab2.set_access_request_status(username=username2, status="rejected")
+
+        # Make sure we get back only lab1
+        lab1_request = lab1.get_requests()
+        assert len(lab1_request) == 1
+
+        # Make sure we get back only lab2
+        lab2_request = lab2.get_requests(status=["new", "pending"])
+        assert len(lab2_request) == 1

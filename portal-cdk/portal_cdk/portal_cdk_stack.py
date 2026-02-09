@@ -181,7 +181,7 @@ class PortalCdkStack(Stack):
             ),
         )
         # Allow access from Lambda
-        labs_table.grant_full_access(lambda_dynamo.lambda_function)
+        reqs_table.grant_full_access(lambda_dynamo.lambda_function)
         lambda_dynamo.lambda_function.add_environment(
             "DYNAMO_TABLE_REQ_NAME", reqs_table.table_name
         )

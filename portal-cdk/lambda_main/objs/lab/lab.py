@@ -6,7 +6,7 @@ from util.exceptions import LabDoesNotExist, InvalidLabRequestStatus
 from util.labs import LAB_CONFIGS
 from util.session import current_session
 from util.auth import get_ip_and_country
-from util.dynamo_db import get_item, create_item, update_item
+from util.dynamo_db import get_item, create_item, update_item, get_all_items, dynamo_filter
 from objs.base_db_table import Table
 
 from .defaults import defaults
@@ -19,6 +19,14 @@ USER_TABLE_KEY = "username"
 
 VALID_REQUEST_STATUSES = ["new", "approved", "rejected", "pending"]
 LOCKED_REQUEST_STATUSES = ["approved", "rejected"]
+DEFAULT_ACCESS_QUESTIONS = [
+    "sar_experience",
+    "osl_experience",
+    "use_case",
+    "personal_impacts",
+    "community_impacts",
+    "research_impacts",
+]
 
 
 class Lab(Table):
@@ -161,14 +169,7 @@ class Lab(Table):
 
         # Copy in received answers
         answers_dict = {}
-        for question in (
-            "sar_experience",
-            "osl_experience",
-            "use_case",
-            "personal_impacts",
-            "community_impacts",
-            "research_impacts",
-        ):
+        for question in DEFAULT_ACCESS_QUESTIONS:
             answers_dict[question] = answers.get(question)
 
         # Add user metadata fields:
@@ -211,3 +212,18 @@ class Lab(Table):
         # Change Status
         req_dict["status"] = status
         self._put_access_request(req_dict, username)
+
+    def get_requests(self, status: str | list | None = None):
+        filters = dynamo_filter(attr_name=LAB_TABLE_KEY, filter_value=self.labname)
+
+        if status:
+            if isinstance(status, str):
+                status = [status,]
+
+            filters = filters & dynamo_filter(
+                attr_name="status",
+                filter_action="in",
+                filter_value=status,
+            )
+
+        return get_all_items(table_id="request", limit=200, filters=filters)

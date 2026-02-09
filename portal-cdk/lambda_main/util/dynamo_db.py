@@ -190,12 +190,14 @@ def get_record_counter(table, key) -> int:
 
 
 def dynamo_filter(
-    attr_name: str, filter_value: str | None = None, filter_action: str = "contains"
+    attr_name: str, filter_value: str | list | None = None, filter_action: str = "contains"
 ):
     if not filter_value or filter_action == "exists":
         return Attr(attr_name).exists()
     if filter_action == "contains":
         return Attr(attr_name).contains(filter_value)
+    if filter_action == "in":
+        return Attr(attr_name).is_in(filter_value)
 
 
 def pull_all_pagination(table, limit, filterexpr=None):
