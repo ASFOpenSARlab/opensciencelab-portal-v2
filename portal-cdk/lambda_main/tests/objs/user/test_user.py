@@ -38,6 +38,7 @@ class TestUserClass:
 
         user_table_name = "TestUserTable"
         lab_table_name = "TestLabTable"
+        req_table_name = "TestRequestsTable"
         util.dynamo_db._DYNAMO_DB.create_table(
             TableName=user_table_name,
             BillingMode="PAY_PER_REQUEST",
@@ -50,12 +51,27 @@ class TestUserClass:
             KeySchema=[{"AttributeName": "labname", "KeyType": "HASH"}],
             AttributeDefinitions=[{"AttributeName": "labname", "AttributeType": "S"}],
         )
+        util.dynamo_db._DYNAMO_DB.create_table(
+            TableName=req_table_name,
+            BillingMode="PAY_PER_REQUEST",
+            KeySchema=[
+                {"AttributeName": "labname", "KeyType": "HASH"},
+                {"AttributeName": "username", "KeyType": "HASH"},
+            ],
+            AttributeDefinitions=[
+                {"AttributeName": "labname", "AttributeType": "S"},
+                {"AttributeName": "username", "AttributeType": "S"},
+            ],
+        )
         ## No need to delete the table between methods, it goes out of scope anyways.
         util.dynamo_db._DYNAMO_TABLE_USER = util.dynamo_db._DYNAMO_DB.Table(
             user_table_name
         )
         util.dynamo_db._DYNAMO_TABLE_LAB = util.dynamo_db._DYNAMO_DB.Table(
             lab_table_name
+        )
+        util.dynamo_db._DYNAMO_TABLE_REQ = util.dynamo_db._DYNAMO_DB.Table(
+            req_table_name
         )
         assert get_all_items(table_id="user") == [], "DB should be empty at the start"
 

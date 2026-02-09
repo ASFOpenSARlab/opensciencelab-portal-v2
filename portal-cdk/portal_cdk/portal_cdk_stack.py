@@ -138,6 +138,7 @@ class PortalCdkStack(Stack):
         lambda_dynamo.lambda_function.add_environment(
             "DYNAMO_TABLE_USER_NAME", lambda_dynamo.dynamo_table.table_name
         )
+
         # Another table to hold labs
         labs_table = dynamodb.Table(
             self,
@@ -158,6 +159,31 @@ class PortalCdkStack(Stack):
         labs_table.grant_full_access(lambda_dynamo.lambda_function)
         lambda_dynamo.lambda_function.add_environment(
             "DYNAMO_TABLE_LAB_NAME", labs_table.table_name
+        )
+
+        # Another table to hold access requests
+        reqs_table = dynamodb.Table(
+            self,
+            "RequestsTable",
+            partition_key=dynamodb.Attribute(
+                name="labname",
+                type=dynamodb.AttributeType.STRING,
+            ),
+            sort_key=dynamodb.Attribute(
+                name="username", type=dynamodb.AttributeType.STRING
+            ),
+            deletion_protection=bool(vars["deploy_prefix"] == "prod"),
+            # Default removal_policy is always RETAIN:
+            removal_policy=(
+                RemovalPolicy.RETAIN
+                if vars["deploy_prefix"] == "prod"
+                else RemovalPolicy.DESTROY
+            ),
+        )
+        # Allow access from Lambda
+        labs_table.grant_full_access(lambda_dynamo.lambda_function)
+        lambda_dynamo.lambda_function.add_environment(
+            "DYNAMO_TABLE_REQ_NAME", reqs_table.table_name
         )
 
         ### Integration is after the request is validated:
