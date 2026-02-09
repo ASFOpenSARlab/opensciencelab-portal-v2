@@ -56,7 +56,7 @@ class TestUserClass:
             BillingMode="PAY_PER_REQUEST",
             KeySchema=[
                 {"AttributeName": "labname", "KeyType": "HASH"},
-                {"AttributeName": "username", "KeyType": "HASH"},
+                {"AttributeName": "username", "KeyType": "RANGE"},
             ],
             AttributeDefinitions=[
                 {"AttributeName": "labname", "AttributeType": "S"},
@@ -233,6 +233,37 @@ class TestUserClass:
             len(get_users_with_lab("testlab", username_filter="test_user", limit=2))
             == 2
         ), "Filtered and limited results should be limited to 2"
+
+    def test_fetch_lab_requests(self, monkeypatch, helpers):
+        from objs.lab.lab import Lab
+        from objs.user.user import User
+
+        LAB_CONFIGS = helpers.FAKE_LAB_CONFIGS
+        monkeypatch.setattr("objs.lab.lab.LAB_CONFIGS", LAB_CONFIGS)
+
+        testuser = "testuser"
+        testlab = "testlab"
+
+        # testlab exists as a fake lab
+        lab = Lab(testlab)
+        user = User(testuser)
+
+        # should be no requests
+        assert len(user.get_requests()) == 0
+
+        # Add record
+        lab.add_access_request(
+            answers={
+                "sar_experience": "I have no experience",
+                "osl_experience": "I don't know what OSL is",
+            },
+            username=testuser,
+        )
+
+        # should now have a request
+        assert len(user.get_requests()) == 1
+
+
 
     def test_delete_user(self, monkeypatch):
         from objs.user.user import User

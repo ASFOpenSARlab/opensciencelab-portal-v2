@@ -126,6 +126,21 @@ class User(Table):
 
         return True
 
+    def get_requests(self, status: str | list | None = None):
+        filters = dynamo_filter(attr_name=USER_TABLE_KEY, filter_value=self.username)
+
+        if status:
+            if isinstance(status, str):
+                status = [status,]
+
+            filters = filters & dynamo_filter(
+                attr_name="status",
+                filter_action="in",
+                filter_value=status,
+            )
+
+        return get_all_items(table_id="request", limit=200, filters=filters)
+
 
 def _can_user_see_lab(user: User, lab) -> bool:
     if user.is_admin():
@@ -217,3 +232,5 @@ def get_users_with_lab(
         return items[:limit]
 
     return items
+
+
