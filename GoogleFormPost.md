@@ -14,7 +14,7 @@ Setup the Google Form that will be pushed on each user submission. Don't forget 
 On the top right three-dot menu of the Form (in admin mode) there is an entry for Google Apps Script.
 
 <!-- markdownlint-disable-next-line MD033 -->
-<img src="./docs/GoogleFormPosting/ApssScriptWithinMenu.png" alt="Location of Google Apps in Form menu" width="300" height="200">
+<img src="./docs/GoogleFormPosting/AppsScriptWithinMenu.png" alt="Location of Google Apps in Form menu" width="300" height="200">
 
 Once opened, make sure to name the Project at the top.
 
