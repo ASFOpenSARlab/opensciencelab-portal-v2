@@ -68,8 +68,23 @@ class Lab(Table):
         Args:
             username: Username to fetch an access request for a lab
 
-        Returns:
-            dict containing the full access request
+        Returns: Dict of all copies of the user's answers
+            {
+              "answers": [  # List of Dicts so we can allow updating and keep a record.
+                {
+                  "sar_experience": "...",
+                  "osl_experience": "...",
+                  "use_case": "...",
+                  "personal_impacts": "...",
+                  "community_impacts": "...",
+                  "research_impacts": "...",
+                  "submission_date": "...",
+                  "submission_ip": "...",
+                  "submission_cc": "...",
+                },
+              ],
+              "status": "new|approved|rejected|pending",
+            }
 
         """
         # Pull any existing row from the db
