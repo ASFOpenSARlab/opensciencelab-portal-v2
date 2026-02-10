@@ -104,14 +104,13 @@ def profile_user(username: str):
     if access_requests:
         for request in access_requests:
             # Filter out "submission_*" fields for non-admins
-            remove_keys = []
             if not user_logged_in.is_admin():
+                remove_keys = []
                 for answer in request["answers"][-1].keys():
                     if answer.startswith("submission"):
                         remove_keys.append(answer)
-
-            for answer in remove_keys:
-                del request["answers"][-1][answer]
+                for answer in remove_keys:
+                    del request["answers"][-1][answer]
 
             # Capture full text of questions
             lab_obj = Lab(request["labname"])
@@ -119,6 +118,7 @@ def profile_user(username: str):
                 z["name"]: z["question"] for z in lab_obj.access_request_questions()
             }
             access_request_questions[request["labname"]] = lab_questions
+            request["lab_friendly_name"] = lab_obj.get_lab_config().friendly_name
 
     logger.info(f"access_request_questions: {access_request_questions}")
 
