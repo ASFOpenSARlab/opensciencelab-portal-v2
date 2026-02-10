@@ -97,6 +97,18 @@ def profile_user(username: str):
     user_logged_in = current_session.user
     user_profile = User(username=username, create_if_missing=False)
 
+    access_requests = user_profile.get_requests()
+
+    # Filter out "submission_*" fields for non-admins
+    if not user_logged_in.is_admin() and access_requests:
+        remove_keys = []
+        for request in access_requests:
+            for answer in request["answers"][-1].keys():
+                if answer.startswith("submission"):
+                    remove_keys.append(answer)
+        for answer in remove_keys:
+            del request["answers"][-1][answer]
+
     template_input = {
         "user_logged_in": user_logged_in,
         "user_profile": user_profile,
@@ -104,6 +116,7 @@ def profile_user(username: str):
         "user_ip_results": user_ip_results,
         "default_value": "Choose...",
         "warning_missing": "Value is missing",
+        "access_requests": access_requests,
     }
 
     CWD = Path(__file__).parent.resolve().absolute()
