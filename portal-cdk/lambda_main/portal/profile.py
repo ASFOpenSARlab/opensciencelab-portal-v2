@@ -101,25 +101,24 @@ def profile_user(username: str):
     access_requests = user_profile.get_requests()
     access_request_questions = {}
 
-    # Filter out "submission_*" fields for non-admins
     if access_requests:
         for request in access_requests:
+            # Filter out "submission_*" fields for non-admins
             remove_keys = []
             if not user_logged_in.is_admin():
                 for answer in request["answers"][-1].keys():
                     if answer.startswith("submission"):
                         remove_keys.append(answer)
 
+            for answer in remove_keys:
+                del request["answers"][-1][answer]
+
             # Capture full text of questions
             lab_obj = Lab(request["labname"])
-            print(f"Lab Q's: {lab_obj.access_request_questions()}")
             lab_questions = {
                 z["name"]: z["question"] for z in lab_obj.access_request_questions()
             }
             access_request_questions[request["labname"]] = lab_questions
-
-            for answer in remove_keys:
-                del request["answers"][-1][answer]
 
     logger.info(f"access_request_questions: {access_request_questions}")
 
