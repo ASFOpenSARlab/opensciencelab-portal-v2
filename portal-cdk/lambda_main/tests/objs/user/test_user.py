@@ -38,6 +38,7 @@ class TestUserClass:
 
         user_table_name = "TestUserTable"
         lab_table_name = "TestLabTable"
+        req_table_name = "TestRequestsTable"
         util.dynamo_db._DYNAMO_DB.create_table(
             TableName=user_table_name,
             BillingMode="PAY_PER_REQUEST",
@@ -50,12 +51,27 @@ class TestUserClass:
             KeySchema=[{"AttributeName": "labname", "KeyType": "HASH"}],
             AttributeDefinitions=[{"AttributeName": "labname", "AttributeType": "S"}],
         )
+        util.dynamo_db._DYNAMO_DB.create_table(
+            TableName=req_table_name,
+            BillingMode="PAY_PER_REQUEST",
+            KeySchema=[
+                {"AttributeName": "labname", "KeyType": "HASH"},
+                {"AttributeName": "username", "KeyType": "RANGE"},
+            ],
+            AttributeDefinitions=[
+                {"AttributeName": "labname", "AttributeType": "S"},
+                {"AttributeName": "username", "AttributeType": "S"},
+            ],
+        )
         ## No need to delete the table between methods, it goes out of scope anyways.
         util.dynamo_db._DYNAMO_TABLE_USER = util.dynamo_db._DYNAMO_DB.Table(
             user_table_name
         )
         util.dynamo_db._DYNAMO_TABLE_LAB = util.dynamo_db._DYNAMO_DB.Table(
             lab_table_name
+        )
+        util.dynamo_db._DYNAMO_TABLE_REQ = util.dynamo_db._DYNAMO_DB.Table(
+            req_table_name
         )
         assert get_all_items(table_id="user") == [], "DB should be empty at the start"
 
@@ -217,6 +233,35 @@ class TestUserClass:
             len(get_users_with_lab("testlab", username_filter="test_user", limit=2))
             == 2
         ), "Filtered and limited results should be limited to 2"
+
+    def test_fetch_lab_requests(self, monkeypatch, helpers):
+        from objs.lab.lab import Lab
+        from objs.user.user import User
+
+        LAB_CONFIGS = helpers.FAKE_LAB_CONFIGS
+        monkeypatch.setattr("objs.lab.lab.LAB_CONFIGS", LAB_CONFIGS)
+
+        testuser = "testuser"
+        testlab = "testlab"
+
+        # testlab exists as a fake lab
+        lab = Lab(testlab)
+        user = User(testuser)
+
+        # should be no requests
+        assert len(user.get_requests()) == 0
+
+        # Add record
+        lab.add_access_request(
+            answers={
+                "sar_experience": "I have no experience",
+                "osl_experience": "I don't know what OSL is",
+            },
+            username=testuser,
+        )
+
+        # should now have a request
+        assert len(user.get_requests()) == 1
 
     def test_delete_user(self, monkeypatch):
         from objs.user.user import User

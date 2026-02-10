@@ -56,9 +56,8 @@ class Table:
         ## Update the DB:
         if _save:
             update_item(
-                self.unique_key_value,
+                key={self.unique_key_name: self.unique_key_value},
                 updates={key: value},
-                key_name=self.unique_key_name,
                 table_id=self.table_id,
             )
 
