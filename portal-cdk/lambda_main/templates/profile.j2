@@ -259,6 +259,7 @@
                 </div>
             </fieldset>
         </form>
+        <script src="/static/js/formutils.js" type="text/javascript" charset="utf-8"></script>
         <script>
         window.addEventListener('load', function () {
             // Get all select elements
@@ -268,15 +269,6 @@
                 expandSelect(select);
             });
         });
-        // Remove option with value === "default" if it is not selected
-        function removeDropdownDefault(selectElement){
-            if (selectElement.value !== "default") {
-                const defaultOption = selectElement.querySelector('option[value="default"]');
-                if (defaultOption) {
-                    selectElement.remove(defaultOption.index);
-                }
-            }
-        }
         // Displays element with id provided by option element data field if provided
         function expandSelect(selectElement){
             // Get the selected option element
