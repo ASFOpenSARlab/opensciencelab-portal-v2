@@ -312,12 +312,24 @@
                             <th>Answer</th>
                         </tr>
                         {% for question in request["answers"][-1] %}
-                            <tr>
-                                <td>
-                                    <b>{{ question }}</b>
-                                </td>
-                                <td>{{ request["answers"][-1][question] }}</td>
-                            </tr>
+                            {% if question in access_request_questions[request["labname"]] %}
+                                <tr>
+                                    <td>
+                                        <b>{{ access_request_questions[request["labname"]][question] }}</b>
+                                    </td>
+                                    <td>{{ request["answers"][-1][question] }}</td>
+                                </tr>
+                            {% endif %}
+                        {% endfor %}
+                        {% for question in request["answers"][-1] %}
+                            {% if question not in access_request_questions[request["labname"]] %}
+                                <tr>
+                                    <td>
+                                        <b>{{ question }}</b>
+                                    </td>
+                                    <td>{{ request["answers"][-1][question] }}</td>
+                                </tr>
+                            {% endif %}
                         {% endfor %}
                     </table>
                     {% if user_logged_in.is_admin() %}

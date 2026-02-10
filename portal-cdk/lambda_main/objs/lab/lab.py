@@ -235,3 +235,18 @@ class Lab(Table):
             )
 
         return get_all_items(table_id="request", limit=200, filters=filters)
+
+    def get_lab_config(self):
+        """
+        grab a BaseLabConfig() object for the lab
+        """
+        if self.labname not in LAB_CONFIGS:
+            return False
+
+        return LAB_CONFIGS[self.labname]
+
+    def allows_access_request(self) -> bool:
+        return len(self.get_lab_config().application_questions) > 0
+
+    def access_request_questions(self) -> dict:
+        return self.get_lab_config().application_questions

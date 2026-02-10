@@ -2,6 +2,7 @@ from util.format import portal_template, jinja_template
 from util.auth import require_access
 from util.session import current_session
 from objs.user import User
+from objs.lab import Lab
 from util.responses import wrap_response, form_body_to_dict
 from util.labs import LAB_CONFIGS
 from util.user_ip_logs_stream import get_user_ip_logs
@@ -98,16 +99,29 @@ def profile_user(username: str):
     user_profile = User(username=username, create_if_missing=False)
 
     access_requests = user_profile.get_requests()
+    access_request_questions = {}
 
     # Filter out "submission_*" fields for non-admins
-    if not user_logged_in.is_admin() and access_requests:
-        remove_keys = []
+    if access_requests:
         for request in access_requests:
-            for answer in request["answers"][-1].keys():
-                if answer.startswith("submission"):
-                    remove_keys.append(answer)
-        for answer in remove_keys:
-            del request["answers"][-1][answer]
+            remove_keys = []
+            if not user_logged_in.is_admin():
+                for answer in request["answers"][-1].keys():
+                    if answer.startswith("submission"):
+                        remove_keys.append(answer)
+
+            # Capture full text of questions
+            lab_obj = Lab(request["labname"])
+            print(f"Lab Q's: {lab_obj.access_request_questions()}")
+            lab_questions = {
+                z["name"]: z["question"] for z in lab_obj.access_request_questions()
+            }
+            access_request_questions[request["labname"]] = lab_questions
+
+            for answer in remove_keys:
+                del request["answers"][-1][answer]
+
+    logger.info(f"access_request_questions: {access_request_questions}")
 
     template_input = {
         "user_logged_in": user_logged_in,
@@ -117,6 +131,7 @@ def profile_user(username: str):
         "default_value": "Choose...",
         "warning_missing": "Value is missing",
         "access_requests": access_requests,
+        "access_request_questions": access_request_questions,
     }
 
     CWD = Path(__file__).parent.resolve().absolute()
