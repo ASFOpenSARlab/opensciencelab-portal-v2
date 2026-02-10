@@ -454,6 +454,54 @@ def delete_user_labs(username):
     )
 
 
+@access_router.get("/apply/<shortname>", include_in_schema=False)
+@require_access(human=True)
+@portal_template()
+def apply_to_lab(shortname):
+    if not LAB_CONFIGS.get(shortname):
+        return wrap_response(
+            body="Redirecting to Portal",
+            headers={"Location": "/portal"},
+            code=302,
+        )
+
+    template_input = {
+        "labname": shortname,
+        "lab_friendly_name": LAB_CONFIGS[shortname].friendly_name,
+        "application_questions": LAB_CONFIGS[shortname].application_questions,
+    }
+    return jinja_template(template_input, "application.j2")
+
+
+@access_router.post("/apply/<shortname>", include_in_schema=False)
+@require_access(human=True)
+def submit_application(shortname):
+    # Grab the username of the user making the request
+    username = current_session.auth.cognito.username
+    # Parse request
+    body = access_router.current_event.body
+
+    if body is None:
+        error = "Body not provided to submit_application"
+        logger.error(error)
+        raise MalformedRequest(error)
+    body = form_body_to_dict(body)
+
+    # Add Application
+    lab = Lab(shortname)
+    lab.add_access_request(
+        answers=body,
+        username=username,
+    )
+
+    # Send the user to home page
+    return wrap_response(
+        body="Redirecting to Portal",
+        headers={"Location": "/portal"},
+        code=302,
+    )
+
+
 @access_router.get("/manage/<shortname>/requests/", include_in_schema=False)
 @require_access("admin", human=True)
 @portal_template()

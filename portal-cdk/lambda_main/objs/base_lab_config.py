@@ -28,6 +28,7 @@ class BaseLabConfig:
     )
     crypto_remediation_role_arn: str = None
     default_profiles: list = field(default_factory=lambda: [])
+    application_questions: list[dict] = field(default_factory=lambda: [])
 
     def is_healthy(self) -> bool:
         try:
