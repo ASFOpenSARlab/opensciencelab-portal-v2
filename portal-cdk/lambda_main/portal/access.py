@@ -474,7 +474,7 @@ def apply_to_lab(shortname):
 
 
 @access_router.post("/apply/<shortname>", include_in_schema=False)
-@require_access("admin", human=True)
+@require_access(human=True)
 def submit_application(shortname):
     # Grab the username of the user making the request
     username = current_session.auth.cognito.username
@@ -482,13 +482,17 @@ def submit_application(shortname):
     body = access_router.current_event.body
 
     if body is None:
-        error = "Body not provided to edit_user"
+        error = "Body not provided to submit_application"
         logger.error(error)
         raise MalformedRequest(error)
     body = form_body_to_dict(body)
 
     # Add Application
-    # TODO
+    lab = Lab(shortname)
+    lab.add_access_request(
+        answers=body,
+        username=username,
+    )
 
     # Send the user to home page
     return wrap_response(

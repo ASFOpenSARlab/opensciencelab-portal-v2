@@ -73,10 +73,16 @@
                                            role="button"
                                            class="btn btn-lg btn-primary go-to-lab-btn"
                                            {% if not accessable -%}
-                                           href="#"
-                                           title="You do not have access to the lab"
-                                           disabled>
-                                            <i>Restricted</i>
+                                                {% if lab.application_questions is defined and lab.application_questions != [] %}
+                                                href="/portal/access/apply/{{ lab.short_lab_name }}"
+                                                title="Apply to lab">
+                                                    <i>Apply for Access</i>
+                                                {% else %}
+                                                href="#"
+                                                title="You do not have access to the lab"
+                                                disabled>
+                                                    <i>Restricted</i>
+                                                {% endif %}
                                         {% elif not lab.is_healthy() -%}
                                             href="#"
                                             title="The lab url is either unhealthy or the lab no longer exists"

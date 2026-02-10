@@ -126,7 +126,7 @@ NON_PROD_LAB_CONFIGS = {
         about_page_url="https://opensarlab-docs.asf.alaska.edu/",
         about_page_button_label="Info",
         ip_country_status=daac_limited_restricted_status,
-        accessibility="private",
+        accessibility="protected",
         allowed_profiles=[
             "SAR 1",
             "t3a.medium - Dask User",
