@@ -142,6 +142,50 @@ NON_PROD_LAB_CONFIGS = {
         ],
         crypto_remediation_role_arn="arn:aws:iam::381492216607:role/service-role/cryptomining-remediation-role-b4sw3o86",
         default_profiles=["m6a.large", "m6a.xlarge"],
+        application_questions=[
+            {
+                "name": "sar_experience",
+                "question": "Tell us about your SAR-related experience and the length of time you have worked in the field.",
+                "type": "text",
+                "rendering_options": "multi-line",
+                "placeholder": "Your Answer",
+            },
+            {
+                "name": "osl_experience",
+                "question": "Have you used OpenSARLab before? If so, tell us what you used it for and what you produced / developed / delivered with it.",
+                "type": "text",
+                "rendering_options": "multi-line",
+                "placeholder": "Your Answer",
+            },
+            {
+                "name": "use_case",
+                "question": "What do you want to use OpenSARLab for?",
+                "type": "text",
+                "rendering_options": "multi-line",
+                "placeholder": "Your Answer",
+            },
+            {
+                "name": "personal_impacts",
+                "question": "If you were given access to OpenSARLab, what would be the impact for you?",
+                "type": "text",
+                "rendering_options": "multi-line",
+                "placeholder": "Your Answer",
+            },
+            {
+                "name": "community_impacts",
+                "question": "What would be the impact for your community?",
+                "type": "text",
+                "rendering_options": "multi-line",
+                "placeholder": "Your Answer",
+            },
+            {
+                "name": "research_impacts",
+                "question": "What would be the impact for the field of research you are contributing to?",
+                "type": "text",
+                "rendering_options": "multi-line",
+                "placeholder": "Your Answer",
+            },
+        ]
     ),
     "test_protected": BaseLabConfig(
         short_lab_name="test_protected",
