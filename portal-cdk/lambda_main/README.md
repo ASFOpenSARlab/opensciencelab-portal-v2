@@ -15,9 +15,11 @@ The Core of the project. This function holds all the API/UI logic for the portal
 - [`main.py`](./main.py): The main entry point for the Lambda function. Setups the Powertools API, and everything after.
 
 ## Adding an Application Form to a Lab
-Lab configs are stored in [`util/labs/__init__.py`](.util/labs/__init__.py).
+
+Lab configs are stored in [`util/labs/__init__.py`](./util/labs/__init__.py).
 To add an application form add the optional parameter `application_questions` to the lab config.
 The following describes the available options for defining an application.
+
 ```py
 application_questions=[
     {
@@ -47,17 +49,19 @@ application_questions=[
     },
 ]
 ```
+
 Question parameters
+
 - `name`: The name of the question as it will appear in code
 - `question`: The prompt the user will recieve
 - `type`: What type of user submission should be rendered
-    - text
-    - checkbox
-    - dropdown
+  - text
+  - checkbox
+  - dropdown
 - `rendering_options`: Any additional information used for rendering, is used differently depending on the questions `type`
-    - `text` (OPTIONAL)
-        - `single-line`: Renders a one line textbox
-        - `multi-line`: Renders a large multiline textbox
-    - `dropdown`
-        - A list of options available to the dropdown, like `["Option 1", "Option 2", ...]`
+  - `text` (OPTIONAL)
+    - `single-line`: Renders a one line textbox
+    - `multi-line`: Renders a large multiline textbox
+  - `dropdown`
+    - A list of options available to the dropdown, like `["Option 1", "Option 2", ...]`
 - `placeholder`(OPTIONAL): The placeholder value for the question.

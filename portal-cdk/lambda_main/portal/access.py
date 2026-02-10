@@ -468,7 +468,7 @@ def apply_to_lab(shortname):
     template_input = {
         "labname": shortname,
         "lab_friendly_name": LAB_CONFIGS[shortname].friendly_name,
-        "application_questions": LAB_CONFIGS[shortname].application_questions
+        "application_questions": LAB_CONFIGS[shortname].application_questions,
     }
     return jinja_template(template_input, "application.j2")
 

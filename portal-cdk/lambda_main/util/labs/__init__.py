@@ -185,7 +185,7 @@ NON_PROD_LAB_CONFIGS = {
                 "rendering_options": "multi-line",
                 "placeholder": "Your Answer",
             },
-        ]
+        ],
     ),
     "test_protected": BaseLabConfig(
         short_lab_name="test_protected",
