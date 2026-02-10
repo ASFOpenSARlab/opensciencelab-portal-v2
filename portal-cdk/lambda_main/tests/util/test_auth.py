@@ -239,23 +239,20 @@ class TestPortalAuth:
             "lab_access": {
                 "protectedlab": {
                     "can_user_see_lab": True,
-                    "can_user_access_lab": False
+                    "can_user_access_lab": False,
                 },
                 "testlab": {
                     "can_user_see_lab": True,
                     "can_user_access_lab": True,
                     "time_quota": None,
                     "lab_profiles": None,
-                    "lab_country_status": None
+                    "lab_country_status": None,
                 },
                 "differentlab": {
                     "can_user_see_lab": True,
-                    "can_user_access_lab": False
+                    "can_user_access_lab": False,
                 },
-                "openlab": {
-                    "can_user_see_lab": True,
-                    "can_user_access_lab": False
-                },
+                "openlab": {"can_user_see_lab": True, "can_user_access_lab": False},
             },
         }
         assert decrypt_data(json_payload["data"]) == expected_data
