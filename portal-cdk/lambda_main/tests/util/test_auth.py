@@ -211,6 +211,8 @@ class TestPortalAuth:
         monkeypatch.setattr("portal.hub.User", lambda *args, **kwargs: user)
         monkeypatch.setattr("util.auth.User", lambda *args, **kwargs: user)
 
+        monkeypatch.setattr("objs.user.user.LAB_CONFIGS", helpers.FAKE_LAB_CONFIGS)
+
         body_payload = json.dumps({"username": "test_user"})
         event = helpers.get_event(
             path="/portal/hub/auth",
@@ -227,21 +229,32 @@ class TestPortalAuth:
         assert json_payload.get("message") == "OK"
         assert json_payload.get("data")
         expected_data = {
-            "admin": False,
-            "roles": ["user"],
-            "name": "test_user",
-            "has_2fa": True,
-            "force_user_profile_update": False,
-            "ip_country_status": "unrestricted",
-            "country_code": "US",
-            "lab_access": {
-                "test_protected": {
-                    "can_user_see_lab": True,
-                    "can_user_access_lab": False,
+            'admin': False,
+            'roles': ['user'],
+            'name': 'test_user',
+            'has_2fa': True,
+            'force_user_profile_update': False,
+            'ip_country_status': 'unrestricted',
+            'country_code': 'US',
+            'lab_access': {
+                'protectedlab': {
+                    'can_user_see_lab': True,
+                    'can_user_access_lab': False
                 },
-                "test_prohibited": {
-                    "can_user_see_lab": True,
-                    "can_user_access_lab": False,
+                'testlab': {
+                    'can_user_see_lab': True,
+                    'can_user_access_lab': True,
+                    'time_quota': None,
+                    'lab_profiles': None,
+                    'lab_country_status': None
+                },
+                'differentlab': {
+                    'can_user_see_lab': True,
+                    'can_user_access_lab': False
+                },
+                'openlab': {
+                    'can_user_see_lab': True,
+                    'can_user_access_lab': False
                 },
             },
         }
