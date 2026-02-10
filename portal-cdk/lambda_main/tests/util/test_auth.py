@@ -230,7 +230,7 @@ class TestPortalAuth:
         assert json_payload.get("data")
         expected_data = {
             "admin": False,
-            "roles": [user],
+            "roles": ["user"],
             "name": "test_user",
             "has_2fa": True,
             "force_user_profile_update": False,
