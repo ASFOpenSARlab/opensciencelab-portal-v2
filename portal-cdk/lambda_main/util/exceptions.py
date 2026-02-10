@@ -119,3 +119,12 @@ class EnvironmentNotSet(GenericFatalError):
 
     def __init__(self, message, error_code=400, extra_info=None):
         super().__init__(message, error_code, extra_info)
+
+
+class InvalidLabRequestStatus(GenericFatalError):
+    """
+    Raised if expected environmental variables are not set
+    """
+
+    def __init__(self, message, error_code=400, extra_info=None):
+        super().__init__(message, error_code, extra_info)

@@ -48,9 +48,7 @@ class User(Table):
         super().__setattr__(USER_TABLE_KEY, username)
 
         ## Apply anything in the DB:
-        db_info = get_item(
-            self.username, key_name=USER_TABLE_KEY, table_id=USER_TABLE_ID
-        )
+        db_info = get_item(key={USER_TABLE_KEY: self.username}, table_id=USER_TABLE_ID)
 
         if not db_info and not create_if_missing:
             raise UserNotFound(
@@ -60,9 +58,8 @@ class User(Table):
         ## If it doesn't exist, create it with the defaults:
         if not db_info:
             create_item(
-                self.username,
-                defaults,
-                key_name=USER_TABLE_KEY,
+                key={USER_TABLE_KEY: self.username},
+                item=defaults,
                 table_id=USER_TABLE_ID,
             )
             db_info = {}
@@ -121,13 +118,30 @@ class User(Table):
             raise CognitoError(f"Could not delete Cognito user {self.username}")
 
         # Delete item from dynamodb
-        delete_item(self.username, key_name=USER_TABLE_KEY, table_id=USER_TABLE_ID)
+        delete_item(key={USER_TABLE_KEY: self.username}, table_id=USER_TABLE_ID)
 
         # ensure item is deleted
-        if get_item(self.username, key_name=USER_TABLE_KEY, table_id=USER_TABLE_ID):
+        if get_item(key={USER_TABLE_KEY: self.username}, table_id=USER_TABLE_ID):
             raise DbError(f"Could not delete db user {self.username}")
 
         return True
+
+    def get_requests(self, status: str | list | None = None):
+        filters = dynamo_filter(attr_name=USER_TABLE_KEY, filter_value=self.username)
+
+        if status:
+            if isinstance(status, str):
+                status = [
+                    status,
+                ]
+
+            filters = filters & dynamo_filter(
+                attr_name="status",
+                filter_action="in",
+                filter_value=status,
+            )
+
+        return get_all_items(table_id="request", limit=200, filters=filters)
 
 
 def _can_user_see_lab(user: User, lab) -> bool:

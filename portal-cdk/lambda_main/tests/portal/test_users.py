@@ -104,6 +104,30 @@ class TestUsersPages:
         )
         assert ret["headers"].get("Content-Type") == "text/html"
 
+    def test_users_admin_logged_in_get_all_items_integration(
+        self, lambda_context, monkeypatch, fake_auth, helpers
+    ):
+        # Override auth
+        user = helpers.FakeUser(access=["admin", "user"])
+        monkeypatch.setattr("portal.users.User", lambda *args, **kwargs: user)
+        monkeypatch.setattr("util.auth.User", lambda *args, **kwargs: user)
+
+        # Validate with live util.dynamo_db.get_all_items
+        monkeypatch.setattr("portal.users.all_locked_users", lambda *args, **kwargs: [])
+        monkeypatch.setattr(
+            "util.dynamo_db._get_dynamo", lambda *args, **kwargs: (True, True, True)
+        )
+        monkeypatch.setattr(
+            "util.dynamo_db.pull_all_pagination",
+            lambda *args, **kwargs: USER_TABLE_DATA,
+        )
+
+        event = helpers.get_event(path="/portal/users", cookies=fake_auth)
+        ret = main.lambda_handler(event, lambda_context)
+
+        assert ret["statusCode"] == 200
+        assert ret["body"].find("<b>YES</b>") != -1
+
     def test_delete_invalid_cognito_user(
         self, lambda_context, monkeypatch, fake_auth, helpers
     ):

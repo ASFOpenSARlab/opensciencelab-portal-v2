@@ -30,7 +30,7 @@
                 <td style="padding: 10px;">
                     <b><a href="/portal/profile/form/{{ user["username"] }}">{{ user["username"] }}</a></b>
                 </td>
-                <td style="padding: 10px;">{{ user["request_data"] }}</td>
+                <td style="padding: 10px;">{{ user["answers"][-1] }}</td>
                 <td style="padding: 10px;">{{ user["status"] }}</td>
             </tr>
         {% endfor %}

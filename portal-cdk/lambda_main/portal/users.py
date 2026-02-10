@@ -90,7 +90,7 @@ def users_root():
 
     # Fetch all users
     all_users = get_all_items(
-        table="user",
+        table_id="user",
         limit=row_limit,
         filters=user_email_filters(username_filter, email_filter),
     )
