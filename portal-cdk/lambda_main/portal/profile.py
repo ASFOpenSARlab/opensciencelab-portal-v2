@@ -2,6 +2,7 @@ from util.format import portal_template, jinja_template
 from util.auth import require_access
 from util.session import current_session
 from objs.user import User
+from objs.lab import Lab
 from util.responses import wrap_response, form_body_to_dict
 from util.labs import LAB_CONFIGS
 from util.user_ip_logs_stream import get_user_ip_logs
@@ -97,6 +98,30 @@ def profile_user(username: str):
     user_logged_in = current_session.user
     user_profile = User(username=username, create_if_missing=False)
 
+    access_requests = user_profile.get_requests()
+    access_request_questions = {}
+
+    if access_requests:
+        for request in access_requests:
+            # Filter out "submission_*" fields for non-admins
+            if not user_logged_in.is_admin():
+                remove_keys = []
+                for answer in request["answers"][-1].keys():
+                    if answer.startswith("submission"):
+                        remove_keys.append(answer)
+                for answer in remove_keys:
+                    del request["answers"][-1][answer]
+
+            # Capture full text of questions
+            lab_obj = Lab(request["labname"])
+            lab_questions = {
+                z["name"]: z["question"] for z in lab_obj.access_request_questions()
+            }
+            access_request_questions[request["labname"]] = lab_questions
+            request["lab_friendly_name"] = lab_obj.get_lab_config().friendly_name
+
+    logger.info(f"access_request_questions: {access_request_questions}")
+
     template_input = {
         "user_logged_in": user_logged_in,
         "user_profile": user_profile,
@@ -104,6 +129,8 @@ def profile_user(username: str):
         "user_ip_results": user_ip_results,
         "default_value": "Choose...",
         "warning_missing": "Value is missing",
+        "access_requests": access_requests,
+        "access_request_questions": access_request_questions,
     }
 
     CWD = Path(__file__).parent.resolve().absolute()

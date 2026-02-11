@@ -127,7 +127,9 @@ class User(Table):
         return True
 
     def get_requests(self, status: str | list | None = None):
-        filters = dynamo_filter(attr_name=USER_TABLE_KEY, filter_value=self.username)
+        filters = dynamo_filter(
+            attr_name=USER_TABLE_KEY, filter_value=self.username, filter_action="eq"
+        )
 
         if status:
             if isinstance(status, str):

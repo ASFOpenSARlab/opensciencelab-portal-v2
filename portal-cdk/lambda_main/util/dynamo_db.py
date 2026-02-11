@@ -200,6 +200,8 @@ def dynamo_filter(
         return Attr(attr_name).contains(filter_value)
     if filter_action == "in":
         return Attr(attr_name).is_in(filter_value)
+    if filter_action == "eq":
+        return Attr(attr_name).eq(filter_value)
 
 
 def pull_all_pagination(table, limit, filterexpr=None):

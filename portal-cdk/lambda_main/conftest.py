@@ -172,6 +172,10 @@ class Helpers:
         create_if_missing: bool = True
         country_code: str = "US"
 
+        def get_requests(self, **kwargs):
+            # This should probably be dynamic.
+            return None
+
         def update_last_cookie_assignment(self) -> None:
             self.last_cookie_assignment = datetime.datetime(
                 2024, 1, 1, 12, 0, 0
