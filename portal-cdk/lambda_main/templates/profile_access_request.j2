@@ -1,0 +1,77 @@
+{# djlint:off H021 #}
+<hr>
+<h3>Access Requests:</h3>
+<br>
+{% for request in access_requests %}
+    <div style="border: 1px solid #000;
+                width:90%;
+                padding: 10px 10px 10px 10px">
+        <span class="font-20"
+              style="display: inline;
+                     position: relative;
+                     padding: 5px 10px;
+                     top: -1.0em;
+                     border: 1px solid #000;
+                     background: #fff;
+                     margin: 0.5em 2px 0 4px">
+            <b>{{ request["lab_friendly_name"] }}</b>: {{ request["status"] }}
+        </span>
+        <table style="width:100%" border=1>
+            <tr>
+                <th>
+                    Question - <a href="/portal/access/manage/{{ request["labname"] }}/raw_request/{{ user_profile.username }}/">Full Record</a>
+                </th>
+                <th>Answer</th>
+            </tr>
+            {% for question in request["answers"][-1] %}
+                {% if question in access_request_questions[request["labname"]] %}
+                    <tr>
+                        <td>
+                            <b>{{ access_request_questions[request["labname"]][question] }}</b>
+                        </td>
+                        <td>{{ request["answers"][-1][question] }}</td>
+                    </tr>
+                {% endif %}
+            {% endfor %}
+            {% for question in request["answers"][-1] %}
+                {% if question not in access_request_questions[request["labname"]] %}
+                    {% if question == "submission_cc" and request["answers"][-1][question] in restricted_ccs %}
+                        <tr style="background-color: {{ restricted_ccs[request["answers"][-1][question]]["color"] }}">
+                            <td>
+                                <b>{{ question }}</b>
+                            </td>
+                            <td>
+                                {{ request["answers"][-1][question] }} - {{ restricted_ccs[request["answers"][-1][question]]["name"] }} - {{ restricted_ccs[request["answers"][-1][question]]["restrictions"] }}
+                            </td>
+                        </tr>
+                    {% else %}
+                        <tr>
+                            <td>
+                                <b>{{ question }}</b>
+                            </td>
+                            <td>{{ request["answers"][-1][question] }}</td>
+                        </tr>
+                    {% endif %}
+                {% endif %}
+            {% endfor %}
+        </table>
+        {% if user_logged_in.is_admin() %}
+            <br>
+            <div>
+                <input type="button"
+                       value="Approve"
+                       style="background-color: green;
+                              color: white;
+                              border: 1px;
+                              padding: 5px 5px">
+                |
+                <input type="button"
+                       value="Reject"
+                       style="background-color: red;
+                              color: white;
+                              border: 1px;
+                              padding: 5px 5px">
+            </div>
+        {% endif %}
+    </div>
+{% endfor %}
