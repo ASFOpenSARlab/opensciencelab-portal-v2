@@ -90,6 +90,30 @@ BASIC_REQUEST = {
     "cookies": [],
 }
 
+LAB_ACCESS_QUESTIONS = [
+    {
+        "name": "sar_experience",
+        "question": "Tell us about your SAR-related experience",
+        "type": "text",
+        "rendering_options": "multi-line",
+        "placeholder": "Your Answer",
+    },
+    {
+        "name": "osl_experience",
+        "question": "Have you used OpenSARLab before?",
+        "type": "text",
+        "rendering_options": "multi-line",
+        "placeholder": "Your Answer",
+    },
+    {
+        "name": "use_case",
+        "question": "What do you want to use OpenSARLab for?",
+        "type": "text",
+        "rendering_options": "multi-line",
+        "placeholder": "Your Answer",
+    },
+]
+
 
 @dataclass
 class Helpers:
@@ -210,6 +234,7 @@ class Helpers:
             allowed_profiles=["m6a.large"],
             accessibility="protected",
             deployment_url="https://this-host-does-not-exist.fake",
+            application_questions=LAB_ACCESS_QUESTIONS,
         ),
         "testlab": BaseLabConfig(
             friendly_name="Test Lab",
@@ -219,6 +244,7 @@ class Helpers:
             accessibility="protected",
             deployment_url="https://this-host-does-not-exist.fake",
             default_profiles=["m6a.large", "m6a.xlarge"],
+            application_questions=LAB_ACCESS_QUESTIONS,
         ),
         "noaccess": BaseLabConfig(
             friendly_name="No Access Lab",

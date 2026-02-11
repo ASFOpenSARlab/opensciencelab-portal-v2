@@ -25,14 +25,6 @@ USER_TABLE_KEY = "username"
 
 VALID_REQUEST_STATUSES = ["new", "approved", "rejected", "pending"]
 LOCKED_REQUEST_STATUSES = ["approved", "rejected"]
-DEFAULT_ACCESS_QUESTIONS = [
-    "sar_experience",
-    "osl_experience",
-    "use_case",
-    "personal_impacts",
-    "community_impacts",
-    "research_impacts",
-]
 
 
 class Lab(Table):
@@ -173,9 +165,12 @@ class Lab(Table):
                 "answers": [],
             }
 
+        # Look up the lab access questions
+        lab_questions = [z["name"] for z in self.access_request_questions()]
+
         # Copy in received answers
         answers_dict = {}
-        for question in DEFAULT_ACCESS_QUESTIONS:
+        for question in lab_questions:
             answers_dict[question] = answers.get(question)
 
         # Add user metadata fields:
