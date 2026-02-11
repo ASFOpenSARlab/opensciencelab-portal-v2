@@ -14,46 +14,34 @@
         <div class="center-horizontal">
             <form method="post">
                 {% for question in application_questions -%}
-                    <label for={{ question["name"] }}
-                    {% if question.get("rendering_options") and question.get("rendering_options") in ["multi-line"] %}
-                    style="display: block; margin-bottom: 8px;"
-                    {% endif %}>
+                    <label for="{{ question["name"] }}"
+                           {% if question.get("rendering_options") and question.get("rendering_options") in ["multi-line"] %} style="display: block; margin-bottom: 8px;" {% endif %}>
                         {{ question["question"] }}
                     </label>
                     {% if question["type"] == "text" %}
                         {% if question["rendering_options"] == "multi-line" %}
-                            <textarea
-                                id={{ question["name"] }}
-                                name={{ question["name"] }}
-                                rows="4" cols="50"
-                                {% if question.get("placeholder") %}
-                                placeholder="{{ question["placeholder"] }}"
-                                {% endif %}
-                                ></textarea>
+                            <textarea id="{{ question["name"] }}"
+                                      name="{{ question["name"] }}"
+                                      rows="4"
+                                      cols="50"
+                                      {% if question.get("placeholder") %} placeholder="{{ question["placeholder"] }}" {% endif %}></textarea>
                         {% else %}
-                            <input
-                                type="text"
-                                id={{ question["name"] }}
-                                name={{ question["name"] }}
-                                {% if question.get("placeholder") %}
-                                placeholder={{ question["placeholder"] }}
-                                {% endif %}
-                                >
+                            <input type="text"
+                                   id="{{ question["name"] }}"
+                                   name="{{ question["name"] }}"
+                                   {% if question.get("placeholder") %}placeholder={{ question["placeholder"] }}{% endif %}>
                         {% endif %}
                     {% elif question["type"] == "checkbox" %}
-                        <input
-                            type="checkbox"
-                            id={{ question["name"] }}
-                            name={{ question["name"] }}>
+                        <input type="checkbox" id={{ question["name"] }} name={{ question["name"] }}>
                     {% elif question["type"] == "dropdown" %}
-                        <select
-                            id={{ question["name"] }}
-                            name={{ question["name"] }}
-                            onchange="removeDropdownDefault(this)">
-                                <option value="default">Choose One</option>
-                                {% for option in question["rendering_options"] %}
-                                    <option value={{ option|lower }}>{{ option }}</option>
-                                {% endfor %}
+                        <select id="{{ question["name"] }}"
+                                name="{{ question["name"] }}"
+                                onchange="removeDropdownDefault(this)">
+                            <option value="default">Choose One</option>
+                            {% for option in question["rendering_options"] %}
+                                <option value={{ option|lower }}>{{ option }}
+                                </option>
+                            {% endfor %}
                         </select>
                     {% endif %}
                     <br>
