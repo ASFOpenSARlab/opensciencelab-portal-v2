@@ -6,9 +6,12 @@ from objs.lab import Lab
 from util.responses import wrap_response, form_body_to_dict
 from util.labs import LAB_CONFIGS
 from util.user_ip_logs_stream import get_user_ip_logs
+from util.access_request import (
+    compile_user_access_requests,
+    get_country_list,
+    get_restricted_countries,
+)
 
-from pathlib import Path
-import json
 from urllib.parse import urlencode
 from typing import Any
 
@@ -98,29 +101,11 @@ def profile_user(username: str):
     user_logged_in = current_session.user
     user_profile = User(username=username, create_if_missing=False)
 
-    access_requests = user_profile.get_requests()
-    access_request_questions = {}
+    access_requests, access_request_questions = compile_user_access_requests(
+        user_profile, user_logged_in
+    )
 
-    if access_requests:
-        for request in access_requests:
-            # Filter out "submission_*" fields for non-admins
-            if not user_logged_in.is_admin():
-                remove_keys = []
-                for answer in request["answers"][-1].keys():
-                    if answer.startswith("submission"):
-                        remove_keys.append(answer)
-                for answer in remove_keys:
-                    del request["answers"][-1][answer]
-
-            # Capture full text of questions
-            lab_obj = Lab(request["labname"])
-            lab_questions = {
-                z["name"]: z["question"] for z in lab_obj.access_request_questions()
-            }
-            access_request_questions[request["labname"]] = lab_questions
-            request["lab_friendly_name"] = lab_obj.get_lab_config().friendly_name
-
-    logger.info(f"access_request_questions: {access_request_questions}")
+    logger.debug(f"access_request_questions: {access_request_questions}")
 
     template_input = {
         "user_logged_in": user_logged_in,
@@ -133,9 +118,8 @@ def profile_user(username: str):
         "access_request_questions": access_request_questions,
     }
 
-    CWD = Path(__file__).parent.resolve().absolute()
-    with open(CWD / "../data/countries.json", "r", encoding="utf-8") as f:
-        template_input["countries"] = json.loads(f.read())
+    template_input["countries"] = get_country_list()
+    template_input["restricted_ccs"] = get_restricted_countries()
 
     # Get query string if present
     query_params = profile_router.current_event.query_string_parameters

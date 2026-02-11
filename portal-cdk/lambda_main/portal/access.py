@@ -517,3 +517,17 @@ def list_access_requests(shortname):
     logger.info(f"Access requests = {lab.get_requests()}")
 
     return jinja_template(template_input, "manage_access.j2")
+
+
+@access_router.get(
+    "/manage/<shortname>/raw_request/<username>/", include_in_schema=False
+)
+@require_access("admin", human=True)
+def get_raw_access_request(shortname, username):
+    lab = Lab(labname=shortname)
+    request_data = lab.get_access_request(username)
+    return wrap_response(
+        body=json.dumps(request_data),
+        code=200 if request_data else 422,
+        content_type=content_types.APPLICATION_JSON,
+    )

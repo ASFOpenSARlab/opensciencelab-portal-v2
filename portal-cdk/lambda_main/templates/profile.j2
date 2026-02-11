@@ -308,7 +308,9 @@
                     </span>
                     <table style="width:100%" border=1>
                         <tr>
-                            <th>Question</th>
+                            <th>
+                                Question - <a href="/portal/access/manage/{{ request["labname"] }}/raw_request/{{ user_profile.username }}/">Full Record</a>
+                            </th>
                             <th>Answer</th>
                         </tr>
                         {% for question in request["answers"][-1] %}
@@ -323,11 +325,19 @@
                         {% endfor %}
                         {% for question in request["answers"][-1] %}
                             {% if question not in access_request_questions[request["labname"]] %}
-                                <tr>
+                                {% if question == "submission_cc" and request["answers"][-1][question] in restricted_ccs %}
+                                    <tr style="background-color: {{ restricted_ccs[request["answers"][-1][question]]["color"] }}">
+                                {% else %}
+                                    <tr>
+                                {% endif %}
                                     <td>
                                         <b>{{ question }}</b>
                                     </td>
-                                    <td>{{ request["answers"][-1][question] }}</td>
+                                    {% if question == "submission_cc" and request["answers"][-1][question] in restricted_ccs %}
+                                        <td>{{ request["answers"][-1][question] }} - {{ restricted_ccs[request["answers"][-1][question]]["name"] }} - {{ restricted_ccs[request["answers"][-1][question]]["restrictions"] }} </td>
+                                    {% else %}
+                                        <td>{{ request["answers"][-1][question] }}</td>
+                                    {% endif %}
                                 </tr>
                             {% endif %}
                         {% endfor %}
@@ -412,9 +422,17 @@
                     <th>IP Address</th>
                 </tr>
                 {% for res in user_ip_results -%}
-                    <tr>
+                    {% if res['country_code'] in restricted_ccs %}
+                        <tr style="background-color: {{ restricted_ccs[res['country_code']]["color"] }};">
+                    {% else %}
+                        <tr>
+                    {% endif %}
                         <td>{{ res['@timestamp'] }}</td>
-                        <td>{{ res['country_code'] }}</td>
+                        {% if res['country_code'] in restricted_ccs %}
+                            <td>{{ res['country_code'] }} - {{ restricted_ccs[res['country_code']]["name"] }} - {{ restricted_ccs[res['country_code']]["restrictions"] }}</td>
+                        {% else %}
+                            <td>{{ res['country_code'] }}</td>
+                        {% endif %}
                         <td>{{ res['ip_address'] }}</td>
                     </tr>
                 {% endfor %}
