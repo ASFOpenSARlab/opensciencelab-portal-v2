@@ -10,67 +10,70 @@
         {% include 'notifications.j2' %}
     {% endwith -%}
     <body>
-        {% include './noscript.j2' %}
-        <section>
-            <div class="pure-g outside-margins">
-                <div class="pure-u-1-6"></div>
-                <div class="pure-u-1-2">
-                    <div class="pure-g top-margins">
-                        <div class="pure-u-1-3">
-                            <img style="height: 100px" src="/static/img/NASA_logo.svg" alt="nasa logo">
+        <div class="content-wrapper">
+            {% include './noscript.j2' %}
+            <section>
+                <div class="pure-g outside-padding">
+                    <div class="pure-u-1-6"></div>
+                    <div class="pure-u-1-2">
+                        <div class="pure-g top-margins">
+                            <div class="pure-u-1-3">
+                                <img style="height: 100px" src="/static/img/NASA_logo.svg" alt="nasa logo">
+                            </div>
+                            <div class="pure-u-1-3 bump-margin">
+                                <img style="height: 100px"
+                                     src="/static/img/osl_logo_v2_vertical_cropped.svg"
+                                     alt="osl logo">
+                            </div>
                         </div>
-                        <div class="pure-u-1-3 bump-margin">
-                            <img style="height: 100px"
-                                 src="/static/img/osl_logo_v2_vertical_cropped.svg"
-                                 alt="osl logo">
+                        <div class="pure-g middle-margins">
+                            <div class="pure-1">
+                                <h3>Welcome to OpenScienceLab!</h3>
+                                <p>
+                                    OpenScienceLab is a collection of JupyterHub computing environments. Developed and operated by the <a href="https://asf.alaska.edu">Alaska Satellite Facility (ASF)</a>, it is used for education and research with data from NASA’s Distributed Active Archive Centers (DAAC).
+                                </p>
+                                <p>
+                                    Signing up is free and includes access to ASF’s OpenSARLab - a lab designed for Synthetic Aperture Radar (SAR) workflows.
+                                </p>
+                                <p>
+                                    Basic documentaion about OpenScienceLab can be found <span><a href="https://opensarlab-docs.asf.alaska.edu/">here.</a></span>
+                                </p>
+                                <p style="margin-top: 2rem;">
+                                    <b>
+                                        Learn more about OpenScienceLab and SAR. Ask your pressing questions in your favorite language. Click the OSL Bot button to the right. Let us known what you think.
+                                    </b>
+                                </p>
+                            </div>
                         </div>
                     </div>
-                    <div class="pure-g middle-margins">
-                        <div class="pure-1">
-                            <h3>Welcome to OpenScienceLab!</h3>
-                            <p>
-                                OpenScienceLab is a collection of JupyterHub computing environments. Developed and operated by the <a href="https://asf.alaska.edu">Alaska Satellite Facility (ASF)</a>, it is used for education and research with data from NASA’s Distributed Active Archive Centers (DAAC).
-                            </p>
-                            <p>
-                                Signing up is free and includes access to ASF’s OpenSARLab - a lab designed for Synthetic Aperture Radar (SAR) workflows.
-                            </p>
-                            <p>
-                                Basic documentaion about OpenScienceLab can be found <span><a href="https://opensarlab-docs.asf.alaska.edu/">here.</a></span>
-                            </p>
-                            <p style="margin-top: 2rem;">
-                                <b>
-                                    Learn more about OpenScienceLab and SAR. Ask your pressing questions in your favorite language. Click the OSL Bot button to the right. Let us known what you think.
-                                </b>
-                            </p>
+                    <div class="pure-u-1-3">
+                        <div class="pure-g top-margins">
+                            <div class="pure-u-1-5"></div>
+                            <div class="pure-u-3-5 middle-margins">
+                                <div>
+                                    <a class="pure-button button-warning"
+                                       href="{{ login_url }}{{ return_path }}">Log in</a>
+                                </div>
+                                <div class="custom-hr"></div>
+                                <div>
+                                    <a href="{{ signup_url }}{{ return_path }}">Create Account</a>
+                                </div>
+                                <div>
+                                    <a href="{{ forgot_password_url }}{{ return_path }}">Forgot Password?</a>
+                                </div>
+                                <div>
+                                    <a href="/mfa">Reset MFA</a>
+                                </div>
+                            </div>
+                            <div class="pure-u-1-5"></div>
+                        </div>
+                        <div class="pure-g top-margins">
+                            <div class="pure-u-1"></div>
                         </div>
                     </div>
                 </div>
-                <div class="pure-u-1-3">
-                    <div class="pure-g top-margins">
-                        <div class="pure-u-1-5"></div>
-                        <div class="pure-u-3-5 middle-margins">
-                            <div>
-                                <a class="pure-button button-warning"
-                                   href="{{ login_url }}{{ return_path }}">Log in</a>
-                            </div>
-                            <div class="custom-hr"></div>
-                            <div>
-                                <a href="{{ signup_url }}{{ return_path }}">Create Account</a>
-                            </div>
-                            <div>
-                                <a href="{{ forgot_password_url }}{{ return_path }}">Forgot Password?</a>
-                            </div>
-                            <div>
-                                <a href="/mfa">Reset MFA</a>
-                            </div>
-                        </div>
-                        <div class="pure-u-1-5"></div>
-                    </div>
-                    <div class="pure-g top-margins">
-                        <div class="pure-u-1"></div>
-                    </div>
-                </div>
-            </div>
-        </section>
+            </section>
+        </div>
+        {% include 'asf_footer.j2' %}
     </body>
 </html>
