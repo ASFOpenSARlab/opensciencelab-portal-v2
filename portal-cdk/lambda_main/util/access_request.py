@@ -4,13 +4,14 @@ import json
 from objs.lab import Lab
 
 
+# https://www.nasa.gov/wp-content/uploads/2025/07/oiir-designated-country-list-7-11-2025.pdf
 RESTRICTED_COUNTRIES = {
-    "AF": {"name": "Afghanistan", "restrictions": [3]},
+    "BT": {"name": "Bhutan", "restrictions": [1]},
+    "TW": {"name": "Taiwan*", "restrictions": [1]},
+    "AF": {"name": "Afghanistan", "restrictions": [1, 3]},
     "BH": {"name": "Bahrain", "restrictions": [4]},
     "BY": {"name": "Belarus", "restrictions": [3, 4]},
-    "BT": {"name": "Bhutan", "restrictions": [1]},
     "MM": {"name": "Burma", "restrictions": [3]},
-    "KH": {"name": "Cambodia", "restrictions": [3]},
     "CT": {"name": "Central African Republic", "restrictions": [3]},
     "CN": {"name": "China, Peoples Republic", "restrictions": [3, 4]},
     "CD": {
@@ -18,7 +19,6 @@ RESTRICTED_COUNTRIES = {
         "restrictions": [3],
     },
     "CU": {"name": "Cuba", "restrictions": [2, 3]},
-    "CY": {"name": "Cyprus", "restrictions": [3]},
     "EG": {"name": "Egypt", "restrictions": [4]},
     "ER": {"name": "Eritrea", "restrictions": [3]},
     "ET": {"name": "Ethiopia", "restrictions": [3]},
@@ -28,9 +28,9 @@ RESTRICTED_COUNTRIES = {
     "IL": {"name": "Israel", "restrictions": [4]},
     "JO": {"name": "Jordan", "restrictions": [4]},
     "KP": {"name": "Korea, North", "restrictions": [1, 2, 3, 4]},
-    "KW": {"name": "Kuwait", "restrictions": [4]},
     "LB": {"name": "Lebanon", "restrictions": [3, 4]},
     "LY": {"name": "Libya", "restrictions": [3, 4]},
+    "MO": {"name": "Macau", "restrictions": [4]},
     "NI": {"name": "Nicaragua", "restrictions": [3]},
     "OM": {"name": "Oman", "restrictions": [4]},
     "PK": {"name": "Pakistan", "restrictions": [4]},
@@ -39,13 +39,12 @@ RESTRICTED_COUNTRIES = {
     "SO": {"name": "Somalia", "restrictions": [3]},
     "SS": {"name": "South Sudan (Republic of)", "restrictions": [3]},
     "SU": {"name": "Sudan", "restrictions": [3]},
-    "SY": {"name": "Syria", "restrictions": [2, 3, 4]},
-    "TW": {"name": "Taiwan**", "restrictions": [1]},
+    "SY": {"name": "Syria", "restrictions": [1, 2, 3, 4]},
     "AE": {"name": "United Arab Emirates", "restrictions": [4]},
-    "VE": {"name": "Venezuela", "restrictions": [3, 4]},
+    "VE": {"name": "Venezuela", "restrictions": [1, 3, 4]},
     "YE": {"name": "Yemen", "restrictions": [4]},
-    "EH": {"name": "Western Sahara", "restrictions": [1]},
     "ZW": {"name": "Zimbabwe", "restrictions": [3]},
+    "RU": {"name": "Russia", "restrictions": [1, 2, 3, 4, 9]},
 }
 
 
@@ -84,11 +83,11 @@ def get_country_list() -> dict:
 
 
 def restricted_countries_html_color(restrictions: list) -> str:
-    if 4 in restrictions and 1 in restrictions:
-        return "#F73B3B"  # Very Red
-    if 4 in restrictions or 1 in restrictions:
-        return "#F76060"  # Red
     if 2 in restrictions and 3 in restrictions:
+        return "#F73B3B"  # Very Red
+    if 2 in restrictions or 3 in restrictions:
+        return "#F76060"  # Red
+    if 1 in restrictions and 4 in restrictions:
         return "#F7ED14"  # Very Yellow
     return "#F7F16A"  # Yellow
 
