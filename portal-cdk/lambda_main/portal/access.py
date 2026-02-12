@@ -10,6 +10,12 @@ from util.responses import wrap_response, form_body_to_dict, json_body_to_dict
 from util.labs import LAB_CONFIGS
 from objs.lab import Lab
 from util.exceptions import MalformedRequest
+from util.dynamo_db import dynamo_filter, get_all_items
+from util.manage_access import (
+    validate_edit_user_request,
+    validate_delete_lab_access,
+    validate_set_lab_access,
+)
 
 from aws_lambda_powertools.event_handler.api_gateway import Router
 from aws_lambda_powertools.event_handler import content_types
@@ -28,17 +34,29 @@ access_route = {
 
 # This catches "/portal/access" (this routers 'root'):
 @access_router.get("", include_in_schema=False)
-@require_access(human=True)
+@require_access("admin", human=True)
 @portal_template()
 def access_root() -> str:
-    return "Access Labs"
+    # Filter for NEW and PENDING requests
+    filters_is = dynamo_filter(
+        attr_name="status", filter_value=["new", "pending"], filter_action="in"
+    )
+    requests = get_all_items(table_id="request", limit=200, filters=filters_is)
+
+    template_input = {"requests": requests}
+
+    logger.info(f"template_input = {template_input}")
+
+    return jinja_template(template_input, "manage_access.j2")
 
 
-@access_router.get("/add_lab", include_in_schema=False)
-@require_access(human=True)
+@access_router.get("/manage/<shortname>/requests/", include_in_schema=False)
+@require_access("admin", human=True)
 @portal_template()
-def add_lab():
-    return "Create New Lab"
+def list_access_requests(shortname):
+    lab = Lab(labname=shortname)
+    template_input = {"requests": lab.get_requests()}
+    return jinja_template(template_input, "manage_access.j2")
 
 
 @access_router.get("/manage/<shortname>", include_in_schema=False)
@@ -61,33 +79,11 @@ def manage_lab(shortname):
 
     lab = LAB_CONFIGS[shortname]
     template_input["lab"] = lab
+    template_input["allows_requests"] = len(lab.application_questions) > 0
     template_input["rowcount"] = len(users)
     template_input["exceeded"] = len(users) >= row_limit
 
     return jinja_template(template_input, "manage.j2")
-
-
-def validate_edit_user_request(body: dict) -> tuple[bool, str]:
-    # check always required keys are provided
-    keys = ["username", "action"]
-    for key in keys:
-        if key not in body:
-            return False, f"{key} not provided to edit_user"
-
-    if body["action"] == "add_user":
-        # check adding user fields provided
-        keys = ["lab_profiles", "time_quota", "lab_country_status"]
-        for key in keys:
-            if key not in body:
-                return False, f"{key} not provided to edit_user"
-        return True, "Read to add user"
-
-    elif body["action"] == "remove_user":
-        # check removing user fields provided
-        return True, "Ready to remove user"
-
-    else:
-        return False, "Invalid action"
 
 
 @access_router.post("/manage/<shortname>/edituser", include_in_schema=False)
@@ -140,20 +136,6 @@ def edit_user(shortname):
         code=302,
         headers={"Location": next_url},
     )
-
-
-@access_router.get("/lab", include_in_schema=False)
-@require_access(human=True)
-@portal_template()
-def view_all_labs():
-    return "inspect ALL labs"
-
-
-@access_router.get("/lab/<lab>", include_in_schema=False)
-@require_access(human=True)
-@portal_template()
-def view_lab(lab):
-    return f"inspect lab {lab}"
 
 
 @access_router.get(
@@ -275,77 +257,6 @@ def get_labs_users(shortname):
         code=200 if "warning" not in out_payload else 206,
         content_type=content_types.APPLICATION_JSON,
     )
-
-
-def validate_set_lab_access(put_lab_request: dict) -> tuple[bool, str]:
-    # Validate input is correct type
-    if not isinstance(put_lab_request, dict):
-        return False, "Body is not correct type"
-
-    # Validate input has key "labs"
-    if "labs" not in put_lab_request:
-        return False, "Does not contain 'labs' key"
-
-    for lab_name in put_lab_request["labs"].keys():
-        # Ensure lab exist
-        if lab_name not in LAB_CONFIGS:
-            return False, f"Lab does not exist: {lab_name}"
-
-        # Check all lab fields exist and are correct type
-        all_fields = {
-            "lab_profiles": list,
-            "time_quota": str,
-            "lab_country_status": str,
-        }
-        for field, _ in all_fields.items():
-            if put_lab_request["labs"][lab_name].get(field) is None:
-                return False, f"Field '{field}' not provided for lab {lab_name}"
-
-            if not isinstance(
-                put_lab_request["labs"][lab_name][field], all_fields[field]
-            ):
-                return False, f"Field '{field}' not of type {all_fields[field]}"
-
-        # Ensure all profiles exist for a given lab
-        for profile in put_lab_request["labs"][lab_name]["lab_profiles"]:
-            # If the lab doesn't have the profile you're trying to set:
-            if profile not in LAB_CONFIGS[lab_name].allowed_profiles:
-                return False, f"Profile '{profile}' not allowed for lab {lab_name}"
-
-    return True, "Success"
-
-
-def validate_delete_lab_access(
-    delete_lab_request: dict, user: User
-) -> tuple[bool, str]:
-    # Validate input is correct type
-    if not isinstance(delete_lab_request, dict):
-        return False, "Body is not correct type"
-
-    # Validate input has key "labs"
-    if "labs" not in delete_lab_request:
-        return False, "Does not contain 'labs' key"
-
-    for lab_name, lab_data in delete_lab_request["labs"].items():
-        # Ensure lab exist
-        if lab_name not in LAB_CONFIGS:
-            return False, f"Lab does not exist: {lab_name}"
-
-        if not isinstance(lab_data, dict):
-            return False, f"Lab data for {lab_name} is not a dict"
-    ## Get all the keys from delete_lab_request, that are NOT in user labs:
-    # (Need to do this last, since lab A might fail linting above
-    #  and you'd want error that first)
-    already_removed_labs = [
-        key for key in delete_lab_request["labs"] if key not in user.labs
-    ]
-    if already_removed_labs:
-        # Still return 200, but change the message:
-        return (
-            True,
-            f"User isn't already apart of labs: {', '.join(already_removed_labs)}",
-        )
-    return True, "Success"
 
 
 @access_router.put(
@@ -500,20 +411,3 @@ def submit_application(shortname):
         headers={"Location": "/portal"},
         code=302,
     )
-
-
-@access_router.get("/manage/<shortname>/requests/", include_in_schema=False)
-@require_access("admin", human=True)
-@portal_template()
-def list_access_requests(shortname):
-    lab = Lab(labname=shortname)
-
-    template_input = {
-        "labname": shortname,
-        "requests": lab.get_requests(),
-        "tokens": lab.access_tokens,
-    }
-
-    logger.info(f"Access requests = {lab.get_requests()}")
-
-    return jinja_template(template_input, "manage_access.j2")

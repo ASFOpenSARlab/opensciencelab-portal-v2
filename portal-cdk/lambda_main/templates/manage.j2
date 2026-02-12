@@ -1,6 +1,12 @@
 {# djlint:off H006,H021 #}
 <div>
-    <legend>{{ lab.friendly_name }}</legend>
+    {% if allows_requests %}
+        <legend>
+            {{ lab.friendly_name }} - <a href="/portal/access/manage/{{ lab.short_lab_name }}/requests/">Manage Access Requests</a>
+        </legend>
+    {% else %}
+        <legend>{{ lab.friendly_name }}</legend>
+    {% endif %}
     <div class="lab-logo">
         <span>
             {% if lab.logo is defined and lab.logo != None -%}
