@@ -139,6 +139,29 @@ class Lab(Table):
                 table_id=REQ_TABLE_ID,
             )
 
+    def grant_user_access(self, username: str, profiles: list | None = None) -> None:
+        """
+
+        Args:
+            username: User who should be given access
+
+        """
+
+        from objs.user import User
+
+        # If profiles aren't supplied, use the lab defaults
+        if not profiles:
+            profiles = self.get_lab_config().default_profiles
+
+        add_user = User(username)
+
+        add_user.add_lab(
+            lab_short_name=self.labname,
+            lab_profiles=profiles,
+            time_quota=None,
+            lab_country_status=None,
+        )
+
     def add_access_request(self, answers: dict, username: str) -> None:
         """
 

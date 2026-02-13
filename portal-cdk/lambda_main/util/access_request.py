@@ -57,3 +57,30 @@ def get_restricted_countries():
         c: d | {"color": restricted_countries_html_color(d["restrictions"])}
         for c, d in RESTRICTED_COUNTRIES.items()
     }
+
+
+def request_status_change_action(lab_obj, username: str, status: str):
+    """
+
+    Perform actions based on access request status change
+
+    Args:
+        username: User whose status has changes
+        status: New status
+
+    Returns:
+
+    """
+
+    if status == "approved":
+        # Grant access w/ default profiles
+        lab_obj.grant_user_access(username)
+        # Welcome Email Here
+
+    elif status == "rejected":
+        # Send rejection email here
+        pass
+
+    elif status == "returned":
+        # Send returned email here
+        pass
