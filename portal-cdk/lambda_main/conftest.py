@@ -112,6 +112,12 @@ LAB_ACCESS_QUESTIONS = [
         "rendering_options": "multi-line",
         "placeholder": "Your Answer",
     },
+    {
+        "name": "what_science",
+        "question": "What type of science",
+        "type": "dropdown",
+        "rendering_options": ["SAR", "NISAR"],
+    },
 ]
 
 
@@ -222,6 +228,25 @@ class Helpers:
 
         def get_lab_access(self) -> dict:
             return filter_lab_access(self)
+
+    @dataclass
+    class FakeLab:
+        access_requests: dict = field(
+            default_factory=lambda: {
+                "answers": [
+                    {
+                        "sar_experience": "answer1",
+                        "osl_experience": "answer2",
+                        "use_case": "answer3",
+                        "what_science": "answer4",
+                    },
+                ],
+                "status": "new",
+            }
+        )
+
+        def get_access_request(self, username: str) -> dict:
+            return self.access_requests
 
     # differentlab not initialized in FakeUser.labs
     # this is to allow labs to test against a lab the user does not have access too

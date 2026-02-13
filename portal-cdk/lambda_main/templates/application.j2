@@ -24,22 +24,28 @@
                                       name="{{ question["name"] }}"
                                       rows="4"
                                       cols="50"
-                                      {% if question.get("placeholder") %} placeholder="{{ question["placeholder"] }}" {% endif %}></textarea>
+                                      {% if question.get("placeholder") %}placeholder="{{ question["placeholder"] }}"{% endif %}>{% if active_request is defined %}{{ active_request[question["name"]] }}{% endif %}</textarea>
                         {% else %}
                             <input type="text"
                                    id="{{ question["name"] }}"
                                    name="{{ question["name"] }}"
-                                   {% if question.get("placeholder") %}placeholder={{ question["placeholder"] }}{% endif %}>
+                                   {% if question.get("placeholder") %}placeholder={{ question["placeholder"] }}{% if active_request is defined %}value="{{ active_request[question["name"]] }}"{% endif %}
+                                   {% endif %}>
                         {% endif %}
                     {% elif question["type"] == "checkbox" %}
-                        <input type="checkbox" id={{ question["name"] }} name={{ question["name"] }}>
+                        <input type="checkbox"
+                               id="{{ question["name"] }}"
+                               name="{{ question["name"] }}"
+                               {% if active_request is defined %}value="{{ active_request[question["name"]] }}"{% endif %}>
                     {% elif question["type"] == "dropdown" %}
                         <select id="{{ question["name"] }}"
                                 name="{{ question["name"] }}"
                                 onchange="removeDropdownDefault(this)">
-                            <option value="default">Choose One</option>
+                            {% if active_request is not defined %}<option value="default">Choose One</option>{% endif %}
                             {% for option in question["rendering_options"] %}
-                                <option value={{ option|lower }}>{{ option }}
+                                <option value="{{ option|lower }}"
+                                        {% if active_request is defined and active_request[question["name"]].lower() == option.lower() %}selected{% endif %}>
+                                    {{ option }}
                                 </option>
                             {% endfor %}
                         </select>

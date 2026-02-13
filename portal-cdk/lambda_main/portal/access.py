@@ -390,11 +390,21 @@ def apply_to_lab(shortname):
             code=302,
         )
 
+    # Grab the username of the user making the request
+    username = current_session.auth.cognito.username
+
+    # user_profile = User(username=username, create_if_missing=False)
+    # active_access_requests = user_profile.get_requests(status=["new", "pending"])
+    lab = Lab(shortname)
+    access_requests = lab.get_access_request(username)
+
     template_input = {
         "labname": shortname,
         "lab_friendly_name": LAB_CONFIGS[shortname].friendly_name,
         "application_questions": LAB_CONFIGS[shortname].application_questions,
     }
+    if access_requests and access_requests["status"] in ["new", "pending"]:
+        template_input["active_request"] = access_requests["answers"][-1]
     return jinja_template(template_input, "application.j2")
 
 
@@ -411,6 +421,7 @@ def submit_application(shortname):
         logger.error(error)
         raise MalformedRequest(error)
     body = form_body_to_dict(body)
+    # If fixing checkbox implementation, map checkbox values to bool here
 
     # Add Application
     lab = Lab(shortname)

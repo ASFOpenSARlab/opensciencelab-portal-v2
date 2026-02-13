@@ -18,7 +18,7 @@ SEQUENCE:0
 DTSTART;VALUE=DATE:20260116
 DTEND;VALUE=DATE:20460125
 DTSTAMP:20260206T231124Z
-DESCRIPTION:---<br>scopes: test <br>tags: home<br>type: info<br>placement: top-full-width<br>---<br>&lt\;p&gt\;This is a test notification&lt\;/p&gt\;
+DESCRIPTION:---<br>scopes: test <br>tags: home<br>type: info<br>placement: top-full-width<br>---<br>&lt\\;p&gt\\;This is a test notification&lt\\;/p&gt\\;
 LAST-MODIFIED:20260122T183908Z
 STATUS:CONFIRMED
 SUMMARY:Active event on "test" scope
@@ -31,7 +31,7 @@ SEQUENCE:0
 DTSTART;VALUE=DATE:20260116
 DTEND;VALUE=DATE:20460125
 DTSTAMP:20260206T231124Z
-DESCRIPTION:---<br>scopes: test <br>tags: test_tag<br>type: info<br>placement: top-full-width<br>---<br>&lt\;p&gt\;This is a test notification&lt\;/p&gt\;
+DESCRIPTION:---<br>scopes: test <br>tags: test_tag<br>type: info<br>placement: top-full-width<br>---<br>&lt\\;p&gt\\;This is a test notification&lt\\;/p&gt\\;
 LAST-MODIFIED:20260122T183908Z
 STATUS:CONFIRMED
 SUMMARY:Second active event on "test" scope
@@ -44,7 +44,7 @@ SEQUENCE:0
 DTSTART;VALUE=DATE:20160116
 DTEND;VALUE=DATE:20160125
 DTSTAMP:20260206T231124Z
-DESCRIPTION:---<br>scopes: test <br>tags: other_tag<br>type: info<br>placement: top-full-width<br>---<br>&lt\;p&gt\;This is a test notification&lt\;/p&gt\;
+DESCRIPTION:---<br>scopes: test <br>tags: other_tag<br>type: info<br>placement: top-full-width<br>---<br>&lt\\;p&gt\\;This is a test notification&lt\\;/p&gt\\;
 LAST-MODIFIED:20260122T183908Z
 STATUS:CONFIRMED
 SUMMARY:Expired Event
@@ -57,7 +57,7 @@ SEQUENCE:0
 DTSTART;VALUE=DATE:20260116
 DTEND;VALUE=DATE:20460125
 DTSTAMP:20260206T231124Z
-DESCRIPTION:---<br>scopes: otherscope <br>tags: home<br>type: info<br>placement: top-full-width<br>---<br>&lt\;p&gt\;This is a test notification&lt\;/p&gt\;
+DESCRIPTION:---<br>scopes: otherscope <br>tags: home<br>type: info<br>placement: top-full-width<br>---<br>&lt\\;p&gt\\;This is a test notification&lt\\;/p&gt\\;
 LAST-MODIFIED:20260122T183908Z
 STATUS:CONFIRMED
 SUMMARY:Active Event on "otherscope" Scope
@@ -85,7 +85,7 @@ SEQUENCE:0
 DTSTART;VALUE=DATE:20260116
 DTEND;VALUE=DATE:20460125
 DTSTAMP:20260206T231124Z
-DESCRIPTION:---<br>scopes: test <br>tags: home<br>type: info<br>placement: top-full-width<br>---<br>&lt\;p&gt\;This is a test notification&lt\;/p&gt\;
+DESCRIPTION:---<br>scopes: test <br>tags: home<br>type: info<br>placement: top-full-width<br>---<br>&lt\\;p&gt\\;This is a test notification&lt\\;/p&gt\\;
 LAST-MODIFIED:20260122T183908Z
 STATUS:CONFIRMED
 SUMMARY:Active correctly formatted event

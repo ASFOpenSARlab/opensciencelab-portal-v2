@@ -969,3 +969,73 @@ class TestAccessPages:
         assert "User does not have required access" in ret["body"]
         assert ret["statusCode"] == 403
         assert ret["headers"].get("Content-Type") == "application/json"
+
+    def test_application_auto_populate_active_application(
+        self, monkeypatch, lambda_context, helpers, fake_auth
+    ):
+        monkeypatch.setattr("portal.access.LAB_CONFIGS", helpers.FAKE_LAB_CONFIGS)
+
+        user = helpers.FakeUser()
+        monkeypatch.setattr("portal.access.User", lambda *args, **kwargs: user)
+        monkeypatch.setattr("util.auth.User", lambda *args, **kwargs: user)
+
+        lab = helpers.FakeLab(
+            access_requests={
+                "answers": [
+                    {
+                        "sar_experience": "Nothing",
+                        "osl_experience": "None",
+                        "use_case": "For Science",
+                        "what_science": "SAR",
+                    },
+                ],
+                "status": "new",
+            }
+        )
+        monkeypatch.setattr("portal.access.Lab", lambda *args, **kwargs: lab)
+
+        event = helpers.get_event(
+            path="/portal/access/apply/testlab",
+            cookies=fake_auth,
+            method="GET",
+        )
+        ret = main.lambda_handler(event, lambda_context)
+
+        assert ret["statusCode"] == 200
+        assert ">Nothing</textarea>" in ret["body"]
+        assert ret["body"].count("selected>") == 1
+
+    def test_application_dont_autopopulate_non_active_application(
+        self, monkeypatch, lambda_context, helpers, fake_auth
+    ):
+        monkeypatch.setattr("portal.access.LAB_CONFIGS", helpers.FAKE_LAB_CONFIGS)
+
+        user = helpers.FakeUser()
+        monkeypatch.setattr("portal.access.User", lambda *args, **kwargs: user)
+        monkeypatch.setattr("util.auth.User", lambda *args, **kwargs: user)
+
+        lab = helpers.FakeLab(
+            access_requests={
+                "answers": [
+                    {
+                        "sar_experience": "Nothing",
+                        "osl_experience": "None",
+                        "use_case": "For Science",
+                        "what_science": "SAR",
+                    },
+                ],
+                "status": "rejected",
+            }
+        )
+        monkeypatch.setattr("portal.access.Lab", lambda *args, **kwargs: lab)
+
+        event = helpers.get_event(
+            path="/portal/access/apply/testlab",
+            cookies=fake_auth,
+            method="GET",
+        )
+        ret = main.lambda_handler(event, lambda_context)
+
+        assert ret["statusCode"] == 200
+        assert "></textarea>" in ret["body"]
+        assert ret["body"].count("selected>") == 0
