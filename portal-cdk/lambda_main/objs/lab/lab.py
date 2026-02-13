@@ -111,7 +111,7 @@ class Lab(Table):
             request: Full request payload
             username: username
 
-        Don't call directory. Use add_access_request()
+        Don't call directly. Use add_access_request()
 
         """
         existing_req = self.get_access_request(username)
