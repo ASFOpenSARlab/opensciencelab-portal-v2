@@ -23,7 +23,7 @@ REQ_TABLE_ID = "request"
 LAB_TABLE_KEY = "labname"
 USER_TABLE_KEY = "username"
 
-VALID_REQUEST_STATUSES = ["new", "approved", "rejected", "pending"]
+VALID_REQUEST_STATUSES = ["new", "approved", "rejected", "pending", "returned"]
 LOCKED_REQUEST_STATUSES = ["approved", "rejected"]
 
 
@@ -181,18 +181,35 @@ class Lab(Table):
             "%Y-%m-%d %H:%M:%S"
         )
 
+        # Grab persistent admin fields from old requests
+        for other in ("submission_comment", "submission_reviewer"):
+            if other in answers:
+                # Supplied with update
+                answers_dict[other] = answers[other]
+            elif other in req_dict:
+                # Pulled from previous record
+                answers_dict[other] = req_dict[other]
+
         # Add answers to the end of the list
         req_dict["answers"].append(answers_dict)
 
         # Save record
         self._put_access_request(req_dict, username)
 
-    def set_access_request_status(self, username: str, status: str):
+    def set_access_request_status(
+        self,
+        username: str,
+        status: str,
+        reviewer: str,
+        reviewer_comment: str | None = None,
+    ):
         """
 
         Args:
             username: User with an existing access request
             status: New status to update request to
+            reviewer: Admin who changed the status
+            reviewer_comment: Optional admin comment
 
         """
         if status not in VALID_REQUEST_STATUSES:
@@ -207,8 +224,14 @@ class Lab(Table):
             )
 
         # Don't update if the status hasn't actually changed
-        if req_dict["status"] == status:
+        if req_dict["status"] == status and not reviewer_comment:
             return
+
+        # Copy & update answers
+        req_dict["answers"].append(req_dict["answers"][-1])
+        req_dict["answers"][-1]["submission_reviewer"] = reviewer
+        if reviewer_comment:
+            req_dict["answers"][-1]["submission_comment"] = reviewer_comment
 
         # Change Status
         req_dict["status"] = status

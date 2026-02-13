@@ -1,0 +1,53 @@
+{# djlint:off H021 #}
+<br>
+<div>
+    <form method="post"
+          id="update"
+          action="/portal/access/manage/{{ request["labname"] }}/update/{{ user_profile.username }}/">
+        <input type="submit"
+               form="update"
+               name="status"
+               value="Approve"
+               style="background-color: green;
+                      color: white;
+                      border: 1px;
+                      padding: 5px 5px"
+               {% if request["status"] in locked_status %}disabled{% endif %}>
+        |
+        <input type="submit"
+               form="update"
+               name="status"
+               value="Return"
+               style="background-color: lightgreen;
+                      color: black;
+                      border: 1px;
+                      padding: 5px 5px"
+               {% if request["status"] in locked_status %}disabled{% endif %}>
+        |
+        <input type="submit"
+               form="update"
+               name="status"
+               value="Pending"
+               style="background-color: yellow;
+                      color: black;
+                      border: 1px;
+                      padding: 5px 5px"
+               {% if request["status"] in locked_status %}disabled{% endif %}>
+        |
+        <input type="submit"
+               form="update"
+               name="status"
+               value="Reject"
+               style="background-color: red;
+                      color: white;
+                      border: 1px;
+                      padding: 5px 5px"
+               {% if request["status"] in locked_status %}disabled{% endif %}>
+        |
+        <input type="text"
+               name="comment"
+               value="{% if request["answers"][-1] and "submission_comment" in request["answers"][-1] %}{{ request["answers"][-1]["submission_comment"] }}{% endif %}"
+               placeholder="Reviewer comments..."
+               {% if request["status"] in locked_status %}disabled{% endif %}>
+    </form>
+</div>
