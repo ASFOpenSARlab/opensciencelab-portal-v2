@@ -2,6 +2,7 @@ from dataclasses import dataclass, field
 import requests
 
 from util.log_timer import measure_time
+from data import RESTRICTED_COUNTRIES
 
 
 @dataclass
@@ -47,49 +48,27 @@ class BaseLabConfig:
         return ret.status_code == 200
 
 
-daac_limited_restricted_status = {
-    "limited": [
-        "AE",
-        "BH",
-        "BT",
-        "EG",
-        "IL",
-        "JO",
-        "KW",
-        "MO",
-        "OM",
-        "PK",
-        "QA",
-        "SA",
-        "YE",
-        "MO",
-    ],
-    "prohibited": [
-        "AF",
-        "BY",
-        "CD",
-        "CN",
-        "CT",
-        "CU",
-        "ER",
-        "ET",
-        "HT",
-        "IQ",
-        "IR",
-        "KH",
-        "KP",
-        "LB",
-        "LY",
-        "MM",
-        "NI",
-        "SO",
-        "SS",
-        "SU",
-        "SY",
-        "VE",
-        "ZW",
-        "TW",
-        "RU",
-        "CY",
-    ],
-}
+def get_daac_country_status() -> dict:
+    """
+    Country type mapping to access
+    https://github.com/ASFOpenSARlab/.github-private/tree/main/add_users#who-we-can-deal-with
+
+    Returns: Dict with lists of "limited" (type 1&4) and "prohibited" (type 2&4)
+
+    """
+    # Country type triggers
+    limited = {1, 4}
+    prohibited = {2, 3}
+
+    rc_items = RESTRICTED_COUNTRIES.items()
+    return {
+        "limited": [
+            c
+            for c, d in rc_items
+            if (
+                limited & set(d["restrictions"])
+                and not prohibited & set(d["restrictions"])
+            )
+        ],
+        "prohibited": [c for c, d in rc_items if prohibited & set(d["restrictions"])],
+    }

@@ -1,51 +1,5 @@
-from pathlib import Path
-import json
-
 from objs.lab import Lab
-
-
-# https://www.nasa.gov/wp-content/uploads/2025/07/oiir-designated-country-list-7-11-2025.pdf
-RESTRICTED_COUNTRIES = {
-    "BT": {"name": "Bhutan", "restrictions": [1]},
-    "TW": {"name": "Taiwan*", "restrictions": [1]},
-    "AF": {"name": "Afghanistan", "restrictions": [1, 3]},
-    "BH": {"name": "Bahrain", "restrictions": [4]},
-    "BY": {"name": "Belarus", "restrictions": [3, 4]},
-    "MM": {"name": "Burma", "restrictions": [3]},
-    "CT": {"name": "Central African Republic", "restrictions": [3]},
-    "CN": {"name": "China, Peoples Republic", "restrictions": [3, 4]},
-    "CD": {
-        "name": "Congo (Formerly Zaire; Democratic Republic of)",
-        "restrictions": [3],
-    },
-    "CU": {"name": "Cuba", "restrictions": [2, 3]},
-    "EG": {"name": "Egypt", "restrictions": [4]},
-    "ER": {"name": "Eritrea", "restrictions": [3]},
-    "ET": {"name": "Ethiopia", "restrictions": [3]},
-    "HT": {"name": "Haiti", "restrictions": [3]},
-    "IR": {"name": "Iran", "restrictions": [1, 2, 3, 4]},
-    "IQ": {"name": "Iraq", "restrictions": [3, 4]},
-    "IL": {"name": "Israel", "restrictions": [4]},
-    "JO": {"name": "Jordan", "restrictions": [4]},
-    "KP": {"name": "Korea, North", "restrictions": [1, 2, 3, 4]},
-    "LB": {"name": "Lebanon", "restrictions": [3, 4]},
-    "LY": {"name": "Libya", "restrictions": [3, 4]},
-    "MO": {"name": "Macau", "restrictions": [4]},
-    "NI": {"name": "Nicaragua", "restrictions": [3]},
-    "OM": {"name": "Oman", "restrictions": [4]},
-    "PK": {"name": "Pakistan", "restrictions": [4]},
-    "QA": {"name": "Qatar", "restrictions": [4]},
-    "SA": {"name": "Saudi Arabia", "restrictions": [4]},
-    "SO": {"name": "Somalia", "restrictions": [3]},
-    "SS": {"name": "South Sudan (Republic of)", "restrictions": [3]},
-    "SU": {"name": "Sudan", "restrictions": [3]},
-    "SY": {"name": "Syria", "restrictions": [1, 2, 3, 4]},
-    "AE": {"name": "United Arab Emirates", "restrictions": [4]},
-    "VE": {"name": "Venezuela", "restrictions": [1, 3, 4]},
-    "YE": {"name": "Yemen", "restrictions": [4]},
-    "ZW": {"name": "Zimbabwe", "restrictions": [3]},
-    "RU": {"name": "Russia", "restrictions": [1, 2, 3, 4, 9]},
-}
+from data import ALL_COUNTRIES, RESTRICTED_COUNTRIES
 
 
 def compile_user_access_requests(user_profile, user_logged_in):
@@ -77,9 +31,7 @@ def compile_user_access_requests(user_profile, user_logged_in):
 
 
 def get_country_list() -> dict:
-    util_path = Path(__file__).parent.resolve().absolute()
-    with open(util_path / "../data/countries.json", "r", encoding="utf-8") as f:
-        return json.loads(f.read())
+    return ALL_COUNTRIES
 
 
 def restricted_countries_html_color(restrictions: list) -> str:

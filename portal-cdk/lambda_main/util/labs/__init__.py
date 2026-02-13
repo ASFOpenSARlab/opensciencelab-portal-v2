@@ -1,4 +1,4 @@
-from objs.base_lab_config import BaseLabConfig, daac_limited_restricted_status
+from objs.base_lab_config import BaseLabConfig, get_daac_country_status
 
 import os
 
@@ -26,7 +26,7 @@ PROD_LAB_CONFIGS = {
         logo="ASF_and_NASA.svg",
         about_page_url="https://opensarlab-docs.asf.alaska.edu/",
         about_page_button_label="Info",
-        ip_country_status=daac_limited_restricted_status,
+        ip_country_status=get_daac_country_status(),
         accessibility="protected",
         allowed_profiles=[
             "t3a.medium - Dask User",
@@ -125,7 +125,7 @@ NON_PROD_LAB_CONFIGS = {
         logo="ASF_and_NASA.svg",
         about_page_url="https://opensarlab-docs.asf.alaska.edu/",
         about_page_button_label="Info",
-        ip_country_status=daac_limited_restricted_status,
+        ip_country_status=get_daac_country_status(),
         accessibility="protected",
         allowed_profiles=[
             "SAR 1",

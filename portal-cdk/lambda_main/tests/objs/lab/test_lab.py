@@ -256,3 +256,17 @@ class TestUserClass:
         assert (
             len(get_all_items(table_id="request", limit=200, filters=filters_is)) == 1
         )
+
+    def test_country_restrictions(self, helpers, monkeypatch):
+        from objs.base_lab_config import get_daac_country_status
+
+        restrictions = get_daac_country_status()
+
+        assert "prohibited" in restrictions
+        assert "limited" in restrictions
+        assert "US" not in restrictions["prohibited"]
+        assert "US" not in restrictions["limited"]
+        assert "IR" in restrictions["prohibited"]
+        assert "IR" not in restrictions["limited"]
+        assert "IL" in restrictions["limited"]
+        assert "IL" not in restrictions["prohibited"]
