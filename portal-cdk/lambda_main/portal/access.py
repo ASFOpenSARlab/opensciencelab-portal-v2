@@ -8,7 +8,7 @@ from util.session import current_session
 from objs.user import User, get_users_with_lab, filter_lab_access
 from util.responses import wrap_response, form_body_to_dict, json_body_to_dict
 from util.labs import LAB_CONFIGS
-from objs.lab import Lab
+from objs.lab import Lab, ACTIVE_REQUEST_STATUSES
 from util.exceptions import MalformedRequest
 from util.dynamo_db import dynamo_filter, get_all_items
 from util.manage_access import (
@@ -403,7 +403,7 @@ def apply_to_lab(shortname):
         "lab_friendly_name": LAB_CONFIGS[shortname].friendly_name,
         "application_questions": LAB_CONFIGS[shortname].application_questions,
     }
-    if access_requests and access_requests["status"] in ["new", "pending"]:
+    if access_requests and access_requests["status"] in ACTIVE_REQUEST_STATUSES:
         template_input["active_request"] = access_requests["answers"][-1]
     return jinja_template(template_input, "application.j2")
 
