@@ -90,6 +90,36 @@ BASIC_REQUEST = {
     "cookies": [],
 }
 
+LAB_ACCESS_QUESTIONS = [
+    {
+        "name": "sar_experience",
+        "question": "Tell us about your SAR-related experience",
+        "type": "text",
+        "rendering_options": "multi-line",
+        "placeholder": "Your Answer",
+    },
+    {
+        "name": "osl_experience",
+        "question": "Have you used OpenSARLab before?",
+        "type": "text",
+        "rendering_options": "multi-line",
+        "placeholder": "Your Answer",
+    },
+    {
+        "name": "use_case",
+        "question": "What do you want to use OpenSARLab for?",
+        "type": "text",
+        "rendering_options": "multi-line",
+        "placeholder": "Your Answer",
+    },
+    {
+        "name": "what_science",
+        "question": "What type of science",
+        "type": "dropdown",
+        "rendering_options": ["SAR", "NISAR"],
+    },
+]
+
 
 @dataclass
 class Helpers:
@@ -225,6 +255,7 @@ class Helpers:
             allowed_profiles=["m6a.large"],
             accessibility="protected",
             deployment_url="https://this-host-does-not-exist.fake",
+            application_questions=LAB_ACCESS_QUESTIONS,
         ),
         "testlab": BaseLabConfig(
             friendly_name="Test Lab",
@@ -234,28 +265,7 @@ class Helpers:
             accessibility="protected",
             deployment_url="https://this-host-does-not-exist.fake",
             default_profiles=["m6a.large", "m6a.xlarge"],
-            application_questions=[
-                {
-                    "name": "user-name",
-                    "question": "What is your name?",
-                    "type": "text",
-                    "rendering_options": "single-line",
-                    "placeholder": "Type Here",
-                },
-                {
-                    "name": "user-story",
-                    "question": "Why do you want access?",
-                    "type": "text",
-                    "rendering_options": "multi-line",
-                    "placeholder": "Type Here",
-                },
-                {
-                    "name": "what-science",
-                    "question": "What type of science",
-                    "type": "dropdown",
-                    "rendering_options": ["SAR", "NISAR"],
-                },
-            ]
+            application_questions=LAB_ACCESS_QUESTIONS,
         ),
         "noaccess": BaseLabConfig(
             friendly_name="No Access Lab",

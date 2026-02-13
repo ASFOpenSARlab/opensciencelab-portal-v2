@@ -1,16 +1,15 @@
 {# djlint:off H006,H021 #}
-<div>
-    <legend>{{ labname }}</legend>
-</div>
 <div class="margin-left-30">
     <table>
         <tr class="tr-highlight">
             <th></th>
+            <th style="padding: 10px;">Labname</th>
             <th style="padding: 10px;">Username</th>
-            <th style="padding: 10px;">User Request Data</th>
             <th style="padding: 10px;">Request Status</th>
+            <th style="padding: 10px;">User Request Date</th>
+            <th style="padding: 10px;">Request Country</th>
         </tr>
-        {% for user in requests %}
+        {% for request in requests %}
             <tr>
                 <td style="padding: 10px;">
                     <input type="button"
@@ -28,10 +27,14 @@
                                   padding: 5px 5px">
                 </td>
                 <td style="padding: 10px;">
-                    <b><a href="/portal/profile/form/{{ user["username"] }}">{{ user["username"] }}</a></b>
+                    <a href="/portal/access/manage/{{ request["labname"] }}/requests/">{{ request["labname"] }}</a>
                 </td>
-                <td style="padding: 10px;">{{ user["answers"][-1] }}</td>
-                <td style="padding: 10px;">{{ user["status"] }}</td>
+                <td style="padding: 10px;">
+                    <b><a href="/portal/profile/form/{{ request["username"] }}">{{ request["username"] }}</a></b>
+                </td>
+                <td style="padding: 10px;">{{ request["status"] }}</td>
+                <td style="padding: 10px;">{{ request["answers"][-1]["submission_date"] }}</td>
+                <td style="padding: 10px;">{{ request["answers"][-1]["submission_cc"] }}</td>
             </tr>
         {% endfor %}
     </table>

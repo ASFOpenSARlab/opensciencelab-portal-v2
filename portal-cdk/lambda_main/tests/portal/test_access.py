@@ -558,8 +558,9 @@ class TestAccessPages:
         user = helpers.FakeUser(access=["user", "admin"])
         monkeypatch.setattr("util.auth.User", lambda *args, **kwargs: user)
         monkeypatch.setattr("portal.access.User", lambda *args, **kwargs: user)
-
         monkeypatch.setattr("portal.access.LAB_CONFIGS", helpers.FAKE_LAB_CONFIGS)
+        monkeypatch.setattr("util.manage_access.User", lambda *args, **kwargs: user)
+        monkeypatch.setattr("util.manage_access.LAB_CONFIGS", helpers.FAKE_LAB_CONFIGS)
 
         body = {
             "labs": {
@@ -596,8 +597,9 @@ class TestAccessPages:
         user = helpers.FakeUser(access=["user", "admin"])
         monkeypatch.setattr("util.auth.User", lambda *args, **kwargs: user)
         monkeypatch.setattr("portal.access.User", lambda *args, **kwargs: user)
-
         monkeypatch.setattr("portal.access.LAB_CONFIGS", helpers.FAKE_LAB_CONFIGS)
+        monkeypatch.setattr("util.manage_access.User", lambda *args, **kwargs: user)
+        monkeypatch.setattr("util.manage_access.LAB_CONFIGS", helpers.FAKE_LAB_CONFIGS)
 
         body = {
             "labs": {
@@ -692,8 +694,9 @@ class TestAccessPages:
         monkeypatch.setattr("util.auth.User", lambda *args, **kwargs: user)
 
         monkeypatch.setattr("portal.access.User", lambda *args, **kwargs: user)
-
         monkeypatch.setattr("portal.access.LAB_CONFIGS", helpers.FAKE_LAB_CONFIGS)
+        monkeypatch.setattr("util.manage_access.User", lambda *args, **kwargs: user)
+        monkeypatch.setattr("util.manage_access.LAB_CONFIGS", helpers.FAKE_LAB_CONFIGS)
 
         # Missing "labs" key
         body = {}
@@ -832,6 +835,9 @@ class TestAccessPages:
         user = helpers.FakeUser(access=["user", "admin"])
         monkeypatch.setattr("util.auth.User", lambda *args, **kwargs: user)
         monkeypatch.setattr("portal.access.User", lambda *args, **kwargs: user)
+
+        monkeypatch.setattr("util.manage_access.User", lambda *args, **kwargs: user)
+        monkeypatch.setattr("util.manage_access.LAB_CONFIGS", helpers.FAKE_LAB_CONFIGS)
 
         monkeypatch.setattr("portal.access.LAB_CONFIGS", helpers.FAKE_LAB_CONFIGS)
         assert "testlab" in user.labs, (

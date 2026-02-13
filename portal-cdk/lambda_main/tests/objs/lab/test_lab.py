@@ -191,6 +191,7 @@ class TestUserClass:
 
     def test_fetch_lab_requests(self, helpers, monkeypatch):
         from objs.lab.lab import Lab
+        from util.dynamo_db import dynamo_filter, get_all_items
 
         LAB_CONFIGS = helpers.FAKE_LAB_CONFIGS
         monkeypatch.setattr("objs.lab.lab.LAB_CONFIGS", LAB_CONFIGS)
@@ -238,3 +239,20 @@ class TestUserClass:
         # Make sure we get back only lab2
         lab2_request = lab2.get_requests(status=["new", "pending"])
         assert len(lab2_request) == 1
+
+        # Filter username has the string "user"
+        filters_contains = dynamo_filter(
+            attr_name="username", filter_value="user", filter_action="contains"
+        )
+        assert (
+            len(get_all_items(table_id="request", limit=200, filters=filters_contains))
+            == 3
+        )
+
+        # Filter username has the string "user"
+        filters_is = dynamo_filter(
+            attr_name="username", filter_value="testuser", filter_action="eq"
+        )
+        assert (
+            len(get_all_items(table_id="request", limit=200, filters=filters_is)) == 1
+        )

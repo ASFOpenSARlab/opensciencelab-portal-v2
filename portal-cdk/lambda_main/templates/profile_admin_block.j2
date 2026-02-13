@@ -1,0 +1,78 @@
+{# djlint:off H021 #}
+{% if user_logged_in.is_admin() %}
+    <hr>
+    <table style="width:90%" border=1>
+        <tr>
+            <td>
+                <h3>User Email:</h3>
+            </td>
+            <td>
+                <h5>
+                    <code>{{ user_profile.email }}</code>
+                </h5>
+            </td>
+        </tr>
+    </table>
+    <h3>Admin Settings</h3>
+    <table style="width:90%" border=1>
+        <tr>
+            <th>Lab Short Name</th>
+            <th>Access</th>
+            <th>Available Profiles</th>
+        </tr>
+        {% for lab in labs.values() %}
+            <tr>
+                <td>
+                    <b><a href="/portal/access/manage/{{ lab.short_lab_name }}">{{ lab.short_lab_name }}</a></b>
+                </td>
+                <td>
+                    {% if user_profile.is_admin() %}
+                        <b>ADMIN</b>
+                    {% elif lab.short_lab_name in user_profile.labs %}
+                        <b>YES</b>
+                    {% else %}
+                        No
+                    {% endif %}
+                </td>
+                <td>
+                    {% if lab.short_lab_name in user_profile.labs %}
+                        {% for profile in lab.allowed_profiles %}
+                            {% if profile in user_profile.labs[lab.short_lab_name]["lab_profiles"] %}
+                                <span style="border: 1px solid black; padding: 1px 4px; color: green;">{{ profile }}</span>,
+                            {% else %}
+                                <span style="border: 1px solid black; padding: 1px 4px; color: red;">{{ profile }}</span>,
+                            {% endif %}
+                        {% endfor %}
+                    {% elif user_profile.is_admin() %}
+                        Admin not in Lab...
+                    {% endif %}
+                </td>
+            </tr>
+        {% endfor %}
+    </table>
+    <h3>IP Info</h3>
+    <table style="width:90%" border=1>
+        <tr>
+            <th>Timestamp</th>
+            <th>Country Code</th>
+            <th>IP Address</th>
+        </tr>
+        {% for res in user_ip_results -%}
+            {% if res['country_code'] in restricted_ccs %}
+                <tr style="background-color: {{ restricted_ccs[res['country_code']]["color"] }}">
+                    <td>{{ res['@timestamp'] }}</td>
+                    <td>
+                        {{ res['country_code'] }} - {{ restricted_ccs[res['country_code']]["name"] }} - {{ restricted_ccs[res['country_code']]["restrictions"] }}
+                    </td>
+                    <td>{{ res['ip_address'] }}</td>
+                </tr>
+            {% else %}
+                <tr>
+                    <td>{{ res['@timestamp'] }}</td>
+                    <td>{{ res['country_code'] }}</td>
+                    <td>{{ res['ip_address'] }}</td>
+                </tr>
+            {% endif %}
+        {% endfor %}
+    </table>
+{% endif %}
