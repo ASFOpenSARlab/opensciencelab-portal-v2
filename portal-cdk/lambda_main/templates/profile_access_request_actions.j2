@@ -46,7 +46,7 @@
         |
         <input type="text"
                name="comment"
-               value="{% if request["answers"][-1] and "submission_comment" in request["answers"][-1] %}{{ request["answers"][-1]["submission_comment"] }}{% endif %}"
+               value=""
                placeholder="Reviewer comments..."
                {% if request["status"] in locked_status %}disabled{% endif %}>
     </form>
