@@ -21,10 +21,9 @@ def compile_user_access_requests(user_profile, user_logged_in):
 
         # Capture full text of questions
         lab_obj = Lab(request["labname"])
-        lab_questions = {
-            z["name"]: z["question"] for z in lab_obj.access_request_questions()
-        }
-        access_request_questions[request["labname"]] = lab_questions
+        access_request_questions[request["labname"]] = (
+            lab_obj.access_request_questions()
+        )
         request["lab_friendly_name"] = lab_obj.get_lab_config().friendly_name
 
     return access_requests, access_request_questions

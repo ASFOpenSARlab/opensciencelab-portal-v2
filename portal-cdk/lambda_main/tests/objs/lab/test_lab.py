@@ -170,23 +170,31 @@ class TestUserClass:
         assert len(all_request) == 2
 
         # Make sure we can change the Status
-        lab1.set_access_request_status(username=username, status="rejected")
+        lab1.set_access_request_status(
+            username=username, status="rejected", reviewer="adminuser"
+        )
         current_request = lab1.get_access_request(username)
         assert current_request.get("status") == "rejected"
 
         # Reject updates to "finalized requests"
         with pytest.raises(InvalidLabRequestStatus) as excinfo:
-            lab1.set_access_request_status(username=username, status="approved")
+            lab1.set_access_request_status(
+                username=username, status="approved", reviewer="adminuser"
+            )
         assert "Attempt to update request in status" in str(excinfo.value)
 
         # Reject invalid statue
         with pytest.raises(InvalidLabRequestStatus) as excinfo:
-            lab1.set_access_request_status(username="different_user", status="free")
+            lab1.set_access_request_status(
+                username="different_user", status="free", reviewer="adminuser"
+            )
         assert "Status 'free' not in" in str(excinfo.value)
 
         # Catch updates to request that doesn't exist
         with pytest.raises(InvalidLabRequestStatus) as excinfo:
-            lab1.set_access_request_status(username="joe-bob", status="pending")
+            lab1.set_access_request_status(
+                username="joe-bob", status="pending", reviewer="adminuser"
+            )
         assert "has not requested access to" in str(excinfo.value)
 
     def test_fetch_lab_requests(self, helpers, monkeypatch):
@@ -230,7 +238,12 @@ class TestUserClass:
             username=username2,
         )
 
-        lab2.set_access_request_status(username=username2, status="rejected")
+        lab2.set_access_request_status(
+            username=username2,
+            status="rejected",
+            reviewer="adminuser",
+            reviewer_comment="Abusive User",
+        )
 
         # Make sure we get back only lab1
         lab1_request = lab1.get_requests()
@@ -239,6 +252,11 @@ class TestUserClass:
         # Make sure we get back only lab2
         lab2_request = lab2.get_requests(status=["new", "pending"])
         assert len(lab2_request) == 1
+
+        # Make sure the reviewers name & comment are present
+        rej_request = lab2.get_requests(status=["rejected"])
+        assert rej_request[0]["answers"][-1]["submission_comment"] == "Abusive User"
+        assert rej_request[0]["answers"][-1]["submission_reviewer"] == "adminuser"
 
         # Filter username has the string "user"
         filters_contains = dynamo_filter(

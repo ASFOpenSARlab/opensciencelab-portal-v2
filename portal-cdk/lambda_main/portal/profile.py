@@ -2,6 +2,7 @@ from util.format import portal_template, jinja_template
 from util.auth import require_access
 from util.session import current_session
 from objs.user import User
+from objs.lab import LOCKED_REQUEST_STATUSES
 from util.responses import wrap_response, form_body_to_dict
 from util.labs import LAB_CONFIGS
 from util.user_ip_logs_stream import get_user_ip_logs
@@ -115,6 +116,7 @@ def profile_user(username: str):
         "warning_missing": "Value is missing",
         "access_requests": access_requests,
         "access_request_questions": access_request_questions,
+        "locked_status": LOCKED_REQUEST_STATUSES,
     }
 
     template_input["countries"] = get_country_list()
