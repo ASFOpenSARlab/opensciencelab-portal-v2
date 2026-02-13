@@ -199,6 +199,21 @@ class Helpers:
         def get_lab_access(self) -> dict:
             return filter_lab_access(self)
 
+    @dataclass
+    class FakeLab:
+        access_requests: dict = field(default_factory=lambda: {
+            "answers": [
+            {
+                "question1": "answer1",
+                "question2": "answer2",
+                "question3": "answer3",
+            },
+            ],
+            "status": "new",
+        })
+        def get_access_request(self, username: str) -> dict:
+            return self.access_requests
+
     # differentlab not initialized in FakeUser.labs
     # this is to allow labs to test against a lab the user does not have access too
     # unless used for other purpose in a given test
@@ -219,6 +234,28 @@ class Helpers:
             accessibility="protected",
             deployment_url="https://this-host-does-not-exist.fake",
             default_profiles=["m6a.large", "m6a.xlarge"],
+            application_questions=[
+                {
+                    "name": "user-name",
+                    "question": "What is your name?",
+                    "type": "text",
+                    "rendering_options": "single-line",
+                    "placeholder": "Type Here",
+                },
+                {
+                    "name": "user-story",
+                    "question": "Why do you want access?",
+                    "type": "text",
+                    "rendering_options": "multi-line",
+                    "placeholder": "Type Here",
+                },
+                {
+                    "name": "what-science",
+                    "question": "What type of science",
+                    "type": "dropdown",
+                    "rendering_options": ["SAR", "NISAR"],
+                },
+            ]
         ),
         "noaccess": BaseLabConfig(
             friendly_name="No Access Lab",
