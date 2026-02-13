@@ -235,9 +235,10 @@ class Helpers:
             default_factory=lambda: {
                 "answers": [
                     {
-                        "question1": "answer1",
-                        "question2": "answer2",
-                        "question3": "answer3",
+                        "sar_experience": "answer1",
+                        "osl_experience": "answer2",
+                        "use_case": "answer3",
+                        "what_science": "answer4",
                     },
                 ],
                 "status": "new",

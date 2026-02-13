@@ -983,9 +983,10 @@ class TestAccessPages:
             access_requests={
                 "answers": [
                     {
-                        "user-name": "MyName",
-                        "user-story": "I want science",
-                        "what-science": "SAR",
+                        "sar_experience": "Nothing",
+                        "osl_experience": "None",
+                        "use_case": "For Science",
+                        "what_science": "SAR",
                     },
                 ],
                 "status": "new",
@@ -1001,8 +1002,8 @@ class TestAccessPages:
         ret = main.lambda_handler(event, lambda_context)
 
         assert ret["statusCode"] == 200
-        assert ">I want science</textarea>" in ret["body"]
-        assert 'value="MyName"' in ret["body"]
+        assert ">Nothing</textarea>" in ret["body"]
+        assert ret["body"].count("selected>") == 1
 
     def test_application_dont_autopopulate_non_active_application(
         self, monkeypatch, lambda_context, helpers, fake_auth
@@ -1017,9 +1018,10 @@ class TestAccessPages:
             access_requests={
                 "answers": [
                     {
-                        "user-name": "MyName",
-                        "user-story": "I want science",
-                        "what-science": "SAR",
+                        "sar_experience": "Nothing",
+                        "osl_experience": "None",
+                        "use_case": "For Science",
+                        "what_science": "SAR",
                     },
                 ],
                 "status": "rejected",
@@ -1036,4 +1038,4 @@ class TestAccessPages:
 
         assert ret["statusCode"] == 200
         assert "></textarea>" in ret["body"]
-        assert 'value="MyName"' not in ret["body"]
+        assert ret["body"].count("selected>") == 0

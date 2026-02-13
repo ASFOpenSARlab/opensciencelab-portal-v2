@@ -44,7 +44,7 @@
                             {% if active_request is not defined %}<option value="default">Choose One</option>{% endif %}
                             {% for option in question["rendering_options"] %}
                                 <option value="{{ option|lower }}"
-                                        {% if active_request is defined and active_request[question["name"]] == option.lower() %}selected{% endif %}>
+                                        {% if active_request is defined and active_request[question["name"]].lower() == option.lower() %}selected{% endif %}>
                                     {{ option }}
                                 </option>
                             {% endfor %}
