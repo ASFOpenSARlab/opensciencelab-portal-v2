@@ -231,16 +231,19 @@ class Helpers:
 
     @dataclass
     class FakeLab:
-        access_requests: dict = field(default_factory=lambda: {
-            "answers": [
-            {
-                "question1": "answer1",
-                "question2": "answer2",
-                "question3": "answer3",
-            },
-            ],
-            "status": "new",
-        })
+        access_requests: dict = field(
+            default_factory=lambda: {
+                "answers": [
+                    {
+                        "question1": "answer1",
+                        "question2": "answer2",
+                        "question3": "answer3",
+                    },
+                ],
+                "status": "new",
+            }
+        )
+
         def get_access_request(self, username: str) -> dict:
             return self.access_requests
 

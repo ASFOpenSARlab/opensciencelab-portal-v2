@@ -979,16 +979,18 @@ class TestAccessPages:
         monkeypatch.setattr("portal.access.User", lambda *args, **kwargs: user)
         monkeypatch.setattr("util.auth.User", lambda *args, **kwargs: user)
 
-        lab = helpers.FakeLab(access_requests={
-            "answers": [
-            {
-                "user-name": "MyName",
-                "user-story": "I want science",
-                "what-science": "SAR",
-            },
-            ],
-            "status": "new",
-        })
+        lab = helpers.FakeLab(
+            access_requests={
+                "answers": [
+                    {
+                        "user-name": "MyName",
+                        "user-story": "I want science",
+                        "what-science": "SAR",
+                    },
+                ],
+                "status": "new",
+            }
+        )
         monkeypatch.setattr("portal.access.Lab", lambda *args, **kwargs: lab)
 
         event = helpers.get_event(
@@ -1011,16 +1013,18 @@ class TestAccessPages:
         monkeypatch.setattr("portal.access.User", lambda *args, **kwargs: user)
         monkeypatch.setattr("util.auth.User", lambda *args, **kwargs: user)
 
-        lab = helpers.FakeLab(access_requests={
-            "answers": [
-            {
-                "user-name": "MyName",
-                "user-story": "I want science",
-                "what-science": "SAR",
-            },
-            ],
-            "status": "rejected",
-        })
+        lab = helpers.FakeLab(
+            access_requests={
+                "answers": [
+                    {
+                        "user-name": "MyName",
+                        "user-story": "I want science",
+                        "what-science": "SAR",
+                    },
+                ],
+                "status": "rejected",
+            }
+        )
         monkeypatch.setattr("portal.access.Lab", lambda *args, **kwargs: lab)
 
         event = helpers.get_event(
