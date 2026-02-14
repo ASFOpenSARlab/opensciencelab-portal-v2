@@ -16,6 +16,7 @@ from util.manage_access import (
     validate_delete_lab_access,
     validate_set_lab_access,
 )
+from util.access_request import request_status_change_action
 
 from aws_lambda_powertools.event_handler.api_gateway import Router
 from aws_lambda_powertools.event_handler import content_types
@@ -90,14 +91,16 @@ def update_user_access_request(shortname, username):
     # Parse request
     body = access_router.current_event.body
     if body is None:
-        error = "Body not provided to edit_user"
-        logger.error(error)
-        raise MalformedRequest(error)
+        raise MalformedRequest("Malformed update request payload")
     body = form_body_to_dict(body)
 
     comment = body.get("comment", None)
     status = status_map.get(body.get("status"))
 
+    # Take specific actions
+    request_status_change_action(lab, username, status)
+
+    # Change status
     lab.set_access_request_status(
         username=username,
         status=status,
