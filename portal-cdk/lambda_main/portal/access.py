@@ -16,6 +16,7 @@ from util.manage_access import (
     validate_delete_lab_access,
     validate_set_lab_access,
 )
+from util.access_request import request_status_change_action
 
 from aws_lambda_powertools.event_handler.api_gateway import Router
 from aws_lambda_powertools.event_handler import content_types
@@ -67,9 +68,52 @@ def get_raw_access_request(shortname, username):
     lab = Lab(labname=shortname)
     request_data = lab.get_access_request(username)
     return wrap_response(
-        body=json.dumps(request_data),
+        body=json.dumps(request_data, default=str),
         code=200 if request_data else 422,
         content_type=content_types.APPLICATION_JSON,
+    )
+
+
+@access_router.post("/manage/<shortname>/update/<username>/", include_in_schema=False)
+@require_access("admin", human=True)
+def update_user_access_request(shortname, username):
+    status_map = {
+        "Reject": "rejected",
+        "Approve": "approved",
+        "Pending": "pending",
+        "Return": "returned",
+    }
+
+    lab = Lab(labname=shortname)
+    # Grab the username of the user making the request
+    admin_username = current_session.auth.cognito.username
+
+    # Parse request
+    body = access_router.current_event.body
+    if body is None:
+        raise MalformedRequest("Malformed update request payload")
+    body = form_body_to_dict(body)
+
+    comment = body.get("comment", None)
+    status = status_map.get(body.get("status"))
+
+    # Take specific actions
+    request_status_change_action(lab, username, status)
+
+    # Change status
+    lab.set_access_request_status(
+        username=username,
+        status=status,
+        reviewer=admin_username,
+        reviewer_comment=comment,
+    )
+
+    # Send the reviewer back to the user's profile
+    next_url = f"/portal/profile/form/{username}"
+    return wrap_response(
+        body={f"Redirect to {next_url}"},
+        code=302,
+        headers={"Location": next_url},
     )
 
 
