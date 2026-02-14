@@ -1,5 +1,6 @@
 from objs.lab import Lab
 from data import ALL_COUNTRIES, RESTRICTED_COUNTRIES
+from util.send_email import send_user_email
 
 
 def compile_user_access_requests(user_profile, user_logged_in):
@@ -72,10 +73,25 @@ def request_status_change_action(lab_obj, username: str, status: str):
 
     """
 
+    update_email = {
+        "to": {"username": username},
+        "from": {username: "osl-admin"},
+        "subject": f"OpenScienceLab Access Application {status[0].upper() + status[1:]}",
+        "message": "",
+    }
+
     if status == "approved":
         # Grant access w/ default profiles
         lab_obj.grant_user_access(username)
-        # Welcome Email Here
+        update_email["message"] = (
+            "Hello,\n\n"
+            'Your access to the "OpenSARLab (ASF DAAC)" deployment of OpenScienceLab has been approved.\n'
+            "This access is month-to-month and as-budget-allows. If your access is set to be revoked,\n"
+            "we will get in touch to ensure that you are able to download any workflows and results\n"
+            "before you lose access.\n"
+            "If you have any questions or concerns, please do not hesitate to contact us at"
+            "uaf-jupyterhub-admin@alaska.edu."
+        )
 
     elif status == "rejected":
         # Send rejection email here
