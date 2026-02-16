@@ -1,6 +1,10 @@
-from objs.lab import Lab
+from aws_lambda_powertools import Logger
 from data import ALL_COUNTRIES, RESTRICTED_COUNTRIES
+from objs.lab import Lab
+
 from util.send_email import send_user_email
+
+logger = Logger(child=True)
 
 
 def compile_user_access_requests(user_profile, user_logged_in):
@@ -76,27 +80,47 @@ def request_status_change_action(lab_obj, username: str, status: str):
     update_email = {
         "to": {"username": username},
         "from": {username: "osl-admin"},
+        "reply_to": "uaf-jupyterhub-admin@alaska.edu",
         "subject": f"OpenScienceLab Access Application {status[0].upper() + status[1:]}",
-        "message": "",
+        "html_body": "You should never see this message...",
     }
 
     if status == "approved":
         # Grant access w/ default profiles
         lab_obj.grant_user_access(username)
-        update_email["message"] = (
-            "Hello,\n\n"
-            'Your access to the "OpenSARLab (ASF DAAC)" deployment of OpenScienceLab has been approved.\n'
-            "This access is month-to-month and as-budget-allows. If your access is set to be revoked,\n"
-            "we will get in touch to ensure that you are able to download any workflows and results\n"
-            "before you lose access.\n"
-            "If you have any questions or concerns, please do not hesitate to contact us at"
-            "uaf-jupyterhub-admin@alaska.edu."
+        update_email["html_body"] = (
+            "Hello,<br><br>"
+            'Your access to the "OpenSARLab (ASF DAAC)" deployment of OpenScienceLab has been approved.<br><br>'
+            "This access is month-to-month and as-budget-allows. If your access is set to be revoked,<br>"
+            "we will get in touch to ensure that you are able to download any workflows and results<br>"
+            "before you lose access.<br>"
+            "If you have any questions or concerns, please do not hesitate to contact us at "
+            "uaf-jupyterhub-admin@alaska.edu.<br><br>"
+            "The OpenScienceLab Admin Team"
         )
 
     elif status == "rejected":
         # Send rejection email here
-        pass
+        update_email["html_body"] = (
+            "Hello,<br><br>"
+            'Your application for access to the "OpenSARLab (ASF DAAC)" deployment of OpenScienceLab '
+            "has been rejected.<br><br>"
+            "We apologize for this inconvenience.<br><br>"
+            "The OpenScienceLab Admin Team"
+        )
 
     elif status == "returned":
         # Send returned email here
-        pass
+        update_email["html_body"] = (
+            "Hello,<br><br>"
+            'Your application for access to "OpenSARLab (ASF DAAC)" has been returned.<br><br>'
+            "This may be due to lack of information to enable OpenScienceLab admins to "
+            "make a decision. Please update your application to ensure all the questions "
+            "are answered to your full ability and reapply.<br><br>"
+            "The OpenScienceLab Admin Team"
+        )
+
+    result, reason = send_user_email(update_email)
+
+    if result == "Error":
+        logger.error(f"Application response email failed to send: {reason}")
