@@ -8,6 +8,7 @@ from util.format import portal_template, jinja_template
 from util.auth import require_access
 from util.session import current_session
 from objs.user import User
+from objs.lab import Lab
 
 from aws_lambda_powertools.event_handler.api_gateway import Router
 from aws_lambda_powertools import Logger
@@ -48,23 +49,18 @@ require_access.router = portal_router
 @require_access(human=True)
 @portal_template()
 def portal_root():
-    template_input = {}
-
     username = current_session.auth.cognito.username
     user = User(username=username)
 
     # Filter by labs the user has access to
-    lab_access_info = user.get_lab_access()
+    lab_access = user.get_lab_access()
+    # Get Lab obj for labs the user can see
+    lab_objs = {key: Lab(key) for key in lab_access["viewable_labs_config"]}
+    lab_access["viewable_labs_config"] = lab_objs
 
-    # Add labs to page_dict
-    template_input["labs"] = lab_access_info
-
-    ## Curently missing ##
-    ## Lab ordering
-    ## is_global_lab_country_status_limited warning
-    ## is_mfa_enabled warning
-
-    # Add admin check to formatting
-    template_input["admin"] = user.is_admin()
-
+    template_input = {
+        "username": username,
+        "labs": lab_access,
+        "admin": user.is_admin(),
+    }
     return jinja_template(template_input, "portal.j2")

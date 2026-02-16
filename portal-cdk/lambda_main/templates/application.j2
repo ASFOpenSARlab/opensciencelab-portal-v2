@@ -55,7 +55,7 @@
                 {% endfor %}
                 <!-- Sumbit button -->
                 <div>
-                    <button type="submit">Submit Your Answers</button>
+                    <button type="submit">{% if active_request is defined %}Update Application{% else %}Submit Application{% endif %}</button>
                 </div>
             </form>
         </div>

@@ -196,6 +196,15 @@ NON_PROD_LAB_CONFIGS = {
         accessibility="protected",
         allowed_profiles=[],
         default_profiles=["m6a.large", "m6a.xlarge"],
+        application_questions=[
+            {
+                "name": "why",
+                "question": "Why do you want access?",
+                "type": "text",
+                "rendering_options": "multi-line",
+                "placeholder": "Your Answer",
+            },
+        ],
     ),
     "test_prohibited": BaseLabConfig(
         short_lab_name="test_prohibited",

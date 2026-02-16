@@ -25,6 +25,9 @@ USER_TABLE_KEY = "username"
 
 VALID_REQUEST_STATUSES = ["new", "approved", "rejected", "pending", "returned"]
 LOCKED_REQUEST_STATUSES = ["approved", "rejected"]
+ACTIVE_REQUEST_STATUSES = list(
+    set(VALID_REQUEST_STATUSES).difference(set(LOCKED_REQUEST_STATUSES))
+)
 
 
 class Lab(Table):
@@ -111,7 +114,7 @@ class Lab(Table):
             request: Full request payload
             username: username
 
-        Don't call directory. Use add_access_request()
+        Don't call directly. Use add_access_request()
 
         """
         existing_req = self.get_access_request(username)
