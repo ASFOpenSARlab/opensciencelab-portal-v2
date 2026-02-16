@@ -80,7 +80,6 @@ def request_status_change_action(lab_obj, username: str, status: str):
     update_email = {
         "to": {"username": username},
         "from": {username: "osl-admin"},
-        "reply_to": "uaf-jupyterhub-admin@alaska.edu",
         "subject": f"OpenScienceLab Access Application {status[0].upper() + status[1:]}",
         "html_body": "You should never see this message...",
     }
