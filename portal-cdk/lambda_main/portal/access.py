@@ -55,8 +55,24 @@ def access_root() -> str:
 @require_access("admin", human=True)
 @portal_template()
 def list_access_requests(shortname):
+    user_filter = access_router.current_event.query_string_parameters.get("user_filter")
+    state_filter = access_router.current_event.query_string_parameters.get(
+        "status_filter"
+    )
+
     lab = Lab(labname=shortname)
-    template_input = {"requests": lab.get_requests()}
+    requests = lab.get_requests()
+
+    # Apply filters
+    if user_filter:
+        requests = [r for r in requests if user_filter in r["username"]]
+    if state_filter:
+        requests = [r for r in requests if r["status"] == state_filter]
+
+    # Sort by last_update time
+    requests = sorted(requests, key=lambda x: x.get("last_update", "x"), reverse=True)
+
+    template_input = {"requests": requests}
     return jinja_template(template_input, "manage_access.j2")
 
 
