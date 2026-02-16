@@ -231,6 +231,7 @@ class Helpers:
 
     @dataclass
     class FakeLab:
+        labname: str = field(default_factory=lambda: "testlab")
         access_requests: dict = field(
             default_factory=lambda: {
                 "answers": [
@@ -247,6 +248,9 @@ class Helpers:
 
         def get_access_request(self, username: str) -> dict:
             return self.access_requests
+
+        def get_lab_config(self):
+            return Helpers.FAKE_LAB_CONFIGS[self.labname]
 
     # differentlab not initialized in FakeUser.labs
     # this is to allow labs to test against a lab the user does not have access too
