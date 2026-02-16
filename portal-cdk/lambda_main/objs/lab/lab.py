@@ -25,7 +25,9 @@ USER_TABLE_KEY = "username"
 
 VALID_REQUEST_STATUSES = ["new", "approved", "rejected", "pending", "returned"]
 LOCKED_REQUEST_STATUSES = ["approved", "rejected"]
-ACTIVE_REQUEST_STATUSES = list(set(VALID_REQUEST_STATUSES).difference(set(LOCKED_REQUEST_STATUSES)))
+ACTIVE_REQUEST_STATUSES = list(
+    set(VALID_REQUEST_STATUSES).difference(set(LOCKED_REQUEST_STATUSES))
+)
 
 
 class Lab(Table):
