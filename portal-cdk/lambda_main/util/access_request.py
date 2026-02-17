@@ -90,6 +90,8 @@ def request_status_change_action(lab_obj, username: str, status: str):
     if status == "approved":
         # Grant access w/ default profiles
         lab_obj.grant_user_access(username)
+        logger.info(f"granted {username} access to {lab_obj.labname}")
+
         update_email["html_body"] = (
             f"Hello {username},<br><br>"
             f"Your access to the <b>{lab_name}</b> deployment of OpenScienceLab has been approved.<br><br>"
