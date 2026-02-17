@@ -1,5 +1,11 @@
-from objs.lab import Lab
+from aws_lambda_powertools import Logger
 from data import ALL_COUNTRIES, RESTRICTED_COUNTRIES
+from util.labs import LAB_CONFIGS
+from objs.lab import Lab
+
+from util.send_email import send_user_email
+
+logger = Logger(child=True)
 
 
 def compile_user_access_requests(user_profile, user_logged_in):
@@ -72,15 +78,50 @@ def request_status_change_action(lab_obj, username: str, status: str):
 
     """
 
+    update_email = {
+        "to": {"username": username},
+        "from": {username: "osl-admin"},
+        "subject": f"OpenScienceLab Access Application {status[0].upper() + status[1:]}",
+        "html_body": "You should never see this message...",
+    }
+
+    lab_name = LAB_CONFIGS[lab_obj.labname].friendly_name
+
     if status == "approved":
         # Grant access w/ default profiles
         lab_obj.grant_user_access(username)
-        # Welcome Email Here
+        update_email["html_body"] = (
+            f"Hello {username},<br><br>"
+            f"Your access to the <b>{lab_name}</b> deployment of OpenScienceLab has been approved.<br><br>"
+            "This access is month-to-month and as-budget-allows. If your access is set to be revoked,<br>"
+            "we will get in touch to ensure that you are able to download any workflows and results<br>"
+            "before you lose access.<br>"
+            "If you have any questions or concerns, please do not hesitate to contact us at "
+            "uaf-jupyterhub-admin@alaska.edu.<br><br>"
+            "The OpenScienceLab Admin Team"
+        )
 
     elif status == "rejected":
         # Send rejection email here
-        pass
+        update_email["html_body"] = (
+            f"Hello {username},<br><br>"
+            f"We are unable to complete your request for access to <b>{lab_name}</b> at this time.<br><br>"
+            "We apologize for this inconvenience.<br><br>"
+            "The OpenScienceLab Admin Team"
+        )
 
     elif status == "returned":
         # Send returned email here
-        pass
+        update_email["html_body"] = (
+            f"Hello {username},<br><br>"
+            f"Your application for access to <b>{lab_name}</b> has been returned.<br><br>"
+            "This may be due to lack of information to enable OpenScienceLab admins to "
+            "make a decision. Please update your application to ensure all the questions "
+            "are answered to your full ability and reapply.<br><br>"
+            "The OpenScienceLab Admin Team"
+        )
+
+    result, reason = send_user_email(update_email)
+
+    if result == "Error":
+        logger.error(f"Application response email failed to send: {reason}")
