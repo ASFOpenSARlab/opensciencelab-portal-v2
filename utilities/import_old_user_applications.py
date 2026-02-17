@@ -97,7 +97,7 @@ def process_csv(data, labname, user_table_name):
     insert_rows = {}
 
     for row in data:
-        username = row.get("What is your OpenScienceLab username?")
+        username = row.get("What is your OpenScienceLab username?").lower()
         if check_if_user_exists(user_table_name, username):
             # User exists, insert into Request table
             request_date = datetime.strptime(row.get("Timestamp"), "%m/%d/%Y %H:%M:%S")
@@ -154,6 +154,8 @@ def import_old_requests(deployment, csv_file, labname, dryrun):
         update_num += 1
 
         print(f"Inserting requests for {username} ({update_num}/{len(insert_requets)})")
+        if len(request["answers"]) > 1:
+            print(" - multiple requests")
 
         if not (dryrun):
             insert_request(request, request_table)
