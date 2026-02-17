@@ -1,5 +1,6 @@
 from aws_lambda_powertools import Logger
 from data import ALL_COUNTRIES, RESTRICTED_COUNTRIES
+from util.labs import LAB_CONFIGS
 from objs.lab import Lab
 
 from util.send_email import send_user_email
@@ -84,12 +85,14 @@ def request_status_change_action(lab_obj, username: str, status: str):
         "html_body": "You should never see this message...",
     }
 
+    lab_name = LAB_CONFIGS[lab_obj.labname].friendly_name
+
     if status == "approved":
         # Grant access w/ default profiles
         lab_obj.grant_user_access(username)
         update_email["html_body"] = (
-            "Hello,<br><br>"
-            'Your access to the "OpenSARLab (ASF DAAC)" deployment of OpenScienceLab has been approved.<br><br>'
+            f"Hello {username},<br><br>"
+            f"Your access to the <b>{lab_name}</b> deployment of OpenScienceLab has been approved.<br><br>"
             "This access is month-to-month and as-budget-allows. If your access is set to be revoked,<br>"
             "we will get in touch to ensure that you are able to download any workflows and results<br>"
             "before you lose access.<br>"
@@ -101,9 +104,8 @@ def request_status_change_action(lab_obj, username: str, status: str):
     elif status == "rejected":
         # Send rejection email here
         update_email["html_body"] = (
-            "Hello,<br><br>"
-            'Your application for access to the "OpenSARLab (ASF DAAC)" deployment of OpenScienceLab '
-            "has been rejected.<br><br>"
+            f"Hello {username},<br><br>"
+            f"We are unable to complete your request for access to <b>{lab_name}</b> at this time.<br><br>"
             "We apologize for this inconvenience.<br><br>"
             "The OpenScienceLab Admin Team"
         )
@@ -111,8 +113,8 @@ def request_status_change_action(lab_obj, username: str, status: str):
     elif status == "returned":
         # Send returned email here
         update_email["html_body"] = (
-            "Hello,<br><br>"
-            'Your application for access to "OpenSARLab (ASF DAAC)" has been returned.<br><br>'
+            f"Hello {username},<br><br>"
+            f"Your application for access to <b>{lab_name}</b> has been returned.<br><br>"
             "This may be due to lack of information to enable OpenScienceLab admins to "
             "make a decision. Please update your application to ensure all the questions "
             "are answered to your full ability and reapply.<br><br>"

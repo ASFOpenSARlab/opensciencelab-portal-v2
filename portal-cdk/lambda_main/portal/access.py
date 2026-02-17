@@ -17,6 +17,7 @@ from util.manage_access import (
     validate_set_lab_access,
 )
 from util.access_request import request_status_change_action
+from util.send_email import send_user_email
 
 from aws_lambda_powertools.event_handler.api_gateway import Router
 from aws_lambda_powertools.event_handler import content_types
@@ -473,6 +474,27 @@ def submit_application(shortname):
         answers=body,
         username=username,
     )
+
+    application_received_email = {
+        "to": {"username": username},
+        "from": {username: "osl-admin"},
+        "subject": "OpenScienceLab Access Application Received",
+        "html_body": (
+            f"Hello {username},<br><br>"
+            f"We've received your request for access to <b>{LAB_CONFIGS[shortname].friendly_name}</b>.<br>"
+            "Applications are evaluated on a weekly basis. We will inform you of any "
+            "decision as soon as possible.<br><br>"
+            "If you have any concerns about the timeliness of your application review, "
+            "please email us at uaf-jupyterhub-admin@alaska.edu.<br><br>"
+            "The OpenScienceLab Admin Team"
+        ),
+    }
+
+    result, reason = send_user_email(application_received_email)
+    if result == "Error":
+        logger.error(
+            f"Application reciept acknowledgement email failed to send: {reason}"
+        )
 
     # Send the user to home page
     return wrap_response(
