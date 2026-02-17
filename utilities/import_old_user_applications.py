@@ -15,6 +15,7 @@ import boto3
 # options:
 #   -h, --help            show this help message and exit
 #   -f, --file FILE       CSV file to import
+#   -u, --users USERS     list of users granted OSL access
 #   -d, --deployment DEPLOYMENT
 #                         Deployment prefix (bb, test, prod, etc)
 #   -l, --lab LAB         Lab to ingest to (eg smce-test-opensarlab)
@@ -35,6 +36,7 @@ db_resource = boto3.resource("dynamodb", region_name="us-west-2")
 # Get cmd line args
 parser = argparse.ArgumentParser(description="Import old lab access requests")
 parser.add_argument("-f", "--file", type=str, help="CSV file to import")
+parser.add_argument("-u", "--users", type=str, help="list of users granted OSL access")
 parser.add_argument(
     "-d", "--deployment", type=str, help="Deployment prefix (bb, test, prod, etc)"
 )
@@ -77,6 +79,22 @@ def import_csv(file_path):
         return [x for x in reader]
 
 
+def import_list(user_file):
+    all_users = []
+    if not Path(user_file).is_file():
+        return all_users
+
+    with open(user_file, "r") as file:
+        for line in file.read().splitlines():
+            line = line.strip()
+            if line != "":
+                all_users.append(line.lower())
+
+    print(f"Found {len(all_users)} approved users")
+
+    return all_users
+
+
 def check_if_user_exists(table_name, username):
     if not username:
         return False
@@ -93,7 +111,7 @@ def check_if_user_exists(table_name, username):
     return False
 
 
-def process_csv(data, labname, user_table_name):
+def process_csv(data, labname, user_table_name, users):
     insert_rows = {}
 
     for row in data:
@@ -110,7 +128,7 @@ def process_csv(data, labname, user_table_name):
                     "answers": [],
                     "created_at": request_date.strftime("%Y-%m-%d %H:%M:%S"),
                     "last_update": request_date.strftime("%Y-%m-%d %H:%M:%S"),
-                    "status": "imported",
+                    "status": "approved" if username in users else "imported",
                     "_rec_counter": 1,
                 }
             else:
@@ -141,26 +159,29 @@ def insert_request(request, request_table):
     return response
 
 
-def import_old_requests(deployment, csv_file, labname, dryrun):
+def import_old_requests(deployment, csv_file, labname, dryrun, user_file):
     request_table_name = get_dynamodb_table(deployment, "RequestsTable")
     user_table_name = get_dynamodb_table(deployment, "lambdadynamodbstack")
     request_data = import_csv(csv_file)
+    users = import_list(user_file)
     print("Processing CSV...")
-    insert_requets = process_csv(request_data, labname, user_table_name)
+    insert_requests = process_csv(request_data, labname, user_table_name, users)
     request_table = db_resource.Table(request_table_name)
     print("Updating DynamoDB....")
     update_num = 0
-    for username, request in insert_requets.items():
+    for username, request in insert_requests.items():
         update_num += 1
 
-        print(f"Inserting requests for {username} ({update_num}/{len(insert_requets)})")
+        print(
+            f"Inserting requests for {username} ({update_num}/{len(insert_requests)})"
+        )
         if len(request["answers"]) > 1:
             print(" - multiple requests")
 
         if not (dryrun):
             insert_request(request, request_table)
 
-    return insert_requets
+    return insert_requests
 
 
 if not args.lab:
@@ -169,4 +190,6 @@ if not args.lab:
 if args.dryrun:
     print("%%%%%%%%%\nOnly executing Dryrun!\n%%%%%%%%%")
 
-result = import_old_requests(args.deployment, args.file, args.lab, args.dryrun)
+result = import_old_requests(
+    args.deployment, args.file, args.lab, args.dryrun, args.users
+)
