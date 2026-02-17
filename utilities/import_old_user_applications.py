@@ -15,6 +15,7 @@ import boto3
 # options:
 #   -h, --help            show this help message and exit
 #   -f, --file FILE       CSV file to import
+#   -u, --users USERS     list of users granted OSL access
 #   -d, --deployment DEPLOYMENT
 #                         Deployment prefix (bb, test, prod, etc)
 #   -l, --lab LAB         Lab to ingest to (eg smce-test-opensarlab)
