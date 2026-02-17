@@ -10,7 +10,7 @@ from util.responses import wrap_response, form_body_to_dict, json_body_to_dict
 from util.labs import LAB_CONFIGS
 from objs.lab import Lab, ACTIVE_REQUEST_STATUSES
 from util.exceptions import MalformedRequest
-from util.dynamo_db import dynamo_filter, get_all_items
+from util.dynamo_db import dynamo_filter, get_all_items, combine_all_dynamo_filters
 from util.manage_access import (
     validate_edit_user_request,
     validate_delete_lab_access,
@@ -32,17 +32,45 @@ access_route = {
     "name": "Access",
 }
 
+# Display sort order for access requests. Higher numbers, top of page
+SORT_ORDER = {
+    "new": 6,
+    "pending": 5,
+    "returned": 4,
+    "approved": 3,
+    "rejected": 2,
+    "imported": 1,
+}
+
 
 # This catches "/portal/access" (this routers 'root'):
 @access_router.get("", include_in_schema=False)
 @require_access("admin", human=True)
 @portal_template()
 def access_root() -> str:
-    # Filter for NEW and PENDING requests
-    filters_is = dynamo_filter(
-        attr_name="status", filter_value=["new", "pending"], filter_action="in"
+    user_filter = access_router.current_event.query_string_parameters.get("user_filter")
+    state_filter = access_router.current_event.query_string_parameters.get(
+        "status_filter"
     )
-    requests = get_all_items(table_id="request", limit=200, filters=filters_is)
+
+    # Apply Filters
+    filter = dynamo_filter(
+        attr_name="status",
+        filter_value=[state_filter] if state_filter else ["new", "pending"],
+        filter_action="in",
+    )
+
+    if user_filter:
+        filter = combine_all_dynamo_filters(
+            [filter, dynamo_filter("username", user_filter)]
+        )
+
+    requests = get_all_items(table_id="request", limit=200, filters=filter)
+    requests = sorted(
+        requests,
+        key=lambda x: (SORT_ORDER.get(x["status"], 0), x.get("last_update", "x")),
+        reverse=True,
+    )
 
     template_input = {"requests": requests}
 
@@ -55,8 +83,32 @@ def access_root() -> str:
 @require_access("admin", human=True)
 @portal_template()
 def list_access_requests(shortname):
+    user_filter = access_router.current_event.query_string_parameters.get("user_filter")
+    state_filter = access_router.current_event.query_string_parameters.get(
+        "status_filter"
+    )
+
     lab = Lab(labname=shortname)
-    template_input = {"requests": lab.get_requests()}
+    requests = lab.get_requests()
+
+    # Apply filters
+    if user_filter:
+        requests = [r for r in requests if user_filter in r["username"]]
+    if state_filter:
+        requests = [r for r in requests if r["status"] == state_filter]
+
+    # Sort by status, last updated
+    requests = sorted(
+        requests,
+        key=lambda x: (SORT_ORDER.get(x["status"], 0), x.get("last_update", "x")),
+        reverse=True,
+    )
+
+    # Make sure we don't return > 200 records
+    if len(requests) > 200:
+        requests = requests[:200]
+
+    template_input = {"requests": requests}
     return jinja_template(template_input, "manage_access.j2")
 
 

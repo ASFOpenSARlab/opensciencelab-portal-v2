@@ -278,7 +278,7 @@ class Lab(Table):
                 filter_value=status,
             )
 
-        return get_all_items(table_id="request", limit=200, filters=filters)
+        return get_all_items(table_id="request", filters=filters)
 
     def get_lab_config(self):
         """
