@@ -9,7 +9,7 @@ PROD_LAB_CONFIGS = {
         description="""
             <p>NASA JupyterHub operated by the Alaska Satellite Facility</p>
             <p>Users working on a NASA-funded project may <a href="mailto:uso@asf.alaska.edu?subject=NASA-affiliate%20OSL%20access%20request">request OpenSARLab access from ASF User Support.</a></p>
-            <p>Users not affiliated with a NASA-funded project should apply for access here: <a href="https://forms.gle/LNBCwe8JohYitvfy6">OpenSARLab Access Application</a></p>
+            <p>Users not affiliated with a NASA-funded project should apply for access by clicking the "Apply for Access" button below (if present).</p>
             <p style="color: orangered;">User storage is permanently deleted after 30 days of inactivity. Users can request a temporary extension by contacting the OSL Admins.</p> <hr style="border-top: 1px solid grey;"> <div style="font-size: 12px;margin: 10px 0 0 0;text-align: justify;">
             <p>By accessing and using this information system, you acknowledge and consent to the following:</p>
             <p>You are accessing a U.S. Government information system, which includes: (1) this computer; (2) this computer network; (3) all computers connected to
@@ -46,6 +46,50 @@ PROD_LAB_CONFIGS = {
         ],
         crypto_remediation_role_arn="arn:aws:iam::381492216607:role/service-role/cryptomining-remediation-role-b4sw3o86",
         default_profiles=["m6a.large", "m6a.xlarge"],
+        application_questions=[
+            {
+                "name": "sar_experience",
+                "question": "Tell us about your SAR-related experience and the length of time you have worked in the field.",
+                "type": "text",
+                "rendering_options": "multi-line",
+                "placeholder": "Your Answer",
+            },
+            {
+                "name": "osl_experience",
+                "question": "Have you used OpenSARLab before? If so, tell us what you used it for and what you produced / developed / delivered with it.",
+                "type": "text",
+                "rendering_options": "multi-line",
+                "placeholder": "Your Answer",
+            },
+            {
+                "name": "use_case",
+                "question": "What do you want to use OpenSARLab for?",
+                "type": "text",
+                "rendering_options": "multi-line",
+                "placeholder": "Your Answer",
+            },
+            {
+                "name": "personal_impacts",
+                "question": "If you were given access to OpenSARLab, what would be the impact for you?",
+                "type": "text",
+                "rendering_options": "multi-line",
+                "placeholder": "Your Answer",
+            },
+            {
+                "name": "community_impacts",
+                "question": "What would be the impact for your community?",
+                "type": "text",
+                "rendering_options": "multi-line",
+                "placeholder": "Your Answer",
+            },
+            {
+                "name": "research_impacts",
+                "question": "What would be the impact for the field of research you are contributing to?",
+                "type": "text",
+                "rendering_options": "multi-line",
+                "placeholder": "Your Answer",
+            },
+        ],
     ),
     "azdwr-prod-opensarlab": BaseLabConfig(
         short_lab_name="azdwr-prod-opensarlab",
