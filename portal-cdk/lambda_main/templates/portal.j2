@@ -74,7 +74,7 @@
                                            role="button"
                                            class="btn btn-lg btn-primary go-to-lab-btn"
                                            {% if not accessable -%}
-                                           {% if lab_config.application_questions is defined and lab_config.application_questions != [] and lab.get_access_request(username)["status"] != "rejected" %}
+                                           {% if lab_config.application_questions is defined and lab_config.application_questions != [] and (lab.get_access_request(username) is not mapping or lab.get_access_request(username)["status"] != "rejected") %}
                                            href="/portal/access/apply/{{ lab_config.short_lab_name }}"
                                            title="Apply to lab">
                                             <i>Apply for Access</i>
