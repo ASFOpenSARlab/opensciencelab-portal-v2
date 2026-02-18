@@ -499,6 +499,7 @@ def apply_to_lab(shortname):
         "labname": shortname,
         "lab_friendly_name": LAB_CONFIGS[shortname].friendly_name,
         "application_questions": LAB_CONFIGS[shortname].application_questions,
+        "lab_application_description": LAB_CONFIGS[shortname].application_description,
     }
     if access_requests and access_requests["status"] in ACTIVE_REQUEST_STATUSES:
         template_input["active_request"] = access_requests["answers"][-1]

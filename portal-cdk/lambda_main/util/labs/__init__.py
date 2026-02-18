@@ -89,6 +89,14 @@ PROD_LAB_CONFIGS = {
                 "placeholder": "Your Answer",
             },
         ],
+        application_description=(
+            'Access to "OpenSARLab (ASF DAAC)" is month-to-month as budget allows. If your access is set to be revoked, '
+            "we will get in touch to ensure that you are able to download any workflows and results "
+            "before you lose access.<br><br>"
+            "Applications are approved on a weekly basis. If timeliness is a significant factor for your application, "
+            'please email <a href="mailto:uaf-jupyterhub-asf@alaska.edu">uaf-jupyterhub-asf@alaska.edu</a> '
+            "to advise us of your circumstances."
+        ),
     ),
     "azdwr-prod-opensarlab": BaseLabConfig(
         short_lab_name="azdwr-prod-opensarlab",
@@ -229,6 +237,14 @@ NON_PROD_LAB_CONFIGS = {
                 "placeholder": "Your Answer",
             },
         ],
+        application_description=(
+            'Access to "OpenSARLab (ASF DAAC)" is month-to-month as budget allows. If your access is set to be revoked, '
+            "we will get in touch to ensure that you are able to download any workflows and results "
+            "before you lose access.<br><br>"
+            "Applications are approved on a weekly basis. If timeliness is a significant factor for your application, "
+            'please email <a href="mailto:uaf-jupyterhub-asf@alaska.edu">uaf-jupyterhub-asf@alaska.edu</a> '
+            "to advise us of your circumstances."
+        ),
     ),
     "test_protected": BaseLabConfig(
         short_lab_name="test_protected",
