@@ -977,12 +977,12 @@ class TestAccessPages:
         monkeypatch.setattr("portal.User", lambda *args, **kwargs: user)
         monkeypatch.setattr("util.auth.User", lambda *args, **kwargs: user)
 
-        monkeypatch.setattr("conftest.BaseLabConfig.is_healthy", lambda *args, **kwargs: True)
+        monkeypatch.setattr(
+            "conftest.BaseLabConfig.is_healthy", lambda *args, **kwargs: True
+        )
         monkeypatch.setattr("objs.user.user.LAB_CONFIGS", helpers.FAKE_LAB_CONFIGS)
 
-        lab = helpers.FakeLab(
-            access_requests=None
-        )
+        lab = helpers.FakeLab(access_requests=None)
         monkeypatch.setattr("portal.Lab", lambda *args, **kwargs: lab)
 
         event = helpers.get_event(
