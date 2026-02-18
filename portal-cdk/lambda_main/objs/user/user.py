@@ -157,9 +157,6 @@ def _can_user_see_lab(user: User, lab) -> bool:
 
 
 def _can_user_access_lab(user: User, lab) -> bool:
-    if user.is_admin():
-        return True
-    # user is not admin
     if user.country_code in lab.ip_country_status["prohibited"]:
         return False
     # user not georestricted
