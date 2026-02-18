@@ -11,12 +11,14 @@
         <h2>
             <i>{{ lab_friendly_name }}</i> Application
         </h2>
+        <div class="center-horizontal">
         {% if lab_application_description is not none %}
-            <p>
+            <p style="width: 850px;">
                 {{ lab_application_description }}
             </p>
             <br><br>
         {% endif %}
+        </div>
         <div class="center-horizontal">
             <form method="post">
                 {% for question in application_questions -%}
