@@ -278,10 +278,10 @@ class TestAccessPages:
         assert lab_access["lab_access"]["testlab"]["can_user_access_lab"]
         assert "testlab" in lab_access["viewable_labs_config"]
 
-        assert lab_access["lab_access"]["protectedlab"]["can_user_access_lab"]
+        assert not lab_access["lab_access"]["protectedlab"]["can_user_access_lab"]
         assert "protectedlab" in lab_access["viewable_labs_config"]
 
-        assert lab_access["lab_access"]["noaccess"]["can_user_access_lab"]
+        assert not lab_access["lab_access"]["noaccess"]["can_user_access_lab"]
         assert "noaccess" in lab_access["viewable_labs_config"]
 
     def test_lab_access_geo_restricted_user(
@@ -360,10 +360,10 @@ class TestAccessPages:
         assert lab_access["lab_access"]["testlab"]["can_user_access_lab"]
         assert "testlab" in lab_access["viewable_labs_config"]
 
-        assert lab_access["lab_access"]["protectedlab"]["can_user_access_lab"]
+        assert not lab_access["lab_access"]["protectedlab"]["can_user_access_lab"]
         assert "protectedlab" in lab_access["viewable_labs_config"]
 
-        assert lab_access["lab_access"]["noaccess"]["can_user_access_lab"]
+        assert not lab_access["lab_access"]["noaccess"]["can_user_access_lab"]
         assert "noaccess" in lab_access["viewable_labs_config"]
 
     def test_get_labs_of_a_user_user_not_found(
