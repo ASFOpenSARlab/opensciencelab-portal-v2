@@ -970,6 +970,54 @@ class TestAccessPages:
         assert ret["statusCode"] == 403
         assert ret["headers"].get("Content-Type") == "application/json"
 
+    def test_application_button_availablility(
+        self, monkeypatch, lambda_context, helpers, fake_auth
+    ):
+        user = helpers.FakeUser()
+        monkeypatch.setattr("portal.User", lambda *args, **kwargs: user)
+        monkeypatch.setattr("util.auth.User", lambda *args, **kwargs: user)
+
+        monkeypatch.setattr(
+            "conftest.BaseLabConfig.is_healthy", lambda *args, **kwargs: True
+        )
+        monkeypatch.setattr("objs.user.user.LAB_CONFIGS", helpers.FAKE_LAB_CONFIGS)
+
+        lab = helpers.FakeLab(access_requests=None)
+        monkeypatch.setattr("portal.Lab", lambda *args, **kwargs: lab)
+
+        event = helpers.get_event(
+            path="/portal",
+            cookies=fake_auth,
+        )
+        ret = main.lambda_handler(event, lambda_context)
+
+        assert ret["statusCode"] == 200
+        assert 'href="/portal/access/apply/testlab"' in ret["body"]
+
+        lab = helpers.FakeLab(
+            access_requests={
+                "answers": [
+                    {
+                        "sar_experience": "answer1",
+                        "osl_experience": "answer2",
+                        "use_case": "answer3",
+                        "what_science": "answer4",
+                    },
+                ],
+                "status": "rejected",
+            }
+        )
+        monkeypatch.setattr("portal.Lab", lambda *args, **kwargs: lab)
+
+        event = helpers.get_event(
+            path="/portal",
+            cookies=fake_auth,
+        )
+        ret = main.lambda_handler(event, lambda_context)
+
+        assert ret["statusCode"] == 200
+        assert 'href="/portal/access/apply/testlab"' not in ret["body"]
+
     def test_application_auto_populate_active_application(
         self, monkeypatch, lambda_context, helpers, fake_auth
     ):
