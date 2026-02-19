@@ -326,3 +326,20 @@ class TestUserClass:
                 # this is the single profile token
                 token_value = list(valid_token)[0]
                 assert set(valid_token[token_value]) == {"m6a.large"}
+
+    def test_process_access_tokens(self, helpers, monkeypatch):
+        from objs.lab.lab import Lab
+        from util.access_request import process_access_token
+
+        user = helpers.FakeUser(access=["user", "admin"])
+        monkeypatch.setattr("util.access_request.User", lambda *args, **kwargs: user)
+
+        LAB_CONFIGS = helpers.FAKE_LAB_CONFIGS
+        monkeypatch.setattr("objs.lab.lab.LAB_CONFIGS", LAB_CONFIGS)
+        monkeypatch.setattr("util.access_request.LAB_CONFIGS", LAB_CONFIGS)
+
+        lab_with_token = Lab("testlab")
+        assert lab_with_token.create_access_token()
+        token = list(lab_with_token.get_valid_access_tokens()[0])[0]
+
+        assert process_access_token(token, "test_user")

@@ -237,6 +237,12 @@ class Helpers:
         def get_lab_access(self) -> dict:
             return filter_lab_access(self)
 
+        def check_used_token(self, token) -> bool:
+            return token in self.token_usage
+
+        def use_token(self, labname, token) -> None:
+            self.token_usage.append({token: labname})
+
     @dataclass
     class FakeLab:
         labname: str = field(default_factory=lambda: "testlab")
