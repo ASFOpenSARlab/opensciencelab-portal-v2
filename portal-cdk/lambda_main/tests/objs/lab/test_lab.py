@@ -1,4 +1,5 @@
 import os
+from datetime import datetime
 
 from moto import mock_aws
 import boto3
@@ -288,3 +289,40 @@ class TestUserClass:
         assert "IR" not in restrictions["limited"]
         assert "IL" in restrictions["limited"]
         assert "IL" not in restrictions["prohibited"]
+
+    def test_get_access_tokens(self, helpers, monkeypatch):
+        from objs.lab.lab import Lab
+
+        LAB_CONFIGS = helpers.FAKE_LAB_CONFIGS
+        monkeypatch.setattr("objs.lab.lab.LAB_CONFIGS", LAB_CONFIGS)
+
+        lab_no_token = Lab("protectedlab")
+        lab_with_token = Lab("testlab")
+
+        assert not lab_no_token.create_access_token()
+        assert lab_with_token.create_access_token()
+
+        # Make sure we have a token
+        one_token = lab_with_token.get_valid_access_tokens()
+        assert len(one_token) == 1
+        one_token_string_value = list(one_token[0])[0]
+        assert one_token_string_value
+        # Make sure we get the default profiles
+        assert set(one_token[0][one_token_string_value]) == {"m6a.large", "m6a.xlarge"}
+
+        # Create expired token
+        lab_with_token.create_access_token(
+            end_date=datetime.strptime("2020-10-01", "%Y-%m-%d")
+        )
+
+        # should only return 1 token
+        assert len(lab_with_token.get_valid_access_tokens()) == 1
+
+        # Make sure we can get a non-default set of profiles
+        lab_with_token.create_access_token(profiles=["m6a.large"])
+        assert len(lab_with_token.get_valid_access_tokens()) == 2
+        for valid_token in lab_with_token.get_valid_access_tokens():
+            if one_token_string_value not in valid_token:
+                # this is the single profile token
+                token_value = list(valid_token)[0]
+                assert set(valid_token[token_value]) == {"m6a.large"}

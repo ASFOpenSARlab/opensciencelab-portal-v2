@@ -1,6 +1,7 @@
 """Lab Class to abstract the rest of the code using the database."""
 
-import datetime
+from datetime import datetime
+import uuid
 
 from util.exceptions import LabDoesNotExist, InvalidLabRequestStatus
 from util.labs import LAB_CONFIGS
@@ -22,6 +23,8 @@ LAB_TABLE_ID = "lab"
 REQ_TABLE_ID = "request"
 LAB_TABLE_KEY = "labname"
 USER_TABLE_KEY = "username"
+
+DATE_F = "%Y-%m-%d %H:%M:%S"
 
 VALID_REQUEST_STATUSES = ["new", "approved", "rejected", "pending", "returned"]
 LOCKED_REQUEST_STATUSES = ["approved", "rejected"]
@@ -203,9 +206,7 @@ class Lab(Table):
         ip_address, country_code = get_ip_and_country(current_session.app.current_event)
         answers_dict["submission_ip"] = ip_address
         answers_dict["submission_cc"] = country_code
-        answers_dict["submission_date"] = datetime.datetime.now().strftime(
-            "%Y-%m-%d %H:%M:%S"
-        )
+        answers_dict["submission_date"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
         # Grab persistent admin fields from old requests
         for other in ("submission_comment", "submission_reviewer"):
@@ -294,3 +295,56 @@ class Lab(Table):
 
     def access_request_questions(self) -> dict:
         return self.get_lab_config().application_questions
+
+    def get_valid_access_tokens(self) -> list:
+        if not self.get_lab_config().allows_tokens:
+            return []
+
+        valid_tokens = []
+        for token in self.access_tokens:
+            # Make sure we're inside a supplied range
+            if "start-date" in token and datetime.now() < datetime.strptime(
+                token["start-date"], DATE_F
+            ):
+                continue
+            if "end-date" in token and datetime.now() > datetime.strptime(
+                token["end-date"], DATE_F
+            ):
+                continue
+            valid_tokens.append({token["value"]: token["profiles"]})
+
+        return valid_tokens
+
+    def create_access_token(
+        self,
+        start_date: datetime | None = None,
+        end_date: datetime | None = None,
+        profiles: list | None = None,
+    ) -> bool:
+        if not self.get_lab_config().allows_tokens:
+            return False
+
+        # If profiles weren't supplied, use defaults
+        if not profiles:
+            profiles = self.get_lab_config().default_profiles
+
+        # Generate random 13-char code
+        new_token_value = str(uuid.uuid4())[:13]
+
+        new_token = {
+            "value": new_token_value,
+            "profiles": profiles,
+        }
+
+        # Optional temporal constraints
+        if start_date:
+            new_token["start-date"] = start_date.strftime(DATE_F)
+        if end_date:
+            new_token["end-date"] = end_date.strftime(DATE_F)
+
+        # Copy and Add
+        access_tokens = list(self.access_tokens)
+        access_tokens.append(new_token)
+        self.access_tokens = access_tokens
+
+        return True

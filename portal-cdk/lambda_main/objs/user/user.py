@@ -145,6 +145,24 @@ class User(Table):
 
         return get_all_items(table_id="request", limit=200, filters=filters)
 
+    def use_token(self, labname, token_value):
+        # Can't append directly, copy + append
+        current_usage = list(self.token_usage)
+        current_usage.append(
+            {
+                "labname": labname,
+                "token": token_value,
+                "apply_date": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+            }
+        )
+        self.token_usage = current_usage
+
+    def check_used_token(self, token_value):
+        for token in self.token_usage:
+            if token["token"] == token_value:
+                return True
+        return False
+
 
 def _can_user_see_lab(user: User, lab) -> bool:
     if user.is_admin():

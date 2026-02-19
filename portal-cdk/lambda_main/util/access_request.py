@@ -2,6 +2,7 @@ from aws_lambda_powertools import Logger
 from data import ALL_COUNTRIES, RESTRICTED_COUNTRIES
 from util.labs import LAB_CONFIGS
 from objs.lab import Lab
+from objs.user import User
 
 from util.send_email import send_user_email
 
@@ -127,3 +128,40 @@ def request_status_change_action(lab_obj, username: str, status: str):
 
     if result == "Error":
         logger.error(f"Application response email failed to send: {reason}")
+
+
+def process_access_token(token_value: str, username: str) -> list:
+    access_granted = []
+    for labname, lab_config in LAB_CONFIGS.items():
+        if lab_config.allows_tokens:
+            lab = Lab(labname)
+            for lab_token in lab.get_valid_access_tokens():
+                if token_value in lab_token:
+                    # Get user
+                    user = User(username)
+
+                    # Check if user has used the token
+                    if user.check_used_token(token_value):
+                        # Can't re-use a token
+                        logger.warning(
+                            f"User {username} tried to reuse token {token_value}"
+                        )
+                        continue
+
+                    # Record token was applied
+                    user.use_token(labname, token_value)
+
+                    # Determine which profiles are granted
+                    profiles = lab_token[token_value]
+
+                    # Apply granted access
+                    lab.grant_user_access(username, profiles=profiles)
+                    access_granted.append(labname)
+                    logger.info(
+                        f"User {username} granted access to {labname} by token {token_value}"
+                    )
+
+    if not access_granted:
+        logger.warning(f"User {username} tried to use invalid token '{token_value}'")
+
+    return access_granted

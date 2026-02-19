@@ -1,4 +1,4 @@
-# Lab Access request flow
+## Lab Access request flow
 
 ```mermaid
 ---
@@ -43,3 +43,36 @@ flowchart TD
     E -.-> H@{ shape: cloud, label: "Rejection<br>Email"}
     C -.-> I@{ shape: cloud, label: "welcome<br>Email"}
 ```
+
+## Lab Tokens
+
+To allow token processing for a lab, the `allows_tokens` attribute of 
+`BaseLabConfig()` configuration must be `True`.
+
+Tokens are currently manually provisioned. To create a token (until this is automated),
+open the lab in DynamoDB and modify the `access_tokens` attribute.
+
+Access tokens have 1 required, and 3 optional parameters:
+
+```json
+{
+  "value": "<some cryptic string>",
+  "profiles": ["profile1", "profile2"],
+  "start-date": "YYYY-MM-DD HH:MI:SS",
+  "end-date": "YYYY-MM-DD HH:MI:SS",
+}
+```
+
+* **`value`** (_Required_): Something like UUID
+* **`profiles`** (_Optional_): List of profiles granted by token. If not provided, the
+labs default profiles are used
+* **`start-date`** (_Optional_): Date when a token becomes active
+* **`end-date`** (_Optional_): Date after which a token cannot be used
+
+### Future:
+
+`Lab()` objects have a function `create_access_token()` that can create tokens. However,
+there is no way yet to invoke that function from the portal. Eventually, it should 
+probably be integrated into the `Tokens` table on the lab management view.
+
+

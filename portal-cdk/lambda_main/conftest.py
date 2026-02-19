@@ -21,6 +21,13 @@ from objs.user import filter_lab_access, create_lab_structure
 from jwt import decode as unpatched_jwt_decode
 
 
+# Ignore /utilities files, those don't have tests
+def pytest_ignore_collect(path):
+    if "utilities" in str(path):
+        return True
+    return False
+
+
 def MockedRequestsPost(*args, **kwargs):
     class MockResponse:
         def __init__(self, json_data, status_code):
@@ -201,6 +208,7 @@ class Helpers:
         _rec_counter: int = field(default_factory=lambda: 1)
         create_if_missing: bool = True
         country_code: str = "US"
+        token_usage: list = field(default_factory=lambda: [])
 
         def get_requests(self, **kwargs):
             # This should probably be dynamic.
@@ -245,6 +253,7 @@ class Helpers:
                 "status": "new",
             }
         )
+        access_tokens: list = field(default_factory=lambda: [])
 
         def get_access_request(self, username: str) -> dict:
             return self.access_requests
@@ -274,6 +283,7 @@ class Helpers:
             deployment_url="https://this-host-does-not-exist.fake",
             default_profiles=["m6a.large", "m6a.xlarge"],
             application_questions=LAB_ACCESS_QUESTIONS,
+            allows_tokens=True,
         ),
         "noaccess": BaseLabConfig(
             friendly_name="No Access Lab",

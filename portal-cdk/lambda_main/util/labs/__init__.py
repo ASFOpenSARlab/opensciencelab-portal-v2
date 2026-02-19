@@ -290,6 +290,7 @@ NON_PROD_LAB_CONFIGS = {
         accessibility="private",
         allowed_profiles=["m6a.large", "m6a.xlarge"],
         default_profiles=["m6a.large"],
+        allows_tokens=True,
     ),
     "geos626": BaseLabConfig(
         short_lab_name="geos626",
