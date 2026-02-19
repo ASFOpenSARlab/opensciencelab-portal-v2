@@ -1,3 +1,5 @@
+# Lab Object
+
 ## Lab Access request flow
 
 ```mermaid
@@ -46,7 +48,7 @@ flowchart TD
 
 ## Lab Tokens
 
-To allow token processing for a lab, the `allows_tokens` attribute of 
+To allow token processing for a lab, the `allows_tokens` attribute of
 `BaseLabConfig()` configuration must be `True`.
 
 Tokens are currently manually provisioned. To create a token (until this is automated),
@@ -69,10 +71,8 @@ labs default profiles are used
 * **`start-date`** (_Optional_): Date when a token becomes active
 * **`end-date`** (_Optional_): Date after which a token cannot be used
 
-### Future:
+### Future
 
 `Lab()` objects have a function `create_access_token()` that can create tokens. However,
-there is no way yet to invoke that function from the portal. Eventually, it should 
+there is no way yet to invoke that function from the portal. Eventually, it should
 probably be integrated into the `Tokens` table on the lab management view.
-
-
