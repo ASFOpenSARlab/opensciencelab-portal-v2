@@ -7,6 +7,7 @@ from moto import mock_aws
 
 import main
 from util.exceptions import UserNotFound
+from data import DATE_F
 
 
 @mock_aws
@@ -54,7 +55,7 @@ class TestAccessPages:
                         {
                             "labname": "testlab",
                             "token": "token-dne",
-                            "apply_date": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                            "apply_date": datetime.now().strftime(DATE_F),
                         }
                     ],
                 }

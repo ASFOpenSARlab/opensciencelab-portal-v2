@@ -19,6 +19,7 @@ from util.auth import PORTAL_USER_COOKIE, COGNITO_JWT_COOKIE
 from objs.base_lab_config import BaseLabConfig
 from objs.user import filter_lab_access, create_lab_structure
 from jwt import decode as unpatched_jwt_decode
+from data import DATE_F
 
 
 # Ignore /utilities files, those don't have tests
@@ -217,7 +218,7 @@ class Helpers:
         def update_last_cookie_assignment(self) -> None:
             self.last_cookie_assignment = datetime.datetime(
                 2024, 1, 1, 12, 0, 0
-            ).strftime("%Y-%m-%d %H:%M:%S")
+            ).strftime(DATE_F)
 
         def is_admin(self) -> bool:
             return "admin" in self.access
