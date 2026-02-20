@@ -13,6 +13,7 @@ from util.dynamo_db import (
     get_all_items,
     combine_all_dynamo_filters,
 )
+from data import DATE_F
 from objs.base_db_table import Table
 from .defaults import defaults
 from .validator_map import validator_map
@@ -74,9 +75,7 @@ class User(Table):
                 self.__setattr__(key, None)
 
     def update_last_cookie_assignment(self) -> None:
-        self.last_cookie_assignment = datetime.datetime.now().strftime(
-            "%Y-%m-%d %H:%M:%S"
-        )
+        self.last_cookie_assignment = datetime.datetime.now().strftime(DATE_F)
 
     # Lab manipulation methods
     def set_labs(self, formatted_labs: dict) -> None:
@@ -152,7 +151,7 @@ class User(Table):
             {
                 "labname": labname,
                 "token": token_value,
-                "apply_date": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                "apply_date": datetime.datetime.now().strftime(DATE_F),
             }
         )
         self.token_usage = current_usage

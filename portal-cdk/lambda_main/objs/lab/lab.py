@@ -14,6 +14,7 @@ from util.dynamo_db import (
     get_all_items,
     dynamo_filter,
 )
+from data import DATE_F
 from objs.base_db_table import Table
 
 from .defaults import defaults
@@ -24,7 +25,6 @@ REQ_TABLE_ID = "request"
 LAB_TABLE_KEY = "labname"
 USER_TABLE_KEY = "username"
 
-DATE_F = "%Y-%m-%d %H:%M:%S"
 
 VALID_REQUEST_STATUSES = ["new", "approved", "rejected", "pending", "returned"]
 LOCKED_REQUEST_STATUSES = ["approved", "rejected"]
@@ -206,7 +206,7 @@ class Lab(Table):
         ip_address, country_code = get_ip_and_country(current_session.app.current_event)
         answers_dict["submission_ip"] = ip_address
         answers_dict["submission_cc"] = country_code
-        answers_dict["submission_date"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        answers_dict["submission_date"] = datetime.now().strftime(DATE_F)
 
         # Grab persistent admin fields from old requests
         for other in ("submission_comment", "submission_reviewer"):
