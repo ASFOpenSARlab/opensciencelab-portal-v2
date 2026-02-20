@@ -122,6 +122,7 @@ PROD_LAB_CONFIGS = {
             "AZDWR SAR 4",
             "AZDWR SAR 5",
         ],
+        allows_tokens=True,
     ),
     "avo-prod": BaseLabConfig(
         short_lab_name="avo-prod",
@@ -137,6 +138,7 @@ PROD_LAB_CONFIGS = {
             "sudo",
         ],
         default_profiles=["SAR 1", "SAR 2", "SAR 3", "Debug Server Profile"],
+        allows_tokens=True,
     ),
     "geos626": BaseLabConfig(
         short_lab_name="geos626",
@@ -152,6 +154,7 @@ PROD_LAB_CONFIGS = {
             "sudo",
         ],
         default_profiles=["m6a.large", "m6a.xlarge"],
+        allows_tokens=True,
     ),
 }
 
@@ -305,6 +308,7 @@ NON_PROD_LAB_CONFIGS = {
             "sudo",
         ],
         default_profiles=["m6a.large", "m6a.xlarge"],
+        allows_tokens=True,
     ),
 }
 
