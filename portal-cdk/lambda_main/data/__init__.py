@@ -295,3 +295,5 @@ RESTRICTED_COUNTRIES = {
     "ZW": {"name": "Zimbabwe", "restrictions": [3]},
     "RU": {"name": "Russia", "restrictions": [1, 2, 3, 4, 9]},
 }
+
+DATE_F = "%Y-%m-%d %H:%M:%S"

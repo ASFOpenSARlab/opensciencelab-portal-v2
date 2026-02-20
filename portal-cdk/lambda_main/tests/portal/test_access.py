@@ -1,9 +1,13 @@
+from datetime import datetime
+import json
+import os
+
+import boto3
+from moto import mock_aws
+
 import main
 from util.exceptions import UserNotFound
-from moto import mock_aws
-import boto3
-import os
-import json
+from data import DATE_F
 
 
 @mock_aws
@@ -34,6 +38,9 @@ class TestAccessPages:
 
         labs = helpers.FAKE_LAB_CONFIGS
         monkeypatch.setattr("portal.access.LAB_CONFIGS", labs)
+        monkeypatch.setattr(
+            "portal.access.Lab", lambda *args, **kwargs: helpers.FakeLab()
+        )
 
         def lab_users_static(*args, **kwargs):
             return [
@@ -44,6 +51,13 @@ class TestAccessPages:
                             "lab_profiles": ["m6a.large"],
                         },
                     },
+                    "token_usage": [
+                        {
+                            "labname": "testlab",
+                            "token": "token-dne",
+                            "apply_date": datetime.now().strftime(DATE_F),
+                        }
+                    ],
                 }
             ]
 
@@ -71,6 +85,14 @@ class TestAccessPages:
         )
         assert ret["body"].find('value="m6a.large, m6a.xlarge"')
         assert ret["headers"].get("Content-Type") == "text/html"
+        assert ret["body"].find("token-dne")
+
+        # Make sure tokens don't show up on lab w/o tokens
+        event = helpers.get_event(
+            path="/portal/access/manage/protectedlab", cookies=fake_auth
+        )
+        ret2 = main.lambda_handler(event, lambda_context)
+        assert ret2["body"].find("Token") == -1
 
     def test_admin_editing_user(self, monkeypatch, lambda_context, helpers, fake_auth):
         user = helpers.FakeUser(access=["user", "admin"])

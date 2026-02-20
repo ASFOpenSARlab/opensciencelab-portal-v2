@@ -31,6 +31,7 @@ class BaseLabConfig:
     default_profiles: list = field(default_factory=lambda: [])
     application_questions: list[dict] = field(default_factory=lambda: [])
     application_description: str | None = None
+    allows_tokens: bool = False
 
     def is_healthy(self) -> bool:
         try:

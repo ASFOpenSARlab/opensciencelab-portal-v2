@@ -9,6 +9,7 @@ import boto3
 from boto3.dynamodb.conditions import Attr
 
 from util.log_timer import measure_time
+from data import DATE_F
 
 from aws_lambda_powertools import Logger
 
@@ -139,8 +140,8 @@ def create_item(key: dict, item: dict, table_id: str) -> bool:
                 f"Can't set '{restricted_key}', that's one we set automatically and WILL get overridden."
             )
     item.update(key)
-    item["created_at"] = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    item["last_update"] = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    item["created_at"] = datetime.datetime.now().strftime(DATE_F)
+    item["last_update"] = datetime.datetime.now().strftime(DATE_F)
     with measure_time(service="dynamo", action="put item"):
         table.put_item(Item=item)
 
@@ -274,7 +275,7 @@ def update_item(key: dict, updates: dict, table_id: str) -> bool:
         return False
 
     ### Otherwise craft the boto3 update item call:
-    updates["last_update"] = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    updates["last_update"] = datetime.datetime.now().strftime(DATE_F)
 
     ### increment the record counter
     updates["_rec_counter"] = get_record_counter(table, key) + 1

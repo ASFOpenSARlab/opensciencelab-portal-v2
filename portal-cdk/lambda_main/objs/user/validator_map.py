@@ -12,4 +12,5 @@ validator_map = {
     "_rec_counter": int,
     "ip_address": str,
     "country_code": str,
+    "token_usage": list,
 }
