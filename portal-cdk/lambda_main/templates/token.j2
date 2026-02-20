@@ -1,0 +1,37 @@
+{# djlint:off H021 #}
+<div style="width:50%; margin:0 auto; margin-bottom: 50px;">
+    <h3>Apply Access Token</h3>
+    <hr>
+    {% if warning is defined %}<p class="warning">{{ warning }}</p>{% endif %}
+    {% if note is defined %}
+        <p class="note">
+            {{ note }}
+            <br>
+            You will be redirected home shortly.
+        </p>
+        <script>
+            setTimeout(myURL, 5000);
+            function myURL() {
+                document.location.href = '/portal';
+            }
+        </script>
+    {% endif %}
+    <table>
+        <form action="/portal/access/token" method="post">
+            <tr>
+                <td>
+                    <h4>Token:</h4>
+                </td>
+                <td>
+                    <input name="token" value="">
+                </td>
+            </tr>
+            <tr>
+                <td></td>
+                <td>
+                    <input type="submit" value="Apply Token">
+                </td>
+            </tr>
+        </form>
+    </table>
+</div>

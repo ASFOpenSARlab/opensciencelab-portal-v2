@@ -89,6 +89,14 @@ PROD_LAB_CONFIGS = {
                 "placeholder": "Your Answer",
             },
         ],
+        application_description=(
+            'Access to "OpenSARLab (ASF DAAC)" is month-to-month as budget allows. If your access is set to be revoked, '
+            "we will get in touch to ensure that you are able to download any workflows and results "
+            "before you lose access.<br><br>"
+            "Applications are approved on a weekly basis. If timeliness is a significant factor for your application, "
+            'please email <a href="mailto:uaf-jupyterhub-asf@alaska.edu">uaf-jupyterhub-asf@alaska.edu</a> '
+            "to advise us of your circumstances."
+        ),
     ),
     "azdwr-prod-opensarlab": BaseLabConfig(
         short_lab_name="azdwr-prod-opensarlab",
@@ -114,6 +122,7 @@ PROD_LAB_CONFIGS = {
             "AZDWR SAR 4",
             "AZDWR SAR 5",
         ],
+        allows_tokens=True,
     ),
     "avo-prod": BaseLabConfig(
         short_lab_name="avo-prod",
@@ -129,6 +138,7 @@ PROD_LAB_CONFIGS = {
             "sudo",
         ],
         default_profiles=["SAR 1", "SAR 2", "SAR 3", "Debug Server Profile"],
+        allows_tokens=True,
     ),
     "geos626": BaseLabConfig(
         short_lab_name="geos626",
@@ -144,6 +154,7 @@ PROD_LAB_CONFIGS = {
             "sudo",
         ],
         default_profiles=["m6a.large", "m6a.xlarge"],
+        allows_tokens=True,
     ),
 }
 
@@ -229,6 +240,14 @@ NON_PROD_LAB_CONFIGS = {
                 "placeholder": "Your Answer",
             },
         ],
+        application_description=(
+            'Access to "OpenSARLab (ASF DAAC)" is month-to-month as budget allows. If your access is set to be revoked, '
+            "we will get in touch to ensure that you are able to download any workflows and results "
+            "before you lose access.<br><br>"
+            "Applications are approved on a weekly basis. If timeliness is a significant factor for your application, "
+            'please email <a href="mailto:uaf-jupyterhub-asf@alaska.edu">uaf-jupyterhub-asf@alaska.edu</a> '
+            "to advise us of your circumstances."
+        ),
     ),
     "test_protected": BaseLabConfig(
         short_lab_name="test_protected",
@@ -274,6 +293,7 @@ NON_PROD_LAB_CONFIGS = {
         accessibility="private",
         allowed_profiles=["m6a.large", "m6a.xlarge"],
         default_profiles=["m6a.large"],
+        allows_tokens=True,
     ),
     "geos626": BaseLabConfig(
         short_lab_name="geos626",
@@ -288,6 +308,7 @@ NON_PROD_LAB_CONFIGS = {
             "sudo",
         ],
         default_profiles=["m6a.large", "m6a.xlarge"],
+        allows_tokens=True,
     ),
 }
 

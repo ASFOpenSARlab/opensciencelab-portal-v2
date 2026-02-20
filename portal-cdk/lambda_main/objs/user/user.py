@@ -13,6 +13,7 @@ from util.dynamo_db import (
     get_all_items,
     combine_all_dynamo_filters,
 )
+from data import DATE_F
 from objs.base_db_table import Table
 from .defaults import defaults
 from .validator_map import validator_map
@@ -74,9 +75,7 @@ class User(Table):
                 self.__setattr__(key, None)
 
     def update_last_cookie_assignment(self) -> None:
-        self.last_cookie_assignment = datetime.datetime.now().strftime(
-            "%Y-%m-%d %H:%M:%S"
-        )
+        self.last_cookie_assignment = datetime.datetime.now().strftime(DATE_F)
 
     # Lab manipulation methods
     def set_labs(self, formatted_labs: dict) -> None:
@@ -145,6 +144,24 @@ class User(Table):
 
         return get_all_items(table_id="request", limit=200, filters=filters)
 
+    def use_token(self, labname, token_value):
+        # Can't append directly, copy + append
+        current_usage = list(self.token_usage)
+        current_usage.append(
+            {
+                "labname": labname,
+                "token": token_value,
+                "apply_date": datetime.datetime.now().strftime(DATE_F),
+            }
+        )
+        self.token_usage = current_usage
+
+    def check_used_token(self, token_value):
+        for token in self.token_usage:
+            if token["token"] == token_value:
+                return True
+        return False
+
 
 def _can_user_see_lab(user: User, lab) -> bool:
     if user.is_admin():
@@ -157,9 +174,6 @@ def _can_user_see_lab(user: User, lab) -> bool:
 
 
 def _can_user_access_lab(user: User, lab) -> bool:
-    if user.is_admin():
-        return True
-    # user is not admin
     if user.country_code in lab.ip_country_status["prohibited"]:
         return False
     # user not georestricted

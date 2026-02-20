@@ -16,7 +16,7 @@ from util.manage_access import (
     validate_delete_lab_access,
     validate_set_lab_access,
 )
-from util.access_request import request_status_change_action
+from util.access_request import request_status_change_action, process_access_token
 from util.send_email import send_user_email
 
 from aws_lambda_powertools.event_handler.api_gateway import Router
@@ -189,10 +189,12 @@ def manage_lab(shortname):
     template_input["users"] = users
 
     lab = LAB_CONFIGS[shortname]
+    lab_obj = Lab(shortname)
     template_input["lab"] = lab
     template_input["allows_requests"] = len(lab.application_questions) > 0
     template_input["rowcount"] = len(users)
     template_input["exceeded"] = len(users) >= row_limit
+    template_input["access_tokens"] = lab_obj.access_tokens
 
     return jinja_template(template_input, "manage.j2")
 
@@ -499,6 +501,7 @@ def apply_to_lab(shortname):
         "labname": shortname,
         "lab_friendly_name": LAB_CONFIGS[shortname].friendly_name,
         "application_questions": LAB_CONFIGS[shortname].application_questions,
+        "lab_application_description": LAB_CONFIGS[shortname].application_description,
     }
     if access_requests and access_requests["status"] in ACTIVE_REQUEST_STATUSES:
         template_input["active_request"] = access_requests["answers"][-1]
@@ -554,3 +557,35 @@ def submit_application(shortname):
         headers={"Location": "/portal"},
         code=302,
     )
+
+
+@access_router.get("/token", include_in_schema=False)
+@require_access(human=True)
+@portal_template()
+def input_access_token():
+    return jinja_template({}, "token.j2")
+
+
+@access_router.post("/token", include_in_schema=False)
+@require_access(human=True)
+@portal_template()
+def apply_access_token():
+    # Grab the username of the user making the request
+    username = current_session.auth.cognito.username
+    # Parse request
+    body = access_router.current_event.body
+    body = form_body_to_dict(body)
+
+    # Grab the token value
+    token_value = body["token"]
+
+    # Process the token
+    granted = process_access_token(token_value, username)
+
+    if not granted:
+        template_input = {"warning": "Token could not be applied"}
+        return jinja_template(template_input, "token.j2")
+
+    # Send the user back to portal root
+    template_input = {"note": "Token applied!"}
+    return jinja_template(template_input, "token.j2")

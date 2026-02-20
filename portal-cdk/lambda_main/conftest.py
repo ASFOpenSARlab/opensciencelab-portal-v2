@@ -19,6 +19,14 @@ from util.auth import PORTAL_USER_COOKIE, COGNITO_JWT_COOKIE
 from objs.base_lab_config import BaseLabConfig
 from objs.user import filter_lab_access, create_lab_structure
 from jwt import decode as unpatched_jwt_decode
+from data import DATE_F
+
+
+# Ignore /utilities files, those don't have tests
+def pytest_ignore_collect(path):
+    if "utilities" in str(path):
+        return True
+    return False
 
 
 def MockedRequestsPost(*args, **kwargs):
@@ -201,6 +209,7 @@ class Helpers:
         _rec_counter: int = field(default_factory=lambda: 1)
         create_if_missing: bool = True
         country_code: str = "US"
+        token_usage: list = field(default_factory=lambda: [])
 
         def get_requests(self, **kwargs):
             # This should probably be dynamic.
@@ -209,7 +218,7 @@ class Helpers:
         def update_last_cookie_assignment(self) -> None:
             self.last_cookie_assignment = datetime.datetime(
                 2024, 1, 1, 12, 0, 0
-            ).strftime("%Y-%m-%d %H:%M:%S")
+            ).strftime(DATE_F)
 
         def is_admin(self) -> bool:
             return "admin" in self.access
@@ -229,6 +238,12 @@ class Helpers:
         def get_lab_access(self) -> dict:
             return filter_lab_access(self)
 
+        def check_used_token(self, token) -> bool:
+            return token in self.token_usage
+
+        def use_token(self, labname, token) -> None:
+            self.token_usage.append({token: labname})
+
     @dataclass
     class FakeLab:
         labname: str = field(default_factory=lambda: "testlab")
@@ -245,6 +260,7 @@ class Helpers:
                 "status": "new",
             }
         )
+        access_tokens: list = field(default_factory=lambda: [])
 
         def get_access_request(self, username: str) -> dict:
             return self.access_requests
@@ -274,6 +290,7 @@ class Helpers:
             deployment_url="https://this-host-does-not-exist.fake",
             default_profiles=["m6a.large", "m6a.xlarge"],
             application_questions=LAB_ACCESS_QUESTIONS,
+            allows_tokens=True,
         ),
         "noaccess": BaseLabConfig(
             friendly_name="No Access Lab",

@@ -12,11 +12,11 @@ class BaseLabConfig:
     accessibility: str
     allowed_profiles: list
     deployment_url: str
-    calendar_url: str = None
-    description: str = None
-    logo: str = None
-    about_page_url: str = None
-    about_page_button_label: str = None
+    calendar_url: str | None = None
+    description: str | None = None
+    logo: str | None = None
+    about_page_url: str | None = None
+    about_page_button_label: str | None = None
     ip_country_status: dict = field(
         default_factory=lambda: {
             "limited": [],
@@ -27,9 +27,11 @@ class BaseLabConfig:
             ],
         }
     )
-    crypto_remediation_role_arn: str = None
+    crypto_remediation_role_arn: str | None = None
     default_profiles: list = field(default_factory=lambda: [])
     application_questions: list[dict] = field(default_factory=lambda: [])
+    application_description: str | None = None
+    allows_tokens: bool = False
 
     def is_healthy(self) -> bool:
         try:

@@ -12,7 +12,15 @@
             <i>{{ lab_friendly_name }}</i> Application
         </h2>
         <div class="center-horizontal">
-            <form method="post">
+        {% if lab_application_description is not none %}
+            <p style="width: 850px;">
+                {{ lab_application_description }}
+            </p>
+            <br><br>
+        {% endif %}
+        </div>
+        <div class="center-horizontal">
+            <form method="post" class="application-form">
                 {% for question in application_questions -%}
                     <label for="{{ question["name"] }}"
                            {% if question.get("rendering_options") and question.get("rendering_options") in ["multi-line"] %} style="display: block; margin-bottom: 8px;" {% endif %}>

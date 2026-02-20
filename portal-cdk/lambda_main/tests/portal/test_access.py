@@ -1,9 +1,13 @@
+from datetime import datetime
+import json
+import os
+
+import boto3
+from moto import mock_aws
+
 import main
 from util.exceptions import UserNotFound
-from moto import mock_aws
-import boto3
-import os
-import json
+from data import DATE_F
 
 
 @mock_aws
@@ -34,6 +38,9 @@ class TestAccessPages:
 
         labs = helpers.FAKE_LAB_CONFIGS
         monkeypatch.setattr("portal.access.LAB_CONFIGS", labs)
+        monkeypatch.setattr(
+            "portal.access.Lab", lambda *args, **kwargs: helpers.FakeLab()
+        )
 
         def lab_users_static(*args, **kwargs):
             return [
@@ -44,6 +51,13 @@ class TestAccessPages:
                             "lab_profiles": ["m6a.large"],
                         },
                     },
+                    "token_usage": [
+                        {
+                            "labname": "testlab",
+                            "token": "token-dne",
+                            "apply_date": datetime.now().strftime(DATE_F),
+                        }
+                    ],
                 }
             ]
 
@@ -71,6 +85,14 @@ class TestAccessPages:
         )
         assert ret["body"].find('value="m6a.large, m6a.xlarge"')
         assert ret["headers"].get("Content-Type") == "text/html"
+        assert ret["body"].find("token-dne")
+
+        # Make sure tokens don't show up on lab w/o tokens
+        event = helpers.get_event(
+            path="/portal/access/manage/protectedlab", cookies=fake_auth
+        )
+        ret2 = main.lambda_handler(event, lambda_context)
+        assert ret2["body"].find("Token") == -1
 
     def test_admin_editing_user(self, monkeypatch, lambda_context, helpers, fake_auth):
         user = helpers.FakeUser(access=["user", "admin"])
@@ -278,10 +300,10 @@ class TestAccessPages:
         assert lab_access["lab_access"]["testlab"]["can_user_access_lab"]
         assert "testlab" in lab_access["viewable_labs_config"]
 
-        assert lab_access["lab_access"]["protectedlab"]["can_user_access_lab"]
+        assert not lab_access["lab_access"]["protectedlab"]["can_user_access_lab"]
         assert "protectedlab" in lab_access["viewable_labs_config"]
 
-        assert lab_access["lab_access"]["noaccess"]["can_user_access_lab"]
+        assert not lab_access["lab_access"]["noaccess"]["can_user_access_lab"]
         assert "noaccess" in lab_access["viewable_labs_config"]
 
     def test_lab_access_geo_restricted_user(
@@ -360,10 +382,10 @@ class TestAccessPages:
         assert lab_access["lab_access"]["testlab"]["can_user_access_lab"]
         assert "testlab" in lab_access["viewable_labs_config"]
 
-        assert lab_access["lab_access"]["protectedlab"]["can_user_access_lab"]
+        assert not lab_access["lab_access"]["protectedlab"]["can_user_access_lab"]
         assert "protectedlab" in lab_access["viewable_labs_config"]
 
-        assert lab_access["lab_access"]["noaccess"]["can_user_access_lab"]
+        assert not lab_access["lab_access"]["noaccess"]["can_user_access_lab"]
         assert "noaccess" in lab_access["viewable_labs_config"]
 
     def test_get_labs_of_a_user_user_not_found(
@@ -969,6 +991,54 @@ class TestAccessPages:
         assert "User does not have required access" in ret["body"]
         assert ret["statusCode"] == 403
         assert ret["headers"].get("Content-Type") == "application/json"
+
+    def test_application_button_availablility(
+        self, monkeypatch, lambda_context, helpers, fake_auth
+    ):
+        user = helpers.FakeUser()
+        monkeypatch.setattr("portal.User", lambda *args, **kwargs: user)
+        monkeypatch.setattr("util.auth.User", lambda *args, **kwargs: user)
+
+        monkeypatch.setattr(
+            "conftest.BaseLabConfig.is_healthy", lambda *args, **kwargs: True
+        )
+        monkeypatch.setattr("objs.user.user.LAB_CONFIGS", helpers.FAKE_LAB_CONFIGS)
+
+        lab = helpers.FakeLab(access_requests=None)
+        monkeypatch.setattr("portal.Lab", lambda *args, **kwargs: lab)
+
+        event = helpers.get_event(
+            path="/portal",
+            cookies=fake_auth,
+        )
+        ret = main.lambda_handler(event, lambda_context)
+
+        assert ret["statusCode"] == 200
+        assert 'href="/portal/access/apply/testlab"' in ret["body"]
+
+        lab = helpers.FakeLab(
+            access_requests={
+                "answers": [
+                    {
+                        "sar_experience": "answer1",
+                        "osl_experience": "answer2",
+                        "use_case": "answer3",
+                        "what_science": "answer4",
+                    },
+                ],
+                "status": "rejected",
+            }
+        )
+        monkeypatch.setattr("portal.Lab", lambda *args, **kwargs: lab)
+
+        event = helpers.get_event(
+            path="/portal",
+            cookies=fake_auth,
+        )
+        ret = main.lambda_handler(event, lambda_context)
+
+        assert ret["statusCode"] == 200
+        assert 'href="/portal/access/apply/testlab"' not in ret["body"]
 
     def test_application_auto_populate_active_application(
         self, monkeypatch, lambda_context, helpers, fake_auth

@@ -29,11 +29,44 @@
         </form>
     </div>
 {% endif %}
+{% if lab.allows_tokens %}
+    <div class="margin-left-30">
+        <h3>Tokens</h3>
+        <table>
+            <tr class="tr-highlight">
+                <th>Token</th>
+                <th>Profiles</th>
+                <th>Start</th>
+                <th>End</th>
+            </tr>
+            {% for token in access_tokens %}
+                <tr>
+                    <th>{{ token["value"] }}</th>
+                    <th>
+                        {% if "profiles" in token %}
+                            {% for profile in token["profiles"] %}
+                                <span style="border: 1px solid black; padding: 1px 4px; color: darkblue;">{{ profile }}</span>,
+                            {% endfor %}
+                        {% endif %}
+                    </th>
+                    <th>
+                        {% if "start-date" in token %}{{ token["start-date"] }}{% endif %}
+                    </th>
+                    <th>
+                        {% if "end-date" in token %}{{ token["end-date"] }}{% endif %}
+                    </th>
+                </tr>
+            {% endfor %}
+        </table>
+    </div>
+{% endif %}
 <div class="margin-left-30">
+    <h3>Users</h3>
     <table>
         <tr class="tr-highlight">
             <th>Username</th>
             <th>Profiles</th>
+            {% if lab.allows_tokens %}<th>Token</th>{% endif %}
             <th>Tools</th>
         </tr>
         <tr>
@@ -46,6 +79,7 @@
                            name="lab_profiles"
                            value="{{ ','.join(lab.default_profiles) }}">
                 </th>
+                {% if lab.allows_tokens %}<th></th>{% endif %}
                 <input type="hidden" name="time_quota" placeholder="time_quota" value="">
                 <input type="hidden"
                        name="lab_country_status"
@@ -70,6 +104,13 @@
                         {% endif %}
                     {% endfor %}
                 </th>
+                {% if lab.allows_tokens %}
+                    <th>
+                        {% for token in user["token_usage"] %}
+                            {% if token["labname"] == lab.short_lab_name %}{{ token["token"] }}{% endif %}
+                        {% endfor %}
+                    </th>
+                {% endif %}
                 <th>
                     <form method="post" action="{{ lab.short_lab_name }}/edituser">
                         <input type="hidden" name="username" value="{{ user['username'] }}">
