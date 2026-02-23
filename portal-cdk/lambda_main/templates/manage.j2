@@ -106,9 +106,11 @@
                 </th>
                 {% if lab.allows_tokens %}
                     <th>
-                        {% for token in user["token_usage"] %}
-                            {% if token["labname"] == lab.short_lab_name %}{{ token["token"] }}{% endif %}
-                        {% endfor %}
+                        {% if "token_usage" in user %}
+                            {% for token in user["token_usage"] %}
+                                {% if token["labname"] == lab.short_lab_name %}{{ token["token"] }}{% endif %}
+                            {% endfor %}
+                        {% endif %}
                     </th>
                 {% endif %}
                 <th>
