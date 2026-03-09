@@ -223,13 +223,21 @@ def edit_user(shortname):
     user = User(body["username"])
 
     if body["action"] == "add_user":
+        update: bool = shortname in user.get_lab_access()["lab_access"].keys()
         user.add_lab(
             lab_short_name=shortname,
             lab_profiles=[s.strip() for s in body["lab_profiles"].split(",")],
             time_quota=body["time_quota"].strip() or None,
             lab_country_status=body["lab_country_status"],
         )
-        logger.info(f'{admin_username} added user "{body["username"]}" to {shortname}')
+        if update:
+            logger.info(
+                f'{admin_username} updated access for user "{body["username"]}" in {shortname}'
+            )
+        else:
+            logger.info(
+                f'{admin_username} added user "{body["username"]}" to {shortname}'
+            )
 
     elif body["action"] == "remove_user":
         user.remove_lab(shortname)
