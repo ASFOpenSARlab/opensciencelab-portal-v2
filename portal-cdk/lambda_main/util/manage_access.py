@@ -15,7 +15,7 @@ def validate_edit_user_request(body: dict) -> tuple[bool, str]:
         for key in keys:
             if key not in body:
                 return False, f"{key} not provided to edit_user"
-        return True, "Read to add user"
+        return True, "Ready to add user"
 
     elif body["action"] == "remove_user":
         # check removing user fields provided
@@ -94,3 +94,30 @@ def validate_set_lab_access(put_lab_request: dict) -> tuple[bool, str]:
                 return False, f"Profile '{profile}' not allowed for lab {lab_name}"
 
     return True, "Success"
+
+
+def validate_edit_tokens_request(body: dict) -> tuple[bool, str]:
+    # check always required keys are provided
+    keys = ["action"]
+    for key in keys:
+        if key not in body:
+            return False, f"{key} not provided to edit_tokens"
+
+    if body["action"] == "add_token":
+        # check adding token fields provided
+        keys = ["lab_profiles"]
+        for key in keys:
+            if key not in body:
+                return False, f"{key} not provided to edit_tokens"
+        return True, "Ready to add token"
+
+    elif body["action"] == "remove_token":
+        keys = ["token"]
+        for key in keys:
+            if key not in body:
+                return False, f"{key} not provided to edit_tokens"
+        # check removing token fields provided
+        return True, "Ready to remove token"
+
+    else:
+        return False, "Invalid action"

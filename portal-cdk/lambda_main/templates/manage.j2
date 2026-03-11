@@ -38,6 +38,28 @@
                 <th>Profiles</th>
                 <th>Start</th>
                 <th>End</th>
+                <th>Tools</th>
+            </tr>
+            <tr>
+                <form method="post" action="{{ lab.short_lab_name }}/edittokens">
+                    <th>
+                        <!--<button type="submit" name="token" value="generate">Generate</button>-->
+                    </th>
+                    <th>
+                        <input type="text"
+                            name="lab_profiles"
+                            value="{{ ','.join(lab.default_profiles) }}">
+                    </th>
+                    <th>
+                        <input type="date" name="start_date">
+                    </th>
+                    <th>
+                        <input type="date" name="end_date">
+                    </th>
+                    <th>
+                        <button type="submit" name="action" value="add_token">Add</button>
+                    </th>
+                </form>
             </tr>
             {% for token in access_tokens %}
                 <tr>
@@ -54,6 +76,12 @@
                     </th>
                     <th>
                         {% if "end-date" in token %}{{ token["end-date"] }}{% endif %}
+                    </th>
+                    <th>
+                        <form method="post" action="{{ lab.short_lab_name }}/edittokens">
+                            <input type="hidden" name="token" value="{{ token["value"] }}">
+                            <button type="submit" name="action" value="remove_token">Remove</button>
+                        </form>
                     </th>
                 </tr>
             {% endfor %}
