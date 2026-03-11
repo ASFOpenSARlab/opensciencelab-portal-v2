@@ -108,10 +108,12 @@ class TestLabClass:
             "Lab allow_request_access was not updated in DB"
         )
 
-
-    def test_endpoint_add_token(self, monkeypatch, lambda_context, helpers, fake_auth, mocker):
+    def test_endpoint_add_token(
+        self, monkeypatch, lambda_context, helpers, fake_auth, mocker
+    ):
         import main
         from objs.lab.lab import Lab
+
         user = helpers.FakeUser(access=["user", "admin"])
         monkeypatch.setattr("portal.access.User", lambda *args, **kwargs: user)
         monkeypatch.setattr("util.auth.User", lambda *args, **kwargs: user)
@@ -142,13 +144,19 @@ class TestLabClass:
         ret = main.lambda_handler(event, lambda_context)
 
         # Assert correct function is called with correct parameters
-        mock_add_token.assert_called_once_with(start_date=datetime.strptime("2026-03-31", "%Y-%m-%d"), end_date=None, profiles=["m6a.large"])
+        mock_add_token.assert_called_once_with(
+            start_date=datetime.strptime("2026-03-31", "%Y-%m-%d"),
+            end_date=None,
+            profiles=["m6a.large"],
+        )
         assert mock_remove_token.call_count == 0
 
-
-    def test_endpoint_remove_token(self, monkeypatch, lambda_context, helpers, fake_auth, mocker):
+    def test_endpoint_remove_token(
+        self, monkeypatch, lambda_context, helpers, fake_auth, mocker
+    ):
         import main
         from objs.lab.lab import Lab
+
         user = helpers.FakeUser(access=["user", "admin"])
         monkeypatch.setattr("portal.access.User", lambda *args, **kwargs: user)
         monkeypatch.setattr("util.auth.User", lambda *args, **kwargs: user)
@@ -433,20 +441,23 @@ class TestLabClass:
         lab_with_token.create_access_token()
         lab_with_token.create_access_token()
         token_values = [
-                list(token.keys())[0] for token
-                in lab_with_token.get_valid_access_tokens()
-            ]
+            list(token.keys())[0] for token in lab_with_token.get_valid_access_tokens()
+        ]
         target_token_value = token_values[0]
         remaining_token_values = token_values[1:]
 
         # Function returns true
         assert lab_with_token.remove_access_token(target_token_value)
-        
+
         all_token_values_post_remove = [
-            list(token.keys())[0] for token
-            in lab_with_token.get_valid_access_tokens()
+            list(token.keys())[0] for token in lab_with_token.get_valid_access_tokens()
         ]
         # Target token removed
         assert target_token_value not in all_token_values_post_remove
         # All other tokens are still present
-        assert all([token_value in all_token_values_post_remove for token_value in remaining_token_values])
+        assert all(
+            [
+                token_value in all_token_values_post_remove
+                for token_value in remaining_token_values
+            ]
+        )

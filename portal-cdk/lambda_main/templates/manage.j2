@@ -42,13 +42,11 @@
             </tr>
             <tr>
                 <form method="post" action="{{ lab.short_lab_name }}/edittokens">
-                    <th>
-                        <!--<button type="submit" name="token" value="generate">Generate</button>-->
-                    </th>
+                    <th style="background-color: black;"></th>
                     <th>
                         <input type="text"
-                            name="lab_profiles"
-                            value="{{ ','.join(lab.default_profiles) }}">
+                               name="lab_profiles"
+                               value="{{ ','.join(lab.default_profiles) }}">
                     </th>
                     <th>
                         <input type="date" name="start_date">

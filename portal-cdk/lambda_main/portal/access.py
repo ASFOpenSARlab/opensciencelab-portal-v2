@@ -278,19 +278,21 @@ def edit_tokens(shortname):
 
     if body["action"] == "add_token":
         success = lab.create_access_token(
-            start_date=None if body["start_date"] == "" else datetime.strptime(body["start_date"], "%Y-%m-%d"),
-            end_date=None if body["end_date"] == "" else datetime.strptime(body["end_date"], "%Y-%m-%d"),
+            start_date=None
+            if body["start_date"] == ""
+            else datetime.strptime(body["start_date"], "%Y-%m-%d"),
+            end_date=None
+            if body["end_date"] == ""
+            else datetime.strptime(body["end_date"], "%Y-%m-%d"),
             profiles=[s.strip() for s in body["lab_profiles"].split(",")],
         )
         if success:
-            logger.info(f'{admin_username} added token to {shortname}')
+            logger.info(f"{admin_username} added token to {shortname}")
 
     elif body["action"] == "remove_token":
         success = lab.remove_access_token(body["token"])
         if success:
-            logger.info(
-                f'{admin_username} removed token from {shortname}'
-            )
+            logger.info(f"{admin_username} removed token from {shortname}")
 
     else:
         error = f"Invalid edit_tokens action {body['action']}"

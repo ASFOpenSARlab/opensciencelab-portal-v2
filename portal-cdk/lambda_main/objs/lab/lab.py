@@ -349,7 +349,7 @@ class Lab(Table):
 
         return True
 
-    def remove_access_token(self, token_value:str)-> bool:
+    def remove_access_token(self, token_value: str) -> bool:
         success = False
         access_tokens = list(self.access_tokens)
 
