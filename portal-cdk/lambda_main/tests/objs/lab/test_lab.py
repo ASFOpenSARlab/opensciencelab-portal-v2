@@ -140,7 +140,7 @@ class TestLabClass:
             body="placeholder",
             method="POST",
         )
-        _ = main.lambda_handler(event, lambda_context)
+        main.lambda_handler(event, lambda_context)
 
         # Assert correct function is called with correct parameters
         mock_add_token.assert_called_once_with(
@@ -180,7 +180,7 @@ class TestLabClass:
             body="placeholder",
             method="POST",
         )
-        _ = main.lambda_handler(event, lambda_context)
+        main.lambda_handler(event, lambda_context)
 
         # Assert correct function is called with correct parameters
         assert mock_add_token.call_count == 0
