@@ -14,7 +14,7 @@ REGION = os.getenv("STACK_REGION", "us-west-2")
 
 
 @mock_aws
-class TestUserClass:
+class TestLabClass:
     def setup_class():
         ## These imports have to be the long forum, to let us modify the values here:
         # https://stackoverflow.com/a/12496239/11650472
@@ -107,6 +107,78 @@ class TestUserClass:
         assert lab3.allow_request_access, (
             "Lab allow_request_access was not updated in DB"
         )
+
+
+    def test_endpoint_add_token(self, monkeypatch, lambda_context, helpers, fake_auth, mocker):
+        import main
+        from objs.lab.lab import Lab
+        user = helpers.FakeUser(access=["user", "admin"])
+        monkeypatch.setattr("portal.access.User", lambda *args, **kwargs: user)
+        monkeypatch.setattr("util.auth.User", lambda *args, **kwargs: user)
+
+        LAB_CONFIGS = helpers.FAKE_LAB_CONFIGS
+        monkeypatch.setattr("objs.lab.lab.LAB_CONFIGS", LAB_CONFIGS)
+
+        mock_add_token = mocker.patch("objs.lab.lab.Lab.create_access_token")
+        mock_remove_token = mocker.patch("objs.lab.lab.Lab.remove_access_token")
+
+        # Adding token
+        bodystr = {
+            "action": "add_token",
+            "lab_profiles": "m6a.large",
+            "start_date": "2026-03-31",
+            "end_date": "",
+        }
+        monkeypatch.setattr(
+            "portal.access.form_body_to_dict", lambda *args, **kwargs: bodystr
+        )
+
+        event = helpers.get_event(
+            path="/portal/access/manage/testlab/edittokens",
+            cookies=fake_auth,
+            body="placeholder",
+            method="POST",
+        )
+        ret = main.lambda_handler(event, lambda_context)
+
+        # Assert correct function is called with correct parameters
+        mock_add_token.assert_called_once_with(start_date=datetime.strptime("2026-03-31", "%Y-%m-%d"), end_date=None, profiles=["m6a.large"])
+        assert mock_remove_token.call_count == 0
+
+
+    def test_endpoint_remove_token(self, monkeypatch, lambda_context, helpers, fake_auth, mocker):
+        import main
+        from objs.lab.lab import Lab
+        user = helpers.FakeUser(access=["user", "admin"])
+        monkeypatch.setattr("portal.access.User", lambda *args, **kwargs: user)
+        monkeypatch.setattr("util.auth.User", lambda *args, **kwargs: user)
+
+        LAB_CONFIGS = helpers.FAKE_LAB_CONFIGS
+        monkeypatch.setattr("objs.lab.lab.LAB_CONFIGS", LAB_CONFIGS)
+
+        mock_add_token = mocker.patch("objs.lab.lab.Lab.create_access_token")
+        mock_remove_token = mocker.patch("objs.lab.lab.Lab.remove_access_token")
+
+        # Removing token
+        bodystr = {
+            "action": "remove_token",
+            "token": "309308e2-20c7",
+        }
+        monkeypatch.setattr(
+            "portal.access.form_body_to_dict", lambda *args, **kwargs: bodystr
+        )
+
+        event = helpers.get_event(
+            path="/portal/access/manage/testlab/edittokens",
+            cookies=fake_auth,
+            body="placeholder",
+            method="POST",
+        )
+        ret = main.lambda_handler(event, lambda_context)
+
+        # Assert correct function is called with correct parameters
+        assert mock_add_token.call_count == 0
+        mock_remove_token.assert_called_once_with("309308e2-20c7")
 
     def test_load_lab_requests(self, helpers, monkeypatch):
         from objs.lab.lab import Lab
@@ -343,3 +415,38 @@ class TestUserClass:
         token = list(lab_with_token.get_valid_access_tokens()[0])[0]
 
         assert process_access_token(token, "test_user")
+
+    def test_remove_access_token(self, helpers, monkeypatch):
+        from objs.lab.lab import Lab
+        from util.access_request import process_access_token
+
+        user = helpers.FakeUser(access=["user", "admin"])
+        monkeypatch.setattr("util.access_request.User", lambda *args, **kwargs: user)
+
+        LAB_CONFIGS = helpers.FAKE_LAB_CONFIGS
+        monkeypatch.setattr("objs.lab.lab.LAB_CONFIGS", LAB_CONFIGS)
+        monkeypatch.setattr("util.access_request.LAB_CONFIGS", LAB_CONFIGS)
+
+        # Create lab with target token
+        lab_with_token = Lab("testlab")
+        lab_with_token.create_access_token()
+        lab_with_token.create_access_token()
+        lab_with_token.create_access_token()
+        token_values = [
+                list(token.keys())[0] for token
+                in lab_with_token.get_valid_access_tokens()
+            ]
+        target_token_value = token_values[0]
+        remaining_token_values = token_values[1:]
+
+        # Function returns true
+        assert lab_with_token.remove_access_token(target_token_value)
+        
+        all_token_values_post_remove = [
+            list(token.keys())[0] for token
+            in lab_with_token.get_valid_access_tokens()
+        ]
+        # Target token removed
+        assert target_token_value not in all_token_values_post_remove
+        # All other tokens are still present
+        assert all([token_value in all_token_values_post_remove for token_value in remaining_token_values])

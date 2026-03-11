@@ -1,5 +1,6 @@
 import json
 from dataclasses import asdict
+from datetime import datetime
 
 from util import swagger
 from util.format import portal_template, jinja_template
@@ -277,8 +278,8 @@ def edit_tokens(shortname):
 
     if body["action"] == "add_token":
         success = lab.create_access_token(
-            start_date=body["start_date"],
-            end_date=body["end_date"],
+            start_date=None if body["start_date"] == "" else datetime.strptime(body["start_date"], "%Y-%m-%d"),
+            end_date=None if body["end_date"] == "" else datetime.strptime(body["end_date"], "%Y-%m-%d"),
             profiles=[s.strip() for s in body["lab_profiles"].split(",")],
         )
         if success:
