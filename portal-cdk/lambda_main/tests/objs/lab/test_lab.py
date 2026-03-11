@@ -112,7 +112,6 @@ class TestLabClass:
         self, monkeypatch, lambda_context, helpers, fake_auth, mocker
     ):
         import main
-        from objs.lab.lab import Lab
 
         user = helpers.FakeUser(access=["user", "admin"])
         monkeypatch.setattr("portal.access.User", lambda *args, **kwargs: user)
@@ -141,7 +140,7 @@ class TestLabClass:
             body="placeholder",
             method="POST",
         )
-        ret = main.lambda_handler(event, lambda_context)
+        _ = main.lambda_handler(event, lambda_context)
 
         # Assert correct function is called with correct parameters
         mock_add_token.assert_called_once_with(
@@ -155,7 +154,6 @@ class TestLabClass:
         self, monkeypatch, lambda_context, helpers, fake_auth, mocker
     ):
         import main
-        from objs.lab.lab import Lab
 
         user = helpers.FakeUser(access=["user", "admin"])
         monkeypatch.setattr("portal.access.User", lambda *args, **kwargs: user)
@@ -182,7 +180,7 @@ class TestLabClass:
             body="placeholder",
             method="POST",
         )
-        ret = main.lambda_handler(event, lambda_context)
+        _ = main.lambda_handler(event, lambda_context)
 
         # Assert correct function is called with correct parameters
         assert mock_add_token.call_count == 0
@@ -426,7 +424,6 @@ class TestLabClass:
 
     def test_remove_access_token(self, helpers, monkeypatch):
         from objs.lab.lab import Lab
-        from util.access_request import process_access_token
 
         user = helpers.FakeUser(access=["user", "admin"])
         monkeypatch.setattr("util.access_request.User", lambda *args, **kwargs: user)
