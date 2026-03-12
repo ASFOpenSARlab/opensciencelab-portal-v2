@@ -187,7 +187,9 @@ class TestLabClass:
         # Assert no adding tokens and redirect
         assert mock_add_token.call_count == 0
         assert mock_remove_token.call_count == 0
-        assert ret["headers"].get("Location") == "/portal/access/manage/testlab/edittokens"
+        assert (
+            ret["headers"].get("Location") == "/portal/access/manage/testlab/edittokens"
+        )
 
     def test_endpoint_remove_token(
         self, monkeypatch, lambda_context, helpers, fake_auth, mocker

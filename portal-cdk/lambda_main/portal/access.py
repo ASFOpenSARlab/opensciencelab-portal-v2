@@ -277,8 +277,16 @@ def edit_tokens(shortname):
     lab = Lab(shortname)
 
     if body["action"] == "add_token":
-        start_date = datetime.strptime(body["start_date"], "%Y-%m-%d") if body["start_date"] else None
-        end_date = datetime.strptime(body["end_date"], "%Y-%m-%d") if body["end_date"] else None
+        start_date = (
+            datetime.strptime(body["start_date"], "%Y-%m-%d")
+            if body["start_date"]
+            else None
+        )
+        end_date = (
+            datetime.strptime(body["end_date"], "%Y-%m-%d")
+            if body["end_date"]
+            else None
+        )
 
         if start_date and end_date:
             if start_date >= end_date:
