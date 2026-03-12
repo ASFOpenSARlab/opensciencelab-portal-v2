@@ -8,3 +8,13 @@ function removeDropdownDefault(selectElement){
         }
     }
 }
+
+function validateDateRange(startInput, endInput, errorDisplay){
+    if (startInput.value && endInput.value && new Date(endInput.value) <= new Date(startInput.value)) {
+        errorDisplay.textContent = 'End date must be after start date.';
+        endInput.setCustomValidity('End date must be after start date.');
+    } else {
+        errorDisplay.textContent = '';
+        endInput.setCustomValidity('');
+    }
+}

@@ -150,6 +150,45 @@ class TestLabClass:
         )
         assert mock_remove_token.call_count == 0
 
+    def test_endpoint_add_token_invalid_dates(
+        self, monkeypatch, lambda_context, helpers, fake_auth, mocker
+    ):
+        import main
+
+        user = helpers.FakeUser(access=["user", "admin"])
+        monkeypatch.setattr("portal.access.User", lambda *args, **kwargs: user)
+        monkeypatch.setattr("util.auth.User", lambda *args, **kwargs: user)
+
+        LAB_CONFIGS = helpers.FAKE_LAB_CONFIGS
+        monkeypatch.setattr("objs.lab.lab.LAB_CONFIGS", LAB_CONFIGS)
+
+        mock_add_token = mocker.patch("objs.lab.lab.Lab.create_access_token")
+        mock_remove_token = mocker.patch("objs.lab.lab.Lab.remove_access_token")
+
+        # Adding token
+        bodystr = {
+            "action": "add_token",
+            "lab_profiles": "m6a.large",
+            "start_date": "2026-03-31",
+            "end_date": "2026-03-10",
+        }
+        monkeypatch.setattr(
+            "portal.access.form_body_to_dict", lambda *args, **kwargs: bodystr
+        )
+
+        event = helpers.get_event(
+            path="/portal/access/manage/testlab/edittokens",
+            cookies=fake_auth,
+            body="placeholder",
+            method="POST",
+        )
+        ret = main.lambda_handler(event, lambda_context)
+
+        # Assert no adding tokens and redirect
+        assert mock_add_token.call_count == 0
+        assert mock_remove_token.call_count == 0
+        assert ret["headers"].get("Location") == "/portal/access/manage/testlab/edittokens"
+
     def test_endpoint_remove_token(
         self, monkeypatch, lambda_context, helpers, fake_auth, mocker
     ):
