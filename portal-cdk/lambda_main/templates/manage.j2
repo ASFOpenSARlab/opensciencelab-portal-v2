@@ -1,4 +1,5 @@
 {# djlint:off H006,H021 #}
+<script src="/static/js/formutils.js" type="text/javascript" charset="utf-8"></script>
 <div>
     {% if allows_requests %}
         <legend>
@@ -29,15 +30,42 @@
         </form>
     </div>
 {% endif %}
-{% if lab.allows_tokens %}
-    <div class="margin-left-30">
-        <h3>Tokens</h3>
+<div class="margin-left-30">
+    <h3>Tokens</h3>
+    {% if lab.allows_tokens %}
         <table>
+            <span id="error" style="color: red;"></span>
             <tr class="tr-highlight">
                 <th>Token</th>
                 <th>Profiles</th>
                 <th>Start</th>
                 <th>End</th>
+                <th>Tools</th>
+            </tr>
+            <tr>
+                <form method="post" action="{{ lab.short_lab_name }}/edittokens">
+                    <th style="background-color: lightgrey;"></th>
+                    <th>
+                        <input type="text"
+                               name="lab_profiles"
+                               value="{{ ','.join(lab.default_profiles) }}">
+                    </th>
+                    <th>
+                        <input type="date"
+                               name="start_date"
+                               id="start_date"
+                               onchange="validateDateRange(this, document.getElementById('end_date'), document.getElementById('error'))">
+                    </th>
+                    <th>
+                        <input type="date"
+                               name="end_date"
+                               id="end_date"
+                               onchange="validateDateRange(document.getElementById('start_date'), this, document.getElementById('error'))">
+                    </th>
+                    <th>
+                        <button type="submit" name="action" value="add_token">Add</button>
+                    </th>
+                </form>
             </tr>
             {% for token in access_tokens %}
                 <tr>
@@ -55,11 +83,19 @@
                     <th>
                         {% if "end-date" in token %}{{ token["end-date"] }}{% endif %}
                     </th>
+                    <th>
+                        <form method="post" action="{{ lab.short_lab_name }}/edittokens">
+                            <input type="hidden" name="token" value="{{ token["value"] }}">
+                            <button type="submit" name="action" value="remove_token">Remove</button>
+                        </form>
+                    </th>
                 </tr>
             {% endfor %}
         </table>
-    </div>
-{% endif %}
+    {% else %}
+        <p>Tokens not enabled</p>
+    {% endif %}
+</div>
 <div class="margin-left-30">
     <h3>Users</h3>
     <table>

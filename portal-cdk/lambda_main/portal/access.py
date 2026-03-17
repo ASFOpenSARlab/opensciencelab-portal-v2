@@ -1,5 +1,6 @@
 import json
 from dataclasses import asdict
+from datetime import datetime
 
 from util import swagger
 from util.format import portal_template, jinja_template
@@ -15,6 +16,7 @@ from util.manage_access import (
     validate_edit_user_request,
     validate_delete_lab_access,
     validate_set_lab_access,
+    validate_edit_tokens_request,
 )
 from util.access_request import request_status_change_action, process_access_token
 from util.send_email import send_user_email
@@ -247,6 +249,78 @@ def edit_user(shortname):
 
     else:
         error = f"Invalid edit_user action {body['action']}"
+        logger.error(error)
+        raise MalformedRequest(error)
+
+    # Send the user to the management page
+    next_url = f"/portal/access/manage/{shortname}"
+    return wrap_response(
+        body={f"Redirect to {next_url}"},
+        code=302,
+        headers={"Location": next_url},
+    )
+
+
+@access_router.post("/manage/<shortname>/edittokens", include_in_schema=False)
+@require_access("admin", human=True)
+def edit_tokens(shortname):
+    # Grab the username of the user making the request
+    admin_username = current_session.auth.cognito.username
+    # Parse request
+    body = access_router.current_event.body
+
+    if body is None:
+        error = "Body not provided to edit_tokens"
+        logger.error(error)
+        raise MalformedRequest(error)
+    body = form_body_to_dict(body)
+
+    # Validate request
+    success, message = validate_edit_tokens_request(body=body)
+    if not success:
+        logger.error(message)
+        raise MalformedRequest(message)
+
+    # Edit tokens
+    lab = Lab(shortname)
+
+    if body["action"] == "add_token":
+        start_date = (
+            datetime.strptime(body["start_date"], "%Y-%m-%d")
+            if body["start_date"]
+            else None
+        )
+        end_date = (
+            datetime.strptime(body["end_date"], "%Y-%m-%d")
+            if body["end_date"]
+            else None
+        )
+
+        if start_date and end_date:
+            if start_date >= end_date:
+                # Send the user to the management page
+                next_url = f"/portal/access/manage/{shortname}/edittokens"
+                return wrap_response(
+                    body={f"Redirect to {next_url}"},
+                    code=302,
+                    headers={"Location": next_url},
+                )
+
+        success = lab.create_access_token(
+            start_date=start_date,
+            end_date=end_date,
+            profiles=[s.strip() for s in body["lab_profiles"].split(",")],
+        )
+        if success:
+            logger.info(f"{admin_username} added token to {shortname}")
+
+    elif body["action"] == "remove_token":
+        success = lab.remove_access_token(body["token"])
+        if success:
+            logger.info(f"{admin_username} removed token from {shortname}")
+
+    else:
+        error = f"Invalid edit_tokens action {body['action']}"
         logger.error(error)
         raise MalformedRequest(error)
 

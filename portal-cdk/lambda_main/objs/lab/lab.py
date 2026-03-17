@@ -348,3 +348,17 @@ class Lab(Table):
         self.access_tokens = access_tokens
 
         return True
+
+    def remove_access_token(self, token_value: str) -> bool:
+        success = False
+        access_tokens = list(self.access_tokens)
+
+        # Remove from list
+        for i, token in enumerate(access_tokens):
+            if token["value"] == token_value:
+                access_tokens.pop(i)
+                success = True
+                self.access_tokens = access_tokens
+                break
+
+        return success
