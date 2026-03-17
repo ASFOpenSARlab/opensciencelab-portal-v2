@@ -44,6 +44,9 @@ CALENDAR_URL ?= https://calendar.google.com/calendar/ical/c_eeadd37d8fef6b7675a1
 AWS_DEFAULT_PROFILE := $(AWS_DEFAULT_PROFILE)
 AWS_REGION ?= us-west-2
 IS_PROD ?= false
+RECAPTCHA_SECRET_KEY ?= unset-value
+RECAPTCHA_SITE_KEY ?= unset-value
+RECAPTCHA_THRESHOLD ?= unset-value
 
 .PHONY := all
 all: help
@@ -92,6 +95,8 @@ cdk-shell:
 		-e SSL_CERT_ARN \
 		-e DEPLOY_DOMAINS \
 		-e CALENDAR_URL \
+		-e RECAPTCHA_SECRET_KEY \
+		-e RECAPTCHA_SITE_KEY \
 		--pull always \
 		${IMAGE_NAME} || \
 		(  echo -e "" && echo  'If docker run fails with "no matching manifest", ' \

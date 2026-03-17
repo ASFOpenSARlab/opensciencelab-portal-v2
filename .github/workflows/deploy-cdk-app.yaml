@@ -39,6 +39,9 @@ jobs:
       DEPLOY_DOMAINS: ${{ vars.DEPLOY_DOMAINS }}
       AWS_DEFAULT_REGION: ${{ vars.AWS_DEFAULT_REGION }}
       CALENDAR_URL: ${{ vars.CALENDAR_URL }}
+      RECAPTCHA_SECRET_KEY: ${{ secrets.RECAPTCHA_SECRET_KEY }}
+      RECAPTCHA_SITE_KEY: ${{ secrets.RECAPTCHA_SITE_KEY }}
+      RECAPTCHA_THRESHOLD: ${{ vars.RECAPTCHA_THRESHOLD }}
       IS_PROD: >-
         ${{
           needs.setup.outputs.environment == 'prod' ||
