@@ -117,7 +117,7 @@ def reset_post():
             input={"username": username, "warning": f"Threshold misconfigured: {type(recaptcha_threshold).__name__} : {recaptcha_threshold}"},
             content="",
         )
-    elif recaptcha_score < recaptcha_threshold:
+    elif recaptcha_score <= recaptcha_threshold:
         # Check if user is likely bot
         logger.info({"response": "Likely bot detected"})
         # Render warning as if credentials were incorrect
