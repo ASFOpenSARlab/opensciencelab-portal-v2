@@ -17,8 +17,7 @@ def submit_captcha_challenge(site_token:str) -> float:
     )
     resp_body = json.loads(resp.text)
     # Log reCAPTCHA response
-    # print({"recaptcha": resp.json()})
-    # logger.info({"recaptcha": resp.json()})
+    logger.info({"recaptcha": resp.json()})
     # If response is bad or unsuccessful
     if resp.status_code != 200 or not resp_body["success"]:
         return -1.0

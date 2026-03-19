@@ -1,6 +1,8 @@
 from base64 import b64encode
+import json
 
 import main
+from conftest import MockResponse
 
 
 class TestRenderingMfaTemplates:
@@ -14,6 +16,19 @@ class TestRenderingMfaTemplates:
         monkeypatch.setattr(
             "portal.mfa.verify_user_password", lambda *args, **kwargs: False
         )
+
+        def post_request_response(*args, **kwargs) -> MockResponse:
+            data = {
+                    "success": True,
+                    "score": 0.9,
+                }
+            return MockResponse(
+                status_code=200,
+                text_data=json.dumps(data),
+                json_data=data,
+            )
+
+        monkeypatch.setattr("util.captcha.requests.post", post_request_response)
 
         post_params = "username=test&password=test"
         event = helpers.get_event(
@@ -40,6 +55,17 @@ class TestRenderingMfaTemplates:
             "portal.mfa.send_email.send_user_email",
             lambda *args, **kwargs: ("Error", "Thinks are broken."),
         )
+
+        def post_request_response(*args, **kwargs) -> MockResponse:
+            data = {
+                    "success": True,
+                    "score": 0.9,
+                }
+            return MockResponse(
+                status_code=200,
+                text_data=json.dumps(data),
+                json_data=data,
+            )
 
         post_params = "username=test&password=test"
         event = helpers.get_event(
