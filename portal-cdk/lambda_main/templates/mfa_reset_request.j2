@@ -25,7 +25,6 @@
                 <td></td>
                 <td>
                     <button type="button" onclick="onClick(event)">Request Reset</button>
-                    <!-- <input type="submit" value="Request Reset"> -->
                 </td>
             </tr>
         </form>
@@ -35,12 +34,12 @@
     function onClick(e) {
     e.preventDefault();
     grecaptcha.ready(function() {
-        grecaptcha.execute('6LcPnIgsAAAAABn_AfwfVi4YbItmuXMkGq4xrOR-', {action: 'submit_mfa'}).then(function(token) {
+        grecaptcha.execute("{{ site_key }}", {action: 'submit_mfa'}).then(function(token) {
             const input = document.createElement('input');
             input.type = 'hidden';
             input.name = 'recaptchaToken';
             input.value = token;
-
+            
             e.target.form.appendChild(input);
             e.target.form.submit();
         });
