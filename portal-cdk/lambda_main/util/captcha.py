@@ -6,7 +6,8 @@ from aws_lambda_powertools import Logger
 
 logger = Logger(child=True)
 
-def submit_captcha_challenge(site_token:str) -> float:
+
+def submit_captcha_challenge(site_token: str) -> float:
     # Get reCAPTCHA score
     secret_key = os.getenv("RECAPTCHA_SECRET_KEY")
     url = "https://www.google.com/recaptcha/api/siteverify"

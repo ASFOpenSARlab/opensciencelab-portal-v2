@@ -114,7 +114,10 @@ def reset_post():
         # Check if recaptcha threshold is set correctly
         req_content = render_template(
             name="mfa_reset_request.j2",
-            input={"username": username, "warning": f"Threshold misconfigured: {type(recaptcha_threshold).__name__} : {recaptcha_threshold}"},
+            input={
+                "username": username,
+                "warning": f"Threshold misconfigured: {type(recaptcha_threshold).__name__} : {recaptcha_threshold}",
+            },
             content="",
         )
     elif recaptcha_score <= recaptcha_threshold:

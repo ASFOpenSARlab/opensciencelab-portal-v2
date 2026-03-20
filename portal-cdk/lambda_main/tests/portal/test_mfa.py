@@ -18,7 +18,9 @@ class TestRenderingMfaTemplates:
             "portal.mfa.verify_user_password", lambda *args, **kwargs: False
         )
 
-        monkeypatch.setattr("portal.mfa.submit_captcha_challenge", lambda *args, **kwargs: 1.0)
+        monkeypatch.setattr(
+            "portal.mfa.submit_captcha_challenge", lambda *args, **kwargs: 1.0
+        )
         monkeypatch.setenv("RECAPTCHA_THRESHOLD", "0.5")
 
         post_params = "username=test&password=test"
@@ -46,14 +48,16 @@ class TestRenderingMfaTemplates:
             "portal.mfa.send_email.send_user_email",
             lambda *args, **kwargs: ("Error", "Thinks are broken."),
         )
-        monkeypatch.setattr("portal.mfa.submit_captcha_challenge", lambda *args, **kwargs: 1.0)
+        monkeypatch.setattr(
+            "portal.mfa.submit_captcha_challenge", lambda *args, **kwargs: 1.0
+        )
         monkeypatch.setenv("RECAPTCHA_THRESHOLD", "0.5")
 
         def post_request_response(*args, **kwargs) -> MockResponse:
             data = {
-                    "success": True,
-                    "score": 0.9,
-                }
+                "success": True,
+                "score": 0.9,
+            }
             return MockResponse(
                 status_code=200,
                 text_data=json.dumps(data),
@@ -78,12 +82,16 @@ class TestRenderingMfaTemplates:
         ret = main.lambda_handler(event, lambda_context)
         assert ret["body"].find("Could not send MFA Reset email") == -1
 
-    def test_mfa_recaptcha_reject_false_credentials(self, lambda_context, helpers, monkeypatch, caplog):
+    def test_mfa_recaptcha_reject_false_credentials(
+        self, lambda_context, helpers, monkeypatch, caplog
+    ):
         monkeypatch.setattr(
             "portal.mfa.verify_user_password", lambda *args, **kwargs: False
         )
 
-        monkeypatch.setattr("portal.mfa.submit_captcha_challenge", lambda *args, **kwargs: 0.2)
+        monkeypatch.setattr(
+            "portal.mfa.submit_captcha_challenge", lambda *args, **kwargs: 0.2
+        )
         monkeypatch.setenv("RECAPTCHA_THRESHOLD", "0.5")
 
         post_params = "username=test&password=test"
@@ -95,15 +103,22 @@ class TestRenderingMfaTemplates:
             )
             ret = main.lambda_handler(event, lambda_context)
         assert ret["statusCode"] == 200
-        assert ret["body"].find('<p class="warning">Username or Password not found.</p>') != -1
+        assert (
+            ret["body"].find('<p class="warning">Username or Password not found.</p>')
+            != -1
+        )
         assert "{'response': 'Likely bot detected'}" in caplog.text
 
-    def test_mfa_recaptcha_reject_correct_credentials(self, lambda_context, helpers, monkeypatch, caplog):
+    def test_mfa_recaptcha_reject_correct_credentials(
+        self, lambda_context, helpers, monkeypatch, caplog
+    ):
         monkeypatch.setattr(
             "portal.mfa.verify_user_password", lambda *args, **kwargs: True
         )
 
-        monkeypatch.setattr("portal.mfa.submit_captcha_challenge", lambda *args, **kwargs: 0.2)
+        monkeypatch.setattr(
+            "portal.mfa.submit_captcha_challenge", lambda *args, **kwargs: 0.2
+        )
         monkeypatch.setenv("RECAPTCHA_THRESHOLD", "0.5")
 
         post_params = "username=test&password=test"
@@ -115,5 +130,8 @@ class TestRenderingMfaTemplates:
             )
             ret = main.lambda_handler(event, lambda_context)
         assert ret["statusCode"] == 200
-        assert ret["body"].find('<p class="warning">Username or Password not found.</p>') != -1
+        assert (
+            ret["body"].find('<p class="warning">Username or Password not found.</p>')
+            != -1
+        )
         assert "{'response': 'Likely bot detected'}" in caplog.text
