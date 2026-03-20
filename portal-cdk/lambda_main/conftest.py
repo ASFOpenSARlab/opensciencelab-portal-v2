@@ -48,7 +48,7 @@ def MockedRequestsPost(*args, **kwargs):
         }
 
     if args[0].endswith("/oauth2/token"):
-        return MockResponse(json_response_payload, 200)
+        return MockResponse(json_data=json_response_payload, status_code=200)
 
     return MockResponse(None, 404)
 
