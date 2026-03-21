@@ -1,14 +1,5 @@
-from unittest.mock import Mock
-from datetime import datetime
 import json
-import os
 
-import boto3
-from moto import mock_aws
-
-import main
-from util.exceptions import UserNotFound
-from data import DATE_F
 from conftest import MockResponse
 
 
