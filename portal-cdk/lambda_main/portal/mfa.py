@@ -22,6 +22,7 @@ from util.cognito import (
 )
 from util import send_email
 from util.auth import delete_cookies
+from util.captcha import submit_captcha_challenge
 
 from aws_lambda_powertools import Logger
 from aws_lambda_powertools.event_handler.api_gateway import Router
@@ -105,14 +106,38 @@ def reset_post():
     form = form_body_to_dict(mfa_router.current_event.body)
     username = form.get("username")
     password = form.get("password")
+    secret_key = form.get("recaptchaToken")
 
-    if not verify_user_password(username, password):
+    recaptcha_score = submit_captcha_challenge(secret_key)
+    recaptcha_threshold = float(os.getenv("RECAPTCHA_THRESHOLD"))
+    if not isinstance(recaptcha_threshold, float):
+        # Check if recaptcha threshold is set correctly
+        req_content = render_template(
+            name="mfa_reset_request.j2",
+            input={
+                "username": username,
+                "warning": f"Threshold misconfigured: {type(recaptcha_threshold).__name__} : {recaptcha_threshold}",
+            },
+            content="",
+        )
+    elif recaptcha_score <= recaptcha_threshold:
+        # Check if user is likely bot
+        logger.info({"response": "Likely bot detected"})
+        # Render warning as if credentials were incorrect
+        req_content = render_template(
+            name="mfa_reset_request.j2",
+            input={"username": username, "warning": "Username or Password not found."},
+            content="",
+        )
+    elif not verify_user_password(username, password):
+        # Verify credentials are correct
         req_content = render_template(
             name="mfa_reset_request.j2",
             input={"username": username, "warning": "Username or Password not found."},
             content="",
         )
     else:
+        # Reset MFA
         if not do_mfa_reset(username):
             warning = (
                 "Could not send MFA Reset email, please email the OSL admins at "
