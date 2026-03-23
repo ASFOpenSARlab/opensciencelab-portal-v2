@@ -649,6 +649,16 @@ class PortalCdkStack(Stack):
         # Grant lambda permssion to read secret manager
         sso_token_secret.grant_read(lambda_dynamo.lambda_function)
 
+        lambda_dynamo.lambda_function.add_environment(
+            "RECAPTCHA_SECRET_KEY", str(os.getenv("RECAPTCHA_SECRET_KEY"))
+        )
+        lambda_dynamo.lambda_function.add_environment(
+            "RECAPTCHA_SITE_KEY", str(os.getenv("RECAPTCHA_SITE_KEY"))
+        )
+        lambda_dynamo.lambda_function.add_environment(
+            "RECAPTCHA_THRESHOLD", str(os.getenv("RECAPTCHA_THRESHOLD"))
+        )
+
         # https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.CfnOutput.html
         CfnOutput(
             self,

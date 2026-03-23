@@ -29,15 +29,17 @@ def pytest_ignore_collect(path):
     return False
 
 
+class MockResponse:
+    def __init__(self, status_code, json_data=None, text_data=None):
+        self.json_data = json_data
+        self.text = text_data
+        self.status_code = status_code
+
+    def json(self):
+        return self.json_data
+
+
 def MockedRequestsPost(*args, **kwargs):
-    class MockResponse:
-        def __init__(self, json_data, status_code):
-            self.json_data = json_data
-            self.status_code = status_code
-
-        def json(self):
-            return self.json_data
-
     json_response_payload = {}
     if kwargs["data"]["code"] == "good_code":
         json_response_payload = {
@@ -47,7 +49,7 @@ def MockedRequestsPost(*args, **kwargs):
         }
 
     if args[0].endswith("/oauth2/token"):
-        return MockResponse(json_response_payload, 200)
+        return MockResponse(json_data=json_response_payload, status_code=200)
 
     return MockResponse(None, 404)
 

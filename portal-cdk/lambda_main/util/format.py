@@ -26,6 +26,8 @@ ENV = Environment(
     keep_trailing_newline=True,
 )
 
+SITE_KEY = os.getenv("RECAPTCHA_SITE_KEY")
+
 NAV_BAR_OPTIONS = [
     {
         "visible": True,
@@ -106,6 +108,7 @@ def render_template(content, input=None, name=None, title=None):
         "return_path": f"&state={return_path}" if return_path else "",
         "reset_password_url": FORGOT_PASSWORD_URL,
         "reset_mfa_url": "/mfa",
+        "site_key": SITE_KEY,
     }
     if input:
         template_input.update(input)
