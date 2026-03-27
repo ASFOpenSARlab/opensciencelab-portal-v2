@@ -381,7 +381,6 @@ class TestLabClass:
         post_imported_request = lab1.get_access_request(username)
         assert post_imported_request["status"] == "new"
 
-
     def test_fetch_lab_requests(self, helpers, monkeypatch):
         from objs.lab.lab import Lab
         from util.dynamo_db import dynamo_filter, get_all_items

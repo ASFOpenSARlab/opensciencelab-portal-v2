@@ -26,7 +26,14 @@ LAB_TABLE_KEY = "labname"
 USER_TABLE_KEY = "username"
 
 
-VALID_REQUEST_STATUSES = ["new", "approved", "rejected", "pending", "returned", "imported"]
+VALID_REQUEST_STATUSES = [
+    "new",
+    "approved",
+    "rejected",
+    "pending",
+    "returned",
+    "imported",
+]
 LOCKED_REQUEST_STATUSES = ["approved", "rejected"]
 RESUBMITTED_STATUS = ["returned", "imported"]
 ACTIVE_REQUEST_STATUSES = list(
