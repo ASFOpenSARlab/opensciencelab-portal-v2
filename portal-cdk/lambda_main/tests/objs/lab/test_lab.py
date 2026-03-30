@@ -381,6 +381,58 @@ class TestLabClass:
         post_imported_request = lab1.get_access_request(username)
         assert post_imported_request["status"] == "new"
 
+    def test_successful_req_approval(self, helpers, monkeypatch):
+        from objs.lab.lab import Lab
+        from objs.user.user import User
+        from util.access_request import request_status_change_action
+
+        LAB_CONFIGS = helpers.FAKE_LAB_CONFIGS
+        monkeypatch.setattr("objs.lab.lab.LAB_CONFIGS", LAB_CONFIGS)
+        monkeypatch.setattr("objs.user.user.LAB_CONFIGS", LAB_CONFIGS)
+        monkeypatch.setattr("util.access_request.LAB_CONFIGS", LAB_CONFIGS)
+        monkeypatch.setattr(
+            "util.access_request.send_user_email",
+            lambda *args, **kwargs: ("Success", "Email Sent"),
+        )
+
+        username = "testuser"
+        labname = "testlab"
+
+        # Create user w/o access
+        user = User(username)
+
+        # Validate user DOES NOT have access
+        assert not user.is_authorized_lab(labname)
+
+        # Add access
+        lab = Lab(labname)
+        lab.add_access_request(
+            answers={
+                "sar_experience": "I have lots experience",
+                "osl_experience": "I've used OSL before",
+            },
+            username=username,
+        )
+
+        # Approve user
+        request_status_change_action(lab, username, "approved")
+        lab.set_access_request_status(
+            username=username,
+            status="approved",
+            reviewer="AdminUser",
+            reviewer_comment="Approved for Testing",
+        )
+
+        # Find request
+        access_request = lab.get_access_request(username)
+        assert access_request.get("status") == "approved"
+
+        # Re-fetch user because of internal caching
+        user2 = User(username)
+
+        # Validate user access
+        assert user2.is_authorized_lab(labname)
+
     def test_fetch_lab_requests(self, helpers, monkeypatch):
         from objs.lab.lab import Lab
         from util.dynamo_db import dynamo_filter, get_all_items
