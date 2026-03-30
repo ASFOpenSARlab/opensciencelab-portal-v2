@@ -317,6 +317,70 @@ class TestLabClass:
             )
         assert "has not requested access to" in str(excinfo.value)
 
+    def test_resubmitted_lab_request(self, helpers, monkeypatch):
+        from objs.lab.lab import Lab
+
+        LAB_CONFIGS = helpers.FAKE_LAB_CONFIGS
+        monkeypatch.setattr("objs.lab.lab.LAB_CONFIGS", LAB_CONFIGS)
+
+        username = "testuser"
+
+        # testlab exists as a fake lab
+        lab1 = Lab("testlab")
+
+        # Add insufficient request
+        lab1.add_access_request(
+            answers={
+                "sar_experience": "I have no experience",
+                "osl_experience": "I don't know what OSL is",
+            },
+            username=username,
+        )
+
+        # Return request
+        lab1.set_access_request_status(
+            username=username,
+            status="returned",
+            reviewer="adminuser",
+            reviewer_comment="Returned for more info",
+        )
+
+        # Verify the request is returned
+        current_request = lab1.get_access_request(username)
+        assert current_request["status"] == "returned"
+
+        # Add a better response
+        lab1.add_access_request(
+            answers={
+                "sar_experience": "I have lots experience",
+                "osl_experience": "I've used OSL before",
+            },
+            username=username,
+        )
+
+        # Verify the status is returned to "new"
+        current_request = lab1.get_access_request(username)
+        assert current_request["status"] == "new"
+
+        # Force lab to "imported"
+        current_request["status"] = "imported"
+        lab1._put_access_request(current_request, username)
+        imported_request = lab1.get_access_request(username)
+        assert imported_request["status"] == "imported"
+
+        # Update imported
+        lab1.add_access_request(
+            answers={
+                "sar_experience": "I requested long ago",
+                "osl_experience": "Please let me back in",
+            },
+            username=username,
+        )
+
+        # Verify imported has become "new" again
+        post_imported_request = lab1.get_access_request(username)
+        assert post_imported_request["status"] == "new"
+
     def test_fetch_lab_requests(self, helpers, monkeypatch):
         from objs.lab.lab import Lab
         from util.dynamo_db import dynamo_filter, get_all_items

@@ -10,7 +10,7 @@ Makefile commands:
 
     manual-cdk-bootstrap:   Bootstrap an account for CDK
 
-    test:					Run PyTest tests
+    test:                   Run PyTest tests
 
     synth-portal:           Synth portal CDK project
 
@@ -22,7 +22,7 @@ Makefile commands:
 
     aws-info:               Get AWS account info
 
-    clean:					Remove .build/ & cdk.out/
+    clean:                  Remove .build/ & cdk.out/
 
 endef
 export HELP
@@ -98,6 +98,7 @@ cdk-shell:
 		-e RECAPTCHA_SECRET_KEY \
 		-e RECAPTCHA_SITE_KEY \
 		--pull always \
+		-w /code \
 		${IMAGE_NAME} || \
 		(  echo -e "" && echo  'If docker run fails with "no matching manifest", ' \
 		  'try setting ARCH_OVERRIDE: `export ARCH_OVERRIDE=--platform linux/amd64`.' && \
