@@ -253,7 +253,7 @@ ALL_COUNTRIES = {
     "ZW": "Zimbabwe",
 }
 
-# https://www.nasa.gov/wp-content/uploads/2025/07/oiir-designated-country-list-7-11-2025.pdf
+# https://www.nasa.gov/wp-content/uploads/2026/03/designated-country-list-3-18-2026.pdf
 RESTRICTED_COUNTRIES = {
     "BT": {"name": "Bhutan", "restrictions": [1]},
     "TW": {"name": "Taiwan*", "restrictions": [1]},
@@ -277,6 +277,7 @@ RESTRICTED_COUNTRIES = {
     "IL": {"name": "Israel", "restrictions": [4]},
     "JO": {"name": "Jordan", "restrictions": [4]},
     "KP": {"name": "Korea, North", "restrictions": [1, 2, 3, 4]},
+    "KW": {"name": "Kuwait", "restrictions": [4]},
     "LB": {"name": "Lebanon", "restrictions": [3, 4]},
     "LY": {"name": "Libya", "restrictions": [3, 4]},
     "MO": {"name": "Macau", "restrictions": [4]},
