@@ -26,8 +26,16 @@ LAB_TABLE_KEY = "labname"
 USER_TABLE_KEY = "username"
 
 
-VALID_REQUEST_STATUSES = ["new", "approved", "rejected", "pending", "returned"]
+VALID_REQUEST_STATUSES = [
+    "new",
+    "approved",
+    "rejected",
+    "pending",
+    "returned",
+    "imported",
+]
 LOCKED_REQUEST_STATUSES = ["approved", "rejected"]
+RESUBMITTED_STATUS = ["returned", "imported"]
 ACTIVE_REQUEST_STATUSES = list(
     set(VALID_REQUEST_STATUSES).difference(set(LOCKED_REQUEST_STATUSES))
 )
@@ -193,6 +201,10 @@ class Lab(Table):
                 "status": "new",
                 "answers": [],
             }
+
+        # User is modifying a request, set it back to "new"
+        if req_dict["status"] in RESUBMITTED_STATUS:
+            req_dict["status"] = "new"
 
         # Look up the lab access questions
         lab_questions = [z["name"] for z in self.access_request_questions()]
