@@ -271,6 +271,7 @@ RESTRICTED_COUNTRIES = {
     "EG": {"name": "Egypt", "restrictions": [4]},
     "ER": {"name": "Eritrea", "restrictions": [3]},
     "ET": {"name": "Ethiopia", "restrictions": [3]},
+    "HK": {"name": "Hong Kong", "restrictions": [3, 4]},
     "HT": {"name": "Haiti", "restrictions": [3]},
     "IR": {"name": "Iran", "restrictions": [1, 2, 3, 4]},
     "IQ": {"name": "Iraq", "restrictions": [3, 4]},
