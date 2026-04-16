@@ -3,11 +3,13 @@
 <div>
     <form method="post"
           id="update"
+          onkeydown="if(event.keyCode === 13) { return false;}"
           action="/portal/access/manage/{{ request["labname"] }}/update/{{ user_profile.username }}/">
         <input type="submit"
                form="update"
                name="status"
                value="Approve"
+               tabindex="-1"
                style="background-color: green;
                       color: white;
                       border: 1px;
@@ -18,6 +20,7 @@
                form="update"
                name="status"
                value="Return"
+               tabindex="-1"
                style="background-color: lightgreen;
                       color: black;
                       border: 1px;
@@ -28,6 +31,7 @@
                form="update"
                name="status"
                value="Pending"
+               tabindex="-1"
                style="background-color: yellow;
                       color: black;
                       border: 1px;
@@ -38,6 +42,7 @@
                form="update"
                name="status"
                value="Reject"
+               tabindex="-1"
                style="background-color: red;
                       color: white;
                       border: 1px;
