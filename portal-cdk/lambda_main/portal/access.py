@@ -225,7 +225,9 @@ def edit_user(shortname):
     user = User(body["username"])
 
     if body["action"] == "add_user":
-        update: bool = shortname in user.get_lab_access()["lab_access"].keys()
+        lab_access: bool = user.get_lab_access()["lab_access"].get(shortname, {})
+        update: bool = lab_access.get("can_user_access_lab", False)
+
         user.add_lab(
             lab_short_name=shortname,
             lab_profiles=[s.strip() for s in body["lab_profiles"].split(",")],
