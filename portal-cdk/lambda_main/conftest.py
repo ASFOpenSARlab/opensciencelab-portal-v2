@@ -247,7 +247,7 @@ class Helpers:
 
         def is_lab_manager(self, labname: str) -> bool:
             self.is_manager
-            
+
     @dataclass
     class FakeLab:
         labname: str = field(default_factory=lambda: "testlab")

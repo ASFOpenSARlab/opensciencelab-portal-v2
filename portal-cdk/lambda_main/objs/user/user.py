@@ -166,6 +166,7 @@ class User(Table):
                 return self.labs[labname]["is_manager"]
         return False
 
+
 def _can_user_see_lab(user: User, lab) -> bool:
     if user.is_admin():
         return True
