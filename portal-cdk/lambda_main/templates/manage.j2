@@ -116,11 +116,6 @@
                            value="{{ ','.join(lab.default_profiles) }}">
                 </th>
                 {% if lab.allows_tokens %}<th></th>{% endif %}
-                <input type="hidden" name="time_quota" placeholder="time_quota" value="">
-                <input type="hidden"
-                       name="lab_country_status"
-                       placeholder="protected"
-                       value="unrestricted">
                 <th>
                     <button type="submit" name="action" value="add_user">Add</button>
                 </th>

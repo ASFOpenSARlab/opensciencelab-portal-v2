@@ -241,7 +241,6 @@ Required variables:
 #### GitHub Actions
 
 - [`lint.yaml`](.github/workflows/lint.yaml) - Automate code linting and formatting enforcement
-- [`on-pull-request-notify.yaml`](.github/workflows/on-pull-request-notify.yaml) - Alert SES mattermost channel about new and modified non-draft pull requests.
 
 ## Notifications
 

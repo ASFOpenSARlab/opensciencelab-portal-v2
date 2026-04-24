@@ -201,9 +201,7 @@ class Helpers:
         labs: dict = field(
             default_factory=lambda: {
                 "testlab": {
-                    "time_quota": None,
                     "lab_profiles": None,
-                    "lab_country_status": None,
                 },
             }
         )
@@ -212,6 +210,7 @@ class Helpers:
         create_if_missing: bool = True
         country_code: str = "US"
         token_usage: list = field(default_factory=lambda: [])
+        is_manager: bool = False
 
         def get_requests(self, **kwargs):
             # This should probably be dynamic.
@@ -245,6 +244,9 @@ class Helpers:
 
         def use_token(self, labname, token) -> None:
             self.token_usage.append({token: labname})
+
+        def is_lab_manager(self, labname: str) -> bool:
+            self.is_manager
 
     @dataclass
     class FakeLab:

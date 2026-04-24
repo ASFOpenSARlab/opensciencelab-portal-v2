@@ -11,7 +11,9 @@ def validate_edit_user_request(body: dict) -> tuple[bool, str]:
 
     if body["action"] == "add_user":
         # check adding user fields provided
-        keys = ["lab_profiles", "time_quota", "lab_country_status"]
+        keys = [
+            "lab_profiles",
+        ]
         for key in keys:
             if key not in body:
                 return False, f"{key} not provided to edit_user"
@@ -75,8 +77,6 @@ def validate_set_lab_access(put_lab_request: dict) -> tuple[bool, str]:
         # Check all lab fields exist and are correct type
         all_fields = {
             "lab_profiles": list,
-            "time_quota": str,
-            "lab_country_status": str,
         }
         for field, _ in all_fields.items():
             if put_lab_request["labs"][lab_name].get(field) is None:

@@ -32,8 +32,9 @@ class TestAccessPages:
     def test_admin_accessing_manage_page(
         self, monkeypatch, lambda_context, helpers, fake_auth
     ):
-        user = helpers.FakeUser(access=["user", "admin"])
-        monkeypatch.setattr("portal.User", lambda *args, **kwargs: user)
+        # Checks permission required to access page
+        user = helpers.FakeUser(access=["user", "admin"], is_manager=True)
+        monkeypatch.setattr("portal.access.User", lambda *args, **kwargs: user)
         monkeypatch.setattr("util.auth.User", lambda *args, **kwargs: user)
 
         labs = helpers.FAKE_LAB_CONFIGS
@@ -49,6 +50,7 @@ class TestAccessPages:
                     "labs": {
                         "testlab": {
                             "lab_profiles": ["m6a.large"],
+                            "is_manager": False,
                         },
                     },
                     "token_usage": [
@@ -103,8 +105,6 @@ class TestAccessPages:
         bodystr = {
             "username": "test_user",
             "lab_profiles": "",
-            "time_quota": "",
-            "lab_country_status": "",
             "action": "add_user",
         }
         monkeypatch.setattr(
@@ -122,8 +122,7 @@ class TestAccessPages:
         assert "testlab2" in user.labs
         assert user.labs["testlab2"] == {
             "lab_profiles": [""],
-            "time_quota": None,
-            "lab_country_status": "",
+            "is_manager": False,
         }
 
         assert ret["statusCode"] == 302
@@ -209,9 +208,7 @@ class TestAccessPages:
             username="test_user2",
             labs={
                 "testlab": {
-                    "time_quota": None,
                     "lab_profiles": None,
-                    "lab_country_status": None,
                 },
             },
         )
@@ -244,9 +241,7 @@ class TestAccessPages:
             username="test_user2",
             labs={
                 "testlab": {
-                    "time_quota": None,
                     "lab_profiles": None,
-                    "lab_country_status": None,
                 },
                 # protectedlab is deliberately not here, it should be marked as able to see but not access
                 # noaccess is deliberately not here, should not be present
@@ -318,14 +313,10 @@ class TestAccessPages:
             country_code="SY",
             labs={
                 "testlab": {
-                    "time_quota": None,
                     "lab_profiles": None,
-                    "lab_country_status": None,
                 },
                 "openlab": {
-                    "time_quota": None,
                     "lab_profiles": None,
-                    "lab_country_status": None,
                 },
             },
         )
@@ -509,24 +500,18 @@ class TestAccessPages:
         user1.add_lab(
             lab_short_name="testlab",
             lab_profiles="m6a.large",
-            time_quota=None,
-            lab_country_status="something",
         )
         user2 = User("test_user2")
         setattr(user2, "email", "test@mailhot.com")
         user2.add_lab(
             lab_short_name="testlab",
             lab_profiles="m6a.large",
-            time_quota=None,
-            lab_country_status="something",
         )
         user3 = User("super_cool_guy")
         setattr(user3, "email", "test@mailhot.com")
         user3.add_lab(
             lab_short_name="testlab",
             lab_profiles="m6a.large",
-            time_quota=None,
-            lab_country_status="something",
         )
 
         user = helpers.FakeUser(access=["user", "admin"])
@@ -588,8 +573,6 @@ class TestAccessPages:
             "labs": {
                 "testlab": {
                     "lab_profiles": ["m6a.large"],
-                    "time_quota": "",
-                    "lab_country_status": "protected",
                 }
             }
         }
@@ -608,8 +591,6 @@ class TestAccessPages:
         assert user.labs == {
             "testlab": {
                 "lab_profiles": ["m6a.large"],
-                "time_quota": "",
-                "lab_country_status": "protected",
             }
         }
 
@@ -627,8 +608,6 @@ class TestAccessPages:
             "labs": {
                 "noaccess": {
                     "lab_profiles": ["m6a.large"],
-                    "time_quota": "",
-                    "lab_country_status": "protected",
                 }
             }
         }
@@ -667,8 +646,6 @@ class TestAccessPages:
             "labs": {
                 "testlab": {
                     "lab_profiles": ["m6a.large"],
-                    "time_quota": "",
-                    "lab_country_status": "protected",
                 }
             }
         }
@@ -755,8 +732,6 @@ class TestAccessPages:
             "labs": {
                 "lab_does_not_exist": {
                     "lab_profiles": ["m6a.large"],
-                    "time_quota": "",
-                    "lab_country_status": "protected",
                 }
             }
         }
@@ -773,12 +748,11 @@ class TestAccessPages:
         assert '"result": "Lab does not exist: lab_does_not_exist"' in ret["body"]
         assert ret["headers"].get("Content-Type") == "application/json"
 
-        # Missing field "lab_country_status"
         body = {
             "labs": {
                 "testlab": {
-                    "lab_profiles": ["m6a.large"],
-                    "time_quota": "",
+                    # "lab_profiles": ["m6a.large"],
+                    "is_manager": False,
                 }
             }
         }
@@ -793,7 +767,7 @@ class TestAccessPages:
 
         assert ret["statusCode"] == 422
         assert (
-            '"result": "Field \'lab_country_status\' not provided for lab testlab"'
+            '"result": "Field \'lab_profiles\' not provided for lab testlab"'
             in ret["body"]
         )
         assert ret["headers"].get("Content-Type") == "application/json"
@@ -803,8 +777,6 @@ class TestAccessPages:
             "labs": {
                 "testlab": {
                     "lab_profiles": "m6a.large",
-                    "time_quota": "",
-                    "lab_country_status": "protected",
                 }
             }
         }

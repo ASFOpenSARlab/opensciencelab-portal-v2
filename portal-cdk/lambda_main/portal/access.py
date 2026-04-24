@@ -198,6 +198,11 @@ def manage_lab(shortname):
     template_input["exceeded"] = len(users) >= row_limit
     template_input["access_tokens"] = lab_obj.access_tokens
 
+    # Grab the username of the user making the request
+    username = current_session.auth.cognito.username
+    user = User(username)
+    template_input["is_manager"] = user.is_lab_manager(shortname)
+
     return jinja_template(template_input, "manage.j2")
 
 
@@ -231,8 +236,6 @@ def edit_user(shortname):
         user.add_lab(
             lab_short_name=shortname,
             lab_profiles=[s.strip() for s in body["lab_profiles"].split(",")],
-            time_quota=body["time_quota"].strip() or None,
-            lab_country_status=body["lab_country_status"],
         )
         if update:
             logger.info(
@@ -348,8 +351,6 @@ def edit_tokens(shortname):
                             "lab_profiles": ["profile1", "profile2"],
                             "can_user_access_lab": True,
                             "can_user_see_lab_card": False,
-                            "time_quota": "1h",
-                            "lab_country_status": "active",
                         },
                     },
                 ],
@@ -470,8 +471,6 @@ Sets what labs a user can access. Can be used to both add/remove labs.
     "labs": {
         "<lab_name>": {
             "lab_profiles": ["m6a.large"],
-            "time_quota": "",
-            "lab_country_status": "protected",
         }
     }
 }

@@ -172,8 +172,6 @@ class Lab(Table):
         add_user.add_lab(
             lab_short_name=self.labname,
             lab_profiles=profiles,
-            time_quota=None,
-            lab_country_status=None,
         )
 
     def add_access_request(self, answers: dict, username: str) -> None:
