@@ -24,15 +24,11 @@ USER_TABLE_KEY = "username"
 
 def create_lab_structure(
     lab_profiles: list[str],
-    # time_quota,
-    # lab_country_status: str,
     is_manager: bool = False,
     **kwargs,
 ) -> dict[str, Any]:
     return {
         "lab_profiles": lab_profiles,
-        # "time_quota": time_quota,
-        # "lab_country_status": lab_country_status,
         "is_manager": is_manager,
     }
 
@@ -164,7 +160,7 @@ class User(Table):
                 return True
         return False
 
-    def is_lab_manager(self, labname:str) -> bool:
+    def is_lab_manager(self, labname: str) -> bool:
         if self.labs.get(labname) is not None:
             if self.labs.get("is_manager"):
                 return self.labs[labname]["is_manager"]
