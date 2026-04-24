@@ -751,7 +751,6 @@ class TestAccessPages:
         body = {
             "labs": {
                 "testlab": {
-                    # "lab_profiles": ["m6a.large"],
                     "is_manager": False,
                 }
             }
