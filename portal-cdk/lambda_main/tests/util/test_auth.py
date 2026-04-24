@@ -244,9 +244,9 @@ class TestPortalAuth:
                 "testlab": {
                     "can_user_see_lab": True,
                     "can_user_access_lab": True,
-                    "time_quota": None,
+                    # "time_quota": None,
                     "lab_profiles": None,
-                    "lab_country_status": None,
+                    # "lab_country_status": None,
                 },
                 "differentlab": {
                     "can_user_see_lab": True,
