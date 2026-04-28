@@ -56,7 +56,7 @@
                                         <span>{{ lab_config.description | safe }}</span>
                                     </div>
                                     <div class="lab-btns">
-                                        {% if admin %}
+                                        {% if labname in managed_labs %}
                                             <a id="about-{{ lab_config.short_lab_name }}"
                                                role="button"
                                                class="btn btn-lg btn-primary go-to-about-btn"

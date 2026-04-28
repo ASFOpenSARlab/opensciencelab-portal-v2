@@ -350,7 +350,7 @@ def get_ip_and_country(event):
     return (ip_address, country_code)
 
 
-def require_access(access="user", human: bool = False):
+def require_access(access:list=["user"], human: bool = False):
     def inner(func):
         def wrapper(*args, **kwargs):
             # app is pulled in from outer scope via a function attribute
@@ -408,7 +408,7 @@ def require_access(access="user", human: bool = False):
                     )
 
             # Ensure user has access they are trying to achieve
-            if access not in current_session.user.access:
+            if all(role not in current_session.user.access for role in access):
                 logger.warning(
                     "User %s attempted to access %s which requires %s access (user has %s Privs)",
                     username,

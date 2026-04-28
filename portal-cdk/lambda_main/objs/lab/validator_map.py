@@ -3,5 +3,6 @@
 validator_map = {
     "access_tokens": list,
     "allow_request_access": bool,
+    "managers": list,
     "_rec_counter": int,
 }

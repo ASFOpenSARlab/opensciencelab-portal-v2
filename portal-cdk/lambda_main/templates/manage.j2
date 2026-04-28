@@ -1,5 +1,21 @@
 {# djlint:off H006,H021 #}
 <script src="/static/js/formutils.js" type="text/javascript" charset="utf-8"></script>
+<!-- Forms 
+<form id="manage-role-form" action="/portal/users/manage-role" method="post">
+    <input type="hidden" name="username" id="manage-role-username">
+    <input type="hidden" name="action" id="manage-role-action">
+    <input type="hidden" name="access-role" id="manage-role-access-role">
+</form>
+<script>
+    function fillManageRoleForm(username, action, role){
+        console.log(username)
+        document.getElementById("manage-role-username").value = username;
+        document.getElementById("manage-role-action").value = action;
+        document.getElementById("manage-role-access-role").value = role;
+    }
+</script>
+-->
+
 <div>
     {% if allows_requests %}
         <legend>
