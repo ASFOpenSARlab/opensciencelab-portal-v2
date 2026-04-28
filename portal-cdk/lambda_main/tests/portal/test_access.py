@@ -33,7 +33,7 @@ class TestAccessPages:
         self, monkeypatch, lambda_context, helpers, fake_auth
     ):
         # Checks permission required to access page
-        user = helpers.FakeUser(access=["user", "admin"], is_manager=True)
+        user = helpers.FakeUser(access=["user", "admin"])
         monkeypatch.setattr("portal.access.User", lambda *args, **kwargs: user)
         monkeypatch.setattr("util.auth.User", lambda *args, **kwargs: user)
 
@@ -50,7 +50,6 @@ class TestAccessPages:
                     "labs": {
                         "testlab": {
                             "lab_profiles": ["m6a.large"],
-                            "is_manager": False,
                         },
                     },
                     "token_usage": [
@@ -96,6 +95,116 @@ class TestAccessPages:
         ret2 = main.lambda_handler(event, lambda_context)
         assert ret2["body"].find("Token") == -1
 
+    def test_lab_manager_accessing_allowed_manage_page(
+        self, monkeypatch, lambda_context, helpers, fake_auth
+    ):
+        # Checks permission required to access page
+        user = helpers.FakeUser(access=["user", "lab_manager"])
+        monkeypatch.setattr("portal.access.User", lambda *args, **kwargs: user)
+        monkeypatch.setattr("util.auth.User", lambda *args, **kwargs: user)
+
+        labs = helpers.FAKE_LAB_CONFIGS
+        monkeypatch.setattr("portal.access.LAB_CONFIGS", labs)
+        monkeypatch.setattr(
+            "portal.access.Lab", lambda *args, **kwargs: helpers.FakeLab(managers=[user.username])
+        )
+
+        def lab_users_static(*args, **kwargs):
+            return [
+                {
+                    "username": "test_user",
+                    "labs": {
+                        "testlab": {
+                            "lab_profiles": ["m6a.large"],
+                        },
+                    },
+                    "token_usage": [
+                        {
+                            "labname": "testlab",
+                            "token": "token-dne",
+                            "apply_date": datetime.now().strftime(DATE_F),
+                        }
+                    ],
+                }
+            ]
+
+        monkeypatch.setattr("portal.access.get_users_with_lab", lab_users_static)
+
+        event = helpers.get_event(
+            path="/portal/access/manage/testlab", cookies=fake_auth
+        )
+        ret = main.lambda_handler(event, lambda_context)
+
+        assert ret["statusCode"] == 200
+        assert ret["body"].find("Test Lab") > -1
+        # Add/refactor more asserts after manage page layout is figured out more
+        assert (
+            ret["body"].find(
+                '<button type="submit" name="action" value="add_user">Add</button>'
+            )
+            > -1
+        )
+        assert (
+            ret["body"].find(
+                '<button type="submit" name="action" value="remove_user">Remove</button>'
+            )
+            > -1
+        )
+        assert ret["body"].find('value="m6a.large, m6a.xlarge"')
+        assert ret["headers"].get("Content-Type") == "text/html"
+        assert ret["body"].find("token-dne")
+
+        # Make sure tokens don't show up on lab w/o tokens
+        event = helpers.get_event(
+            path="/portal/access/manage/protectedlab", cookies=fake_auth
+        )
+        ret2 = main.lambda_handler(event, lambda_context)
+        assert ret2["body"].find("Token") == -1
+
+    def test_lab_manager_accessing_restricted_manage_page(
+        self, monkeypatch, lambda_context, helpers, fake_auth
+    ):
+        # Checks permission required to access page
+        user = helpers.FakeUser(access=["user", "lab_manager"])
+        monkeypatch.setattr("portal.access.User", lambda *args, **kwargs: user)
+        monkeypatch.setattr("util.auth.User", lambda *args, **kwargs: user)
+
+        labs = helpers.FAKE_LAB_CONFIGS
+        monkeypatch.setattr("portal.access.LAB_CONFIGS", labs)
+        monkeypatch.setattr(
+            "portal.access.Lab", lambda *args, **kwargs: helpers.FakeLab()
+        )
+
+        def lab_users_static(*args, **kwargs):
+            return [
+                {
+                    "username": "test_user",
+                    "labs": {
+                        "testlab": {
+                            "lab_profiles": ["m6a.large"],
+                        },
+                    },
+                    "token_usage": [
+                        {
+                            "labname": "testlab",
+                            "token": "token-dne",
+                            "apply_date": datetime.now().strftime(DATE_F),
+                        }
+                    ],
+                }
+            ]
+
+        monkeypatch.setattr("portal.access.get_users_with_lab", lab_users_static)
+
+        event = helpers.get_event(
+            path="/portal/access/manage/testlab", cookies=fake_auth
+        )
+        ret = main.lambda_handler(event, lambda_context)
+
+        assert ret["statusCode"] == 302
+        assert ret["body"] == "Redirecting to Portal"
+        assert ret["headers"].get("Location") == "/portal"
+
     def test_admin_editing_user(self, monkeypatch, lambda_context, helpers, fake_auth):
         user = helpers.FakeUser(access=["user", "admin"])
         monkeypatch.setattr("portal.access.User", lambda *args, **kwargs: user)
@@ -122,7 +231,6 @@ class TestAccessPages:
         assert "testlab2" in user.labs
         assert user.labs["testlab2"] == {
             "lab_profiles": [""],
-            "is_manager": False,
         }
 
         assert ret["statusCode"] == 302
@@ -751,7 +859,6 @@ class TestAccessPages:
         body = {
             "labs": {
                 "testlab": {
-                    "is_manager": False,
                 }
             }
         }

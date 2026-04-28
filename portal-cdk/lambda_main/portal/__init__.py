@@ -58,7 +58,7 @@ def portal_root():
     lab_objs: dict[str, Lab] = {key: Lab(key) for key in lab_access["viewable_labs_config"]}
     lab_access["viewable_labs_config"] = lab_objs
     
-    managed_labs = [labname for labname, lab in lab_objs.items() if (username in lab.managers or user.is_admin())]
+    managed_labs = [labname for labname, lab in lab_objs.items() if (user.is_lab_manager(lab) or user.is_admin())]
 
     template_input = {
         "username": username,

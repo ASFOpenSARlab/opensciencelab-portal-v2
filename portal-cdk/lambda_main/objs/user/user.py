@@ -25,12 +25,10 @@ USER_TABLE_KEY = "username"
 
 def create_lab_structure(
     lab_profiles: list[str],
-    # is_manager: bool = False,
     **kwargs,
 ) -> dict[str, Any]:
     return {
         "lab_profiles": lab_profiles,
-        # "is_manager": is_manager,
     }
 
 
