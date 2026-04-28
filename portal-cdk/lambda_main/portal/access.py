@@ -179,6 +179,9 @@ def manage_lab(shortname):
     template_input = {}
 
     user_filter = access_router.current_event.query_string_parameters.get("user_filter")
+    email_filter = access_router.current_event.query_string_parameters.get(
+        "email_filter"
+    )
     row_limit = 200
 
     # Get users of lab, check if lab exists
@@ -186,6 +189,7 @@ def manage_lab(shortname):
         shortname,
         limit=row_limit,
         username_filter=user_filter,
+        email_filter=email_filter,
     )
     users = sorted(users, key=lambda x: x["username"])
     template_input["users"] = users
