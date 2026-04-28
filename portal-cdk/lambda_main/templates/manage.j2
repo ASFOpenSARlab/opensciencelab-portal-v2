@@ -125,6 +125,8 @@
             <tr>
                 <th>
                     <b><a href="/portal/profile/form/{{ user["username"] }}">{{ user["username"] }}</a></b>
+                    <br>
+                    <code>{{ user["email"] }}</code>
                 </th>
                 <th>
                     {% for profile in lab.allowed_profiles %}
