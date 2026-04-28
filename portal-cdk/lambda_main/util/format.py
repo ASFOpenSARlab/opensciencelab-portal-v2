@@ -10,6 +10,7 @@ from util.cognito import LOGIN_URL, LOGOUT_URL, FORGOT_PASSWORD_URL, SIGNUP_URL
 from jinja2 import Environment, FileSystemLoader, StrictUndefined, select_autoescape
 
 from aws_lambda_powertools import Logger
+from aws_lambda_powertools.event_handler import Response
 
 logger = Logger(child=True)
 
@@ -137,6 +138,8 @@ def portal_template(name=None, title=None, response=200):
             elif isinstance(content, dict):
                 # Else if return value is dict, update page_dict with provided values
                 page_dict.update(content)
+            elif isinstance(content, Response):
+                return content
 
             # Render page
             body = render_template(**page_dict)
