@@ -181,8 +181,22 @@ def manage_lab(shortname):
     user_filter = access_router.current_event.query_string_parameters.get("user_filter")
     row_limit = 200
     
-    not user.is_lab_manger(shortname)
-    return
+    # Grab the username of the user making the request
+    username = current_session.auth.cognito.username
+    user = User(username)
+    lab = LAB_CONFIGS[shortname]
+    lab_obj = Lab(shortname)
+
+    # Redirect and log user if they should not have access
+    if not (user.is_admin() or user.is_lab_manager(lab_obj)):
+        logger.info(f"User {username} attempted to access manage page for lab {shortname}")
+        return wrap_response(
+            body="Redirecting to Portal",
+            headers={"Location": "/portal"},
+            code=302,
+        )
+
+    template_input["is_manager"] = user.is_lab_manager(lab_obj)
 
     # Get users of lab, check if lab exists
     users = get_users_with_lab(
@@ -193,18 +207,11 @@ def manage_lab(shortname):
     users = sorted(users, key=lambda x: x["username"])
     template_input["users"] = users
 
-    lab = LAB_CONFIGS[shortname]
-    lab_obj = Lab(shortname)
     template_input["lab"] = lab
     template_input["allows_requests"] = len(lab.application_questions) > 0
     template_input["rowcount"] = len(users)
     template_input["exceeded"] = len(users) >= row_limit
     template_input["access_tokens"] = lab_obj.access_tokens
-
-    # Grab the username of the user making the request
-    username = current_session.auth.cognito.username
-    user = User(username)
-    template_input["is_manager"] = user.is_lab_manager(shortname)
 
     return jinja_template(template_input, "manage.j2")
 

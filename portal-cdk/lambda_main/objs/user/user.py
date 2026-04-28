@@ -110,6 +110,9 @@ class User(Table):
     def is_admin(self) -> bool:
         return "admin" in self.access
 
+    def is_lab_manager(self, lab) -> bool:
+        return self.username in lab.managers
+
     def remove_user(self) -> bool:
         # Delete user from Cognito
         if not delete_user_from_user_pool(self.username):
@@ -160,11 +163,6 @@ class User(Table):
             if token["token"] == token_value:
                 return True
         return False
-
-    # def is_lab_manager(self, labname: str) -> bool:
-    #     if self.labs.get(labname) is None:
-    #         return False
-    #     return self.labs[labname].get("is_manager", False)
 
     def grant_access_role(self, access_role: str):
         current_roles: set = set(self.access)
