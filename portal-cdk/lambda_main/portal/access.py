@@ -48,7 +48,7 @@ SORT_ORDER = {
 
 # This catches "/portal/access" (this routers 'root'):
 @access_router.get("", include_in_schema=False)
-@require_access("admin", human=True)
+@require_access(["admin"], human=True)
 @portal_template()
 def access_root() -> str:
     user_filter = access_router.current_event.query_string_parameters.get("user_filter")
@@ -83,7 +83,7 @@ def access_root() -> str:
 
 
 @access_router.get("/manage/<shortname>/requests/", include_in_schema=False)
-@require_access("admin", human=True)
+@require_access(["admin"], human=True)
 @portal_template()
 def list_access_requests(shortname):
     user_filter = access_router.current_event.query_string_parameters.get("user_filter")
@@ -118,7 +118,7 @@ def list_access_requests(shortname):
 @access_router.get(
     "/manage/<shortname>/raw_request/<username>/", include_in_schema=False
 )
-@require_access("admin", human=True)
+@require_access(["admin"], human=True)
 def get_raw_access_request(shortname, username):
     lab = Lab(labname=shortname)
     request_data = lab.get_access_request(username)
@@ -130,7 +130,7 @@ def get_raw_access_request(shortname, username):
 
 
 @access_router.post("/manage/<shortname>/update/<username>/", include_in_schema=False)
-@require_access("admin", human=True)
+@require_access(["admin"], human=True)
 def update_user_access_request(shortname, username):
     status_map = {
         "Reject": "rejected",
@@ -173,7 +173,7 @@ def update_user_access_request(shortname, username):
 
 
 @access_router.get("/manage/<shortname>", include_in_schema=False)
-@require_access("admin", human=True)
+@require_access(["admin", "lab_manager"], human=True)
 @portal_template()
 def manage_lab(shortname):
     template_input = {}
@@ -183,6 +183,25 @@ def manage_lab(shortname):
         "email_filter"
     )
     row_limit = 200
+
+    # Grab the username of the user making the request
+    username = current_session.auth.cognito.username
+    user = User(username)
+    lab = LAB_CONFIGS[shortname]
+    lab_obj = Lab(shortname)
+
+    # Redirect and log user if they should not have access
+    if not (user.is_admin() or user.is_lab_manager(lab_obj)):
+        logger.info(
+            f"User {username} attempted to access manage page for lab {shortname}"
+        )
+        return wrap_response(
+            body="Redirecting to Portal",
+            headers={"Location": "/portal"},
+            code=302,
+        )
+
+    template_input["is_manager"] = user.is_lab_manager(lab_obj)
 
     # Get users of lab, check if lab exists
     users = get_users_with_lab(
@@ -194,24 +213,17 @@ def manage_lab(shortname):
     users = sorted(users, key=lambda x: x["username"])
     template_input["users"] = users
 
-    lab = LAB_CONFIGS[shortname]
-    lab_obj = Lab(shortname)
     template_input["lab"] = lab
     template_input["allows_requests"] = len(lab.application_questions) > 0
     template_input["rowcount"] = len(users)
     template_input["exceeded"] = len(users) >= row_limit
     template_input["access_tokens"] = lab_obj.access_tokens
 
-    # Grab the username of the user making the request
-    username = current_session.auth.cognito.username
-    user = User(username)
-    template_input["is_manager"] = user.is_lab_manager(shortname)
-
     return jinja_template(template_input, "manage.j2")
 
 
 @access_router.post("/manage/<shortname>/edituser", include_in_schema=False)
-@require_access("admin", human=True)
+@require_access(["admin"], human=True)
 def edit_user(shortname):
     # Grab the username of the user making the request
     admin_username = current_session.auth.cognito.username
@@ -271,7 +283,7 @@ def edit_user(shortname):
 
 
 @access_router.post("/manage/<shortname>/edittokens", include_in_schema=False)
-@require_access("admin", human=True)
+@require_access(["admin"], human=True)
 def edit_tokens(shortname):
     # Grab the username of the user making the request
     admin_username = current_session.auth.cognito.username
@@ -368,7 +380,7 @@ def edit_tokens(shortname):
     },
     tags=[access_route["name"]],
 )
-@require_access("admin", human=False)
+@require_access(["admin"], human=False)
 def get_user_labs(username):
     # Find user in db
     user = User(username=username, create_if_missing=False)
@@ -427,7 +439,7 @@ def get_user_labs(username):
     },
     tags=[access_route["name"]],
 )
-@require_access("admin", human=False)
+@require_access(["admin"], human=False)
 def get_labs_users(shortname):
     user_filter = access_router.current_event.query_string_parameters.get("user_filter")
     email_filter = access_router.current_event.query_string_parameters.get(
@@ -492,7 +504,7 @@ Any previously added labs not listed in dictionary, will be removed from the use
     },
     tags=[access_route["name"]],
 )
-@require_access("admin", human=False)
+@require_access(["admin"], human=False)
 def set_user_labs(username):
     # Check user exists
     user = User(username=username, create_if_missing=False)
@@ -542,7 +554,7 @@ Removes labs from a user. Does not affect labs not listed.
     },
     tags=[access_route["name"]],
 )
-@require_access("admin", human=False)
+@require_access(["admin"], human=False)
 def delete_user_labs(username):
     # Check user exists
     user = User(username=username, create_if_missing=False)

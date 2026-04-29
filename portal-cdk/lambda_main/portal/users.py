@@ -1,4 +1,5 @@
 import traceback
+from urllib.parse import urlparse
 
 from util.format import (
     portal_template,
@@ -8,7 +9,7 @@ from util.cognito import enable_user, disable_user, all_locked_users
 from util.session import current_session
 from util.dynamo_db import get_all_items
 from util.format import jinja_template
-from util.responses import wrap_response
+from util.responses import wrap_response, form_body_to_dict
 from util.exceptions import CognitoError, DbError
 from objs.user import User, user_email_filters
 from util.user_ip_logs_stream import get_user_ip_logs
@@ -72,7 +73,7 @@ def _user_set_lock(username, lock: bool) -> bool:
 
 
 @users_router.get("", include_in_schema=False)
-@require_access("admin", human=True)
+@require_access(["admin"], human=True)
 @portal_template()
 def users_root():
     # See if we were redirected with a message:
@@ -116,7 +117,7 @@ def users_root():
 
 
 @users_router.post("/unlock/<username>", include_in_schema=False)
-@require_access("admin", human=True)
+@require_access(["admin"], human=True)
 def unlock_user(username):
     success = _user_set_lock(username, False)
 
@@ -134,7 +135,7 @@ def unlock_user(username):
 
 
 @users_router.post("/lock/<username>", include_in_schema=False)
-@require_access("admin", human=True)
+@require_access(["admin"], human=True)
 def lock_user(username):
     success = _user_set_lock(username, True)
 
@@ -152,7 +153,7 @@ def lock_user(username):
 
 
 @users_router.post("/delete/<username>", include_in_schema=False)
-@require_access("admin", human=True)
+@require_access(["admin"], human=True)
 def delete_user(username):
     success = _delete_user(username)
 
@@ -170,7 +171,7 @@ def delete_user(username):
 
 
 @users_router.get("/info", include_in_schema=True)
-@require_access("admin", human=False)
+@require_access(["admin"], human=False)
 def get_user_ip_info():
     username: str | None = users_router.current_event.query_string_parameters.get(
         "username", None
@@ -199,4 +200,58 @@ def get_user_ip_info():
     return wrap_response(
         body=results,
         code=200,
+    )
+
+
+@users_router.post("/manage-role", include_in_schema=True)
+@require_access(["admin"], human=False)
+def manage_role():
+    # If we allow non admins to manage roles, need to make sure there is a role hierarchy
+
+    # Parse request
+    body = users_router.current_event.body
+    body = form_body_to_dict(body)
+    username = body.get("username", None)
+    if not username:
+        error = "username not provided to manage_role"
+        logger.error(error)
+        return wrap_response(
+            body=error,
+            code=422,
+        )
+    user = User(username)
+    action = body.get("action", None)
+    access_role = body.get("access-role", None)
+    if not action:
+        error = "action not provided to manage_role"
+        logger.error(error)
+        return wrap_response(
+            body=error,
+            code=422,
+        )
+    if not access_role:
+        error = "access_role not provided to manage_role"
+        logger.error(error)
+        return wrap_response(
+            body=error,
+            code=422,
+        )
+
+    if action == "grant":
+        user.grant_access_role(access_role)
+    elif action == "revoke":
+        user.revoke_access_role(access_role)
+    else:
+        error = f"Invalid action in manage_role: {action}"
+        logger.error(error)
+        return wrap_response(
+            body=error,
+            code=422,
+        )
+
+    next_url = urlparse(users_router.current_event.headers.get("referer")).path
+    return wrap_response(
+        body={f"Redirect to {next_url}"},
+        code=302,
+        headers={"Location": next_url},
     )
