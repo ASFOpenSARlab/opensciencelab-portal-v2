@@ -81,7 +81,7 @@ class TestAccessPages:
         )
         assert (
             ret["body"].find(
-                '<button type="submit" name="action" value="remove_user">Remove</button>'
+                """onclick="fillRemoveUserForm('testlab', 'test_user');">Remove</button>"""
             )
             > -1
         )
@@ -150,7 +150,7 @@ class TestAccessPages:
         )
         assert (
             ret["body"].find(
-                '<button type="submit" name="action" value="remove_user">Remove</button>'
+                """onclick="fillRemoveUserForm('testlab', 'test_user');">Remove</button>"""
             )
             > -1
         )
