@@ -109,7 +109,7 @@ class User(Table):
         return "admin" in self.access
 
     def is_lab_manager(self, lab) -> bool:
-        return self.username in lab.managers
+        return self.username in lab.managers and "lab_manager" in self.access
 
     def remove_user(self) -> bool:
         # Delete user from Cognito
