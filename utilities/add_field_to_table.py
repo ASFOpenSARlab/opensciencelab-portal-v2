@@ -35,6 +35,7 @@ _ = parser.add_argument(
 )
 args = parser.parse_args()
 
+
 def _get_dynamo():
     """
     Lazy load all DynamoDB stuff since it takes forever the first time.
@@ -61,22 +62,24 @@ def update_item(partition_key: str, partition_value: str, key: str, value: Any) 
         },
         UpdateExpression="SET #key = :value",
         ExpressionAttributeNames={
-            '#key': key,
+            "#key": key,
         },
         ExpressionAttributeValues={
             ":value": value,
-        }
+        },
     )
     return True
 
+
 def update_table():
-    
     _client, _db, table = _get_dynamo()
 
     scan_kwargs = {}
-    
+
     # Get primary key
-    primary_key = [n["AttributeName"] for n in table.key_schema if n["KeyType"] == 'HASH'][0]
+    primary_key = [
+        n["AttributeName"] for n in table.key_schema if n["KeyType"] == "HASH"
+    ][0]
 
     # Get partition keys for each item in table
     total_items = 0
@@ -84,13 +87,13 @@ def update_table():
     start_key = None
     while not done:
         if start_key:
-            scan_kwargs['ExclusiveStartKey'] = start_key
-        
+            scan_kwargs["ExclusiveStartKey"] = start_key
+
         # Use the Table.scan() method from Boto3
         response = table.scan(**scan_kwargs)
-        
+
         # Update specified key value in each item in the table
-        response_items = response.get('Items', [])
+        response_items = response.get("Items", [])
         for item in tqdm(response_items):
             table.update_item(
                 Key={
@@ -98,15 +101,15 @@ def update_table():
                 },
                 UpdateExpression="SET #key = :value",
                 ExpressionAttributeNames={
-                    '#key': args.key,
+                    "#key": args.key,
                 },
                 ExpressionAttributeValues={
                     ":value": json.loads(args.value),
-                }
+                },
             )
         total_items += len(response_items)
 
-        start_key = response.get('LastEvaluatedKey', None)
+        start_key = response.get("LastEvaluatedKey", None)
         done = start_key is None
     print(f"{total_items} updated")
 

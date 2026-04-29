@@ -236,7 +236,6 @@ def manage_role():
             body=error,
             code=422,
         )
-        
 
     if action == "grant":
         user.grant_access_role(access_role)
@@ -250,7 +249,7 @@ def manage_role():
             code=422,
         )
 
-    next_url = urlparse(users_router.current_event.headers.get('referer')).path
+    next_url = urlparse(users_router.current_event.headers.get("referer")).path
     return wrap_response(
         body={f"Redirect to {next_url}"},
         code=302,

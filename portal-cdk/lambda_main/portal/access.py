@@ -180,7 +180,7 @@ def manage_lab(shortname):
 
     user_filter = access_router.current_event.query_string_parameters.get("user_filter")
     row_limit = 200
-    
+
     # Grab the username of the user making the request
     username = current_session.auth.cognito.username
     user = User(username)
@@ -189,7 +189,9 @@ def manage_lab(shortname):
 
     # Redirect and log user if they should not have access
     if not (user.is_admin() or user.is_lab_manager(lab_obj)):
-        logger.info(f"User {username} attempted to access manage page for lab {shortname}")
+        logger.info(
+            f"User {username} attempted to access manage page for lab {shortname}"
+        )
         return wrap_response(
             body="Redirecting to Portal",
             headers={"Location": "/portal"},

@@ -106,7 +106,8 @@ class TestAccessPages:
         labs = helpers.FAKE_LAB_CONFIGS
         monkeypatch.setattr("portal.access.LAB_CONFIGS", labs)
         monkeypatch.setattr(
-            "portal.access.Lab", lambda *args, **kwargs: helpers.FakeLab(managers=[user.username])
+            "portal.access.Lab",
+            lambda *args, **kwargs: helpers.FakeLab(managers=[user.username]),
         )
 
         def lab_users_static(*args, **kwargs):
@@ -856,12 +857,7 @@ class TestAccessPages:
         assert '"result": "Lab does not exist: lab_does_not_exist"' in ret["body"]
         assert ret["headers"].get("Content-Type") == "application/json"
 
-        body = {
-            "labs": {
-                "testlab": {
-                }
-            }
-        }
+        body = {"labs": {"testlab": {}}}
 
         event = helpers.get_event(
             body=json.dumps(body),

@@ -30,7 +30,9 @@
     </div>
 {% endif %}
 <!-- Forms -->
-<form id="manage-role-form" action="/portal/users/manage-role" method="post">
+<form id="manage-role-form"
+      action="/portal/users/manage-role"
+      method="post">
     <input type="hidden" name="username" id="manage-role-username">
     <input type="hidden" name="action" id="manage-role-action">
     <input type="hidden" name="access-role" id="manage-role-access-role">
@@ -43,7 +45,6 @@
         document.getElementById("manage-role-access-role").value = role;
     }
 </script>
-
 <table style="width:100%" border=1>
     <tr>
         <th>Username</th>
@@ -67,13 +68,13 @@
             <td>{{ user['access']|join(", ") }}</td>
             <td>
                 {% if "admin" in user.access %}
-                <button form="manage-role-form"
-                        type="submit"
-                        onclick="fillManageRoleForm('{{ user["username"] }}', 'revoke', 'admin');">Revoke</button>
+                    <button form="manage-role-form"
+                            type="submit"
+                            onclick="fillManageRoleForm('{{ user["username"] }}', 'revoke', 'admin');">Revoke</button>
                 {% else %}
-                <button form="manage-role-form"
-                        type="submit"
-                        onclick="fillManageRoleForm('{{ user["username"] }}', 'grant', 'admin');">Grant</button>
+                    <button form="manage-role-form"
+                            type="submit"
+                            onclick="fillManageRoleForm('{{ user["username"] }}', 'grant', 'admin');">Grant</button>
                 {% endif %}
             </td>
             <td>
