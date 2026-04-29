@@ -107,6 +107,26 @@
                 </tr>
             {% endfor %}
         </table>
+        <div class="note">
+            Notes on Token Interface
+            <ul>
+                <li>Token profiles are specified as a comma-separated list, without spaces (you can copy-paste from the "Users" table).
+                    <br>
+                    Ex.: <code>m6a.large, m6a.xlarge</code>
+                </li>
+                <li>All tokens will be unique, random strings.</li>
+                <li>
+                    You can optionally specify a start and/or end date -- tokens will become enabled/disabled at 00:00 UTC on the specified day.
+                    If you don't specify either one, they will be valid for all of the past or future.
+                </li>
+                <li>
+                    Add several profiles as a comma separated list without quotations (you can copy-paste from the table).
+                </li>
+                <li>
+                    Users can enter their tokens under "Apply Access Token" in the user menu dropdown (under your username at the top-right of the pane).
+                </li>
+            </ul>
+        </div>
     {% else %}
         <p>Tokens not enabled</p>
     {% endif %}
@@ -172,13 +192,13 @@
 </div>
 <div class="margin-left-30">
     <div class="note">
-        Notes on management Interface
+        Notes on Management Interface
         <ul>
             <li>Adding a user that already exists will overwrite their profile permissions</li>
             <li>
-                Add several profiles as a comma separated list without quotations
+                Add several profiles as a comma separated list without quotations (you can copy-paste from the table)
                 <br>
-                EX: <code>m6a.large, m6a.xlarge</code>
+                Ex.: <code>m6a.large, m6a.xlarge</code>
             </li>
         </ul>
     </div>
