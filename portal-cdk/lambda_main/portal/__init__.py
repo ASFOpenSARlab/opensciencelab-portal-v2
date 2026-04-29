@@ -65,6 +65,5 @@ def portal_root():
         "labs": lab_access,
         "access_roles": user.access,
         "managed_labs": managed_labs,
-        # "admin": user.is_admin(),
     }
     return jinja_template(template_input, "portal.j2")
