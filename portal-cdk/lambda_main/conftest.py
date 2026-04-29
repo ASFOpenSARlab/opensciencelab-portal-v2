@@ -23,8 +23,8 @@ from data import DATE_F
 
 
 # Ignore /utilities files, those don't have tests
-def pytest_ignore_collect(path):
-    if "utilities" in str(path):
+def pytest_ignore_collect(collection_path):
+    if "utilities" in str(collection_path):
         return True
     return False
 
