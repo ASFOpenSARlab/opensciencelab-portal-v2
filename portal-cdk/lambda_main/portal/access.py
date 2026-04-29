@@ -83,7 +83,7 @@ def access_root() -> str:
 
 
 @access_router.get("/manage/<shortname>/requests/", include_in_schema=False)
-@require_access(["admin"], human=True)
+@require_access(["admin", "lab_manager"], human=True)
 @portal_template()
 def list_access_requests(shortname):
     user_filter = access_router.current_event.query_string_parameters.get("user_filter")
@@ -92,6 +92,21 @@ def list_access_requests(shortname):
     )
 
     lab = Lab(labname=shortname)
+
+    # Grab the username of the user making the request
+    username = current_session.auth.cognito.username
+    user = User(username)
+    # Redirect and log user if they should not have access
+    if not (user.is_admin() or user.is_lab_manager(lab)):
+        logger.info(
+            f"User {username} attempted to access requests page for lab {shortname}. Does not have permissions"
+        )
+        return wrap_response(
+            body="Redirecting to Portal",
+            headers={"Location": "/portal"},
+            code=302,
+        )
+
     requests = lab.get_requests()
 
     # Apply filters
@@ -193,7 +208,7 @@ def manage_lab(shortname):
     # Redirect and log user if they should not have access
     if not (user.is_admin() or user.is_lab_manager(lab_obj)):
         logger.info(
-            f"User {username} attempted to access manage page for lab {shortname}"
+            f"User {username} attempted to access manage page for lab {shortname}. Does not have permissions"
         )
         return wrap_response(
             body="Redirecting to Portal",
