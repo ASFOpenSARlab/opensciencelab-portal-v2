@@ -116,6 +116,7 @@ class TestAccessPages:
             return [
                 {
                     "username": "test_user",
+                    "email": "test@user.com",
                     "labs": {
                         "testlab": {
                             "lab_profiles": ["m6a.large"],
@@ -163,6 +164,7 @@ class TestAccessPages:
         )
         ret2 = main.lambda_handler(event, lambda_context)
         assert ret2["body"].find("Token") == -1
+        assert ret["body"].find("test@user.com")
 
     def test_lab_manager_accessing_restricted_manage_page(
         self, monkeypatch, lambda_context, helpers, fake_auth
