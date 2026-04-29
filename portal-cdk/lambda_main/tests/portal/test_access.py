@@ -47,6 +47,7 @@ class TestAccessPages:
             return [
                 {
                     "username": "test_user",
+                    "email": "test@user.com",
                     "labs": {
                         "testlab": {
                             "lab_profiles": ["m6a.large"],
@@ -87,6 +88,7 @@ class TestAccessPages:
         assert ret["body"].find('value="m6a.large, m6a.xlarge"')
         assert ret["headers"].get("Content-Type") == "text/html"
         assert ret["body"].find("token-dne")
+        assert ret["body"].find("test@user.com")
 
         # Make sure tokens don't show up on lab w/o tokens
         event = helpers.get_event(
@@ -535,6 +537,7 @@ class TestAccessPages:
             return [
                 {
                     "username": "test_user",
+                    "email": "test@user.com",
                     "labs": {
                         "testlab": {
                             "lab_profiles": ["m6a.large"],
@@ -557,6 +560,7 @@ class TestAccessPages:
         assert body["users"] == [
             {
                 "username": "test_user",
+                "email": "test@user.com",
                 "labs": {"testlab": {"lab_profiles": ["m6a.large"]}},
             }
         ]

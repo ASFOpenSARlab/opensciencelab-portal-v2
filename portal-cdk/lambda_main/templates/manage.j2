@@ -42,6 +42,8 @@
         <form action="/portal/access/manage/{{ lab.short_lab_name }}">
             Search results limited to {{ rowcount }}. Try filtering by username:
             <input type="input" name="user_filter">
+            Or by email:
+            <input type="input" name="email_filter">
             <input type="submit" hidden />
         </form>
     </div>
@@ -141,6 +143,8 @@
             <tr>
                 <th>
                     <b><a href="/portal/profile/form/{{ user["username"] }}">{{ user["username"] }}</a></b>
+                    <br>
+                    <code>{{ user["email"] }}</code>
                 </th>
                 <th>
                     {% for profile in lab.allowed_profiles %}
