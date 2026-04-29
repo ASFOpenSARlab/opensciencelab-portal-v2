@@ -1,5 +1,18 @@
 {# djlint:off H006,H021 #}
 <script src="/static/js/formutils.js" type="text/javascript" charset="utf-8"></script>
+<!-- Forms -->
+<form id="remove-user-form"
+      method="post"
+      action="{{ lab.short_lab_name }}/edituser">
+    <input type="hidden" name="action" value="remove_user">
+    <input type="hidden" name="username" id="remove-user-username">
+</form>
+<script>
+    function fillRemoveUserForm(labname, username){
+        document.getElementById("remove-user-form").action = `${labname}/edituser`
+        document.getElementById("remove-user-username").value = username;
+    }
+</script>
 <div>
     {% if allows_requests %}
         <legend>
@@ -149,10 +162,9 @@
                     </th>
                 {% endif %}
                 <th>
-                    <form method="post" action="{{ lab.short_lab_name }}/edituser">
-                        <input type="hidden" name="username" value="{{ user['username'] }}">
-                        <button type="submit" name="action" value="remove_user">Remove</button>
-                    </form>
+                    <button form="remove-user-form"
+                            type="submit"
+                            onclick="fillRemoveUserForm('{{ lab.short_lab_name }}', '{{ user["username"] }}');">Remove</button>
                 </th>
             </tr>
         {% endfor %}

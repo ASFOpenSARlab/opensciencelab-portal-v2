@@ -29,6 +29,21 @@
         </form>
     </div>
 {% endif %}
+<!-- Forms -->
+<form id="manage-role-form"
+      action="/portal/users/manage-role"
+      method="post">
+    <input type="hidden" name="username" id="manage-role-username">
+    <input type="hidden" name="action" id="manage-role-action">
+    <input type="hidden" name="access-role" id="manage-role-access-role">
+</form>
+<script>
+    function fillManageRoleForm(username, action, role){
+        document.getElementById("manage-role-username").value = username;
+        document.getElementById("manage-role-action").value = action;
+        document.getElementById("manage-role-access-role").value = role;
+    }
+</script>
 <table style="width:100%" border=1>
     <tr>
         <th>Username</th>
@@ -36,6 +51,7 @@
         <th>Created</th>
         <th>Last Login</th>
         <th>Access</th>
+        <th>Manage Admin Status</th>
         <th>Requires Profile Update</th>
         <th>Is Locked</th>
         <th>Should Delete</th>
@@ -43,12 +59,23 @@
     {% for user in all_users_sorted %}
         <tr>
             <td>
-                <b><a href="/portal/profile/form/{{ user["username" ] }}">{{ user["username"] }}</a></b>
+                <b><a href="/portal/profile/form/{{ user["username"] }}">{{ user["username"] }}</a></b>
             </td>
             <td>{{ user['email'] }}</td>
             <td>{{ user['created_at'] }}</td>
             <td>{{ user['last_cookie_assignment'] }}</td>
             <td>{{ user['access']|join(", ") }}</td>
+            <td>
+                {% if "admin" in user.access %}
+                    <button form="manage-role-form"
+                            type="submit"
+                            onclick="fillManageRoleForm('{{ user["username"] }}', 'revoke', 'admin');">Revoke</button>
+                {% else %}
+                    <button form="manage-role-form"
+                            type="submit"
+                            onclick="fillManageRoleForm('{{ user["username"] }}', 'grant', 'admin');">Grant</button>
+                {% endif %}
+            </td>
             <td>
                 {% if user['require_profile_update'] %}
                     <b>YES</b>
