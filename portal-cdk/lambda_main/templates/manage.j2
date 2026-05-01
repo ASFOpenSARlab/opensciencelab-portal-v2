@@ -134,12 +134,13 @@
         <tr>
             <form method="post" action="{{ lab.short_lab_name }}/edituser">
                 <th>
-                    <input type="text" name="username" placeholder="username">
+                    <input type="text" name="username" placeholder="username" required>
                 </th>
                 <th>
                     <input type="text"
                            name="lab_profiles"
-                           value="{{ ','.join(lab.default_profiles) }}">
+                           value="{{ ','.join(lab.default_profiles) }}"
+                           required>
                 </th>
                 {% if lab.allows_tokens %}<th></th>{% endif %}
                 <th>
