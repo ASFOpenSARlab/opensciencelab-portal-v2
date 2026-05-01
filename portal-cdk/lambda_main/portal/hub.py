@@ -99,9 +99,7 @@ def post_portal_hub_auth():
     lab_short_name = post_data_decoded.get("lab_short_name", "")
     logger.debug(f"Request user info = {username=}")
 
-    lab = None
-    if lab_short_name:
-        lab = Lab(lab_short_name)
+    lab = Lab(lab_short_name) if lab_short_name else None
     user = User(username=username, create_if_missing=False)
 
     data = {
