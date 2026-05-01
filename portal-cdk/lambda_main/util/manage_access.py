@@ -27,6 +27,18 @@ def validate_edit_user_request(body: dict) -> tuple[bool, str]:
         return False, "Invalid action"
 
 
+def validate_edit_manager_permission_request(body: dict) -> tuple[bool, str]:
+    # check always required keys are provided
+    keys = ["username", "action"]
+    for key in keys:
+        if key not in body:
+            return False, f"{key} not provided to edit_manager_permission"
+
+    if body["action"] not in ["grant", "revoke"]:
+        return False, "Invalid action"
+    return True, ""
+
+
 def validate_delete_lab_access(
     delete_lab_request: dict, user: User
 ) -> tuple[bool, str]:

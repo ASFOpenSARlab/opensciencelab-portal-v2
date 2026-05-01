@@ -17,6 +17,7 @@ from util.manage_access import (
     validate_delete_lab_access,
     validate_set_lab_access,
     validate_edit_tokens_request,
+    validate_edit_manager_permission_request,
 )
 from util.access_request import request_status_change_action, process_access_token
 from util.send_email import send_user_email
@@ -216,7 +217,7 @@ def manage_lab(shortname):
             code=302,
         )
 
-    template_input["is_manager"] = user.is_lab_manager(lab_obj)
+    template_input["is_admin"] = user.is_admin()
 
     # Get users of lab, check if lab exists
     users = get_users_with_lab(
@@ -225,6 +226,12 @@ def manage_lab(shortname):
         username_filter=user_filter,
         email_filter=email_filter,
     )
+    # Add is_manager field to visible users who are managers
+    managers = set(lab_obj.managers)
+    for user in users:
+        if user["username"] in managers:
+            user["is_manager"] = True
+            managers.remove(user["username"])
     users = sorted(users, key=lambda x: x["username"])
     template_input["users"] = users
 
@@ -238,10 +245,26 @@ def manage_lab(shortname):
 
 
 @access_router.post("/manage/<shortname>/edituser", include_in_schema=False)
-@require_access(["admin"], human=True)
+@require_access(["admin", "lab_manager"], human=True)
 def edit_user(shortname):
     # Grab the username of the user making the request
-    admin_username = current_session.auth.cognito.username
+    caller_username = current_session.auth.cognito.username
+
+    caller_user = User(caller_username)
+    lab = Lab(shortname)
+    # Redirect and log user if they should not have access
+    if not (caller_user.is_admin() or caller_user.is_lab_manager(lab)):
+        logger.info(
+            f"User {caller_username} attempted to remove a user from lab {shortname}. Does not have permissions"
+        )
+        # Send the user to the management page
+        next_url = f"/portal/access/manage/{shortname}"
+        return wrap_response(
+            body={f"Redirect to {next_url}"},
+            code=302,
+            headers={"Location": next_url},
+        )
+
     # Parse request
     body = access_router.current_event.body
 
@@ -270,17 +293,17 @@ def edit_user(shortname):
         )
         if update:
             logger.info(
-                f'{admin_username} updated access for user "{body["username"]}" in {shortname}'
+                f'{caller_username} updated access for user "{body["username"]}" in {shortname}'
             )
         else:
             logger.info(
-                f'{admin_username} added user "{body["username"]}" to {shortname}'
+                f'{caller_username} added user "{body["username"]}" to {shortname}'
             )
 
     elif body["action"] == "remove_user":
         user.remove_lab(shortname)
         logger.info(
-            f'{admin_username} removed user "{body["username"]}" from {shortname}'
+            f'{caller_username} removed user "{body["username"]}" from {shortname}'
         )
 
     else:
@@ -297,11 +320,102 @@ def edit_user(shortname):
     )
 
 
+@access_router.post("/manage/<shortname>/editmanager", include_in_schema=False)
+@require_access(["admin", "lab_manager"], human=True)
+def edit_manager_permission(shortname):
+    # Grab the username of the user making the request
+    caller_username = current_session.auth.cognito.username
+
+    caller_user = User(caller_username)
+    lab = Lab(shortname)
+    # Redirect and log user if they should not have access
+    if not (caller_user.is_admin() or caller_user.is_lab_manager(lab)):
+        logger.info(
+            f"User {caller_username} attempted to remove a user from lab {shortname}. Does not have permissions"
+        )
+        # Send the user to the management page
+        next_url = f"/portal/access/manage/{shortname}"
+        return wrap_response(
+            body={f"Redirect to {next_url}"},
+            code=302,
+            headers={"Location": next_url},
+        )
+
+    # Parse request
+    body = access_router.current_event.body
+
+    if body is None:
+        error = "Body not provided to edit_user"
+        logger.error(error)
+        raise MalformedRequest(error)
+    body = form_body_to_dict(body)
+
+    # Validate request
+    success, message = validate_edit_manager_permission_request(body=body)
+    if not success:
+        logger.error(message)
+        raise MalformedRequest(message)
+
+    # Edit manager permissions
+    user = User(body["username"])
+    lab = Lab(shortname)
+
+    if body["action"] == "grant":
+        if "lab_manager" not in user.access:
+            user.grant_access_role("lab_manager")
+        lab.add_manager(body["username"])
+        logger.info(
+            f'{caller_username} granted lab_manager to "{body["username"]}" in {shortname}'
+        )
+
+    elif body["action"] == "revoke":
+        lab.remove_manager(body["username"])
+        still_manager = False
+        for labname in LAB_CONFIGS.keys():
+            if body["username"] in Lab(labname).managers:
+                still_manager = True
+                break
+        if not still_manager:
+            user.revoke_access_role("lab_manager")
+        logger.info(
+            f'{caller_username} revoked lab_manager from "{body["username"]}" in {shortname}'
+        )
+
+    else:
+        error = f"Invalid edit_manager_permission action {body['action']}"
+        logger.error(error)
+        raise MalformedRequest(error)
+
+    # Send the user to the management page
+    next_url = f"/portal/access/manage/{shortname}"
+    return wrap_response(
+        body={f"Redirect to {next_url}"},
+        code=302,
+        headers={"Location": next_url},
+    )
+
+
 @access_router.post("/manage/<shortname>/edittokens", include_in_schema=False)
-@require_access(["admin"], human=True)
+@require_access(["admin", "lab_manager"], human=True)
 def edit_tokens(shortname):
     # Grab the username of the user making the request
-    admin_username = current_session.auth.cognito.username
+    caller_username = current_session.auth.cognito.username
+
+    caller_user = User(caller_username)
+    lab = Lab(shortname)
+    # Redirect and log user if they should not have access
+    if not (caller_user.is_admin() or caller_user.is_lab_manager(lab)):
+        logger.info(
+            f"User {caller_username} attempted to remove a user from lab {shortname}. Does not have permissions"
+        )
+        # Send the user to the management page
+        next_url = f"/portal/access/manage/{shortname}"
+        return wrap_response(
+            body={f"Redirect to {next_url}"},
+            code=302,
+            headers={"Location": next_url},
+        )
+
     # Parse request
     body = access_router.current_event.body
 
@@ -318,8 +432,6 @@ def edit_tokens(shortname):
         raise MalformedRequest(message)
 
     # Edit tokens
-    lab = Lab(shortname)
-
     if body["action"] == "add_token":
         start_date = (
             datetime.strptime(body["start_date"], "%Y-%m-%d")
@@ -348,12 +460,12 @@ def edit_tokens(shortname):
             profiles=[s.strip() for s in body["lab_profiles"].split(",")],
         )
         if success:
-            logger.info(f"{admin_username} added token to {shortname}")
+            logger.info(f"{caller_username} added token to {shortname}")
 
     elif body["action"] == "remove_token":
         success = lab.remove_access_token(body["token"])
         if success:
-            logger.info(f"{admin_username} removed token from {shortname}")
+            logger.info(f"{caller_username} removed token from {shortname}")
 
     else:
         error = f"Invalid edit_tokens action {body['action']}"

@@ -372,3 +372,13 @@ class Lab(Table):
                 break
 
         return success
+
+    def add_manager(self, username: str) -> bool:
+        managers: set = set(self.managers)
+        managers.add(username)
+        self.managers = managers
+
+    def remove_manager(self, username: str) -> bool:
+        managers: set = set(self.managers)
+        managers.remove(username)
+        self.managers = managers
