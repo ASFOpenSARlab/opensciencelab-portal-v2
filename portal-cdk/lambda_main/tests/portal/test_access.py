@@ -210,7 +210,9 @@ class TestAccessPages:
         assert ret["body"] == "Redirecting to Portal"
         assert ret["headers"].get("Location") == "/portal"
 
-    def test_admin_edit_user_add_lab(self, monkeypatch, lambda_context, helpers, fake_auth):
+    def test_admin_edit_user_add_lab(
+        self, monkeypatch, lambda_context, helpers, fake_auth
+    ):
         user = helpers.FakeUser(access=["user", "admin"])
         monkeypatch.setattr("portal.access.User", lambda *args, **kwargs: user)
         monkeypatch.setattr("util.auth.User", lambda *args, **kwargs: user)
@@ -246,7 +248,9 @@ class TestAccessPages:
         assert ret["headers"].get("Content-Type") == "text/html"
 
 
-    def test_admin_edit_user_remove_lab(self, monkeypatch, lambda_context, helpers, fake_auth):
+    def test_admin_edit_user_remove_lab(
+        self, monkeypatch, lambda_context, helpers, fake_auth
+    ):
         user = helpers.FakeUser(access=["user", "admin"])
         monkeypatch.setattr("portal.access.User", lambda *args, **kwargs: user)
         monkeypatch.setattr("util.auth.User", lambda *args, **kwargs: user)
@@ -276,7 +280,10 @@ class TestAccessPages:
         assert ret["headers"].get("Location") == "/portal/access/manage/testlab2"
         assert ret["headers"].get("Content-Type") == "text/html"
 
-    def test_admin_edit_user_invalid_action(self, monkeypatch, lambda_context, helpers, fake_auth):
+
+    def test_admin_edit_user_invalid_action(
+        self, monkeypatch, lambda_context, helpers, fake_auth
+    ):
         user = helpers.FakeUser(access=["user", "admin"])
         monkeypatch.setattr("portal.access.User", lambda *args, **kwargs: user)
         monkeypatch.setattr("util.auth.User", lambda *args, **kwargs: user)
@@ -303,7 +310,10 @@ class TestAccessPages:
         assert ret["statusCode"] == 400
         assert "Invalid action" in ret["body"]
 
-    def test_lab_manager_edit_user_has_permission(self, monkeypatch, lambda_context, helpers, fake_auth):
+
+    def test_lab_manager_edit_user_has_permission(
+        self, monkeypatch, lambda_context, helpers, fake_auth
+    ):
         user = helpers.FakeUser(access=["user", "lab_manager"])
         monkeypatch.setattr("portal.access.User", lambda *args, **kwargs: user)
         monkeypatch.setattr("util.auth.User", lambda *args, **kwargs: user)
@@ -338,7 +348,9 @@ class TestAccessPages:
         assert ret["headers"].get("Location") == "/portal/access/manage/testlab2"
         assert ret["headers"].get("Content-Type") == "text/html"
 
-    def test_lab_manager_edit_user_missing_permission(self, monkeypatch, lambda_context, helpers, fake_auth):
+    def test_lab_manager_edit_user_missing_permission(
+        self, monkeypatch, lambda_context, helpers, fake_auth
+    ):
         user = helpers.FakeUser(access=["user", "lab_manager"])
         monkeypatch.setattr("portal.access.User", lambda *args, **kwargs: user)
         monkeypatch.setattr("util.auth.User", lambda *args, **kwargs: user)

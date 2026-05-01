@@ -163,7 +163,7 @@ class TestLabClass:
 
         mock_add_token = mocker.patch.object(helpers.FakeLab, "create_access_token")
         mock_remove_token = mocker.patch.object(helpers.FakeLab, "remove_access_token")
-        
+
         monkeypatch.setattr("portal.access.Lab", lambda *args, **kwargs: lab)
 
         LAB_CONFIGS = helpers.FAKE_LAB_CONFIGS
@@ -196,7 +196,6 @@ class TestLabClass:
         )
         assert mock_remove_token.call_count == 0
 
-
     def test_lab_manager_missing_permission_add_token(
         self, monkeypatch, lambda_context, helpers, fake_auth, mocker
     ):
@@ -210,7 +209,7 @@ class TestLabClass:
 
         mock_add_token = mocker.patch.object(helpers.FakeLab, "create_access_token")
         mock_remove_token = mocker.patch.object(helpers.FakeLab, "remove_access_token")
-        
+
         monkeypatch.setattr("portal.access.Lab", lambda *args, **kwargs: lab)
 
         LAB_CONFIGS = helpers.FAKE_LAB_CONFIGS
@@ -237,7 +236,6 @@ class TestLabClass:
 
         assert mock_add_token.call_count == 0
         assert mock_remove_token.call_count == 0
-
 
     def test_endpoint_add_token_invalid_dates(
         self, monkeypatch, lambda_context, helpers, fake_auth, mocker

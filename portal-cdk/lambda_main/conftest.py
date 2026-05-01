@@ -280,7 +280,6 @@ class Helpers:
         def remove_access_token(self, *args, **kwargs) -> bool:
             return True
 
-
     # differentlab not initialized in FakeUser.labs
     # this is to allow labs to test against a lab the user does not have access too
     # unless used for other purpose in a given test
