@@ -279,7 +279,6 @@ class TestAccessPages:
         assert ret["headers"].get("Location") == "/portal/access/manage/testlab2"
         assert ret["headers"].get("Content-Type") == "text/html"
 
-
     def test_admin_edit_user_invalid_action(
         self, monkeypatch, lambda_context, helpers, fake_auth
     ):
