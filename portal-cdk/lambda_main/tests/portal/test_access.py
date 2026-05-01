@@ -247,7 +247,6 @@ class TestAccessPages:
         assert ret["headers"].get("Location") == "/portal/access/manage/testlab2"
         assert ret["headers"].get("Content-Type") == "text/html"
 
-
     def test_admin_edit_user_remove_lab(
         self, monkeypatch, lambda_context, helpers, fake_auth
     ):
@@ -309,7 +308,6 @@ class TestAccessPages:
         ret = main.lambda_handler(event, lambda_context)
         assert ret["statusCode"] == 400
         assert "Invalid action" in ret["body"]
-
 
     def test_lab_manager_edit_user_has_permission(
         self, monkeypatch, lambda_context, helpers, fake_auth
