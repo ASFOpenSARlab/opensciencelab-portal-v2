@@ -160,6 +160,7 @@ class TestLabClass:
         monkeypatch.setattr("util.auth.User", lambda *args, **kwargs: user)
 
         lab = helpers.FakeLab(access_requests=None, managers=["test_user"])
+        monkeypatch.setattr("util.auth.Lab", lambda *args, **kwargs: lab)
 
         mock_add_token = mocker.patch.object(helpers.FakeLab, "create_access_token")
         mock_remove_token = mocker.patch.object(helpers.FakeLab, "remove_access_token")

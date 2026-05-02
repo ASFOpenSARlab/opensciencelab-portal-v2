@@ -94,20 +94,6 @@ def list_access_requests(shortname):
 
     lab = Lab(labname=shortname)
 
-    # Grab the username of the user making the request
-    username = current_session.auth.cognito.username
-    user = User(username)
-    # Redirect and log user if they should not have access
-    if not (user.is_admin() or user.is_lab_manager(lab)):
-        logger.info(
-            f"User {username} attempted to access requests page for lab {shortname}. Does not have permissions"
-        )
-        return wrap_response(
-            body="Redirecting to Portal",
-            headers={"Location": "/portal"},
-            code=302,
-        )
-
     requests = lab.get_requests()
 
     # Apply filters
@@ -206,17 +192,6 @@ def manage_lab(shortname):
     lab = LAB_CONFIGS[shortname]
     lab_obj = Lab(shortname)
 
-    # Redirect and log user if they should not have access
-    if not (user.is_admin() or user.is_lab_manager(lab_obj)):
-        logger.info(
-            f"User {username} attempted to access manage page for lab {shortname}. Does not have permissions"
-        )
-        return wrap_response(
-            body="Redirecting to Portal",
-            headers={"Location": "/portal"},
-            code=302,
-        )
-
     template_input["is_admin"] = user.is_admin()
 
     # Get users of lab, check if lab exists
@@ -249,21 +224,6 @@ def manage_lab(shortname):
 def edit_user(shortname):
     # Grab the username of the user making the request
     caller_username = current_session.auth.cognito.username
-
-    caller_user = User(caller_username)
-    lab = Lab(shortname)
-    # Redirect and log user if they should not have access
-    if not (caller_user.is_admin() or caller_user.is_lab_manager(lab)):
-        logger.info(
-            f"User {caller_username} attempted to remove a user from lab {shortname}. Does not have permissions"
-        )
-        # Send the user to the management page
-        next_url = f"/portal/access/manage/{shortname}"
-        return wrap_response(
-            body={f"Redirect to {next_url}"},
-            code=302,
-            headers={"Location": next_url},
-        )
 
     # Parse request
     body = access_router.current_event.body
@@ -326,21 +286,6 @@ def edit_manager_permission(shortname):
     # Grab the username of the user making the request
     caller_username = current_session.auth.cognito.username
 
-    caller_user = User(caller_username)
-    lab = Lab(shortname)
-    # Redirect and log user if they should not have access
-    if not (caller_user.is_admin() or caller_user.is_lab_manager(lab)):
-        logger.info(
-            f"User {caller_username} attempted to remove a user from lab {shortname}. Does not have permissions"
-        )
-        # Send the user to the management page
-        next_url = f"/portal/access/manage/{shortname}"
-        return wrap_response(
-            body={f"Redirect to {next_url}"},
-            code=302,
-            headers={"Location": next_url},
-        )
-
     # Parse request
     body = access_router.current_event.body
 
@@ -401,20 +346,7 @@ def edit_tokens(shortname):
     # Grab the username of the user making the request
     caller_username = current_session.auth.cognito.username
 
-    caller_user = User(caller_username)
     lab = Lab(shortname)
-    # Redirect and log user if they should not have access
-    if not (caller_user.is_admin() or caller_user.is_lab_manager(lab)):
-        logger.info(
-            f"User {caller_username} attempted to remove a user from lab {shortname}. Does not have permissions"
-        )
-        # Send the user to the management page
-        next_url = f"/portal/access/manage/{shortname}"
-        return wrap_response(
-            body={f"Redirect to {next_url}"},
-            code=302,
-            headers={"Location": next_url},
-        )
 
     # Parse request
     body = access_router.current_event.body

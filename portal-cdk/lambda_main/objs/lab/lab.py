@@ -6,7 +6,7 @@ import uuid
 from util.exceptions import LabDoesNotExist, InvalidLabRequestStatus
 from util.labs import LAB_CONFIGS
 from util.session import current_session
-from util.auth import get_ip_and_country
+from util.auth_helpers import get_ip_and_country
 from util.dynamo_db import (
     get_item,
     create_item,

@@ -4,6 +4,7 @@ import datetime
 from cachetools import TTLCache
 
 from objs.user import User
+from objs.lab import Lab
 from util.responses import wrap_response
 from util.exceptions import (
     BadSsoToken,
@@ -14,8 +15,10 @@ from util.exceptions import (
 )
 from util.session import current_session, PortalAuth
 import util.cognito
+from util.exceptions import MalformedRequest
 from util.user_ip_logs_stream import send_user_ip_logs, update_user_ip_in_db
 from util.log_timer import measure_time
+from util.auth_helpers import get_ip_and_country
 
 import requests
 import jwt
@@ -340,16 +343,6 @@ def process_auth(handler, event, context):
     return handler(event, context)
 
 
-def get_ip_and_country(event):
-    ip_address_with_port = event.get("headers", {}).get(
-        "cloudfront-viewer-address", "0.0.0.0"
-    )
-    country_code = event.get("headers", {}).get("cloudfront-viewer-country", "ZZ")
-
-    ip_address = ip_address_with_port.rsplit(":", 1)[0]
-    return (ip_address, country_code)
-
-
 def require_access(access: list = ["user"], human: bool = False):
     def inner(func):
         def wrapper(*args, **kwargs):
@@ -446,6 +439,31 @@ def require_access(access: list = ["user"], human: bool = False):
                     headers={"Location": requested_url},
                 )
             logger.debug("User %s has %s access", username, access)
+
+             # Check if endpoint allows lab_manager and user is at most lab_manager
+            user = User(username)
+            if (
+                not user.is_admin()
+                and "lab_manager" in user.access
+                and "lab_manager" in access
+            ):
+                shortname = kwargs.get("shortname")
+                if not shortname:
+                    print("GROOBLE")
+                    raise MalformedRequest("`shortname` must be a parameter for any function that allows `lab_manager`")
+                lab = Lab(labname=shortname)
+
+                # Redirect and log user if they should not have access to this lab
+                if not user.is_lab_manager(lab):
+                    logger.info(
+                        f"User {username} attempted to access requests page for lab {shortname}. Does not have permissions"
+                    )
+                    return wrap_response(
+                        body="Redirecting to Portal",
+                        headers={"Location": "/portal"},
+                        code=302,
+                    )
+
             # Run the endpoint
             return func(*args, **kwargs)
 

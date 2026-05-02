@@ -107,10 +107,12 @@ class TestAccessPages:
 
         labs = helpers.FAKE_LAB_CONFIGS
         monkeypatch.setattr("portal.access.LAB_CONFIGS", labs)
+        lab = helpers.FakeLab(managers=[user.username])
         monkeypatch.setattr(
             "portal.access.Lab",
-            lambda *args, **kwargs: helpers.FakeLab(managers=[user.username]),
+            lambda *args, **kwargs: lab,
         )
+        monkeypatch.setattr("util.auth.Lab", lambda *args, **kwargs: lab)
 
         def lab_users_static(*args, **kwargs):
             return [
@@ -180,6 +182,8 @@ class TestAccessPages:
             "portal.access.Lab", lambda *args, **kwargs: helpers.FakeLab()
         )
 
+        lab = helpers.FakeLab()
+        monkeypatch.setattr("util.auth.Lab", lambda *args, **kwargs: lab)
         def lab_users_static(*args, **kwargs):
             return [
                 {
@@ -317,6 +321,7 @@ class TestAccessPages:
 
         lab = helpers.FakeLab(access_requests=None, managers=["test_user"])
         monkeypatch.setattr("portal.access.Lab", lambda *args, **kwargs: lab)
+        monkeypatch.setattr("util.auth.Lab", lambda *args, **kwargs: lab)
         # Add User
         bodystr = {
             "username": "test_user",
@@ -354,6 +359,7 @@ class TestAccessPages:
 
         lab = helpers.FakeLab(access_requests=None)
         monkeypatch.setattr("portal.access.Lab", lambda *args, **kwargs: lab)
+        monkeypatch.setattr("util.auth.Lab", lambda *args, **kwargs: lab)
         # Add User
         bodystr = {
             "username": "test_user",
@@ -376,7 +382,7 @@ class TestAccessPages:
         assert "testlab2" not in user.labs
 
         assert ret["statusCode"] == 302
-        assert ret["headers"].get("Location") == "/portal/access/manage/testlab2"
+        assert ret["headers"].get("Location") == "/portal"
         assert ret["headers"].get("Content-Type") == "text/html"
 
     def test_get_labs_of_a_user_admin_correct(
