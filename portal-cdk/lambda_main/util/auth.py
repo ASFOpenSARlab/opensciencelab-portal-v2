@@ -440,7 +440,7 @@ def require_access(access: list = ["user"], human: bool = False):
                 )
             logger.debug("User %s has %s access", username, access)
 
-             # Check if endpoint allows lab_manager and user is at most lab_manager
+            # Check if endpoint allows lab_manager and user is at most lab_manager
             user = User(username)
             if (
                 not user.is_admin()
@@ -449,8 +449,9 @@ def require_access(access: list = ["user"], human: bool = False):
             ):
                 shortname = kwargs.get("shortname")
                 if not shortname:
-                    print("GROOBLE")
-                    raise MalformedRequest("`shortname` must be a parameter for any function that allows `lab_manager`")
+                    raise MalformedRequest(
+                        "`shortname` must be a parameter for any function that allows `lab_manager`"
+                    )
                 lab = Lab(labname=shortname)
 
                 # Redirect and log user if they should not have access to this lab

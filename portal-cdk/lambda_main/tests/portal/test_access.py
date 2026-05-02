@@ -184,6 +184,7 @@ class TestAccessPages:
 
         lab = helpers.FakeLab()
         monkeypatch.setattr("util.auth.Lab", lambda *args, **kwargs: lab)
+
         def lab_users_static(*args, **kwargs):
             return [
                 {
