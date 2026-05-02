@@ -44,18 +44,22 @@ Permissions for GH Actions when deploying, along with the CDK infrastructure.
 
 In the manage users page (/portal/users) \
 To grant admin permissions
+
 - Press the `Grant` button in the `Manage Admin Status` column of a non admin
 
 To revoke admin permissions
+
 - Press the `Revoke` button in the `Manage Admin Status` column of an admin
 
 #### Lab_manager
 
 To manage if a user is a lab manager of a lab, go to that labs manage page \
 In that labs manage page, to grant lab_manager permissions
+
 - Press the `Grant Manager` button in the `Tools` column of a non manager
 
 To revoke lab_manager permissions
+
 - Press the `Revoke Manager` button in the `Tools` column of a manager
 
 ### Maturities
