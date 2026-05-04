@@ -440,22 +440,26 @@ def require_access(access: list = ["user"], human: bool = False):
                 )
             logger.debug("User %s has %s access", username, access)
 
-            # Check if endpoint allows lab_manager and user is at most lab_manager
-            user = User(username)
+            # If we're checking for lab_manager, make sure we're not an admin and are a lab_manager
             if (
-                not user.is_admin()
-                and "lab_manager" in user.access
+                not current_session.user.is_admin()
+                and "lab_manager" in current_session.user.access
                 and "lab_manager" in access
             ):
+                # Get name of lab attempting to be accessed
                 shortname = kwargs.get("shortname")
+
                 if not shortname:
+                    # Invalid use of lab_manager
                     raise MalformedRequest(
                         "`shortname` must be a parameter for any function that allows `lab_manager`"
                     )
+
+                # Get lab
                 lab = Lab(labname=shortname)
 
-                # Redirect and log user if they should not have access to this lab
-                if not user.is_lab_manager(lab):
+                # Make sure the user is a manager of this lab
+                if not current_session.user.is_lab_manager(lab):
                     logger.info(
                         f"User {username} attempted to access requests page for lab {shortname}. Does not have permissions"
                     )
