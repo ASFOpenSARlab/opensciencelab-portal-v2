@@ -99,13 +99,11 @@ def post_portal_hub_auth():
     lab_short_name = post_data_decoded.get("lab_short_name", "")
     logger.debug(f"Request user info = {username=}")
 
-    lab = Lab(lab_short_name) if lab_short_name else None
+    lab = Lab(lab_short_name) if lab_short_name else False
     user = User(username=username, create_if_missing=False)
 
     data = {
-        "admin": user.is_admin() or user.is_lab_manager(lab)
-        if lab_short_name
-        else user.is_admin(),
+        "admin": user.is_admin() or (lab and user.is_lab_manager(lab)),
         "roles": user.access,
         "name": f"{username}",
         "has_2fa": True,
