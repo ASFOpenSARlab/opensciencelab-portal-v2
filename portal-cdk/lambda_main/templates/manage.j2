@@ -7,10 +7,21 @@
     <input type="hidden" name="action" value="remove_user">
     <input type="hidden" name="username" id="remove-user-username">
 </form>
+<form id="manager-form"
+      method="post"
+      action="{{ lab.short_lab_name }}/editmanager">
+    <input type="hidden" name="action" id="manager-form-action">
+    <input type="hidden" name="username" id="manager-username">
+</form>
 <script>
     function fillRemoveUserForm(labname, username){
         document.getElementById("remove-user-form").action = `${labname}/edituser`
         document.getElementById("remove-user-username").value = username;
+    }
+    function fillManagerForm(action, username, labname){
+        document.getElementById("manager-form").action = `${labname}/editmanager`
+        document.getElementById("manager-form-action").value = action;
+        document.getElementById("manager-username").value = username;
     }
 </script>
 <div>
@@ -137,12 +148,13 @@
         <tr>
             <form method="post" action="{{ lab.short_lab_name }}/edituser">
                 <th>
-                    <input type="text" name="username" placeholder="username">
+                    <input type="text" name="username" placeholder="username" required>
                 </th>
                 <th>
                     <input type="text"
                            name="lab_profiles"
-                           value="{{ ','.join(lab.default_profiles) }}">
+                           value="{{ ','.join(lab.default_profiles) }}"
+                           required>
                 </th>
                 {% if lab.allows_tokens %}<th></th>{% endif %}
                 <th>
@@ -153,7 +165,11 @@
         {% for user in users %}
             <tr>
                 <th>
-                    <b><a href="/portal/profile/form/{{ user["username"] }}">{{ user["username"] }}</a></b>
+                    {% if is_admin %}
+                        <b><a href="/portal/profile/form/{{ user["username"] }}">{{ user["username"] }}</a></b>
+                    {% else %}
+                        <b>{{ user["username"] }}</b>
+                    {% endif %}
                     <br>
                     <code>{{ user["email"] }}</code>
                 </th>
@@ -176,9 +192,23 @@
                     </th>
                 {% endif %}
                 <th>
-                    <button form="remove-user-form"
-                            type="submit"
-                            onclick="fillRemoveUserForm('{{ lab.short_lab_name }}', '{{ user["username"] }}');">Remove</button>
+                    <div class="horizontal-div">
+                        <button form="remove-user-form"
+                                type="submit"
+                                class="warning-background"
+                                onclick="fillRemoveUserForm('{{ lab.short_lab_name }}', '{{ user["username"] }}');">Remove</button>
+                        {% if user.get("is_manager", False) %}
+                            <button form="manager-form"
+                                    type="submit"
+                                    class="warning-background"
+                                    onclick="fillManagerForm('revoke', '{{ user["username"] }}', '{{ lab.short_lab_name }}');">Revoke Manager</button>
+                        {% else %}
+                            <button form="manager-form"
+                                    type="submit"
+                                    class="success-background"
+                                    onclick="fillManagerForm('grant', '{{ user["username"] }}', '{{ lab.short_lab_name }}');">Grant Manager</button>
+                        {% endif %}
+                    </div>
                 </th>
             </tr>
         {% endfor %}

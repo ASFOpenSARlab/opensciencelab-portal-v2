@@ -23,8 +23,8 @@ from data import DATE_F
 
 
 # Ignore /utilities files, those don't have tests
-def pytest_ignore_collect(path):
-    if "utilities" in str(path):
+def pytest_ignore_collect(collection_path):
+    if "utilities" in str(collection_path):
         return True
     return False
 
@@ -266,12 +266,19 @@ class Helpers:
         )
         access_tokens: list = field(default_factory=lambda: [])
         managers: list = field(default_factory=lambda: [])
+        create_token_success: bool = field(default_factory=lambda: True)
 
         def get_access_request(self, username: str) -> dict:
             return self.access_requests
 
         def get_lab_config(self):
             return Helpers.FAKE_LAB_CONFIGS[self.labname]
+
+        def create_access_token(self, *args, **kwargs) -> bool:
+            return self.create_token_success
+
+        def remove_access_token(self, *args, **kwargs) -> bool:
+            return True
 
     # differentlab not initialized in FakeUser.labs
     # this is to allow labs to test against a lab the user does not have access too

@@ -6,7 +6,7 @@ import uuid
 from util.exceptions import LabDoesNotExist, InvalidLabRequestStatus
 from util.labs import LAB_CONFIGS
 from util.session import current_session
-from util.auth import get_ip_and_country
+from util.auth_helpers import get_ip_and_country
 from util.dynamo_db import (
     get_item,
     create_item,
@@ -372,3 +372,13 @@ class Lab(Table):
                 break
 
         return success
+
+    def add_manager(self, username: str) -> bool:
+        managers: set = set(self.managers)
+        managers.add(username)
+        self.managers = managers
+
+    def remove_manager(self, username: str) -> bool:
+        managers: set = set(self.managers)
+        managers.remove(username)
+        self.managers = managers

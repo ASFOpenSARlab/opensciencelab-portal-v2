@@ -271,6 +271,7 @@ NON_PROD_LAB_CONFIGS = {
                 "placeholder": "Your Answer",
             },
         ],
+        allows_tokens=True,
     ),
     "test_prohibited": BaseLabConfig(
         short_lab_name="test_prohibited",
