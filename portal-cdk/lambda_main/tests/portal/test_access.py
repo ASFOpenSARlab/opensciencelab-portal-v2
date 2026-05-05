@@ -32,8 +32,9 @@ class TestAccessPages:
     def test_admin_accessing_manage_page(
         self, monkeypatch, lambda_context, helpers, fake_auth
     ):
+        # Checks permission required to access page
         user = helpers.FakeUser(access=["user", "admin"])
-        monkeypatch.setattr("portal.User", lambda *args, **kwargs: user)
+        monkeypatch.setattr("portal.access.User", lambda *args, **kwargs: user)
         monkeypatch.setattr("util.auth.User", lambda *args, **kwargs: user)
 
         labs = helpers.FAKE_LAB_CONFIGS
@@ -46,6 +47,7 @@ class TestAccessPages:
             return [
                 {
                     "username": "test_user",
+                    "email": "test@user.com",
                     "labs": {
                         "testlab": {
                             "lab_profiles": ["m6a.large"],
@@ -79,7 +81,78 @@ class TestAccessPages:
         )
         assert (
             ret["body"].find(
-                '<button type="submit" name="action" value="remove_user">Remove</button>'
+                """onclick="fillRemoveUserForm('testlab', 'test_user');">Remove</button>"""
+            )
+            > -1
+        )
+        assert ret["body"].find('value="m6a.large, m6a.xlarge"')
+        assert ret["headers"].get("Content-Type") == "text/html"
+        assert ret["body"].find("token-dne")
+        assert ret["body"].find("test@user.com")
+
+        # Make sure tokens don't show up on lab w/o tokens
+        event = helpers.get_event(
+            path="/portal/access/manage/protectedlab", cookies=fake_auth
+        )
+        ret2 = main.lambda_handler(event, lambda_context)
+        assert ret2["body"].find("Token") == -1
+
+    def test_lab_manager_accessing_allowed_manage_page(
+        self, monkeypatch, lambda_context, helpers, fake_auth
+    ):
+        # Checks permission required to access page
+        user = helpers.FakeUser(access=["user", "lab_manager"])
+        monkeypatch.setattr("portal.access.User", lambda *args, **kwargs: user)
+        monkeypatch.setattr("util.auth.User", lambda *args, **kwargs: user)
+
+        labs = helpers.FAKE_LAB_CONFIGS
+        monkeypatch.setattr("portal.access.LAB_CONFIGS", labs)
+        lab = helpers.FakeLab(managers=[user.username])
+        monkeypatch.setattr(
+            "portal.access.Lab",
+            lambda *args, **kwargs: lab,
+        )
+        monkeypatch.setattr("util.auth.Lab", lambda *args, **kwargs: lab)
+
+        def lab_users_static(*args, **kwargs):
+            return [
+                {
+                    "username": "test_user",
+                    "email": "test@user.com",
+                    "labs": {
+                        "testlab": {
+                            "lab_profiles": ["m6a.large"],
+                        },
+                    },
+                    "token_usage": [
+                        {
+                            "labname": "testlab",
+                            "token": "token-dne",
+                            "apply_date": datetime.now().strftime(DATE_F),
+                        }
+                    ],
+                }
+            ]
+
+        monkeypatch.setattr("portal.access.get_users_with_lab", lab_users_static)
+
+        event = helpers.get_event(
+            path="/portal/access/manage/testlab", cookies=fake_auth
+        )
+        ret = main.lambda_handler(event, lambda_context)
+
+        assert ret["statusCode"] == 200
+        assert ret["body"].find("Test Lab") > -1
+        # Add/refactor more asserts after manage page layout is figured out more
+        assert (
+            ret["body"].find(
+                '<button type="submit" name="action" value="add_user">Add</button>'
+            )
+            > -1
+        )
+        assert (
+            ret["body"].find(
+                """onclick="fillRemoveUserForm('testlab', 'test_user');">Remove</button>"""
             )
             > -1
         )
@@ -93,18 +166,69 @@ class TestAccessPages:
         )
         ret2 = main.lambda_handler(event, lambda_context)
         assert ret2["body"].find("Token") == -1
+        assert ret["body"].find("test@user.com")
 
-    def test_admin_editing_user(self, monkeypatch, lambda_context, helpers, fake_auth):
+    def test_lab_manager_accessing_restricted_manage_page(
+        self, monkeypatch, lambda_context, helpers, fake_auth
+    ):
+        # Checks permission required to access page
+        user = helpers.FakeUser(access=["user", "lab_manager"])
+        monkeypatch.setattr("portal.access.User", lambda *args, **kwargs: user)
+        monkeypatch.setattr("util.auth.User", lambda *args, **kwargs: user)
+
+        labs = helpers.FAKE_LAB_CONFIGS
+        monkeypatch.setattr("portal.access.LAB_CONFIGS", labs)
+        monkeypatch.setattr(
+            "portal.access.Lab", lambda *args, **kwargs: helpers.FakeLab()
+        )
+
+        lab = helpers.FakeLab()
+        monkeypatch.setattr("util.auth.Lab", lambda *args, **kwargs: lab)
+
+        def lab_users_static(*args, **kwargs):
+            return [
+                {
+                    "username": "test_user",
+                    "labs": {
+                        "testlab": {
+                            "lab_profiles": ["m6a.large"],
+                        },
+                    },
+                    "token_usage": [
+                        {
+                            "labname": "testlab",
+                            "token": "token-dne",
+                            "apply_date": datetime.now().strftime(DATE_F),
+                        }
+                    ],
+                }
+            ]
+
+        monkeypatch.setattr("portal.access.get_users_with_lab", lab_users_static)
+
+        event = helpers.get_event(
+            path="/portal/access/manage/testlab", cookies=fake_auth
+        )
+        ret = main.lambda_handler(event, lambda_context)
+
+        assert ret["statusCode"] == 302
+        assert ret["body"] == "Redirecting to Portal"
+        assert ret["headers"].get("Location") == "/portal"
+
+    def test_admin_edit_user_add_lab(
+        self, monkeypatch, lambda_context, helpers, fake_auth
+    ):
         user = helpers.FakeUser(access=["user", "admin"])
         monkeypatch.setattr("portal.access.User", lambda *args, **kwargs: user)
         monkeypatch.setattr("util.auth.User", lambda *args, **kwargs: user)
+
+        lab = helpers.FakeLab(access_requests=None)
+        monkeypatch.setattr("portal.access.Lab", lambda *args, **kwargs: lab)
 
         # Adding lab
         bodystr = {
             "username": "test_user",
             "lab_profiles": "",
-            "time_quota": "",
-            "lab_country_status": "",
             "action": "add_user",
         }
         monkeypatch.setattr(
@@ -122,14 +246,21 @@ class TestAccessPages:
         assert "testlab2" in user.labs
         assert user.labs["testlab2"] == {
             "lab_profiles": [""],
-            "time_quota": None,
-            "lab_country_status": "",
         }
 
         assert ret["statusCode"] == 302
         assert ret["headers"].get("Location") == "/portal/access/manage/testlab2"
         assert ret["headers"].get("Content-Type") == "text/html"
 
+    def test_admin_edit_user_remove_lab(
+        self, monkeypatch, lambda_context, helpers, fake_auth
+    ):
+        user = helpers.FakeUser(access=["user", "admin"])
+        monkeypatch.setattr("portal.access.User", lambda *args, **kwargs: user)
+        monkeypatch.setattr("util.auth.User", lambda *args, **kwargs: user)
+
+        lab = helpers.FakeLab(access_requests=None)
+        monkeypatch.setattr("portal.access.Lab", lambda *args, **kwargs: lab)
         # Remove user
         bodystr = {
             "username": "test_user",
@@ -153,6 +284,15 @@ class TestAccessPages:
         assert ret["headers"].get("Location") == "/portal/access/manage/testlab2"
         assert ret["headers"].get("Content-Type") == "text/html"
 
+    def test_admin_edit_user_invalid_action(
+        self, monkeypatch, lambda_context, helpers, fake_auth
+    ):
+        user = helpers.FakeUser(access=["user", "admin"])
+        monkeypatch.setattr("portal.access.User", lambda *args, **kwargs: user)
+        monkeypatch.setattr("util.auth.User", lambda *args, **kwargs: user)
+
+        lab = helpers.FakeLab(access_requests=None)
+        monkeypatch.setattr("portal.access.Lab", lambda *args, **kwargs: lab)
         # Invalid action
         bodystr = {
             "username": "test_user",
@@ -172,6 +312,79 @@ class TestAccessPages:
         ret = main.lambda_handler(event, lambda_context)
         assert ret["statusCode"] == 400
         assert "Invalid action" in ret["body"]
+
+    def test_lab_manager_edit_user_has_permission(
+        self, monkeypatch, lambda_context, helpers, fake_auth
+    ):
+        user = helpers.FakeUser(access=["user", "lab_manager"])
+        monkeypatch.setattr("portal.access.User", lambda *args, **kwargs: user)
+        monkeypatch.setattr("util.auth.User", lambda *args, **kwargs: user)
+
+        lab = helpers.FakeLab(access_requests=None, managers=["test_user"])
+        monkeypatch.setattr("portal.access.Lab", lambda *args, **kwargs: lab)
+        monkeypatch.setattr("util.auth.Lab", lambda *args, **kwargs: lab)
+        # Add User
+        bodystr = {
+            "username": "test_user",
+            "lab_profiles": "",
+            "action": "add_user",
+        }
+        monkeypatch.setattr(
+            "portal.access.form_body_to_dict", lambda *args, **kwargs: bodystr
+        )
+
+        event = helpers.get_event(
+            path="/portal/access/manage/testlab2/edituser",
+            cookies=fake_auth,
+            body="placeholder",
+            method="POST",
+        )
+
+        ret = main.lambda_handler(event, lambda_context)
+
+        assert "testlab2" in user.labs
+        assert user.labs["testlab2"] == {
+            "lab_profiles": [""],
+        }
+
+        assert ret["statusCode"] == 302
+        assert ret["headers"].get("Location") == "/portal/access/manage/testlab2"
+        assert ret["headers"].get("Content-Type") == "text/html"
+
+    def test_lab_manager_edit_user_missing_permission(
+        self, monkeypatch, lambda_context, helpers, fake_auth
+    ):
+        user = helpers.FakeUser(access=["user", "lab_manager"])
+        monkeypatch.setattr("portal.access.User", lambda *args, **kwargs: user)
+        monkeypatch.setattr("util.auth.User", lambda *args, **kwargs: user)
+
+        lab = helpers.FakeLab(access_requests=None)
+        monkeypatch.setattr("portal.access.Lab", lambda *args, **kwargs: lab)
+        monkeypatch.setattr("util.auth.Lab", lambda *args, **kwargs: lab)
+        # Add User
+        bodystr = {
+            "username": "test_user",
+            "lab_profiles": "",
+            "action": "add_user",
+        }
+        monkeypatch.setattr(
+            "portal.access.form_body_to_dict", lambda *args, **kwargs: bodystr
+        )
+
+        event = helpers.get_event(
+            path="/portal/access/manage/testlab2/edituser",
+            cookies=fake_auth,
+            body="placeholder",
+            method="POST",
+        )
+
+        ret = main.lambda_handler(event, lambda_context)
+
+        assert "testlab2" not in user.labs
+
+        assert ret["statusCode"] == 302
+        assert ret["headers"].get("Location") == "/portal"
+        assert ret["headers"].get("Content-Type") == "text/html"
 
     def test_get_labs_of_a_user_admin_correct(
         self, monkeypatch, lambda_context, helpers, fake_auth
@@ -209,9 +422,7 @@ class TestAccessPages:
             username="test_user2",
             labs={
                 "testlab": {
-                    "time_quota": None,
                     "lab_profiles": None,
-                    "lab_country_status": None,
                 },
             },
         )
@@ -244,9 +455,7 @@ class TestAccessPages:
             username="test_user2",
             labs={
                 "testlab": {
-                    "time_quota": None,
                     "lab_profiles": None,
-                    "lab_country_status": None,
                 },
                 # protectedlab is deliberately not here, it should be marked as able to see but not access
                 # noaccess is deliberately not here, should not be present
@@ -318,14 +527,10 @@ class TestAccessPages:
             country_code="SY",
             labs={
                 "testlab": {
-                    "time_quota": None,
                     "lab_profiles": None,
-                    "lab_country_status": None,
                 },
                 "openlab": {
-                    "time_quota": None,
                     "lab_profiles": None,
-                    "lab_country_status": None,
                 },
             },
         )
@@ -435,6 +640,7 @@ class TestAccessPages:
             return [
                 {
                     "username": "test_user",
+                    "email": "test@user.com",
                     "labs": {
                         "testlab": {
                             "lab_profiles": ["m6a.large"],
@@ -457,6 +663,7 @@ class TestAccessPages:
         assert body["users"] == [
             {
                 "username": "test_user",
+                "email": "test@user.com",
                 "labs": {"testlab": {"lab_profiles": ["m6a.large"]}},
             }
         ]
@@ -509,24 +716,18 @@ class TestAccessPages:
         user1.add_lab(
             lab_short_name="testlab",
             lab_profiles="m6a.large",
-            time_quota=None,
-            lab_country_status="something",
         )
         user2 = User("test_user2")
         setattr(user2, "email", "test@mailhot.com")
         user2.add_lab(
             lab_short_name="testlab",
             lab_profiles="m6a.large",
-            time_quota=None,
-            lab_country_status="something",
         )
         user3 = User("super_cool_guy")
         setattr(user3, "email", "test@mailhot.com")
         user3.add_lab(
             lab_short_name="testlab",
             lab_profiles="m6a.large",
-            time_quota=None,
-            lab_country_status="something",
         )
 
         user = helpers.FakeUser(access=["user", "admin"])
@@ -588,8 +789,6 @@ class TestAccessPages:
             "labs": {
                 "testlab": {
                     "lab_profiles": ["m6a.large"],
-                    "time_quota": "",
-                    "lab_country_status": "protected",
                 }
             }
         }
@@ -608,8 +807,6 @@ class TestAccessPages:
         assert user.labs == {
             "testlab": {
                 "lab_profiles": ["m6a.large"],
-                "time_quota": "",
-                "lab_country_status": "protected",
             }
         }
 
@@ -627,8 +824,6 @@ class TestAccessPages:
             "labs": {
                 "noaccess": {
                     "lab_profiles": ["m6a.large"],
-                    "time_quota": "",
-                    "lab_country_status": "protected",
                 }
             }
         }
@@ -667,8 +862,6 @@ class TestAccessPages:
             "labs": {
                 "testlab": {
                     "lab_profiles": ["m6a.large"],
-                    "time_quota": "",
-                    "lab_country_status": "protected",
                 }
             }
         }
@@ -755,8 +948,6 @@ class TestAccessPages:
             "labs": {
                 "lab_does_not_exist": {
                     "lab_profiles": ["m6a.large"],
-                    "time_quota": "",
-                    "lab_country_status": "protected",
                 }
             }
         }
@@ -773,15 +964,7 @@ class TestAccessPages:
         assert '"result": "Lab does not exist: lab_does_not_exist"' in ret["body"]
         assert ret["headers"].get("Content-Type") == "application/json"
 
-        # Missing field "lab_country_status"
-        body = {
-            "labs": {
-                "testlab": {
-                    "lab_profiles": ["m6a.large"],
-                    "time_quota": "",
-                }
-            }
-        }
+        body = {"labs": {"testlab": {}}}
 
         event = helpers.get_event(
             body=json.dumps(body),
@@ -793,7 +976,7 @@ class TestAccessPages:
 
         assert ret["statusCode"] == 422
         assert (
-            '"result": "Field \'lab_country_status\' not provided for lab testlab"'
+            '"result": "Field \'lab_profiles\' not provided for lab testlab"'
             in ret["body"]
         )
         assert ret["headers"].get("Content-Type") == "application/json"
@@ -803,8 +986,6 @@ class TestAccessPages:
             "labs": {
                 "testlab": {
                     "lab_profiles": "m6a.large",
-                    "time_quota": "",
-                    "lab_country_status": "protected",
                 }
             }
         }

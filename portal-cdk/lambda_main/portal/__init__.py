@@ -55,12 +55,21 @@ def portal_root():
     # Filter by labs the user has access to
     lab_access = user.get_lab_access()
     # Get Lab obj for labs the user can see
-    lab_objs = {key: Lab(key) for key in lab_access["viewable_labs_config"]}
+    lab_objs: dict[str, Lab] = {
+        key: Lab(key) for key in lab_access["viewable_labs_config"]
+    }
     lab_access["viewable_labs_config"] = lab_objs
+
+    managed_labs = [
+        labname
+        for labname, lab in lab_objs.items()
+        if (user.is_lab_manager(lab) or user.is_admin())
+    ]
 
     template_input = {
         "username": username,
         "labs": lab_access,
-        "admin": user.is_admin(),
+        "access_roles": user.access,
+        "managed_labs": managed_labs,
     }
     return jinja_template(template_input, "portal.j2")

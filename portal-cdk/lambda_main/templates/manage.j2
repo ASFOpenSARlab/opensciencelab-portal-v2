@@ -1,5 +1,29 @@
 {# djlint:off H006,H021 #}
 <script src="/static/js/formutils.js" type="text/javascript" charset="utf-8"></script>
+<!-- Forms -->
+<form id="remove-user-form"
+      method="post"
+      action="{{ lab.short_lab_name }}/edituser">
+    <input type="hidden" name="action" value="remove_user">
+    <input type="hidden" name="username" id="remove-user-username">
+</form>
+<form id="manager-form"
+      method="post"
+      action="{{ lab.short_lab_name }}/editmanager">
+    <input type="hidden" name="action" id="manager-form-action">
+    <input type="hidden" name="username" id="manager-username">
+</form>
+<script>
+    function fillRemoveUserForm(labname, username){
+        document.getElementById("remove-user-form").action = `${labname}/edituser`
+        document.getElementById("remove-user-username").value = username;
+    }
+    function fillManagerForm(action, username, labname){
+        document.getElementById("manager-form").action = `${labname}/editmanager`
+        document.getElementById("manager-form-action").value = action;
+        document.getElementById("manager-username").value = username;
+    }
+</script>
 <div>
     {% if allows_requests %}
         <legend>
@@ -26,6 +50,8 @@
         <form action="/portal/access/manage/{{ lab.short_lab_name }}">
             Search results limited to {{ rowcount }}. Try filtering by username:
             <input type="input" name="user_filter">
+            Or by email:
+            <input type="input" name="email_filter">
             <input type="submit" hidden />
         </form>
     </div>
@@ -92,6 +118,20 @@
                 </tr>
             {% endfor %}
         </table>
+        <div class="note">
+            Notes on Token Interface
+            <ul>
+                <li>Token profiles are specified as a comma-separated list, without spaces (you can copy-paste from the "Users" table).
+                    <br>
+                    Ex.: <code>m6a.large, m6a.xlarge</code>
+                </li>
+                <li>All tokens will be unique, random strings.</li>
+                <li>
+                    You can optionally specify a start and/or end date -- tokens will become enabled/disabled at 00:00 UTC on the specified day.
+                    If you don't specify either one, they will be valid for all of the past or future.
+                </li>
+            </ul>
+        </div>
     {% else %}
         <p>Tokens not enabled</p>
     {% endif %}
@@ -108,19 +148,15 @@
         <tr>
             <form method="post" action="{{ lab.short_lab_name }}/edituser">
                 <th>
-                    <input type="text" name="username" placeholder="username">
+                    <input type="text" name="username" placeholder="username" required>
                 </th>
                 <th>
                     <input type="text"
                            name="lab_profiles"
-                           value="{{ ','.join(lab.default_profiles) }}">
+                           value="{{ ','.join(lab.default_profiles) }}"
+                           required>
                 </th>
                 {% if lab.allows_tokens %}<th></th>{% endif %}
-                <input type="hidden" name="time_quota" placeholder="time_quota" value="">
-                <input type="hidden"
-                       name="lab_country_status"
-                       placeholder="protected"
-                       value="unrestricted">
                 <th>
                     <button type="submit" name="action" value="add_user">Add</button>
                 </th>
@@ -129,7 +165,13 @@
         {% for user in users %}
             <tr>
                 <th>
-                    <b><a href="/portal/profile/form/{{ user["username"] }}">{{ user["username"] }}</a></b>
+                    {% if is_admin %}
+                        <b><a href="/portal/profile/form/{{ user["username"] }}">{{ user["username"] }}</a></b>
+                    {% else %}
+                        <b>{{ user["username"] }}</b>
+                    {% endif %}
+                    <br>
+                    <code>{{ user["email"] }}</code>
                 </th>
                 <th>
                     {% for profile in lab.allowed_profiles %}
@@ -150,10 +192,23 @@
                     </th>
                 {% endif %}
                 <th>
-                    <form method="post" action="{{ lab.short_lab_name }}/edituser">
-                        <input type="hidden" name="username" value="{{ user['username'] }}">
-                        <button type="submit" name="action" value="remove_user">Remove</button>
-                    </form>
+                    <div class="horizontal-div">
+                        <button form="remove-user-form"
+                                type="submit"
+                                class="warning-background"
+                                onclick="fillRemoveUserForm('{{ lab.short_lab_name }}', '{{ user["username"] }}');">Remove</button>
+                        {% if user.get("is_manager", False) %}
+                            <button form="manager-form"
+                                    type="submit"
+                                    class="warning-background"
+                                    onclick="fillManagerForm('revoke', '{{ user["username"] }}', '{{ lab.short_lab_name }}');">Revoke Manager</button>
+                        {% else %}
+                            <button form="manager-form"
+                                    type="submit"
+                                    class="success-background"
+                                    onclick="fillManagerForm('grant', '{{ user["username"] }}', '{{ lab.short_lab_name }}');">Grant Manager</button>
+                        {% endif %}
+                    </div>
                 </th>
             </tr>
         {% endfor %}
@@ -161,13 +216,13 @@
 </div>
 <div class="margin-left-30">
     <div class="note">
-        Notes on management Interface
+        Notes on Management Interface
         <ul>
             <li>Adding a user that already exists will overwrite their profile permissions</li>
             <li>
-                Add several profiles as a comma separated list without quotations
+                Add several profiles as a comma separated list without quotations (you can copy-paste from the table)
                 <br>
-                EX: <code>m6a.large, m6a.xlarge</code>
+                Ex.: <code>m6a.large, m6a.xlarge</code>
             </li>
         </ul>
     </div>

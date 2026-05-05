@@ -38,6 +38,30 @@ Permissions for GH Actions when deploying, along with the CDK infrastructure.
 | `stage`  | Prod        | 97**\*\*\*\***89 |
 | `prod`   | Prod        | 70**\*\*\*\***05 |
 
+### Managing Roles
+
+#### Admin
+
+In the manage users page (/portal/users) \
+To grant admin permissions
+
+- Press the `Grant` button in the `Manage Admin Status` column of a non admin
+
+To revoke admin permissions
+
+- Press the `Revoke` button in the `Manage Admin Status` column of an admin
+
+#### Lab_manager
+
+To manage if a user is a lab manager of a lab, go to that labs manage page \
+In that labs manage page, to grant lab_manager permissions
+
+- Press the `Grant Manager` button in the `Tools` column of a non manager
+
+To revoke lab_manager permissions
+
+- Press the `Revoke Manager` button in the `Tools` column of a manager
+
 ### Maturities
 
 - Non-`main` branches with specified prefix/suffix (eg `ab/ticket.feature`) will deploy a matched
@@ -241,7 +265,6 @@ Required variables:
 #### GitHub Actions
 
 - [`lint.yaml`](.github/workflows/lint.yaml) - Automate code linting and formatting enforcement
-- [`on-pull-request-notify.yaml`](.github/workflows/on-pull-request-notify.yaml) - Alert SES mattermost channel about new and modified non-draft pull requests.
 
 ## Notifications
 

@@ -2,6 +2,7 @@
 
 import datetime
 from typing import Any
+
 from util.exceptions import DbError, CognitoError, UserNotFound, LabDoesNotExist
 from util.cognito import delete_user_from_user_pool
 from util.labs import LAB_CONFIGS
@@ -24,14 +25,10 @@ USER_TABLE_KEY = "username"
 
 def create_lab_structure(
     lab_profiles: list[str],
-    time_quota,
-    lab_country_status: str,
     **kwargs,
 ) -> dict[str, Any]:
     return {
         "lab_profiles": lab_profiles,
-        "time_quota": time_quota,
-        "lab_country_status": lab_country_status,
     }
 
 
@@ -111,6 +108,9 @@ class User(Table):
     def is_admin(self) -> bool:
         return "admin" in self.access
 
+    def is_lab_manager(self, lab) -> bool:
+        return self.username in lab.managers and "lab_manager" in self.access
+
     def remove_user(self) -> bool:
         # Delete user from Cognito
         if not delete_user_from_user_pool(self.username):
@@ -161,6 +161,16 @@ class User(Table):
             if token["token"] == token_value:
                 return True
         return False
+
+    def grant_access_role(self, access_role: str):
+        current_roles: set = set(self.access)
+        current_roles.add(access_role)
+        self.access = current_roles
+
+    def revoke_access_role(self, access_role: str):
+        current_roles: set = set(self.access)
+        current_roles.remove(access_role)
+        self.access = current_roles
 
 
 def _can_user_see_lab(user: User, lab) -> bool:

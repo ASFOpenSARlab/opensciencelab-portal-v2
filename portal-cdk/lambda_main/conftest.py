@@ -23,8 +23,8 @@ from data import DATE_F
 
 
 # Ignore /utilities files, those don't have tests
-def pytest_ignore_collect(path):
-    if "utilities" in str(path):
+def pytest_ignore_collect(collection_path):
+    if "utilities" in str(collection_path):
         return True
     return False
 
@@ -201,9 +201,7 @@ class Helpers:
         labs: dict = field(
             default_factory=lambda: {
                 "testlab": {
-                    "time_quota": None,
                     "lab_profiles": None,
-                    "lab_country_status": None,
                 },
             }
         )
@@ -212,6 +210,7 @@ class Helpers:
         create_if_missing: bool = True
         country_code: str = "US"
         token_usage: list = field(default_factory=lambda: [])
+        managers: list = field(default_factory=lambda: [])
 
         def get_requests(self, **kwargs):
             # This should probably be dynamic.
@@ -246,6 +245,9 @@ class Helpers:
         def use_token(self, labname, token) -> None:
             self.token_usage.append({token: labname})
 
+        def is_lab_manager(self, lab) -> bool:
+            return self.username in lab.managers
+
     @dataclass
     class FakeLab:
         labname: str = field(default_factory=lambda: "testlab")
@@ -263,12 +265,20 @@ class Helpers:
             }
         )
         access_tokens: list = field(default_factory=lambda: [])
+        managers: list = field(default_factory=lambda: [])
+        create_token_success: bool = field(default_factory=lambda: True)
 
         def get_access_request(self, username: str) -> dict:
             return self.access_requests
 
         def get_lab_config(self):
             return Helpers.FAKE_LAB_CONFIGS[self.labname]
+
+        def create_access_token(self, *args, **kwargs) -> bool:
+            return self.create_token_success
+
+        def remove_access_token(self, *args, **kwargs) -> bool:
+            return True
 
     # differentlab not initialized in FakeUser.labs
     # this is to allow labs to test against a lab the user does not have access too

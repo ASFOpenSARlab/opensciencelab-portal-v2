@@ -17,6 +17,7 @@ from util.manage_access import (
     validate_delete_lab_access,
     validate_set_lab_access,
     validate_edit_tokens_request,
+    validate_edit_manager_permission_request,
 )
 from util.access_request import request_status_change_action, process_access_token
 from util.send_email import send_user_email
@@ -48,7 +49,7 @@ SORT_ORDER = {
 
 # This catches "/portal/access" (this routers 'root'):
 @access_router.get("", include_in_schema=False)
-@require_access("admin", human=True)
+@require_access(["admin"], human=True)
 @portal_template()
 def access_root() -> str:
     user_filter = access_router.current_event.query_string_parameters.get("user_filter")
@@ -83,7 +84,7 @@ def access_root() -> str:
 
 
 @access_router.get("/manage/<shortname>/requests/", include_in_schema=False)
-@require_access("admin", human=True)
+@require_access(["admin", "lab_manager"], human=True)
 @portal_template()
 def list_access_requests(shortname):
     user_filter = access_router.current_event.query_string_parameters.get("user_filter")
@@ -92,6 +93,7 @@ def list_access_requests(shortname):
     )
 
     lab = Lab(labname=shortname)
+
     requests = lab.get_requests()
 
     # Apply filters
@@ -118,7 +120,7 @@ def list_access_requests(shortname):
 @access_router.get(
     "/manage/<shortname>/raw_request/<username>/", include_in_schema=False
 )
-@require_access("admin", human=True)
+@require_access(["admin"], human=True)
 def get_raw_access_request(shortname, username):
     lab = Lab(labname=shortname)
     request_data = lab.get_access_request(username)
@@ -130,7 +132,7 @@ def get_raw_access_request(shortname, username):
 
 
 @access_router.post("/manage/<shortname>/update/<username>/", include_in_schema=False)
-@require_access("admin", human=True)
+@require_access(["admin"], human=True)
 def update_user_access_request(shortname, username):
     status_map = {
         "Reject": "rejected",
@@ -173,25 +175,41 @@ def update_user_access_request(shortname, username):
 
 
 @access_router.get("/manage/<shortname>", include_in_schema=False)
-@require_access("admin", human=True)
+@require_access(["admin", "lab_manager"], human=True)
 @portal_template()
 def manage_lab(shortname):
     template_input = {}
 
     user_filter = access_router.current_event.query_string_parameters.get("user_filter")
+    email_filter = access_router.current_event.query_string_parameters.get(
+        "email_filter"
+    )
     row_limit = 200
+
+    # Grab the username of the user making the request
+    username = current_session.auth.cognito.username
+    user = User(username)
+    lab = LAB_CONFIGS[shortname]
+    lab_obj = Lab(shortname)
+
+    template_input["is_admin"] = user.is_admin()
 
     # Get users of lab, check if lab exists
     users = get_users_with_lab(
         shortname,
         limit=row_limit,
         username_filter=user_filter,
+        email_filter=email_filter,
     )
+    # Add is_manager field to visible users who are managers
+    managers = set(lab_obj.managers)
+    for user in users:
+        if user["username"] in managers:
+            user["is_manager"] = True
+            managers.remove(user["username"])
     users = sorted(users, key=lambda x: x["username"])
     template_input["users"] = users
 
-    lab = LAB_CONFIGS[shortname]
-    lab_obj = Lab(shortname)
     template_input["lab"] = lab
     template_input["allows_requests"] = len(lab.application_questions) > 0
     template_input["rowcount"] = len(users)
@@ -202,10 +220,11 @@ def manage_lab(shortname):
 
 
 @access_router.post("/manage/<shortname>/edituser", include_in_schema=False)
-@require_access("admin", human=True)
+@require_access(["admin", "lab_manager"], human=True)
 def edit_user(shortname):
     # Grab the username of the user making the request
-    admin_username = current_session.auth.cognito.username
+    caller_username = current_session.auth.cognito.username
+
     # Parse request
     body = access_router.current_event.body
 
@@ -231,22 +250,20 @@ def edit_user(shortname):
         user.add_lab(
             lab_short_name=shortname,
             lab_profiles=[s.strip() for s in body["lab_profiles"].split(",")],
-            time_quota=body["time_quota"].strip() or None,
-            lab_country_status=body["lab_country_status"],
         )
         if update:
             logger.info(
-                f'{admin_username} updated access for user "{body["username"]}" in {shortname}'
+                f'{caller_username} updated access for user "{body["username"]}" in {shortname}'
             )
         else:
             logger.info(
-                f'{admin_username} added user "{body["username"]}" to {shortname}'
+                f'{caller_username} added user "{body["username"]}" to {shortname}'
             )
 
     elif body["action"] == "remove_user":
         user.remove_lab(shortname)
         logger.info(
-            f'{admin_username} removed user "{body["username"]}" from {shortname}'
+            f'{caller_username} removed user "{body["username"]}" from {shortname}'
         )
 
     else:
@@ -263,11 +280,74 @@ def edit_user(shortname):
     )
 
 
+@access_router.post("/manage/<shortname>/editmanager", include_in_schema=False)
+@require_access(["admin", "lab_manager"], human=True)
+def edit_manager_permission(shortname):
+    # Grab the username of the user making the request
+    caller_username = current_session.auth.cognito.username
+
+    # Parse request
+    body = access_router.current_event.body
+
+    if body is None:
+        error = "Body not provided to edit_user"
+        logger.error(error)
+        raise MalformedRequest(error)
+    body = form_body_to_dict(body)
+
+    # Validate request
+    success, message = validate_edit_manager_permission_request(body=body)
+    if not success:
+        logger.error(message)
+        raise MalformedRequest(message)
+
+    # Edit manager permissions
+    user = User(body["username"])
+    lab = Lab(shortname)
+
+    if body["action"] == "grant":
+        if "lab_manager" not in user.access:
+            user.grant_access_role("lab_manager")
+        lab.add_manager(body["username"])
+        logger.info(
+            f'{caller_username} granted lab_manager to "{body["username"]}" in {shortname}'
+        )
+
+    elif body["action"] == "revoke":
+        lab.remove_manager(body["username"])
+        still_manager = False
+        for labname in LAB_CONFIGS.keys():
+            if body["username"] in Lab(labname).managers:
+                still_manager = True
+                break
+        if not still_manager:
+            user.revoke_access_role("lab_manager")
+        logger.info(
+            f'{caller_username} revoked lab_manager from "{body["username"]}" in {shortname}'
+        )
+
+    else:
+        error = f"Invalid edit_manager_permission action {body['action']}"
+        logger.error(error)
+        raise MalformedRequest(error)
+
+    # Send the user to the management page
+    next_url = f"/portal/access/manage/{shortname}"
+    return wrap_response(
+        body={f"Redirect to {next_url}"},
+        code=302,
+        headers={"Location": next_url},
+    )
+
+
 @access_router.post("/manage/<shortname>/edittokens", include_in_schema=False)
-@require_access("admin", human=True)
+@require_access(["admin", "lab_manager"], human=True)
 def edit_tokens(shortname):
     # Grab the username of the user making the request
-    admin_username = current_session.auth.cognito.username
+    caller_username = current_session.auth.cognito.username
+
+    lab = Lab(shortname)
+
     # Parse request
     body = access_router.current_event.body
 
@@ -284,8 +364,6 @@ def edit_tokens(shortname):
         raise MalformedRequest(message)
 
     # Edit tokens
-    lab = Lab(shortname)
-
     if body["action"] == "add_token":
         start_date = (
             datetime.strptime(body["start_date"], "%Y-%m-%d")
@@ -314,12 +392,12 @@ def edit_tokens(shortname):
             profiles=[s.strip() for s in body["lab_profiles"].split(",")],
         )
         if success:
-            logger.info(f"{admin_username} added token to {shortname}")
+            logger.info(f"{caller_username} added token to {shortname}")
 
     elif body["action"] == "remove_token":
         success = lab.remove_access_token(body["token"])
         if success:
-            logger.info(f"{admin_username} removed token from {shortname}")
+            logger.info(f"{caller_username} removed token from {shortname}")
 
     else:
         error = f"Invalid edit_tokens action {body['action']}"
@@ -348,8 +426,6 @@ def edit_tokens(shortname):
                             "lab_profiles": ["profile1", "profile2"],
                             "can_user_access_lab": True,
                             "can_user_see_lab_card": False,
-                            "time_quota": "1h",
-                            "lab_country_status": "active",
                         },
                     },
                 ],
@@ -363,7 +439,7 @@ def edit_tokens(shortname):
     },
     tags=[access_route["name"]],
 )
-@require_access("admin", human=False)
+@require_access(["admin"], human=False)
 def get_user_labs(username):
     # Find user in db
     user = User(username=username, create_if_missing=False)
@@ -422,7 +498,7 @@ def get_user_labs(username):
     },
     tags=[access_route["name"]],
 )
-@require_access("admin", human=False)
+@require_access(["admin"], human=False)
 def get_labs_users(shortname):
     user_filter = access_router.current_event.query_string_parameters.get("user_filter")
     email_filter = access_router.current_event.query_string_parameters.get(
@@ -470,8 +546,6 @@ Sets what labs a user can access. Can be used to both add/remove labs.
     "labs": {
         "<lab_name>": {
             "lab_profiles": ["m6a.large"],
-            "time_quota": "",
-            "lab_country_status": "protected",
         }
     }
 }
@@ -489,7 +563,7 @@ Any previously added labs not listed in dictionary, will be removed from the use
     },
     tags=[access_route["name"]],
 )
-@require_access("admin", human=False)
+@require_access(["admin"], human=False)
 def set_user_labs(username):
     # Check user exists
     user = User(username=username, create_if_missing=False)
@@ -539,7 +613,7 @@ Removes labs from a user. Does not affect labs not listed.
     },
     tags=[access_route["name"]],
 )
-@require_access("admin", human=False)
+@require_access(["admin"], human=False)
 def delete_user_labs(username):
     # Check user exists
     user = User(username=username, create_if_missing=False)

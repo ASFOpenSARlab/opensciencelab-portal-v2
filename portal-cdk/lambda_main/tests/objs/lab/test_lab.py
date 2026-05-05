@@ -108,7 +108,7 @@ class TestLabClass:
             "Lab allow_request_access was not updated in DB"
         )
 
-    def test_endpoint_add_token(
+    def test_admin_add_token(
         self, monkeypatch, lambda_context, helpers, fake_auth, mocker
     ):
         import main
@@ -148,6 +148,94 @@ class TestLabClass:
             end_date=None,
             profiles=["m6a.large"],
         )
+        assert mock_remove_token.call_count == 0
+
+    def test_lab_manager_with_permission_add_token(
+        self, monkeypatch, lambda_context, helpers, fake_auth, mocker
+    ):
+        import main
+
+        user = helpers.FakeUser(access=["user", "lab_manager"])
+        monkeypatch.setattr("portal.access.User", lambda *args, **kwargs: user)
+        monkeypatch.setattr("util.auth.User", lambda *args, **kwargs: user)
+
+        lab = helpers.FakeLab(access_requests=None, managers=["test_user"])
+        monkeypatch.setattr("util.auth.Lab", lambda *args, **kwargs: lab)
+
+        mock_add_token = mocker.patch.object(helpers.FakeLab, "create_access_token")
+        mock_remove_token = mocker.patch.object(helpers.FakeLab, "remove_access_token")
+
+        monkeypatch.setattr("portal.access.Lab", lambda *args, **kwargs: lab)
+
+        LAB_CONFIGS = helpers.FAKE_LAB_CONFIGS
+        monkeypatch.setattr("objs.lab.lab.LAB_CONFIGS", LAB_CONFIGS)
+
+        # Adding token
+        bodystr = {
+            "action": "add_token",
+            "lab_profiles": "m6a.large",
+            "start_date": "2026-03-31",
+            "end_date": "",
+        }
+        monkeypatch.setattr(
+            "portal.access.form_body_to_dict", lambda *args, **kwargs: bodystr
+        )
+
+        event = helpers.get_event(
+            path="/portal/access/manage/testlab/edittokens",
+            cookies=fake_auth,
+            body="placeholder",
+            method="POST",
+        )
+        main.lambda_handler(event, lambda_context)
+
+        # Assert correct function is called with correct parameters
+        mock_add_token.assert_called_once_with(
+            start_date=datetime.strptime("2026-03-31", "%Y-%m-%d"),
+            end_date=None,
+            profiles=["m6a.large"],
+        )
+        assert mock_remove_token.call_count == 0
+
+    def test_lab_manager_missing_permission_add_token(
+        self, monkeypatch, lambda_context, helpers, fake_auth, mocker
+    ):
+        import main
+
+        user = helpers.FakeUser(access=["user", "lab_manager"])
+        monkeypatch.setattr("portal.access.User", lambda *args, **kwargs: user)
+        monkeypatch.setattr("util.auth.User", lambda *args, **kwargs: user)
+
+        lab = helpers.FakeLab(access_requests=None)
+
+        mock_add_token = mocker.patch.object(helpers.FakeLab, "create_access_token")
+        mock_remove_token = mocker.patch.object(helpers.FakeLab, "remove_access_token")
+
+        monkeypatch.setattr("portal.access.Lab", lambda *args, **kwargs: lab)
+
+        LAB_CONFIGS = helpers.FAKE_LAB_CONFIGS
+        monkeypatch.setattr("objs.lab.lab.LAB_CONFIGS", LAB_CONFIGS)
+
+        # Adding token
+        bodystr = {
+            "action": "add_token",
+            "lab_profiles": "m6a.large",
+            "start_date": "2026-03-31",
+            "end_date": "",
+        }
+        monkeypatch.setattr(
+            "portal.access.form_body_to_dict", lambda *args, **kwargs: bodystr
+        )
+
+        event = helpers.get_event(
+            path="/portal/access/manage/testlab/edittokens",
+            cookies=fake_auth,
+            body="placeholder",
+            method="POST",
+        )
+        main.lambda_handler(event, lambda_context)
+
+        assert mock_add_token.call_count == 0
         assert mock_remove_token.call_count == 0
 
     def test_endpoint_add_token_invalid_dates(
