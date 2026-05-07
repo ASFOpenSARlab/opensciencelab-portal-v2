@@ -163,6 +163,24 @@ PROD_LAB_CONFIGS = {
 }
 
 NON_PROD_LAB_CONFIGS = {
+    "test": BaseLabConfig(
+        short_lab_name="test",
+        friendly_name="Cluster v2 - test",
+        description="""
+            <p>Cluster v2 access to test auth.</p>
+        """,
+        deployment_url="http://eks-cluster-test-3ad17d630b8f26fc.elb.us-west-2.amazonaws.com",
+        accessibility="protected",
+        allowed_profiles=[
+            "SAR 1",
+            "SAR 1 - Max",
+            "Debug Server Profile",
+            "m6a.xlarge",
+            "m6a.large",
+            "sudo",
+        ],
+        default_profiles=["m6a.large", "m6a.xlarge"],
+    ),
     "smce-test-opensarlab": BaseLabConfig(
         short_lab_name="smce-test-opensarlab",
         friendly_name="SMCE Test (US Unrestricted, Lab Protected)",
