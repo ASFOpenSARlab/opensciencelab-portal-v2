@@ -16,20 +16,30 @@ os.environ["STACK_REGION"] = "us-west-2"
 os.environ["COGNITO_CLIENT_ID"] = "fake-cognito-id"
 os.environ["COGNITO_POOL_ID"] = "fake-pool-id"
 from util.auth import PORTAL_USER_COOKIE, COGNITO_JWT_COOKIE
-from util.labs import BaseLab
-from util.user.user import filter_lab_access, create_lab_structure
+from objs.base_lab_config import BaseLabConfig
+from objs.user import filter_lab_access, create_lab_structure
 from jwt import decode as unpatched_jwt_decode
+from data import DATE_F
+
+
+# Ignore /utilities files, those don't have tests
+def pytest_ignore_collect(collection_path):
+    if "utilities" in str(collection_path):
+        return True
+    return False
+
+
+class MockResponse:
+    def __init__(self, status_code, json_data=None, text_data=None):
+        self.json_data = json_data
+        self.text = text_data
+        self.status_code = status_code
+
+    def json(self):
+        return self.json_data
 
 
 def MockedRequestsPost(*args, **kwargs):
-    class MockResponse:
-        def __init__(self, json_data, status_code):
-            self.json_data = json_data
-            self.status_code = status_code
-
-        def json(self):
-            return self.json_data
-
     json_response_payload = {}
     if kwargs["data"]["code"] == "good_code":
         json_response_payload = {
@@ -39,7 +49,7 @@ def MockedRequestsPost(*args, **kwargs):
         }
 
     if args[0].endswith("/oauth2/token"):
-        return MockResponse(json_response_payload, 200)
+        return MockResponse(json_data=json_response_payload, status_code=200)
 
     return MockResponse(None, 404)
 
@@ -89,6 +99,36 @@ BASIC_REQUEST = {
     "queryStringParameters": {},
     "cookies": [],
 }
+
+LAB_ACCESS_QUESTIONS = [
+    {
+        "name": "sar_experience",
+        "question": "Tell us about your SAR-related experience",
+        "type": "text",
+        "rendering_options": "multi-line",
+        "placeholder": "Your Answer",
+    },
+    {
+        "name": "osl_experience",
+        "question": "Have you used OpenSARLab before?",
+        "type": "text",
+        "rendering_options": "multi-line",
+        "placeholder": "Your Answer",
+    },
+    {
+        "name": "use_case",
+        "question": "What do you want to use OpenSARLab for?",
+        "type": "text",
+        "rendering_options": "multi-line",
+        "placeholder": "Your Answer",
+    },
+    {
+        "name": "what_science",
+        "question": "What type of science",
+        "type": "dropdown",
+        "rendering_options": ["SAR", "NISAR"],
+    },
+]
 
 
 @dataclass
@@ -161,9 +201,7 @@ class Helpers:
         labs: dict = field(
             default_factory=lambda: {
                 "testlab": {
-                    "time_quota": None,
                     "lab_profiles": None,
-                    "lab_country_status": None,
                 },
             }
         )
@@ -171,11 +209,17 @@ class Helpers:
         _rec_counter: int = field(default_factory=lambda: 1)
         create_if_missing: bool = True
         country_code: str = "US"
+        token_usage: list = field(default_factory=lambda: [])
+        managers: list = field(default_factory=lambda: [])
+
+        def get_requests(self, **kwargs):
+            # This should probably be dynamic.
+            return None
 
         def update_last_cookie_assignment(self) -> None:
             self.last_cookie_assignment = datetime.datetime(
                 2024, 1, 1, 12, 0, 0
-            ).strftime("%Y-%m-%d %H:%M:%S")
+            ).strftime(DATE_F)
 
         def is_admin(self) -> bool:
             return "admin" in self.access
@@ -195,42 +239,86 @@ class Helpers:
         def get_lab_access(self) -> dict:
             return filter_lab_access(self)
 
+        def check_used_token(self, token) -> bool:
+            return token in self.token_usage
+
+        def use_token(self, labname, token) -> None:
+            self.token_usage.append({token: labname})
+
+        def is_lab_manager(self, lab) -> bool:
+            return self.username in lab.managers
+
+    @dataclass
+    class FakeLab:
+        labname: str = field(default_factory=lambda: "testlab")
+        access_requests: dict = field(
+            default_factory=lambda: {
+                "answers": [
+                    {
+                        "sar_experience": "answer1",
+                        "osl_experience": "answer2",
+                        "use_case": "answer3",
+                        "what_science": "answer4",
+                    },
+                ],
+                "status": "new",
+            }
+        )
+        access_tokens: list = field(default_factory=lambda: [])
+        managers: list = field(default_factory=lambda: [])
+        create_token_success: bool = field(default_factory=lambda: True)
+
+        def get_access_request(self, username: str) -> dict:
+            return self.access_requests
+
+        def get_lab_config(self):
+            return Helpers.FAKE_LAB_CONFIGS[self.labname]
+
+        def create_access_token(self, *args, **kwargs) -> bool:
+            return self.create_token_success
+
+        def remove_access_token(self, *args, **kwargs) -> bool:
+            return True
+
     # differentlab not initialized in FakeUser.labs
     # this is to allow labs to test against a lab the user does not have access too
     # unless used for other purpose in a given test
-    FAKE_LABS = {
-        "protectedlab": BaseLab(
+    FAKE_LAB_CONFIGS = {
+        "protectedlab": BaseLabConfig(
             friendly_name="A lab protected from being used",
             short_lab_name="protectedlab",
             logo="ASF_logo.svg",
             allowed_profiles=["m6a.large"],
             accessibility="protected",
-            deployment_url="https://example.com",
+            deployment_url="https://this-host-does-not-exist.fake",
+            application_questions=LAB_ACCESS_QUESTIONS,
         ),
-        "testlab": BaseLab(
+        "testlab": BaseLabConfig(
             friendly_name="Test Lab",
             short_lab_name="testlab",
             logo="ASFLogo-Blue2.png",
             allowed_profiles=["m6a.large"],
             accessibility="protected",
-            deployment_url="https://example.com",
+            deployment_url="https://this-host-does-not-exist.fake",
             default_profiles=["m6a.large", "m6a.xlarge"],
+            application_questions=LAB_ACCESS_QUESTIONS,
+            allows_tokens=True,
         ),
-        "noaccess": BaseLab(
+        "noaccess": BaseLabConfig(
             friendly_name="No Access Lab",
             short_lab_name="noaccess",
             allowed_profiles=[],
             accessibility="private",
-            deployment_url="https://example.com",
+            deployment_url="https://this-host-does-not-exist.fake",
         ),
-        "differentlab": BaseLab(
+        "differentlab": BaseLabConfig(
             friendly_name="Different Lab",
             short_lab_name="differentlab",
             allowed_profiles=["m6a.large"],
             accessibility="protected",
-            deployment_url="https://example.com",
+            deployment_url="https://this-host-does-not-exist.fake",
         ),
-        "openlab": BaseLab(
+        "openlab": BaseLabConfig(
             friendly_name="Open Lab",
             short_lab_name="openlab",
             allowed_profiles=["m6a.large"],
@@ -239,7 +327,7 @@ class Helpers:
                 "limited": [],
                 "prohibited": [],
             },
-            deployment_url="https://example.com",
+            deployment_url="https://this-host-does-not-exist.fake",
         ),
     }
 

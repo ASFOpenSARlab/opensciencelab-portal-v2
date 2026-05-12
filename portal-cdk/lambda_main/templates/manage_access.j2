@@ -1,0 +1,31 @@
+{# djlint:off H006,H021 #}
+<div class="margin-left-30">
+    <div>
+        <b>Available Filters</b>:
+        <code>?<span style="color: darkgreen">user_filter</span>=<span style="color: grey">username-fragment</span></code>,
+        <code>?<span style="color: darkgreen">status_filter</span>=<span style="color: grey">new|returned|pending|rejected|approved|imported</span></code>.
+    </div>
+    <br>
+    <table>
+        <tr class="tr-highlight">
+            <th style="padding: 10px;">Labname</th>
+            <th style="padding: 10px;">Username</th>
+            <th style="padding: 10px;">Request Status</th>
+            <th style="padding: 10px;">User Request Date</th>
+            <th style="padding: 10px;">Request Country</th>
+        </tr>
+        {% for request in requests %}
+            <tr>
+                <td style="padding: 10px;">
+                    <a href="/portal/access/manage/{{ request["labname"] }}/requests/">{{ request["labname"] }}</a>
+                </td>
+                <td style="padding: 10px;">
+                    <b><a href="/portal/profile/form/{{ request["username"] }}">{{ request["username"] }}</a></b>
+                </td>
+                <td style="padding: 10px;">{{ request["status"] }}</td>
+                <td style="padding: 10px;">{{ request["answers"][-1]["submission_date"] }}</td>
+                <td style="padding: 10px;">{{ request["answers"][-1]["submission_cc"] }}</td>
+            </tr>
+        {% endfor %}
+    </table>
+</div>

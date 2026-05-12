@@ -4,6 +4,10 @@ from urllib.parse import urlparse
 import pathlib
 import base64
 import json
+import sys
+
+# Add lambda_main as a lookup for importing modules labs
+sys.path.insert(0, "./lambda_main/")
 
 from aws_cdk import (
     Duration,
@@ -28,7 +32,7 @@ from aws_cdk import (
 )
 from aws_solutions_constructs.aws_lambda_dynamodb import LambdaToDynamoDB
 
-from lambda_main.util.labs import LABS
+from util.labs import LAB_CONFIGS
 
 LAMBDA_RUNTIME = aws_lambda.Runtime.PYTHON_3_11
 
@@ -112,6 +116,7 @@ class PortalCdkStack(Stack):
                     ).lower(),
                     "SES_EMAIL": str(os.getenv("SES_EMAIL")),
                     "SES_DOMAIN": str(os.getenv("SES_DOMAIN")),
+                    "CALENDAR_URL": str(os.getenv("CALENDAR_URL")),
                 },
             ),
             # https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_dynamodb.TableProps.html
@@ -131,7 +136,54 @@ class PortalCdkStack(Stack):
         )
         # Need to do this after, since doing it inside lambda_dynamo would be a circular dependency:
         lambda_dynamo.lambda_function.add_environment(
-            "DYNAMO_TABLE_NAME", lambda_dynamo.dynamo_table.table_name
+            "DYNAMO_TABLE_USER_NAME", lambda_dynamo.dynamo_table.table_name
+        )
+
+        # Another table to hold labs
+        labs_table = dynamodb.Table(
+            self,
+            "LabsTable",
+            partition_key=dynamodb.Attribute(
+                name="labname",
+                type=dynamodb.AttributeType.STRING,
+            ),
+            deletion_protection=bool(vars["deploy_prefix"] == "prod"),
+            # Default removal_policy is always RETAIN:
+            removal_policy=(
+                RemovalPolicy.RETAIN
+                if vars["deploy_prefix"] == "prod"
+                else RemovalPolicy.DESTROY
+            ),
+        )
+        # Allow access from Lambda
+        labs_table.grant_full_access(lambda_dynamo.lambda_function)
+        lambda_dynamo.lambda_function.add_environment(
+            "DYNAMO_TABLE_LAB_NAME", labs_table.table_name
+        )
+
+        # Another table to hold access requests
+        reqs_table = dynamodb.Table(
+            self,
+            "RequestsTable",
+            partition_key=dynamodb.Attribute(
+                name="labname",
+                type=dynamodb.AttributeType.STRING,
+            ),
+            sort_key=dynamodb.Attribute(
+                name="username", type=dynamodb.AttributeType.STRING
+            ),
+            deletion_protection=bool(vars["deploy_prefix"] == "prod"),
+            # Default removal_policy is always RETAIN:
+            removal_policy=(
+                RemovalPolicy.RETAIN
+                if vars["deploy_prefix"] == "prod"
+                else RemovalPolicy.DESTROY
+            ),
+        )
+        # Allow access from Lambda
+        reqs_table.grant_full_access(lambda_dynamo.lambda_function)
+        lambda_dynamo.lambda_function.add_environment(
+            "DYNAMO_TABLE_REQ_NAME", reqs_table.table_name
         )
 
         ### Integration is after the request is validated:
@@ -241,7 +293,7 @@ class PortalCdkStack(Stack):
 
         crypto_remediation_arns = []
         # Loop over Labs and add proxy behaviors
-        for lab in LABS.values():
+        for lab in LAB_CONFIGS.values():
             parsed_url = urlparse(lab.deployment_url)
             # https://docs.aws.amazon.com/cdk/api/v2/python/aws_cdk.aws_cloudfront_origins/HttpOrigin.html
             lab_origin = origins.HttpOrigin(
@@ -596,6 +648,16 @@ class PortalCdkStack(Stack):
         )
         # Grant lambda permssion to read secret manager
         sso_token_secret.grant_read(lambda_dynamo.lambda_function)
+
+        lambda_dynamo.lambda_function.add_environment(
+            "RECAPTCHA_SECRET_KEY", str(os.getenv("RECAPTCHA_SECRET_KEY"))
+        )
+        lambda_dynamo.lambda_function.add_environment(
+            "RECAPTCHA_SITE_KEY", str(os.getenv("RECAPTCHA_SITE_KEY"))
+        )
+        lambda_dynamo.lambda_function.add_environment(
+            "RECAPTCHA_THRESHOLD", str(os.getenv("RECAPTCHA_THRESHOLD"))
+        )
 
         # https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.CfnOutput.html
         CfnOutput(

@@ -10,7 +10,7 @@ Makefile commands:
 
     manual-cdk-bootstrap:   Bootstrap an account for CDK
 
-    test:					Run PyTest tests
+    test:                   Run PyTest tests
 
     synth-portal:           Synth portal CDK project
 
@@ -22,7 +22,7 @@ Makefile commands:
 
     aws-info:               Get AWS account info
 
-    clean:					Remove .build/ & cdk.out/
+    clean:                  Remove .build/ & cdk.out/
 
 endef
 export HELP
@@ -40,9 +40,13 @@ PROJECT_DIR := $(if $(CI_PROJECT_DIR),$(CI_PROJECT_DIR:/=),$(PWD:/=/))
 BUILD_DEPS ?= /tmp/.build/lambda/python
 
 IMAGE_NAME ?= ghcr.io/asfopensarlab/osl-utils:main
+CALENDAR_URL ?= https://calendar.google.com/calendar/ical/c_eeadd37d8fef6b7675a1f213f1eb9d233c1ae28dc7d3a8752bc5928d2b46e2d3%40group.calendar.google.com/public/basic.ics
 AWS_DEFAULT_PROFILE := $(AWS_DEFAULT_PROFILE)
 AWS_REGION ?= us-west-2
 IS_PROD ?= false
+RECAPTCHA_SECRET_KEY ?= unset-value
+RECAPTCHA_SITE_KEY ?= unset-value
+RECAPTCHA_THRESHOLD ?= unset-value
 
 .PHONY := all
 all: help
@@ -52,7 +56,7 @@ help:
 	@echo "$$HELP"
 
 .PHONY := lint
-lint:
+lint: remove-cdk-out
 	echo "Starting Docker Shell..."
 	echo ""
 	docker run \
@@ -90,7 +94,11 @@ cdk-shell:
 		-e SES_EMAIL \
 		-e SSL_CERT_ARN \
 		-e DEPLOY_DOMAINS \
+		-e CALENDAR_URL \
+		-e RECAPTCHA_SECRET_KEY \
+		-e RECAPTCHA_SITE_KEY \
 		--pull always \
+		-w /code \
 		${IMAGE_NAME} || \
 		(  echo -e "" && echo  'If docker run fails with "no matching manifest", ' \
 		  'try setting ARCH_OVERRIDE: `export ARCH_OVERRIDE=--platform linux/amd64`.' && \
@@ -134,8 +142,12 @@ bundle-deps:
 		echo "Skipping deps bundled in ${BUILD_DEPS}. Remove to rebuild."; \
 	fi
 
+.PHONY := remove-cdk-out
+remove-cdk-out:
+	find . -name "cdk.out" | xargs -n 1 rm -rf
+
 .PHONY := test
-test: install-reqs bundle-deps
+test: remove-cdk-out install-reqs bundle-deps
 	@echo "Running tests for Portal (${DEPLOY_PREFIX})"
 	pip install -r portal-cdk/requirements-dev.txt && \
 	pip install -r portal-cdk/lambda_main/requirements.txt && \

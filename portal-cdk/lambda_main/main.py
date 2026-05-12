@@ -3,6 +3,7 @@
 import os
 import json
 import traceback
+import time
 
 from portal import routes
 
@@ -25,7 +26,7 @@ from util.auth import (
 )
 from util.exceptions import GenericFatalError
 from util.session import current_session
-from util.user import User
+from objs.user import User
 
 from static import get_static_object
 
@@ -258,5 +259,36 @@ def handle_all_fatal_error(exception):
 )
 @process_auth
 def lambda_handler(event, context):
+    # Record the request with all logs
+    request_uri = event.get("rawPath", "/")[0:1000]
+    raw_query = event.get("rawQueryString")
+    if raw_query:
+        request_uri += f"?{raw_query[0:1000]}"
+    logger.append_keys(request_uri=request_uri)
+
     current_session.app = app  # Pass app into downstream functions
-    return app.resolve(event, context)
+
+    # Don't bother timing static endpoint
+    if request_uri.startswith("/static"):
+        return app.resolve(event, context)
+
+    # track timing
+    start_time = time.perf_counter()
+    response = app.resolve(event, context)
+    elapsed_time_ms = round((time.perf_counter() - start_time) * 1000)
+
+    # Using the 'extra' parameter
+    additional_attributes = {
+        "times_ms": elapsed_time_ms,
+    }
+
+    # Extract response info
+    if "statusCode" in response:
+        additional_attributes["response_code"] = response["statusCode"]
+
+    # Log request w/ timing info
+    logger.info(
+        f"Request: {elapsed_time_ms}ms",
+        extra=additional_attributes,
+    )
+    return response

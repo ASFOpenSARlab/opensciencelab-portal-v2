@@ -1,6 +1,6 @@
 # User Class Info
 
-The point of this module, is to abstract the [dynamo_db.py](./dynamo_db.py) module for the rest of the code base, and provide easy management of users.
+The point of this module, is to abstract the [dynamo_db.py](../../util/dynamo_db.py) module for the rest of the code base, and provide easy management of users.
 
 ## How it Works
 
@@ -53,7 +53,7 @@ Other possible options that failed (so others don't make the same mistake):
 
 ## Different Components
 
-- [dynamo_db.py](./dynamo_db.py): This directly interacts with the DynamoDB table itself. It's in this module since only the module should ever be interacting with it directly. Everything else should use the [User Class](./user.py).
+- [dynamo_db.py](../../util/dynamo_db.py): This directly interacts with the DynamoDB table itself. It's in this module since only the module should ever be interacting with it directly. Everything else should use the [User Class](./user.py).
 - [user.py](./user.py): This is the main module everything should use to interact with users and their info.
 - [validator_map.py](./validator_map.py): This holds all the attributes the [User Class](./user.py) is allowed to have, along with how to validate that attribute. You can use classic (`list`, `str`, `int`, ...) to validate, or write your own in the [validators.py](./validators.py) file.
 - [validators.py](./validators.py): This holds all the custom validators you can use in the [validator_map.py](./validator_map.py) file. You can cast/transform values here, or raise a ValueError if they're not what you expect.

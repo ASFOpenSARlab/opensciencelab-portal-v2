@@ -2,7 +2,8 @@ import importlib
 
 import main
 import util.labs
-from util.labs import BaseLab, NON_PROD_LABS, PROD_LABS
+from objs.base_lab_config import BaseLabConfig
+from util.labs import NON_PROD_LAB_CONFIGS, PROD_LAB_CONFIGS
 
 import pytest
 import pathlib
@@ -13,25 +14,25 @@ class TestLabs:
     @pytest.mark.parametrize(
         "is_prod,labs",
         [
-            ("false", NON_PROD_LABS),
-            ("true", PROD_LABS),
+            ("false", NON_PROD_LAB_CONFIGS),
+            ("true", PROD_LAB_CONFIGS),
         ],
     )
     def test_lab_conditional_set_is_prod(self, monkeypatch, is_prod, labs):
         monkeypatch.setenv("IS_PROD", is_prod)
 
         importlib.reload(util.labs)
-        from util.labs import LABS
+        from util.labs import LAB_CONFIGS
 
-        assert LABS == labs
+        assert LAB_CONFIGS == labs
 
     def test_lab_conditional_not_set_is_prod(self, monkeypatch):
         monkeypatch.delenv("IS_PROD", raising=False)
 
         importlib.reload(util.labs)
-        from util.labs import LABS
+        from util.labs import LAB_CONFIGS
 
-        assert LABS == NON_PROD_LABS
+        assert LAB_CONFIGS == NON_PROD_LAB_CONFIGS
 
     def test_lab_required_keys(self):
         required_keys = {
@@ -44,9 +45,9 @@ class TestLabs:
         # Make sure the keys are, in fact, required:
         # (this will throw if any are missing.
         #  Force us to keep the above list updated)
-        BaseLab(**required_keys)
+        BaseLabConfig(**required_keys)
         # Make sure each lab has ALL the required keys:
-        for lab_short_name, lab in util.labs.LABS.items():
+        for lab_short_name, lab in util.labs.LAB_CONFIGS.items():
             lab_fields = set(lab.__dataclass_fields__.keys())
             required_fields = set(required_keys.keys())
             assert required_fields.issubset(lab_fields), (
@@ -55,7 +56,7 @@ class TestLabs:
 
     def test_images_path_exist(self, monkeypatch):
         used_logos = set()
-        for lab in (PROD_LABS | NON_PROD_LABS).values():
+        for lab in (PROD_LAB_CONFIGS | NON_PROD_LAB_CONFIGS).values():
             if lab.logo:
                 used_logos.add(lab.logo)
 
@@ -68,7 +69,9 @@ class TestLabs:
         monkeypatch.setattr("portal.User", lambda *args, **kwargs: user)
         monkeypatch.setattr("util.auth.User", lambda *args, **kwargs: user)
 
-        monkeypatch.setattr("util.user.user.LABS", helpers.FAKE_LABS)
+        monkeypatch.setattr("objs.user.user.LAB_CONFIGS", helpers.FAKE_LAB_CONFIGS)
+
+        monkeypatch.setattr("portal.Lab", lambda *args, **kwargs: helpers.FakeLab())
 
         event = helpers.get_event(path="/portal", cookies=fake_auth)
         ret = main.lambda_handler(event, lambda_context)

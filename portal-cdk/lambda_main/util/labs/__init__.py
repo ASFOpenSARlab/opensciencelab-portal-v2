@@ -1,15 +1,14 @@
-from .base_lab import BaseLab, daac_limited_restricted_status
+from objs.base_lab_config import BaseLabConfig, get_daac_country_status
 
 import os
 
-PROD_LABS = {
-    "smce-prod-opensarlab": BaseLab(
+PROD_LAB_CONFIGS = {
+    "smce-prod-opensarlab": BaseLabConfig(
         short_lab_name="smce-prod-opensarlab",
         friendly_name="OpenSARLab (ASF DAAC)",
         description="""
             <p>NASA JupyterHub operated by the Alaska Satellite Facility</p>
-            <p>Users working on a NASA-funded project may <a href="mailto:uso@asf.alaska.edu?subject=NASA-affiliate%20OSL%20access%20request">request OpenSARLab access from ASF User Support.</a></p>
-            <p>Users not affiliated with a NASA-funded project should apply for access here: <a href="https://forms.gle/LNBCwe8JohYitvfy6">OpenSARLab Access Application</a></p>
+            <p>Users with a valid science need can apply for access by clicking the "Apply for Access" button below (if present).</p>
             <p style="color: orangered;">User storage is permanently deleted after 30 days of inactivity. Users can request a temporary extension by contacting the OSL Admins.</p> <hr style="border-top: 1px solid grey;"> <div style="font-size: 12px;margin: 10px 0 0 0;text-align: justify;">
             <p>By accessing and using this information system, you acknowledge and consent to the following:</p>
             <p>You are accessing a U.S. Government information system, which includes: (1) this computer; (2) this computer network; (3) all computers connected to
@@ -23,10 +22,10 @@ PROD_LABS = {
         </div>
         """,
         deployment_url="https://smce-prod-1240379463.us-west-2.elb.amazonaws.com",
-        logo="ASFLogo-Blue2.png",
+        logo="ASF_and_NASA.svg",
         about_page_url="https://opensarlab-docs.asf.alaska.edu/",
         about_page_button_label="Info",
-        ip_country_status=daac_limited_restricted_status,
+        ip_country_status=get_daac_country_status(),
         accessibility="protected",
         allowed_profiles=[
             "t3a.medium - Dask User",
@@ -43,11 +42,64 @@ PROD_LABS = {
             "OPERA",
             "noistio",
             "sudo",
+            "OpenSARLab Test Image",
         ],
         crypto_remediation_role_arn="arn:aws:iam::381492216607:role/service-role/cryptomining-remediation-role-b4sw3o86",
         default_profiles=["m6a.large", "m6a.xlarge"],
+        application_questions=[
+            {
+                "name": "sar_experience",
+                "question": "Tell us about your SAR-related experience and the length of time you have worked in the field.",
+                "type": "text",
+                "rendering_options": "multi-line",
+                "placeholder": "Your Answer",
+            },
+            {
+                "name": "osl_experience",
+                "question": "Have you used OpenSARLab before? If so, tell us what you used it for and what you produced / developed / delivered with it.",
+                "type": "text",
+                "rendering_options": "multi-line",
+                "placeholder": "Your Answer",
+            },
+            {
+                "name": "use_case",
+                "question": "What do you want to use OpenSARLab for?",
+                "type": "text",
+                "rendering_options": "multi-line",
+                "placeholder": "Your Answer",
+            },
+            {
+                "name": "personal_impacts",
+                "question": "If you were given access to OpenSARLab, what would be the impact for you?",
+                "type": "text",
+                "rendering_options": "multi-line",
+                "placeholder": "Your Answer",
+            },
+            {
+                "name": "community_impacts",
+                "question": "What would be the impact for your community?",
+                "type": "text",
+                "rendering_options": "multi-line",
+                "placeholder": "Your Answer",
+            },
+            {
+                "name": "research_impacts",
+                "question": "What would be the impact for the field of research you are contributing to?",
+                "type": "text",
+                "rendering_options": "multi-line",
+                "placeholder": "Your Answer",
+            },
+        ],
+        application_description=(
+            'Access to "OpenSARLab (ASF DAAC)" is month-to-month as budget allows. If your access is set to be revoked, '
+            "we will get in touch to ensure that you are able to download any workflows and results "
+            "before you lose access.<br><br>"
+            "Applications are approved on a weekly basis. If timeliness is a significant factor for your application, "
+            'please email <a href="mailto:uaf-jupyterhub-asf@alaska.edu">uaf-jupyterhub-asf@alaska.edu</a> '
+            "to advise us of your circumstances."
+        ),
     ),
-    "azdwr-prod-opensarlab": BaseLab(
+    "azdwr-prod-opensarlab": BaseLabConfig(
         short_lab_name="azdwr-prod-opensarlab",
         friendly_name="AZ Department of Water Resources",
         description="OpenSARLab Deployment",
@@ -71,8 +123,9 @@ PROD_LABS = {
             "AZDWR SAR 4",
             "AZDWR SAR 5",
         ],
+        allows_tokens=True,
     ),
-    "avo-prod": BaseLab(
+    "avo-prod": BaseLabConfig(
         short_lab_name="avo-prod",
         friendly_name="AVO",
         description="Alaska Volcano Observatory deployment, powered by ASF OpenScienceLab",
@@ -86,40 +139,31 @@ PROD_LABS = {
             "sudo",
         ],
         default_profiles=["SAR 1", "SAR 2", "SAR 3", "Debug Server Profile"],
+        allows_tokens=True,
     ),
-    "geos669": BaseLab(
-        short_lab_name="geos669",
-        friendly_name="GEOS669 Geodesy & Geodetic Methods",
-        description="GEOS669 Geodesy & Geodetic Methods for Spring 2026, powered by ASF OpenScienceLab",
-        deployment_url="https://geos669-2032234544.us-west-2.elb.amazonaws.com",
+    "geos639": BaseLabConfig(
+        short_lab_name="geos639",
+        friendly_name="GEOS639 Geodetic Imaging",
+        description="GEOS639 Geodetic Imaging for Spring 2026, powered by ASF OpenScienceLab",
+        deployment_url="https://geos639-2133422741.us-west-2.elb.amazonaws.com",
         accessibility="private",
         allowed_profiles=[
             "m6a.large",
             "m6a.xlarge",
             "Debug Server Profile",
-            "sudo",
-        ],
-        default_profiles=["m6a.large", "m6a.xlarge"],
-    ),
-    "geos626": BaseLab(
-        short_lab_name="geos626",
-        friendly_name="GEOS626 Applied Seismology",
-        description="GEOS626 Applied Seismology for Spring 2026, powered by ASF OpenScienceLab",
-        deployment_url="https://geos626-1705112830.us-west-2.elb.amazonaws.com",
-        accessibility="private",
-        allowed_profiles=[
-            "m6a.large",
-            "m6a.xlarge",
-            "Debug Server Profile",
+            "SAR 1",
+            "SAR 2",
+            "SAR 2 - Max",
             "noistio",
             "sudo",
         ],
         default_profiles=["m6a.large", "m6a.xlarge"],
+        allows_tokens=True,
     ),
 }
 
-NON_PROD_LABS = {
-    "smce-test-opensarlab": BaseLab(
+NON_PROD_LAB_CONFIGS = {
+    "smce-test-opensarlab": BaseLabConfig(
         short_lab_name="smce-test-opensarlab",
         friendly_name="SMCE Test (US Unrestricted, Lab Protected)",
         description="""
@@ -136,11 +180,11 @@ NON_PROD_LABS = {
         </div>
         """,
         deployment_url="http://smce-test-1433554573.us-west-2.elb.amazonaws.com",
-        logo="ASFLogo-Blue2.png",
+        logo="ASF_and_NASA.svg",
         about_page_url="https://opensarlab-docs.asf.alaska.edu/",
         about_page_button_label="Info",
-        ip_country_status=daac_limited_restricted_status,
-        accessibility="private",
+        ip_country_status=get_daac_country_status(),
+        accessibility="protected",
         allowed_profiles=[
             "SAR 1",
             "t3a.medium - Dask User",
@@ -156,8 +200,60 @@ NON_PROD_LABS = {
         ],
         crypto_remediation_role_arn="arn:aws:iam::381492216607:role/service-role/cryptomining-remediation-role-b4sw3o86",
         default_profiles=["m6a.large", "m6a.xlarge"],
+        application_questions=[
+            {
+                "name": "sar_experience",
+                "question": "Tell us about your SAR-related experience and the length of time you have worked in the field.",
+                "type": "text",
+                "rendering_options": "multi-line",
+                "placeholder": "Your Answer",
+            },
+            {
+                "name": "osl_experience",
+                "question": "Have you used OpenSARLab before? If so, tell us what you used it for and what you produced / developed / delivered with it.",
+                "type": "text",
+                "rendering_options": "multi-line",
+                "placeholder": "Your Answer",
+            },
+            {
+                "name": "use_case",
+                "question": "What do you want to use OpenSARLab for?",
+                "type": "text",
+                "rendering_options": "multi-line",
+                "placeholder": "Your Answer",
+            },
+            {
+                "name": "personal_impacts",
+                "question": "If you were given access to OpenSARLab, what would be the impact for you?",
+                "type": "text",
+                "rendering_options": "multi-line",
+                "placeholder": "Your Answer",
+            },
+            {
+                "name": "community_impacts",
+                "question": "What would be the impact for your community?",
+                "type": "text",
+                "rendering_options": "multi-line",
+                "placeholder": "Your Answer",
+            },
+            {
+                "name": "research_impacts",
+                "question": "What would be the impact for the field of research you are contributing to?",
+                "type": "text",
+                "rendering_options": "multi-line",
+                "placeholder": "Your Answer",
+            },
+        ],
+        application_description=(
+            'Access to "OpenSARLab (ASF DAAC)" is month-to-month as budget allows. If your access is set to be revoked, '
+            "we will get in touch to ensure that you are able to download any workflows and results "
+            "before you lose access.<br><br>"
+            "Applications are approved on a weekly basis. If timeliness is a significant factor for your application, "
+            'please email <a href="mailto:uaf-jupyterhub-asf@alaska.edu">uaf-jupyterhub-asf@alaska.edu</a> '
+            "to advise us of your circumstances."
+        ),
     ),
-    "test_protected": BaseLab(
+    "test_protected": BaseLabConfig(
         short_lab_name="test_protected",
         friendly_name="Test Protected Lab",
         description="",
@@ -166,8 +262,18 @@ NON_PROD_LABS = {
         accessibility="protected",
         allowed_profiles=[],
         default_profiles=["m6a.large", "m6a.xlarge"],
+        application_questions=[
+            {
+                "name": "why",
+                "question": "Why do you want access?",
+                "type": "text",
+                "rendering_options": "multi-line",
+                "placeholder": "Your Answer",
+            },
+        ],
+        allows_tokens=True,
     ),
-    "test_prohibited": BaseLab(
+    "test_prohibited": BaseLabConfig(
         short_lab_name="test_prohibited",
         friendly_name="Test Prohibited Lab",
         description="",
@@ -183,33 +289,28 @@ NON_PROD_LABS = {
         allowed_profiles=[],
         default_profiles=["m6a.large", "m6a.xlarge"],
     ),
-    "geos669": BaseLab(
-        short_lab_name="geos669",
-        friendly_name="GEOS669 Lab",
-        description="Most Recent Class Lab",
-        logo="OpenSARLab_logo.png",
-        deployment_url="https://geos669-2032234544.us-west-2.elb.amazonaws.com",
-        accessibility="private",
-        allowed_profiles=["m6a.large", "m6a.xlarge"],
-        default_profiles=["m6a.large"],
-    ),
-    "geos626": BaseLab(
-        short_lab_name="geos626",
-        friendly_name="GEOS626 Applied Seismology",
-        description="GEOS626 Applied Seismology for Spring 2026, powered by ASF OpenScienceLab",
-        deployment_url="https://geos626-1705112830.us-west-2.elb.amazonaws.com",
+    "geos639": BaseLabConfig(
+        short_lab_name="geos639",
+        friendly_name="GEOS639 Geodetic Imaging",
+        description="GEOS639 Geodetic Imaging for Spring 2026, powered by ASF OpenScienceLab",
+        deployment_url="https://geos639-2133422741.us-west-2.elb.amazonaws.com",
         accessibility="private",
         allowed_profiles=[
             "m6a.large",
             "m6a.xlarge",
             "Debug Server Profile",
+            "SAR 1",
+            "SAR 2",
+            "SAR 2 - Max",
+            "noistio",
             "sudo",
         ],
         default_profiles=["m6a.large", "m6a.xlarge"],
+        allows_tokens=True,
     ),
 }
 
 if os.getenv("IS_PROD", "false").lower() == "true":
-    LABS: dict[str, BaseLab] = PROD_LABS
+    LAB_CONFIGS: dict[str, BaseLabConfig] = PROD_LAB_CONFIGS
 else:
-    LABS: dict[str, BaseLab] = NON_PROD_LABS
+    LAB_CONFIGS: dict[str, BaseLabConfig] = NON_PROD_LAB_CONFIGS

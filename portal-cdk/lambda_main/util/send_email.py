@@ -5,8 +5,9 @@ import boto3
 from aws_lambda_powertools import Logger
 
 from util.auth import decrypt_data
-from util.user import User
+from objs.user import User
 from util.format import jinja_template
+from util.log_timer import measure_time
 
 logger = Logger(child=True)
 
@@ -143,29 +144,30 @@ def send_user_email(request_data):
     try:
         parsed_data: dict = _parse_email_message(request_data)
 
-        response = sesv2.send_email(
-            FromEmailAddress=parsed_data.get("from", ""),
-            Destination={
-                "ToAddresses": parsed_data.get("to", []),
-                "CcAddresses": parsed_data.get("cc", []),
-                "BccAddresses": parsed_data.get("bcc", []),
-            },
-            ReplyToAddresses=parsed_data.get("reply_to", []),
-            Content={
-                "Simple": {
-                    "Subject": {
-                        "Data": parsed_data.get("subject", ""),
-                        "Charset": "UTF-8",
-                    },
-                    "Body": {
-                        "Html": {
-                            "Data": parsed_data.get("html_body", ""),
+        with measure_time(service="ses", action="send user email"):
+            response = sesv2.send_email(
+                FromEmailAddress=parsed_data.get("from", ""),
+                Destination={
+                    "ToAddresses": parsed_data.get("to", []),
+                    "CcAddresses": parsed_data.get("cc", []),
+                    "BccAddresses": parsed_data.get("bcc", []),
+                },
+                ReplyToAddresses=parsed_data.get("reply_to", []),
+                Content={
+                    "Simple": {
+                        "Subject": {
+                            "Data": parsed_data.get("subject", ""),
                             "Charset": "UTF-8",
+                        },
+                        "Body": {
+                            "Html": {
+                                "Data": parsed_data.get("html_body", ""),
+                                "Charset": "UTF-8",
+                            },
                         },
                     },
                 },
-            },
-        )
+            )
 
         logger.info(f"Send email response: {response}")
 
@@ -181,27 +183,28 @@ def send_user_email(request_data):
                 {"error": type(e).__name__}, "error_email.html.j2"
             )
 
-            response = sesv2.send_email(
-                FromEmailAddress=f'"OpenScienceLab" <admin@{os.getenv("SES_DOMAIN")}>',
-                Destination={
-                    "ToAddresses": [os.getenv("SES_EMAIL")],
-                },
-                ReplyToAddresses=[os.getenv("SES_EMAIL")],
-                Content={
-                    "Simple": {
-                        "Subject": {
-                            "Data": "Error in sending email",
-                            "Charset": "UTF-8",
-                        },
-                        "Body": {
-                            "Html": {
-                                "Data": html_body,
+            with measure_time(service="ses", action="send error email"):
+                response = sesv2.send_email(
+                    FromEmailAddress=f'"OpenScienceLab" <admin@{os.getenv("SES_DOMAIN")}>',
+                    Destination={
+                        "ToAddresses": [os.getenv("SES_EMAIL")],
+                    },
+                    ReplyToAddresses=[os.getenv("SES_EMAIL")],
+                    Content={
+                        "Simple": {
+                            "Subject": {
+                                "Data": "Error in sending email",
                                 "Charset": "UTF-8",
+                            },
+                            "Body": {
+                                "Html": {
+                                    "Data": html_body,
+                                    "Charset": "UTF-8",
+                                },
                             },
                         },
                     },
-                },
-            )
+                )
 
             logger.info(f"Send email response: {response}")
 

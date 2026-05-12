@@ -10,6 +10,7 @@ from util.cognito import LOGIN_URL, LOGOUT_URL, FORGOT_PASSWORD_URL, SIGNUP_URL
 from jinja2 import Environment, FileSystemLoader, StrictUndefined, select_autoescape
 
 from aws_lambda_powertools import Logger
+from aws_lambda_powertools.event_handler import Response
 
 logger = Logger(child=True)
 
@@ -25,6 +26,8 @@ ENV = Environment(
     lstrip_blocks=True,
     keep_trailing_newline=True,
 )
+
+SITE_KEY = os.getenv("RECAPTCHA_SITE_KEY")
 
 NAV_BAR_OPTIONS = [
     {
@@ -106,6 +109,7 @@ def render_template(content, input=None, name=None, title=None):
         "return_path": f"&state={return_path}" if return_path else "",
         "reset_password_url": FORGOT_PASSWORD_URL,
         "reset_mfa_url": "/mfa",
+        "site_key": SITE_KEY,
     }
     if input:
         template_input.update(input)
@@ -134,6 +138,8 @@ def portal_template(name=None, title=None, response=200):
             elif isinstance(content, dict):
                 # Else if return value is dict, update page_dict with provided values
                 page_dict.update(content)
+            elif isinstance(content, Response):
+                return content
 
             # Render page
             body = render_template(**page_dict)

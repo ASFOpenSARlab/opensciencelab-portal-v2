@@ -5,4 +5,5 @@ defaults = {
     "require_profile_update": True,
     "labs": {},
     "_rec_counter": 1,
+    "token_usage": [],
 }

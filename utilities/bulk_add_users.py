@@ -249,8 +249,6 @@ def main():
             "username": username,
             "action": action,
             "lab_profiles": args.profiles,
-            "time_quota": "",
-            "lab_country_status": "something",
         }
 
         # Add user

@@ -3,8 +3,11 @@
 <html lang="en">
     {% include 'head.j2' %}
     <body>
-        {% include './noscript.j2' %}
-        {% include './navbar.j2' %}
-        {{ content }}
+        <div class="content-wrapper">
+            {% include './noscript.j2' %}
+            {% include './navbar.j2' %}
+            {{ content }}
+        </div>
+        {% include 'asf_footer.j2' %}
     </body>
 </html>

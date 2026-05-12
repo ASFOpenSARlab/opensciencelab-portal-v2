@@ -17,8 +17,12 @@ from util.cognito import (
     set_mfa_reset_values,
     reset_user_mfa_with_password,
     get_cognito_user_attribute,
+    sign_out_user,
+    LOGOUT_URL,
 )
 from util import send_email
+from util.auth import delete_cookies
+from util.captcha import submit_captcha_challenge
 
 from aws_lambda_powertools import Logger
 from aws_lambda_powertools.event_handler.api_gateway import Router
@@ -78,7 +82,7 @@ def do_mfa_reset(username):
         logger.error(f"Email failed to send: {reason}")
         return False
 
-    logger.info("Email sent")
+    logger.info(f"MFA Email sent to {cog_email}")
     return True
 
 
@@ -102,14 +106,38 @@ def reset_post():
     form = form_body_to_dict(mfa_router.current_event.body)
     username = form.get("username")
     password = form.get("password")
+    secret_key = form.get("recaptchaToken")
 
-    if not verify_user_password(username, password):
+    recaptcha_score = submit_captcha_challenge(secret_key)
+    recaptcha_threshold = float(os.getenv("RECAPTCHA_THRESHOLD"))
+    if not isinstance(recaptcha_threshold, float):
+        # Check if recaptcha threshold is set correctly
+        req_content = render_template(
+            name="mfa_reset_request.j2",
+            input={
+                "username": username,
+                "warning": f"Threshold misconfigured: {type(recaptcha_threshold).__name__} : {recaptcha_threshold}",
+            },
+            content="",
+        )
+    elif recaptcha_score <= recaptcha_threshold:
+        # Check if user is likely bot
+        logger.info({"response": "Likely bot detected"})
+        # Render warning as if credentials were incorrect
+        req_content = render_template(
+            name="mfa_reset_request.j2",
+            input={"username": username, "warning": "Username or Password not found."},
+            content="",
+        )
+    elif not verify_user_password(username, password):
+        # Verify credentials are correct
         req_content = render_template(
             name="mfa_reset_request.j2",
             input={"username": username, "warning": "Username or Password not found."},
             content="",
         )
     else:
+        # Reset MFA
         if not do_mfa_reset(username):
             warning = (
                 "Could not send MFA Reset email, please email the OSL admins at "
@@ -168,23 +196,41 @@ def reset_code_post():
     mfa_reset_code = form.get("mfa_reset_code")
 
     if reset_user_mfa_with_password(username, password, mfa_reset_code):
+        # Successful reset, delete users cookies and redirect to login
         logger.info(f"MFA successfully reset for {username}")
-        req_content = (
-            "MFA Reset Completed, <a href='/'>Log In</a> to configure your new MFA code"
-        )
-    else:
-        req_content = render_template(
-            name="mfa_reset_return.j2",
-            input={
-                "username": username,
-                "mfa_reset_code": mfa_reset_code,
-                "warning": (
-                    "Error resetting MFA. Please verify username, "
-                    "password and reset code."
+
+        # Log user out of their cognito session
+        sign_out_user(username)
+
+        # Confirm MFA Reset success
+        return wrap_response(
+            body=render_template(
+                content=render_template(
+                    title="",
+                    name="mfa_reset_success.j2",
+                    content="",
+                    input={"logout_url": LOGOUT_URL},
                 ),
-            },
-            content="",
+                title="OpenScienceLab - MFA successfully reset",
+                name="logged-out.j2",
+            ),
+            code=200,
+            cookies=delete_cookies(),
         )
+
+    # MFA Reset failed
+    req_content = render_template(
+        name="mfa_reset_return.j2",
+        input={
+            "username": username,
+            "mfa_reset_code": mfa_reset_code,
+            "warning": (
+                "Error resetting MFA. Please verify username, password and reset code."
+            ),
+        },
+        content="",
+    )
+
     return wrap_response(
         render_template(
             content=req_content,

@@ -7,7 +7,8 @@ from util.responses import wrap_response
 from util.format import portal_template
 from util.auth import encrypt_data, require_access
 from util.session import current_session
-from util.user import User
+from objs.user import User
+from objs.lab import Lab
 
 from aws_lambda_powertools import Logger
 from aws_lambda_powertools.event_handler.api_gateway import Router
@@ -48,7 +49,7 @@ def get_portal_hub_auth():
     # /portal/hub/auth?next_url=%2Flab%2Fsmce-test-opensarlab%2Fhub%2Fhome
     next_url = hub_router.current_event.query_string_parameters.get("next_url", None)
     username = current_session.auth.cognito.username
-    logger.info(f"GET auth: {next_url=}, (username = {username}")
+    logger.debug(f"GET auth: {next_url=}, (username = {username}")
 
     return wrap_response(
         body={"Redirect": next_url},
@@ -95,12 +96,14 @@ def post_portal_hub_auth():
     post_data = hub_router.current_event.body
     post_data_decoded = json.loads(base64.b64decode(post_data).decode("utf-8"))
     username = post_data_decoded["username"]
-    logger.info(f"Request user info = {username=}")
+    lab_short_name = post_data_decoded.get("lab_short_name", "")
+    logger.debug(f"Request user info = {username=}")
 
+    lab = Lab(lab_short_name) if lab_short_name else False
     user = User(username=username, create_if_missing=False)
 
     data = {
-        "admin": user.is_admin(),
+        "admin": user.is_admin() or (lab and user.is_lab_manager(lab)),
         "roles": user.access,
         "name": f"{username}",
         "has_2fa": True,

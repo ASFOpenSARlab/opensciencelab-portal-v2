@@ -1,0 +1,77 @@
+{# djlint:off H021 #}
+<hr>
+<h3>Access Requests:</h3>
+<br>
+{% for request in access_requests %}
+    <div style="border: 1px solid #000;
+                width:90%;
+                padding: 10px 10px 10px 10px">
+        <span class="font-20"
+              style="display: inline;
+                     position: relative;
+                     padding: 5px 10px;
+                     top: -1.0em;
+                     border: 1px solid #000;
+                     background: #fff;
+                     margin: 0.5em 2px 0 4px">
+            <b>{{ request["lab_friendly_name"] }}</b>:
+            {% if request["status"] == "rejected" %}
+                <span style="color: #8b0000"><b>{{ request["status"] }}</b></span>
+            {% elif request["status"] == "approved" %}
+                <span style="color: #006400"><b>{{ request["status"] }}</b></span>
+            {% elif request["status"] == "pending" %}
+                <span style="color: #ff4500">{{ request["status"] }}</span>
+            {% elif request["status"] == "returned" %}
+                <span style="color: darkblue">{{ request["status"] }}</span>
+            {% else %}
+                {{ request["status"] }}
+            {% endif %}
+        </span>
+        <table style="width:100%" border=1>
+            <tr>
+                <th>
+                    Question
+                    {% if user_logged_in.is_admin() %}
+                        - <a href="/portal/access/manage/{{ request["labname"] }}/raw_request/{{ user_profile.username }}/">Full Record</a>
+                        {% if request["answers"]|length > 1 %}({{ request["answers"]|length }} records){% endif %}
+                    {% endif %}
+                </th>
+                <th>Answer</th>
+            </tr>
+            {% for question in access_request_questions[request["labname"]] %}
+                {% if question["name"] in request["answers"][-1] %}
+                    <tr>
+                        <td>
+                            <b>{{ question["question"] }}</b>
+                        </td>
+                        <td>{{ request["answers"][-1][question["name"]] }}</td>
+                    </tr>
+                {% endif %}
+            {% endfor %}
+            {% for question in request["answers"][-1] %}
+                {% if question.startswith('submission_') %}
+                    {% if question == "submission_cc" and request["answers"][-1][question] in restricted_ccs %}
+                        <tr style="background-color: {{ restricted_ccs[request["answers"][-1][question]]["color"] }}">
+                            <td>
+                                <b>{{ question }}</b>
+                            </td>
+                            <td>
+                                {{ request["answers"][-1][question] }} - {{ restricted_ccs[request["answers"][-1][question]]["name"] }} - {{ restricted_ccs[request["answers"][-1][question]]["restrictions"] }}
+                            </td>
+                        </tr>
+                    {% else %}
+                        <tr>
+                            <td>
+                                <b>{{ question }}</b>
+                            </td>
+                            <td>{{ request["answers"][-1][question] }}</td>
+                        </tr>
+                    {% endif %}
+                {% endif %}
+            {% endfor %}
+        </table>
+        {% if user_logged_in.is_admin() %}
+            {% include 'profile_access_request_actions.j2' %}
+        {% endif %}
+    </div>
+{% endfor %}

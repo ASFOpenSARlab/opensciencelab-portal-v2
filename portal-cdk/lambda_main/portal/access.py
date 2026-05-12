@@ -1,21 +1,32 @@
 import json
 from dataclasses import asdict
+from datetime import datetime
 
 from util import swagger
 from util.format import portal_template, jinja_template
 from util.auth import require_access
-from util.user.dynamo_db import get_users_with_lab
-from util.user.user import filter_lab_access
-from util.user import User
+from util.session import current_session
+from objs.user import User, get_users_with_lab, filter_lab_access
 from util.responses import wrap_response, form_body_to_dict, json_body_to_dict
-from util.labs import LABS
+from util.labs import LAB_CONFIGS
+from objs.lab import Lab, ACTIVE_REQUEST_STATUSES
 from util.exceptions import MalformedRequest
+from util.dynamo_db import dynamo_filter, get_all_items, combine_all_dynamo_filters
+from util.manage_access import (
+    validate_edit_user_request,
+    validate_delete_lab_access,
+    validate_set_lab_access,
+    validate_edit_tokens_request,
+    validate_edit_manager_permission_request,
+)
+from util.access_request import request_status_change_action, process_access_token
+from util.send_email import send_user_email
 
 from aws_lambda_powertools.event_handler.api_gateway import Router
 from aws_lambda_powertools.event_handler import content_types
 from aws_lambda_powertools import Logger
 
-logger = Logger(service="APP", level="DEBUG")
+logger = Logger(child=True)
 
 access_router = Router()
 
@@ -25,70 +36,195 @@ access_route = {
     "name": "Access",
 }
 
+# Display sort order for access requests. Higher numbers, top of page
+SORT_ORDER = {
+    "new": 6,
+    "pending": 5,
+    "returned": 4,
+    "approved": 3,
+    "rejected": 2,
+    "imported": 1,
+}
+
 
 # This catches "/portal/access" (this routers 'root'):
 @access_router.get("", include_in_schema=False)
-@require_access(human=True)
+@require_access(["admin"], human=True)
 @portal_template()
 def access_root() -> str:
-    return "Access Labs"
+    user_filter = access_router.current_event.query_string_parameters.get("user_filter")
+    state_filter = access_router.current_event.query_string_parameters.get(
+        "status_filter"
+    )
+
+    # Apply Filters
+    filter = dynamo_filter(
+        attr_name="status",
+        filter_value=[state_filter] if state_filter else ["new", "pending"],
+        filter_action="in",
+    )
+
+    if user_filter:
+        filter = combine_all_dynamo_filters(
+            [filter, dynamo_filter("username", user_filter)]
+        )
+
+    requests = get_all_items(table_id="request", limit=200, filters=filter)
+    requests = sorted(
+        requests,
+        key=lambda x: (SORT_ORDER.get(x["status"], 0), x.get("last_update", "x")),
+        reverse=True,
+    )
+
+    template_input = {"requests": requests}
+
+    logger.info(f"template_input = {template_input}")
+
+    return jinja_template(template_input, "manage_access.j2")
 
 
-@access_router.get("/add_lab", include_in_schema=False)
-@require_access(human=True)
+@access_router.get("/manage/<shortname>/requests/", include_in_schema=False)
+@require_access(["admin", "lab_manager"], human=True)
 @portal_template()
-def add_lab():
-    return "Create New Lab"
+def list_access_requests(shortname):
+    user_filter = access_router.current_event.query_string_parameters.get("user_filter")
+    state_filter = access_router.current_event.query_string_parameters.get(
+        "status_filter"
+    )
+
+    lab = Lab(labname=shortname)
+
+    requests = lab.get_requests()
+
+    # Apply filters
+    if user_filter:
+        requests = [r for r in requests if user_filter in r["username"]]
+    if state_filter:
+        requests = [r for r in requests if r["status"] == state_filter]
+
+    # Sort by status, last updated
+    requests = sorted(
+        requests,
+        key=lambda x: (SORT_ORDER.get(x["status"], 0), x.get("last_update", "x")),
+        reverse=True,
+    )
+
+    # Make sure we don't return > 200 records
+    if len(requests) > 200:
+        requests = requests[:200]
+
+    template_input = {"requests": requests}
+    return jinja_template(template_input, "manage_access.j2")
+
+
+@access_router.get(
+    "/manage/<shortname>/raw_request/<username>/", include_in_schema=False
+)
+@require_access(["admin"], human=True)
+def get_raw_access_request(shortname, username):
+    lab = Lab(labname=shortname)
+    request_data = lab.get_access_request(username)
+    return wrap_response(
+        body=json.dumps(request_data, default=str),
+        code=200 if request_data else 422,
+        content_type=content_types.APPLICATION_JSON,
+    )
+
+
+@access_router.post("/manage/<shortname>/update/<username>/", include_in_schema=False)
+@require_access(["admin"], human=True)
+def update_user_access_request(shortname, username):
+    status_map = {
+        "Reject": "rejected",
+        "Approve": "approved",
+        "Pending": "pending",
+        "Return": "returned",
+    }
+
+    lab = Lab(labname=shortname)
+    # Grab the username of the user making the request
+    admin_username = current_session.auth.cognito.username
+
+    # Parse request
+    body = access_router.current_event.body
+    if body is None:
+        raise MalformedRequest("Malformed update request payload")
+    body = form_body_to_dict(body)
+
+    comment = body.get("comment", None)
+    status = status_map.get(body.get("status"))
+
+    # Take specific actions
+    request_status_change_action(lab, username, status)
+
+    # Change status
+    lab.set_access_request_status(
+        username=username,
+        status=status,
+        reviewer=admin_username,
+        reviewer_comment=comment,
+    )
+
+    # Send the reviewer back to the user's profile
+    next_url = f"/portal/profile/form/{username}"
+    return wrap_response(
+        body={f"Redirect to {next_url}"},
+        code=302,
+        headers={"Location": next_url},
+    )
 
 
 @access_router.get("/manage/<shortname>", include_in_schema=False)
-@require_access("admin", human=True)
+@require_access(["admin", "lab_manager"], human=True)
 @portal_template()
 def manage_lab(shortname):
     template_input = {}
 
-    user_filter = access_router.current_event.query_string_parameters.get("filter")
+    user_filter = access_router.current_event.query_string_parameters.get("user_filter")
+    email_filter = access_router.current_event.query_string_parameters.get(
+        "email_filter"
+    )
     row_limit = 200
 
+    # Grab the username of the user making the request
+    username = current_session.auth.cognito.username
+    user = User(username)
+    lab = LAB_CONFIGS[shortname]
+    lab_obj = Lab(shortname)
+
+    template_input["is_admin"] = user.is_admin()
+
     # Get users of lab, check if lab exists
-    users = get_users_with_lab(shortname, limit=row_limit, username_filter=user_filter)
+    users = get_users_with_lab(
+        shortname,
+        limit=row_limit,
+        username_filter=user_filter,
+        email_filter=email_filter,
+    )
+    # Add is_manager field to visible users who are managers
+    managers = set(lab_obj.managers)
+    for user in users:
+        if user["username"] in managers:
+            user["is_manager"] = True
+            managers.remove(user["username"])
     users = sorted(users, key=lambda x: x["username"])
     template_input["users"] = users
 
-    lab = LABS[shortname]
     template_input["lab"] = lab
+    template_input["allows_requests"] = len(lab.application_questions) > 0
     template_input["rowcount"] = len(users)
     template_input["exceeded"] = len(users) >= row_limit
+    template_input["access_tokens"] = lab_obj.access_tokens
 
     return jinja_template(template_input, "manage.j2")
 
 
-def validate_edit_user_request(body: dict) -> tuple[bool, str]:
-    # check always required keys are provided
-    keys = ["username", "action"]
-    for key in keys:
-        if key not in body:
-            return False, f"{key} not provided to edit_user"
-
-    if body["action"] == "add_user":
-        # check adding user fields provided
-        keys = ["lab_profiles", "time_quota", "lab_country_status"]
-        for key in keys:
-            if key not in body:
-                return False, f"{key} not provided to edit_user"
-        return True, "Read to add user"
-
-    elif body["action"] == "remove_user":
-        # check removing user fields provided
-        return True, "Ready to remove user"
-
-    else:
-        return False, "Invalid action"
-
-
 @access_router.post("/manage/<shortname>/edituser", include_in_schema=False)
-@require_access("admin", human=True)
+@require_access(["admin", "lab_manager"], human=True)
 def edit_user(shortname):
+    # Grab the username of the user making the request
+    caller_username = current_session.auth.cognito.username
+
     # Parse request
     body = access_router.current_event.body
 
@@ -108,17 +244,27 @@ def edit_user(shortname):
     user = User(body["username"])
 
     if body["action"] == "add_user":
+        lab_access: bool = user.get_lab_access()["lab_access"].get(shortname, {})
+        update: bool = lab_access.get("can_user_access_lab", False)
+
         user.add_lab(
             lab_short_name=shortname,
             lab_profiles=[s.strip() for s in body["lab_profiles"].split(",")],
-            time_quota=body["time_quota"].strip() or None,
-            lab_country_status=body["lab_country_status"],
         )
-        logger.info(f'Added user "{body["username"]}" to {shortname}')
+        if update:
+            logger.info(
+                f'{caller_username} updated access for user "{body["username"]}" in {shortname}'
+            )
+        else:
+            logger.info(
+                f'{caller_username} added user "{body["username"]}" to {shortname}'
+            )
 
     elif body["action"] == "remove_user":
         user.remove_lab(shortname)
-        logger.info(f'Removed user "{body["username"]}" from {shortname}')
+        logger.info(
+            f'{caller_username} removed user "{body["username"]}" from {shortname}'
+        )
 
     else:
         error = f"Invalid edit_user action {body['action']}"
@@ -134,18 +280,137 @@ def edit_user(shortname):
     )
 
 
-@access_router.get("/lab", include_in_schema=False)
-@require_access(human=True)
-@portal_template()
-def view_all_labs():
-    return "inspect ALL labs"
+@access_router.post("/manage/<shortname>/editmanager", include_in_schema=False)
+@require_access(["admin", "lab_manager"], human=True)
+def edit_manager_permission(shortname):
+    # Grab the username of the user making the request
+    caller_username = current_session.auth.cognito.username
+
+    # Parse request
+    body = access_router.current_event.body
+
+    if body is None:
+        error = "Body not provided to edit_user"
+        logger.error(error)
+        raise MalformedRequest(error)
+    body = form_body_to_dict(body)
+
+    # Validate request
+    success, message = validate_edit_manager_permission_request(body=body)
+    if not success:
+        logger.error(message)
+        raise MalformedRequest(message)
+
+    # Edit manager permissions
+    user = User(body["username"])
+    lab = Lab(shortname)
+
+    if body["action"] == "grant":
+        if "lab_manager" not in user.access:
+            user.grant_access_role("lab_manager")
+        lab.add_manager(body["username"])
+        logger.info(
+            f'{caller_username} granted lab_manager to "{body["username"]}" in {shortname}'
+        )
+
+    elif body["action"] == "revoke":
+        lab.remove_manager(body["username"])
+        still_manager = False
+        for labname in LAB_CONFIGS.keys():
+            if body["username"] in Lab(labname).managers:
+                still_manager = True
+                break
+        if not still_manager:
+            user.revoke_access_role("lab_manager")
+        logger.info(
+            f'{caller_username} revoked lab_manager from "{body["username"]}" in {shortname}'
+        )
+
+    else:
+        error = f"Invalid edit_manager_permission action {body['action']}"
+        logger.error(error)
+        raise MalformedRequest(error)
+
+    # Send the user to the management page
+    next_url = f"/portal/access/manage/{shortname}"
+    return wrap_response(
+        body={f"Redirect to {next_url}"},
+        code=302,
+        headers={"Location": next_url},
+    )
 
 
-@access_router.get("/lab/<lab>", include_in_schema=False)
-@require_access(human=True)
-@portal_template()
-def view_lab(lab):
-    return f"inspect lab {lab}"
+@access_router.post("/manage/<shortname>/edittokens", include_in_schema=False)
+@require_access(["admin", "lab_manager"], human=True)
+def edit_tokens(shortname):
+    # Grab the username of the user making the request
+    caller_username = current_session.auth.cognito.username
+
+    lab = Lab(shortname)
+
+    # Parse request
+    body = access_router.current_event.body
+
+    if body is None:
+        error = "Body not provided to edit_tokens"
+        logger.error(error)
+        raise MalformedRequest(error)
+    body = form_body_to_dict(body)
+
+    # Validate request
+    success, message = validate_edit_tokens_request(body=body)
+    if not success:
+        logger.error(message)
+        raise MalformedRequest(message)
+
+    # Edit tokens
+    if body["action"] == "add_token":
+        start_date = (
+            datetime.strptime(body["start_date"], "%Y-%m-%d")
+            if body["start_date"]
+            else None
+        )
+        end_date = (
+            datetime.strptime(body["end_date"], "%Y-%m-%d")
+            if body["end_date"]
+            else None
+        )
+
+        if start_date and end_date:
+            if start_date >= end_date:
+                # Send the user to the management page
+                next_url = f"/portal/access/manage/{shortname}/edittokens"
+                return wrap_response(
+                    body={f"Redirect to {next_url}"},
+                    code=302,
+                    headers={"Location": next_url},
+                )
+
+        success = lab.create_access_token(
+            start_date=start_date,
+            end_date=end_date,
+            profiles=[s.strip() for s in body["lab_profiles"].split(",")],
+        )
+        if success:
+            logger.info(f"{caller_username} added token to {shortname}")
+
+    elif body["action"] == "remove_token":
+        success = lab.remove_access_token(body["token"])
+        if success:
+            logger.info(f"{caller_username} removed token from {shortname}")
+
+    else:
+        error = f"Invalid edit_tokens action {body['action']}"
+        logger.error(error)
+        raise MalformedRequest(error)
+
+    # Send the user to the management page
+    next_url = f"/portal/access/manage/{shortname}"
+    return wrap_response(
+        body={f"Redirect to {next_url}"},
+        code=302,
+        headers={"Location": next_url},
+    )
 
 
 @access_router.get(
@@ -161,8 +426,6 @@ def view_lab(lab):
                             "lab_profiles": ["profile1", "profile2"],
                             "can_user_access_lab": True,
                             "can_user_see_lab_card": False,
-                            "time_quota": "1h",
-                            "lab_country_status": "active",
                         },
                     },
                 ],
@@ -176,7 +439,7 @@ def view_lab(lab):
     },
     tags=[access_route["name"]],
 )
-@require_access("admin", human=False)
+@require_access(["admin"], human=False)
 def get_user_labs(username):
     # Find user in db
     user = User(username=username, create_if_missing=False)
@@ -235,13 +498,21 @@ def get_user_labs(username):
     },
     tags=[access_route["name"]],
 )
-@require_access("admin", human=False)
+@require_access(["admin"], human=False)
 def get_labs_users(shortname):
-    user_filter = access_router.current_event.query_string_parameters.get("filter")
+    user_filter = access_router.current_event.query_string_parameters.get("user_filter")
+    email_filter = access_router.current_event.query_string_parameters.get(
+        "email_filter"
+    )
     row_limit = 200
 
     # Get users of lab, check if lab exists
-    users = get_users_with_lab(shortname, limit=row_limit, username_filter=user_filter)
+    users = get_users_with_lab(
+        shortname,
+        limit=row_limit,
+        username_filter=user_filter,
+        email_filter=email_filter,
+    )
 
     out_payload = {
         "users": users,
@@ -261,77 +532,6 @@ def get_labs_users(shortname):
     )
 
 
-def validate_set_lab_access(put_lab_request: dict) -> tuple[bool, str]:
-    # Validate input is correct type
-    if not isinstance(put_lab_request, dict):
-        return False, "Body is not correct type"
-
-    # Validate input has key "labs"
-    if "labs" not in put_lab_request:
-        return False, "Does not contain 'labs' key"
-
-    for lab_name in put_lab_request["labs"].keys():
-        # Ensure lab exist
-        if lab_name not in LABS:
-            return False, f"Lab does not exist: {lab_name}"
-
-        # Check all lab fields exist and are correct type
-        all_fields = {
-            "lab_profiles": list,
-            "time_quota": str,
-            "lab_country_status": str,
-        }
-        for field, _ in all_fields.items():
-            if put_lab_request["labs"][lab_name].get(field) is None:
-                return False, f"Field '{field}' not provided for lab {lab_name}"
-
-            if not isinstance(
-                put_lab_request["labs"][lab_name][field], all_fields[field]
-            ):
-                return False, f"Field '{field}' not of type {all_fields[field]}"
-
-        # Ensure all profiles exist for a given lab
-        for profile in put_lab_request["labs"][lab_name]["lab_profiles"]:
-            # If the lab doesn't have the profile you're trying to set:
-            if profile not in LABS[lab_name].allowed_profiles:
-                return False, f"Profile '{profile}' not allowed for lab {lab_name}"
-
-    return True, "Success"
-
-
-def validate_delete_lab_access(
-    delete_lab_request: dict, user: User
-) -> tuple[bool, str]:
-    # Validate input is correct type
-    if not isinstance(delete_lab_request, dict):
-        return False, "Body is not correct type"
-
-    # Validate input has key "labs"
-    if "labs" not in delete_lab_request:
-        return False, "Does not contain 'labs' key"
-
-    for lab_name, lab_data in delete_lab_request["labs"].items():
-        # Ensure lab exist
-        if lab_name not in LABS:
-            return False, f"Lab does not exist: {lab_name}"
-
-        if not isinstance(lab_data, dict):
-            return False, f"Lab data for {lab_name} is not a dict"
-    ## Get all the keys from delete_lab_request, that are NOT in user labs:
-    # (Need to do this last, since lab A might fail linting above
-    #  and you'd want error that first)
-    already_removed_labs = [
-        key for key in delete_lab_request["labs"] if key not in user.labs
-    ]
-    if already_removed_labs:
-        # Still return 200, but change the message:
-        return (
-            True,
-            f"User isn't already apart of labs: {', '.join(already_removed_labs)}",
-        )
-    return True, "Success"
-
-
 @access_router.put(
     "/labs/<username>",
     description="""
@@ -346,8 +546,6 @@ Sets what labs a user can access. Can be used to both add/remove labs.
     "labs": {
         "<lab_name>": {
             "lab_profiles": ["m6a.large"],
-            "time_quota": "",
-            "lab_country_status": "protected",
         }
     }
 }
@@ -365,7 +563,7 @@ Any previously added labs not listed in dictionary, will be removed from the use
     },
     tags=[access_route["name"]],
 )
-@require_access("admin", human=False)
+@require_access(["admin"], human=False)
 def set_user_labs(username):
     # Check user exists
     user = User(username=username, create_if_missing=False)
@@ -415,7 +613,7 @@ Removes labs from a user. Does not affect labs not listed.
     },
     tags=[access_route["name"]],
 )
-@require_access("admin", human=False)
+@require_access(["admin"], human=False)
 def delete_user_labs(username):
     # Check user exists
     user = User(username=username, create_if_missing=False)
@@ -436,3 +634,116 @@ def delete_user_labs(username):
         code=200 if success else 422,
         content_type=content_types.APPLICATION_JSON,
     )
+
+
+@access_router.get("/apply/<shortname>", include_in_schema=False)
+@require_access(human=True)
+@portal_template()
+def apply_to_lab(shortname):
+    if not LAB_CONFIGS.get(shortname):
+        return wrap_response(
+            body="Redirecting to Portal",
+            headers={"Location": "/portal"},
+            code=302,
+        )
+
+    # Grab the username of the user making the request
+    username = current_session.auth.cognito.username
+
+    # user_profile = User(username=username, create_if_missing=False)
+    # active_access_requests = user_profile.get_requests(status=["new", "pending"])
+    lab = Lab(shortname)
+    access_requests = lab.get_access_request(username)
+
+    template_input = {
+        "labname": shortname,
+        "lab_friendly_name": LAB_CONFIGS[shortname].friendly_name,
+        "application_questions": LAB_CONFIGS[shortname].application_questions,
+        "lab_application_description": LAB_CONFIGS[shortname].application_description,
+    }
+    if access_requests and access_requests["status"] in ACTIVE_REQUEST_STATUSES:
+        template_input["active_request"] = access_requests["answers"][-1]
+    return jinja_template(template_input, "application.j2")
+
+
+@access_router.post("/apply/<shortname>", include_in_schema=False)
+@require_access(human=True)
+def submit_application(shortname):
+    # Grab the username of the user making the request
+    username = current_session.auth.cognito.username
+    # Parse request
+    body = access_router.current_event.body
+
+    if body is None:
+        error = "Body not provided to submit_application"
+        logger.error(error)
+        raise MalformedRequest(error)
+    body = form_body_to_dict(body)
+    # If fixing checkbox implementation, map checkbox values to bool here
+
+    # Add Application
+    lab = Lab(shortname)
+    lab.add_access_request(
+        answers=body,
+        username=username,
+    )
+
+    application_received_email = {
+        "to": {"username": username},
+        "from": {username: "osl-admin"},
+        "subject": "OpenScienceLab Access Application Received",
+        "html_body": (
+            f"Hello {username},<br><br>"
+            f"We've received your request for access to <b>{LAB_CONFIGS[shortname].friendly_name}</b>.<br>"
+            "Applications are evaluated on a weekly basis. We will inform you of any "
+            "decision as soon as possible.<br><br>"
+            "If you have any concerns about the timeliness of your application review, "
+            "please email us at uaf-jupyterhub-admin@alaska.edu.<br><br>"
+            "The OpenScienceLab Admin Team"
+        ),
+    }
+
+    result, reason = send_user_email(application_received_email)
+    if result == "Error":
+        logger.error(
+            f"Application reciept acknowledgement email failed to send: {reason}"
+        )
+
+    # Send the user to home page
+    return wrap_response(
+        body="Redirecting to Portal",
+        headers={"Location": "/portal"},
+        code=302,
+    )
+
+
+@access_router.get("/token", include_in_schema=False)
+@require_access(human=True)
+@portal_template()
+def input_access_token():
+    return jinja_template({}, "token.j2")
+
+
+@access_router.post("/token", include_in_schema=False)
+@require_access(human=True)
+@portal_template()
+def apply_access_token():
+    # Grab the username of the user making the request
+    username = current_session.auth.cognito.username
+    # Parse request
+    body = access_router.current_event.body
+    body = form_body_to_dict(body)
+
+    # Grab the token value
+    token_value = body["token"]
+
+    # Process the token
+    granted = process_access_token(token_value, username)
+
+    if not granted:
+        template_input = {"warning": "Token could not be applied"}
+        return jinja_template(template_input, "token.j2")
+
+    # Send the user back to portal root
+    template_input = {"note": "Token applied!"}
+    return jinja_template(template_input, "token.j2")

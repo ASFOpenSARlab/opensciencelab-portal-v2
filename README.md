@@ -1,5 +1,13 @@
 # opensciencelab-portal-v2
 
+## Table of Contents
+
+1. [Architecture](#architecture)
+2. [Directoy Structure](#directory-structure)
+3. [Deployments](#deployments)
+4. [Notifications](#notifications)
+5. [Setup Google Form POSTing](#google-form-posting)
+
 ## Architecture
 
 At the most basic level, the new portal is a Python Lambda app, back-ended by AWS DynamoDB, and
@@ -23,17 +31,41 @@ Permissions for GH Actions when deploying, along with the CDK infrastructure.
 
 ### AWS Accounts
 
-| Maturity | Environment | AWS Account  |
-|----------| -- |--------------|
-| `dev`    | Non-prod | 97********89 |
-| `test`   | Non-Prod | 97********89 |
-| `stage`  | Prod | 97********89 |
-| `prod`   | Prod | 70********05 |
+| Maturity | Environment | AWS Account      |
+| -------- | ----------- | ---------------- |
+| `dev`    | Non-prod    | 97**\*\*\*\***89 |
+| `test`   | Non-Prod    | 97**\*\*\*\***89 |
+| `stage`  | Prod        | 97**\*\*\*\***89 |
+| `prod`   | Prod        | 70**\*\*\*\***05 |
+
+### Managing Roles
+
+#### Admin
+
+In the manage users page (/portal/users) \
+To grant admin permissions
+
+- Press the `Grant` button in the `Manage Admin Status` column of a non admin
+
+To revoke admin permissions
+
+- Press the `Revoke` button in the `Manage Admin Status` column of an admin
+
+#### Lab_manager
+
+To manage if a user is a lab manager of a lab, go to that labs manage page \
+In that labs manage page, to grant lab_manager permissions
+
+- Press the `Grant Manager` button in the `Tools` column of a non manager
+
+To revoke lab_manager permissions
+
+- Press the `Revoke Manager` button in the `Tools` column of a manager
 
 ### Maturities
 
 - Non-`main` branches with specified prefix/suffix (eg `ab/ticket.feature`) will deploy a matched
-prefix (ie `ab`) dev maturity ( and `dev` GitHub environment!) deployment.
+  prefix (ie `ab`) dev maturity ( and `dev` GitHub environment!) deployment.
 - Merges into `main` branch will create/update the `test` maturity deployment.
 - Merges from `main` into `stage` will create/update the `stage` maturity deployment.
 - Symantic Tags (where `v#.#.#` is `v[Major].[Minor].[Patch]`) will deploy to Prod.
@@ -76,7 +108,7 @@ To bypass this error,
 
 The Makefile + Docker process will need to communicate with AWS. In actions, this is done through an
 OIDC Provider in AWS and requires no authentication. Locally however, a profile must be present in
-`~/.aws/credentials` and the `AWS_DEFAULT_PROFILE` env var needs to be set accordingly, ***OR***
+`~/.aws/credentials` and the `AWS_DEFAULT_PROFILE` env var needs to be set accordingly, **_OR_**
 `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` must be set. Either solution works, and will get
 automagically populated into the dockerized build/deploy environment.
 
@@ -140,7 +172,7 @@ export AWS_DEFAULT_ACCOUNT=`aws sts get-caller-identity --query 'Account' --outp
 ...
 ... this takes a while ...
 ...
-[ root@a7a585db4d88:/cdk ]# 
+[ root@a7a585db4d88:/cdk ]#
 ```
 
 Change to `/code`, the virtual mount point, and run `make synth-portal` to test your
@@ -233,4 +265,11 @@ Required variables:
 #### GitHub Actions
 
 - [`lint.yaml`](.github/workflows/lint.yaml) - Automate code linting and formatting enforcement
-- [`on-pull-request-notify.yaml`](.github/workflows/on-pull-request-notify.yaml) - Alert SES mattermost channel about new and modified non-draft pull requests.
+
+## Notifications
+
+For setting up and using the toastr notifications, see the [Notifications README](./portal-cdk/lambda_main/util/README.md#notifications).
+
+## Google Form POSTing
+
+To receive Google Form submissions at a Portal endpoint, see the [Google Form POSTing README](./GoogleFormPost.md)

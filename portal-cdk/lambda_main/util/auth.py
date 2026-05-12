@@ -3,7 +3,8 @@ import os
 import datetime
 from cachetools import TTLCache
 
-from util.user import User
+from objs.user import User
+from objs.lab import Lab
 from util.responses import wrap_response
 from util.exceptions import (
     BadSsoToken,
@@ -14,7 +15,10 @@ from util.exceptions import (
 )
 from util.session import current_session, PortalAuth
 import util.cognito
+from util.exceptions import MalformedRequest
 from util.user_ip_logs_stream import send_user_ip_logs, update_user_ip_in_db
+from util.log_timer import measure_time
+from util.auth_helpers import get_ip_and_country
 
 import requests
 import jwt
@@ -73,12 +77,11 @@ def refresh_map(refresh_token):
         tokens = REFRESH_CACHE[refresh_token]
         access_token = tokens["access_token"]
         if validate_jwt(access_token):
-            logger.info("Access token found in refresh map")
+            logger.debug("Access token found in refresh map")
             return tokens
 
     tokens = get_tokens_from_refresh(refresh_token)
     if not tokens.get("access_token"):
-        logger.warning("Refresh token exchange failed")
         return {}
 
     access_token = tokens.get("access_token")
@@ -98,7 +101,8 @@ def get_key_validation():
     if not JWT_VALIDATION:
         public_keys = {}
         logger.debug({"keys": util.cognito.COGNITO_PUBLIC_KEYS_URL})
-        jwks = requests.get(util.cognito.COGNITO_PUBLIC_KEYS_URL).json()
+        with measure_time(service="cognito-direct", action="load jwks"):
+            jwks = requests.get(util.cognito.COGNITO_PUBLIC_KEYS_URL).json()
         for jwk in jwks["keys"]:
             kid = jwk["kid"]
             public_keys[kid] = RSAAlgorithm.from_jwk(json.dumps(jwk))
@@ -141,8 +145,9 @@ def get_token_data_and_headers():
 def revoke_refresh_token(refresh_token):
     data, headers = get_token_data_and_headers()
     data["token"] = refresh_token
-    response = requests.post(REVOKE_TOKEN_URL, data=data, headers=headers).content
-    logger.info("Revoke token response: %s", response)
+    with measure_time(service="cognito-direct", action="revoke token"):
+        response = requests.post(REVOKE_TOKEN_URL, data=data, headers=headers).content
+    logger.debug("Revoke token response: %s", response)
 
 
 def get_tokens_from_refresh(refresh_token):
@@ -153,7 +158,8 @@ def get_tokens_from_refresh(refresh_token):
     logger.debug("Refresh Token exchange @ %s w/ %s", TOKEN_URL, data)
 
     # Attempt to exchange a code for a Token
-    token_data = requests.post(TOKEN_URL, data=data, headers=headers).json()
+    with measure_time(service="cognito-direct", action="token exchange"):
+        token_data = requests.post(TOKEN_URL, data=data, headers=headers).json()
     logger.debug("post response token_data: %s", token_data)
     if token_data.get("access_token"):
         logger.debug("Successfully converted refresh to access token")
@@ -179,7 +185,8 @@ def validate_code(code, request_host):
     )
 
     # Attempt to exchange a code for a Token
-    token_data = requests.post(TOKEN_URL, data=data, headers=headers).json()
+    with measure_time(service="cognito-direct", action="validate token"):
+        token_data = requests.post(TOKEN_URL, data=data, headers=headers).json()
 
     if token_data.get("id_token"):
         return token_data
@@ -269,6 +276,16 @@ def delete_cookies():
 
 @lambda_handler_decorator
 def process_auth(handler, event, context):
+    # Skip auth for /static/
+    request_uri = event.get("rawPath", "/")[0:1000]
+    if request_uri.startswith("/static"):
+        return handler(event, context)
+
+    # Tag logger with IP/Country
+    ip_address, country_code = get_ip_and_country(event)
+    logger.append_keys(ip=ip_address)
+    logger.append_keys(country_code=country_code)
+
     # Cookies we care about:
     cookies = get_cookies_from_event(event)
     current_session.auth = PortalAuth()
@@ -318,11 +335,15 @@ def process_auth(handler, event, context):
     else:
         logger.debug(f"No {COGNITO_JWT_COOKIE} cookie provided")
 
+    # If we know the username, attach it to the logs
+    if current_session.auth.cognito.username:
+        logger.append_keys(username=current_session.auth.cognito.username)
+
     # process the actual request
     return handler(event, context)
 
 
-def require_access(access="user", human: bool = False):
+def require_access(access: list = ["user"], human: bool = False):
     def inner(func):
         def wrapper(*args, **kwargs):
             # app is pulled in from outer scope via a function attribute
@@ -358,14 +379,9 @@ def require_access(access="user", human: bool = False):
             # Makes sure that capture IPs for human endpoints only.
             # Access role is included in log so that we can filter admin traffic
             if human:
-                ip_address_with_port = current_session.app.current_event.get(
-                    "headers", {}
-                ).get("cloudfront-viewer-address", "0.0.0.0")
-                country_code = current_session.app.current_event.get("headers", {}).get(
-                    "cloudfront-viewer-country", "ZZ"
+                ip_address, country_code = get_ip_and_country(
+                    current_session.app.current_event
                 )
-
-                ip_address = ip_address_with_port.rsplit(":", 1)[0]
 
                 if ip_address != "0.0.0.0" and country_code != "ZZ":
                     send_user_ip_logs(
@@ -385,7 +401,7 @@ def require_access(access="user", human: bool = False):
                     )
 
             # Ensure user has access they are trying to achieve
-            if access not in current_session.user.access:
+            if all(role not in current_session.user.access for role in access):
                 logger.warning(
                     "User %s attempted to access %s which requires %s access (user has %s Privs)",
                     username,
@@ -422,7 +438,37 @@ def require_access(access="user", human: bool = False):
                     code=302,
                     headers={"Location": requested_url},
                 )
-            logger.info("User %s has %s access", username, access)
+            logger.debug("User %s has %s access", username, access)
+
+            # If we're checking for lab_manager, make sure we're not an admin and are a lab_manager
+            if (
+                not current_session.user.is_admin()
+                and "lab_manager" in current_session.user.access
+                and "lab_manager" in access
+            ):
+                # Get name of lab attempting to be accessed
+                shortname = kwargs.get("shortname")
+
+                if not shortname:
+                    # Invalid use of lab_manager
+                    raise MalformedRequest(
+                        "`shortname` must be a parameter for any function that allows `lab_manager`"
+                    )
+
+                # Get lab
+                lab = Lab(labname=shortname)
+
+                # Make sure the user is a manager of this lab
+                if not current_session.user.is_lab_manager(lab):
+                    logger.info(
+                        f"User {username} attempted to access requests page for lab {shortname}. Does not have permissions"
+                    )
+                    return wrap_response(
+                        body="Redirecting to Portal",
+                        headers={"Location": "/portal"},
+                        code=302,
+                    )
+
             # Run the endpoint
             return func(*args, **kwargs)
 

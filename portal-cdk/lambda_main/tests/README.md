@@ -16,7 +16,7 @@ You can use [conftest.py](https://docs.pytest.org/en/stable/reference/fixtures.h
 
 We use [moto](https://docs.getmoto.org/en/latest/) for this. You can use it to easily patch any boto3 client/resource/whatever, and it'll create a virtual version for you to work against. This is useful for testing code that interacts with AWS services, like S3, DynamoDB, etc.
 
-For a complete example, see the [test_user.py](./util/user/test_user.py) file on testing with classes.
+For a complete example, see the [test_user.py](./objs/user/test_user.py) file on testing with classes.
 
 ## Hitting the API with the `requests` Library
 
@@ -50,9 +50,9 @@ For a complete example, see the [test_user.py](./util/user/test_user.py) file on
   response = requests.put(f"{url}/endpoint", cookies=cookies, json={"key": "value"})
 
   # For Example:
-  >>> r = requests.put(f"{url}/portal/access/labs/basic_user", cookies=cookies, json={'labs':{'shortname2':{"lab_profiles":["m6a.large"],"can_user_access_lab":True, "can_user_see_lab_card":True, "time_quota":"","lab_country_status":"protected"}}})
+  >>> r = requests.put(f"{url}/portal/access/labs/basic_user", cookies=cookies, json={'labs':{'shortname2':{"lab_profiles":["m6a.large"],"can_user_access_lab":True, "can_user_see_lab_card":True,}}})
   >>> r.content
-  b'{"result": "Success", "body": {"labs": {"shortname2": {"lab_profiles": ["m6a.large"], "can_user_access_lab": true, "can_user_see_lab_card": true, "time_quota": "", "lab_country_status": "protected"}}}}'
+  b'{"result": "Success", "body": {"labs": {"shortname2": {"lab_profiles": ["m6a.large"], "can_user_access_lab": true, "can_user_see_lab_card": true,}}}}'
   ```
 
 - If you have to test with MALFORMED json, you can't use the `json={'a':1}` or it'll fix the json for you (the error being `'` instead of `"` around the `a`). String is technically valid json, so you can't do `json="asdf"` or `json="{'a':1}"` either.

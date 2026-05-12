@@ -1,11 +1,11 @@
 pydantic==2.11.7
 pydantic_core==2.33.2
-pytest==7.4.0
+pytest==9.0.3
 pytest-mock==3.14.0
-pytest-cov==6.1.1
+pytest-cov==7.1.0
 aws_lambda_powertools==3.13.0
 moto[dynamodb,cognito-idp]==5.1.6
-joserfc==1.1.0
+joserfc==1.6.3
 boto3==1.40.36
-pytz==2025.2
+pytz==2026.1.post1
 

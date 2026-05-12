@@ -50,7 +50,9 @@ class TestPortalIntegrations:
         monkeypatch.setattr("portal.User", lambda *args, **kwargs: user)
         monkeypatch.setattr("util.auth.User", lambda *args, **kwargs: user)
 
-        monkeypatch.setattr("util.user.user.LABS", helpers.FAKE_LABS)
+        monkeypatch.setattr("objs.user.user.LAB_CONFIGS", helpers.FAKE_LAB_CONFIGS)
+
+        monkeypatch.setattr("portal.Lab", lambda *args, **kwargs: helpers.FakeLab())
 
         event = helpers.get_event(path="/portal", cookies=fake_auth)
         ret = main.lambda_handler(event, lambda_context)
@@ -66,7 +68,9 @@ class TestPortalIntegrations:
         monkeypatch.setattr("portal.User", lambda *args, **kwargs: user)
         monkeypatch.setattr("util.auth.User", lambda *args, **kwargs: user)
 
-        monkeypatch.setattr("util.user.user.LABS", helpers.FAKE_LABS)
+        monkeypatch.setattr("objs.user.user.LAB_CONFIGS", helpers.FAKE_LAB_CONFIGS)
+
+        monkeypatch.setattr("portal.Lab", lambda *args, **kwargs: helpers.FakeLab())
 
         event = helpers.get_event(path="/portal", cookies=fake_auth)
         ret = main.lambda_handler(event, lambda_context)

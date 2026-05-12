@@ -1,22 +1,24 @@
-from util.format import (
-    portal_template,
-)
+from util.format import portal_template, jinja_template
 from util.auth import require_access
 from util.session import current_session
-from util.user import User
+from objs.user import User
+from objs.lab import LOCKED_REQUEST_STATUSES
 from util.responses import wrap_response, form_body_to_dict
-from util.labs import LABS
+from util.labs import LAB_CONFIGS
 from util.user_ip_logs_stream import get_user_ip_logs
+from util.access_request import (
+    compile_user_access_requests,
+    get_country_list,
+    get_restricted_countries,
+)
 
-from pathlib import Path
-import json
 from urllib.parse import urlencode
 from typing import Any
 
 from aws_lambda_powertools import Logger
 from aws_lambda_powertools.event_handler.api_gateway import Router
 
-logger = Logger(service="APP", level="DEBUG")
+logger = Logger(child=True)
 
 profile_router = Router()
 
@@ -92,27 +94,33 @@ def profile_bob():
 @profile_router.get("/form/<username>", include_in_schema=False)
 @require_access(human=True)
 @enforce_profile_access()
-@portal_template(name="profile.j2")
+@portal_template()
 def profile_user(username: str):
     user_ip_results = get_user_ip_logs(username=username, limit=5)
 
     user_logged_in = current_session.user
     user_profile = User(username=username, create_if_missing=False)
-    page_dict = {
-        "content": f"Profile for user {user_profile.username}",
-        "input": {
-            "user_logged_in": user_logged_in,
-            "user_profile": user_profile,
-            "labs": LABS,
-            "user_ip_results": user_ip_results,
-            "default_value": "Choose...",
-            "warning_missing": "Value is missing",
-        },
+
+    access_requests, access_request_questions = compile_user_access_requests(
+        user_profile, user_logged_in
+    )
+
+    logger.debug(f"access_request_questions: {access_request_questions}")
+
+    template_input = {
+        "user_logged_in": user_logged_in,
+        "user_profile": user_profile,
+        "labs": LAB_CONFIGS,
+        "user_ip_results": user_ip_results,
+        "default_value": "Choose...",
+        "warning_missing": "Value is missing",
+        "access_requests": access_requests,
+        "access_request_questions": access_request_questions,
+        "locked_status": LOCKED_REQUEST_STATUSES,
     }
 
-    CWD = Path(__file__).parent.resolve().absolute()
-    with open(CWD / "../data/countries.json", "r", encoding="utf-8") as f:
-        page_dict["input"]["countries"] = json.loads(f.read())
+    template_input["countries"] = get_country_list()
+    template_input["restricted_ccs"] = get_restricted_countries()
 
     # Get query string if present
     query_params = profile_router.current_event.query_string_parameters
@@ -127,8 +135,8 @@ def profile_user(username: str):
 
     # Append profile to page_dict and return
     if profile:
-        page_dict["input"]["profile"] = profile
-    return page_dict
+        template_input["profile"] = profile
+    return jinja_template(template_input, "profile.j2")
 
 
 def validate_profile_dict(query_dict: dict) -> tuple[bool, dict[str, str]]:

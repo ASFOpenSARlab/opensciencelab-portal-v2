@@ -10,7 +10,7 @@
                     <h4>Username:</h4>
                 </td>
                 <td>
-                    <input name="username" value="{{ username }}">
+                    <input name="username" id="username" value="{{ username }}">
                 </td>
             </tr>
             <tr>
@@ -18,15 +18,31 @@
                     <h4>Password:</h4>
                 </td>
                 <td>
-                    <input name="password" type="password">
+                    <input name="password" id="password" type="password">
                 </td>
             </tr>
             <tr>
                 <td></td>
                 <td>
-                    <input type="submit" value="Request Reset">
+                    <button type="button" onclick="onClick(event)">Request Reset</button>
                 </td>
             </tr>
         </form>
     </table>
 </div>
+<script>
+    function onClick(e) {
+    e.preventDefault();
+    grecaptcha.ready(function() {
+        grecaptcha.execute("{{ site_key }}", {action: 'submit_mfa'}).then(function(token) {
+            const input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = 'recaptchaToken';
+            input.value = token;
+            
+            e.target.form.appendChild(input);
+            e.target.form.submit();
+        });
+    });
+    }
+</script>
