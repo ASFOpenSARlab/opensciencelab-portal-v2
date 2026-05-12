@@ -160,6 +160,25 @@ PROD_LAB_CONFIGS = {
         default_profiles=["m6a.large", "m6a.xlarge"],
         allows_tokens=True,
     ),
+    "ssbw26": BaseLabConfig(
+        short_lab_name="ssbw26",
+        friendly_name="SSBW 2026",
+        description="Seismology Skill Building Workshop for Summer 2026, powered by ASF OpenScienceLab",
+        about_page_url="https://www.earthscope.org/education/skill-building-learning/courses/ssbw/",
+        about_page_button_label="Course",
+        ip_country_status={"limited": [], "prohibited": []},
+        deployment_url="http://ssbw26-1741361599.us-west-2.elb.amazonaws.com",
+        accessibility="private",
+        allowed_profiles=[
+            "SSBW Workspace 1",
+            "SSBW Workspace 2",
+            "SSBW Workspace 1 - Test",
+            "Debug Server Profile",
+            "sudo",
+        ],
+        default_profiles=["SSBW Workspace 1"],
+        allows_tokens=True,
+    ),
 }
 
 NON_PROD_LAB_CONFIGS = {
