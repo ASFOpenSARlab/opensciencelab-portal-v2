@@ -96,6 +96,7 @@ class TestUsersPages:
         assert mocked_users_locked.call_count == 1
         assert ret["statusCode"] == 200
         assert ret["body"].find("<b>YES</b>") != -1
+        assert ret["body"].find("Reset Filters") == -1
         assert (
             ret["body"].find(
                 '<a href="/portal/profile/form/GeneralUser">GeneralUser</a>'
@@ -103,6 +104,13 @@ class TestUsersPages:
             != -1
         )
         assert ret["headers"].get("Content-Type") == "text/html"
+
+        # Test filter button
+        event = helpers.get_event(
+            path="/portal/users", cookies=fake_auth, qparams={"email_filter": "s"}
+        )
+        ret = main.lambda_handler(event, lambda_context)
+        assert ret["body"].find("Reset Filters") != -1
 
     def test_users_admin_logged_in_get_all_items_integration(
         self, lambda_context, monkeypatch, fake_auth, helpers

@@ -4,6 +4,7 @@
         <b>Available Filters</b>:
         <code>?<span style="color: darkgreen">user_filter</span>=<span style="color: grey">username-fragment</span></code>,
         <code>?<span style="color: darkgreen">status_filter</span>=<span style="color: grey">new|returned|pending|rejected|approved|imported</span></code>.
+        {% if filtered %}<a role="button" class="btn btn-sm btn-primary" href="{{ filter_path }}">Reset Filters</a>{% endif %}
     </div>
     <br>
     <table>

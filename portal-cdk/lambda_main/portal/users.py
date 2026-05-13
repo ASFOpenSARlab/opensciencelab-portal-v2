@@ -87,6 +87,9 @@ def users_root():
         "email_filter"
     )
 
+    # Are results filtered?
+    filtered = True if username_filter or email_filter else False
+
     row_limit = 200
 
     # Fetch all users
@@ -110,6 +113,8 @@ def users_root():
         "username": username,
         "rowcount": len(all_users_sorted),
         "exceeded": len(all_users_sorted) >= row_limit,
+        "filter_path": "/portal/users",
+        "filtered": filtered,
     }
 
     # Generate an HTML table
