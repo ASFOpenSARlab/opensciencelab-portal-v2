@@ -57,6 +57,9 @@ def access_root() -> str:
         "status_filter"
     )
 
+    # Are results filtered?
+    filtered = True if user_filter or state_filter else False
+
     # Apply Filters
     filter = dynamo_filter(
         attr_name="status",
@@ -76,7 +79,11 @@ def access_root() -> str:
         reverse=True,
     )
 
-    template_input = {"requests": requests}
+    template_input = {
+        "requests": requests,
+        "filter_path": "/portal/access",
+        "filtered": filtered,
+    }
 
     logger.info(f"template_input = {template_input}")
 
@@ -186,6 +193,9 @@ def manage_lab(shortname):
     )
     row_limit = 200
 
+    # Are results filtered?
+    filtered = True if user_filter or email_filter else False
+
     # Grab the username of the user making the request
     username = current_session.auth.cognito.username
     user = User(username)
@@ -215,6 +225,8 @@ def manage_lab(shortname):
     template_input["rowcount"] = len(users)
     template_input["exceeded"] = len(users) >= row_limit
     template_input["access_tokens"] = lab_obj.access_tokens
+    template_input["filter_path"] = f"/portal/access/manage/{shortname}"
+    template_input["filtered"] = filtered
 
     return jinja_template(template_input, "manage.j2")
 

@@ -15,20 +15,7 @@
     {% endif %}
     <hr>
 {% endif %}
-{% if exceeded %}
-    <div style="border: 2px solid red;
-                background-color: lightcoral;
-                width:95%;
-                vertical-align: middle">
-        <form action="/portal/users">
-            Search results limited to {{ rowcount }}. Try filtering by username:
-            <input type="input" name="user_filter">
-            Or by email:
-            <input type="input" name="email_filter">
-            <input type="submit" hidden />
-        </form>
-    </div>
-{% endif %}
+{% include "filters.j2" %}
 <!-- Forms -->
 <form id="manage-role-form"
       action="/portal/users/manage-role"
