@@ -43,6 +43,7 @@ PROD_LAB_CONFIGS = {
             "noistio",
             "sudo",
             "OpenSARLab Test Image",
+            "r6i.4xlarge",
         ],
         crypto_remediation_role_arn="arn:aws:iam::381492216607:role/service-role/cryptomining-remediation-role-b4sw3o86",
         default_profiles=["m6a.large", "m6a.xlarge"],
