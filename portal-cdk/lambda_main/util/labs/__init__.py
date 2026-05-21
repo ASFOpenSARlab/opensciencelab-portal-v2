@@ -142,6 +142,29 @@ PROD_LAB_CONFIGS = {
         default_profiles=["SAR 1", "SAR 2", "SAR 3", "Debug Server Profile"],
         allows_tokens=True,
     ),
+    "ssbw26": BaseLabConfig(
+        short_lab_name="ssbw26",
+        friendly_name="SSBW 2026",
+        description="""
+            <img style="max-width:100%;" src="/static/img/SSBW Banner 2026.png" alt="logo for SSBW 2026">
+            <p>Seismology Skill Building Workshop for Summer 2026, powered by ASF OpenScienceLab</p>
+            <p style="color: orangered;">User storage is permanently deleted after 30 days of inactivity. Users can request a temporary extension by contacting the instructors on Slack.</p> <hr style="border-top: 1px solid grey;"> <div style="font-size: 12px;margin: 10px 0 0 0;text-align: justify;">
+        """,
+        about_page_url="https://glglwebp01.glg.miamioh.edu/glgmoodle/course/view.php?id=99",
+        about_page_button_label="Course",
+        ip_country_status={"limited": [], "prohibited": []},
+        deployment_url="http://ssbw26-1741361599.us-west-2.elb.amazonaws.com",
+        accessibility="private",
+        allowed_profiles=[
+            "SSBW Workspace 1",
+            "SSBW Workspace 2",
+            "SSBW Workspace 1 - Test",
+            "Debug Server Profile",
+            "sudo",
+        ],
+        default_profiles=["SSBW Workspace 1"],
+        allows_tokens=True,
+    ),
 }
 
 NON_PROD_LAB_CONFIGS = {
@@ -162,29 +185,6 @@ NON_PROD_LAB_CONFIGS = {
             "sudo",
         ],
         default_profiles=["m6a.large", "m6a.xlarge"],
-    ),
-    "ssbw26": BaseLabConfig(
-        short_lab_name="ssbw26",
-        friendly_name="SSBW 2026",
-        description="""
-            <p>Seismology Skill Building Workshop for Summer 2026, powered by ASF OpenScienceLab</p>
-            <p style="color: orangered;">User storage is permanently deleted after 30 days of inactivity. Users can request a temporary extension by contacting the instructors on Slack.</p> <hr style="border-top: 1px solid grey;"> <div style="font-size: 12px;margin: 10px 0 0 0;text-align: justify;">
-        """,
-        about_page_url="https://glglwebp01.glg.miamioh.edu/glgmoodle/course/view.php?id=99",
-        about_page_button_label="Course",
-        ip_country_status={"limited": [], "prohibited": []},
-        deployment_url="http://ssbw26-1741361599.us-west-2.elb.amazonaws.com",
-        accessibility="private",
-        logo="SSBW Banner 2026.png",
-        allowed_profiles=[
-            "SSBW Workspace 1",
-            "SSBW Workspace 2",
-            "SSBW Workspace 1 - Test",
-            "Debug Server Profile",
-            "sudo",
-        ],
-        default_profiles=["SSBW Workspace 1"],
-        allows_tokens=True,
     ),
     "smce-test-opensarlab": BaseLabConfig(
         short_lab_name="smce-test-opensarlab",
