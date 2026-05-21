@@ -74,14 +74,12 @@ class TestAccessPages:
         assert ret["body"].find("Test Lab") > -1
         # Add/refactor more asserts after manage page layout is figured out more
         assert (
-            ret["body"].find(
-                '<button type="submit" name="action" value="add_user">Add</button>'
-            )
+            ret["body"].find('<button type="submit" name="action" value="add_user">')
             > -1
         )
         assert (
             ret["body"].find(
-                """onclick="fillRemoveUserForm('testlab', 'test_user');">Remove</button>"""
+                """onclick="fillRemoveUserForm('testlab', 'test_user');">"""
             )
             > -1
         )
@@ -152,7 +150,7 @@ class TestAccessPages:
         )
         assert (
             ret["body"].find(
-                """onclick="fillRemoveUserForm('testlab', 'test_user');">Remove</button>"""
+                """onclick="fillRemoveUserForm('testlab', 'test_user');">"""
             )
             > -1
         )

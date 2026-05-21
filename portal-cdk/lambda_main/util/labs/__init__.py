@@ -142,24 +142,26 @@ PROD_LAB_CONFIGS = {
         default_profiles=["SAR 1", "SAR 2", "SAR 3", "Debug Server Profile"],
         allows_tokens=True,
     ),
-    "geos639": BaseLabConfig(
-        short_lab_name="geos639",
-        friendly_name="GEOS639 Geodetic Imaging",
-        description="GEOS639 Geodetic Imaging for Spring 2026, powered by ASF OpenScienceLab",
-        deployment_url="https://geos639-2133422741.us-west-2.elb.amazonaws.com",
-        accessibility="private",
+}
+
+NON_PROD_LAB_CONFIGS = {
+    "test": BaseLabConfig(
+        short_lab_name="test",
+        friendly_name="Cluster v2 - test",
+        description="""
+            <p>Cluster v2 access to test auth.</p>
+        """,
+        deployment_url="http://eks-cluster-test-3ad17d630b8f26fc.elb.us-west-2.amazonaws.com",
+        accessibility="protected",
         allowed_profiles=[
-            "m6a.large",
-            "m6a.xlarge",
-            "Debug Server Profile",
             "SAR 1",
-            "SAR 2",
-            "SAR 2 - Max",
-            "noistio",
+            "SAR 1 - Max",
+            "Debug Server Profile",
+            "m6a.xlarge",
+            "m6a.large",
             "sudo",
         ],
         default_profiles=["m6a.large", "m6a.xlarge"],
-        allows_tokens=True,
     ),
     "ssbw26": BaseLabConfig(
         short_lab_name="ssbw26",
@@ -180,9 +182,6 @@ PROD_LAB_CONFIGS = {
         default_profiles=["SSBW Workspace 1"],
         allows_tokens=True,
     ),
-}
-
-NON_PROD_LAB_CONFIGS = {
     "smce-test-opensarlab": BaseLabConfig(
         short_lab_name="smce-test-opensarlab",
         friendly_name="SMCE Test (US Unrestricted, Lab Protected)",
@@ -217,6 +216,7 @@ NON_PROD_LAB_CONFIGS = {
             "m6a.large",
             "m6a.large - Desktop",
             "sudo",
+            "r6i.4xlarge",
         ],
         crypto_remediation_role_arn="arn:aws:iam::381492216607:role/service-role/cryptomining-remediation-role-b4sw3o86",
         default_profiles=["m6a.large", "m6a.xlarge"],
@@ -308,25 +308,6 @@ NON_PROD_LAB_CONFIGS = {
         accessibility="protected",
         allowed_profiles=[],
         default_profiles=["m6a.large", "m6a.xlarge"],
-    ),
-    "geos639": BaseLabConfig(
-        short_lab_name="geos639",
-        friendly_name="GEOS639 Geodetic Imaging",
-        description="GEOS639 Geodetic Imaging for Spring 2026, powered by ASF OpenScienceLab",
-        deployment_url="https://geos639-2133422741.us-west-2.elb.amazonaws.com",
-        accessibility="private",
-        allowed_profiles=[
-            "m6a.large",
-            "m6a.xlarge",
-            "Debug Server Profile",
-            "SAR 1",
-            "SAR 2",
-            "SAR 2 - Max",
-            "noistio",
-            "sudo",
-        ],
-        default_profiles=["m6a.large", "m6a.xlarge"],
-        allows_tokens=True,
     ),
 }
 
