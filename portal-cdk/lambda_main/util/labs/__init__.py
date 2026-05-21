@@ -166,12 +166,16 @@ NON_PROD_LAB_CONFIGS = {
     "ssbw26": BaseLabConfig(
         short_lab_name="ssbw26",
         friendly_name="SSBW 2026",
-        description="Seismology Skill Building Workshop for Summer 2026, powered by ASF OpenScienceLab",
-        about_page_url="https://www.earthscope.org/education/skill-building-learning/courses/ssbw/",
+        description="""
+            <p>Seismology Skill Building Workshop for Summer 2026, powered by ASF OpenScienceLab</p>
+            <p style="color: orangered;">User storage is permanently deleted after 30 days of inactivity. Users can request a temporary extension by contacting the instructors on Slack.</p> <hr style="border-top: 1px solid grey;"> <div style="font-size: 12px;margin: 10px 0 0 0;text-align: justify;">
+        """,
+        about_page_url="https://glglwebp01.glg.miamioh.edu/glgmoodle/course/view.php?id=99",
         about_page_button_label="Course",
         ip_country_status={"limited": [], "prohibited": []},
         deployment_url="http://ssbw26-1741361599.us-west-2.elb.amazonaws.com",
         accessibility="private",
+        logo="SSBW Banner 2026.png",
         allowed_profiles=[
             "SSBW Workspace 1",
             "SSBW Workspace 2",
