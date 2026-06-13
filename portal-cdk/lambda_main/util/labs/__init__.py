@@ -148,13 +148,14 @@ PROD_LAB_CONFIGS = {
         description="""
             <img style="max-width:100%;" src="/static/img/SSBW Banner 2026.png" alt="logo for SSBW 2026">
             <p>Seismology Skill Building Workshop for Summer 2026, powered by ASF OpenScienceLab</p>
+            <p>To gain access to this lab, apply the access token provided in the course Orientation module.</p>
             <p style="color: orangered;">User storage is permanently deleted after 30 days of inactivity. Users can request a temporary extension by contacting the instructors on Slack.</p> <hr style="border-top: 1px solid grey;"> <div style="font-size: 12px;margin: 10px 0 0 0;text-align: justify;">
         """,
         about_page_url="https://glglwebp01.glg.miamioh.edu/glgmoodle/course/view.php?id=99",
         about_page_button_label="Course",
         ip_country_status={"limited": [], "prohibited": []},
         deployment_url="http://ssbw26-1741361599.us-west-2.elb.amazonaws.com",
-        accessibility="private",
+        accessibility="protected",
         allowed_profiles=[
             "SSBW Workspace 1",
             "SSBW Workspace 2",
