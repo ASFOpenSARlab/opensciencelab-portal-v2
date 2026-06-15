@@ -33,7 +33,7 @@ def portal_template():
 # example tests. To run these tests, uncomment this file along with the example
 # resource in portal_cdk/portal_cdk_stack.py
 def test_lambda_versions_match(portal_template):
-    python_runtime = "python3.11"
+    python_runtime = "python3.13"
     portal_template.has_resource_properties(
         "AWS::Lambda::Function",
         {
