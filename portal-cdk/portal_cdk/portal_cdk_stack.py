@@ -34,7 +34,7 @@ from aws_solutions_constructs.aws_lambda_dynamodb import LambdaToDynamoDB
 
 from util.labs import LAB_CONFIGS
 
-LAMBDA_RUNTIME = aws_lambda.Runtime.PYTHON_3_11
+LAMBDA_RUNTIME = aws_lambda.Runtime.PYTHON_3_13
 
 CWD = pathlib.Path(__file__).parent
 

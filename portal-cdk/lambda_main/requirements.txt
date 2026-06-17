@@ -12,3 +12,5 @@ pytz==2026.1.post1
 ics==0.7.2
 html2text==2025.4.15
 pyyaml==6.0.3
+# Related to this bug: https://github.com/con2/kompassi/issues/944
+tatsu<5.8
