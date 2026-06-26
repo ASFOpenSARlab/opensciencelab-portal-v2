@@ -126,7 +126,20 @@
 </div>
 <div class="margin-left-30">
     <h3>Users</h3>
-    <table>
+    <div class="margin-left-30">
+        <div class="note">
+            Notes on Management Interface
+            <ul>
+                <li>Adding a user that already exists will overwrite their profile permissions</li>
+                <li>
+                    Add several profiles as a comma separated list without quotations (you can copy-paste from the table)
+                    <br>
+                    Ex.: <code>m6a.large, m6a.xlarge</code>
+                </li>
+            </ul>
+        </div>
+    </div>
+    <table id="user-table">
         <tr class="tr-highlight">
             <th>Username</th>
             <th>Profiles</th>
@@ -150,74 +163,134 @@
                 </th>
             </form>
         </tr>
-        {% for user in users %}
-            <tr>
-                <th>
-                    {% if is_admin %}
-                        <b><a href="/portal/profile/form/{{ user["username"] }}">{{ user["username"] }}</a></b>
-                    {% else %}
-                        <b>{{ user["username"] }}</b>
-                    {% endif %}
-                    <br>
-                    <code>{{ user["email"] }}</code>
-                </th>
-                <th>
-                    {% for profile in lab.allowed_profiles %}
-                        {% if profile in user["labs"][lab.short_lab_name]["lab_profiles"] %}
-                            <span style="border: 1px solid black; padding: 1px 4px; color: green;">{{ profile }}</span>,
-                        {% else %}
-                            <span style="border: 1px solid black; padding: 1px 4px; color: red;">{{ profile }}</span>,
-                        {% endif %}
-                    {% endfor %}
-                </th>
-                {% if lab.allows_tokens %}
-                    <th>
-                        {% if "token_usage" in user %}
-                            {% for token in user["token_usage"] %}
-                                {% if token["labname"] == lab.short_lab_name %}{{ token["token"] }}{% endif %}
-                            {% endfor %}
-                        {% endif %}
-                    </th>
-                {% endif %}
-                <th>
-                    <div class="horizontal-div">
-                        <button form="remove-user-form"
-                                type="submit"
-                                class="warning-background"
-                                onclick="fillRemoveUserForm('{{ lab.short_lab_name }}', '{{ user["username"] }}');">
-                            Remove
-                        </button>
-                        {% if user.get("is_manager", False) %}
-                            <button form="manager-form"
-                                    type="submit"
-                                    class="warning-background"
-                                    onclick="fillManagerForm('revoke', '{{ user["username"] }}', '{{ lab.short_lab_name }}');">
-                                Revoke Manager
-                            </button>
-                        {% else %}
-                            <button form="manager-form"
-                                    type="submit"
-                                    class="success-background"
-                                    onclick="fillManagerForm('grant', '{{ user["username"] }}', '{{ lab.short_lab_name }}');">
-                                Grant Manager
-                            </button>
-                        {% endif %}
-                    </div>
-                </th>
-            </tr>
-        {% endfor %}
     </table>
 </div>
-<div class="margin-left-30">
-    <div class="note">
-        Notes on Management Interface
-        <ul>
-            <li>Adding a user that already exists will overwrite their profile permissions</li>
-            <li>
-                Add several profiles as a comma separated list without quotations (you can copy-paste from the table)
+<script>
+    function renderMoreUsers(users) {
+        const table = document.getElementById("user-table");
+        const fragment = document.createDocumentFragment();
+        for(idx in users) {
+            const user = users[idx];
+            const row = document.createElement("tr");
+            // Render profiles
+            const allowed_profiles = {{ lab.allowed_profiles }};
+            let profiles = ""
+            for(const profile of allowed_profiles){
+                if (user["labs"]["{{ lab.short_lab_name }}"]["lab_profiles"].includes(profile)){
+                    profiles += `<span style="border: 1px solid black; padding: 1px 4px; color: green;">${ profile }</span>`
+                }else{
+                    profiles += `<span style="border: 1px solid black; padding: 1px 4px; color: red;">${ profile }</span>`
+                }
+            }
+            // Render tools
+            let tools = `
+                <button form="remove-user-form"
+                        type="submit"
+                        class="warning-background"
+                        onclick="fillRemoveUserForm('{{ lab.short_lab_name }}', '${ user["username"] }');">
+                    Remove
+                </button>`
+            if({{ managers }}.includes(user["username"])){
+                tools += `
+                <button form="manager-form"
+                        type="submit"
+                        class="warning-background"
+                        onclick="fillManagerForm('revoke', '${ user["username"] }', '{{ lab.short_lab_name }}');">
+                    Revoke Manager
+                </button>`
+            }else{
+                tools += `
+                <button form="manager-form"
+                        type="submit"
+                        class="success-background"
+                        onclick="fillManagerForm('grant', '${ user["username"] }', '{{ lab.short_lab_name }}');">
+                    Grant Manager
+                </button>`
+            }
+            let token_row = "";
+            if({{ 'true' if lab.allows_tokens else 'false' }}){
+                if("token_usage" in user){
+                    for(token of user["token_usage"]){
+                        if(token["labname"] == "{{ lab.short_lab_name }}"){
+                            token_row += `<p>${token["token"]}</p>`;
+                        }
+                    }
+                }
+                token_row = `<th>${token_row}</th>`
+            }
+            row.innerHTML =`
+            <th>
+                {% if is_admin %}
+                    <b><a href="/portal/profile/form/${ user["username"] }">${ user["username"] }</a></b>
+                {% else %}
+                    <b>${ user["username"] }</b>
+                {% endif %}
                 <br>
-                Ex.: <code>m6a.large, m6a.xlarge</code>
-            </li>
-        </ul>
-    </div>
-</div>
+                <code>${ user["email"] }</code>
+            </th>
+            <th>
+                ${profiles}
+            </th>
+            ${token_row}
+            <th>
+                <div class="horizontal-div">
+                    ${tools}
+                </div>
+            </th>
+            `;
+            fragment.appendChild(row);
+        };
+        table.appendChild(fragment);
+    }
+    let foundAllUsers = false;
+    let lastEvaluatedKey = null;
+    let isLoading = false;
+    const params = new URLSearchParams(window.location.search);
+    const user_filter = params.get("user_filter");
+    const email_filter = params.get("email_filter");
+    async function fetchUsers() {
+        if(isLoading || foundAllUsers) return;
+        isLoading = true;
+        try{
+            // Build Url
+            console.log(user_filter, email_filter)
+            const url = new URL('/portal/access/manage/{{ lab.short_lab_name }}/get-users', window.location.origin);
+            if (lastEvaluatedKey){
+                url.searchParams.append('primary_key', Object.keys(lastEvaluatedKey)[0]);
+                url.searchParams.append('key_value', Object.values(lastEvaluatedKey)[0]);
+            }
+            if(user_filter){
+                url.searchParams.append("user_filter", user_filter);
+            }
+            if(email_filter){
+                url.searchParams.append("email_filter", email_filter);
+            }
+            // Fetch users
+            const response = await fetch(url.toString());
+            const data = await response.json();
+
+            if (!data.lastEvaluatedKey){
+                foundAllUsers = true;
+            }
+            console.log(data)
+            lastEvaluatedKey = data.lastEvaluatedKey
+            renderMoreUsers(data.users)
+
+        } catch (error) {
+            console.error('Error fetching users:', error);
+        } finally {
+            isLoading = false;
+        }
+    }
+    function handleScroll() {
+        const { scrollTop, scrollHeight, clientHeight } = document.documentElement;
+        // Check if user has scrolled to the bottom
+        if (scrollTop + clientHeight >= scrollHeight - 500) {
+            fetchUsers();
+        }
+    }
+    window.addEventListener('load', async () => {
+        await fetchUsers();
+        window.addEventListener('scroll', handleScroll);
+    });
+</script>
