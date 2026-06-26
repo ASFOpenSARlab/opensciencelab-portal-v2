@@ -252,20 +252,25 @@ class TestUserClass:
         user4 = User(username="test_user4")
         user4.labs = {"testlab": {}}
 
-        users, lastEvaluatedKey = get_users_with_lab_lazy("testlab", limit=3, minimum_results=2)
+        users, lastEvaluatedKey = get_users_with_lab_lazy(
+            "testlab", limit=3, minimum_results=2
+        )
 
         assert len(users) == 2
         assert users[0]["username"] == "test_user1"
         assert users[1]["username"] == "test_user2"
         assert lastEvaluatedKey == {"username": "test_user3"}
 
-        users, lastEvaluatedKey = get_users_with_lab_lazy("testlab", username_filter="test_user2")
+        users, lastEvaluatedKey = get_users_with_lab_lazy(
+            "testlab", username_filter="test_user2"
+        )
         assert len(users) == 1, (
             "Filtered results should be limited to 1"
         )
-        users, lastEvaluatedKey = get_users_with_lab_lazy("testlab", username_filter="test_user", limit=3, minimum_results=2)
+        users, lastEvaluatedKey = get_users_with_lab_lazy(
+            "testlab", username_filter="test_user", limit=3, minimum_results=2
+        )
         assert len(users) == 2, "Filtered and limited results should be limited to 2"
-        
 
     def test_fetch_lab_requests(self, monkeypatch, helpers):
         from objs.lab.lab import Lab
