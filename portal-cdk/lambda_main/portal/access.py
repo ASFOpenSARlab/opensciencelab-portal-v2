@@ -6,7 +6,12 @@ from util import swagger
 from util.format import portal_template, jinja_template
 from util.auth import require_access
 from util.session import current_session
-from objs.user import User, get_users_with_lab, filter_lab_access, get_users_with_lab_lazy
+from objs.user import (
+    User,
+    get_users_with_lab,
+    filter_lab_access,
+    get_users_with_lab_lazy,
+)
 from util.responses import wrap_response, form_body_to_dict, json_body_to_dict
 from util.labs import LAB_CONFIGS
 from objs.lab import Lab, ACTIVE_REQUEST_STATUSES
@@ -184,20 +189,17 @@ def update_user_access_request(shortname, username):
 @access_router.get("/manage/<shortname>/get-users", include_in_schema=False)
 @require_access(["admin", "lab_manager"], human=True)
 def get_users(shortname):
-    
     user_filter = access_router.current_event.query_string_parameters.get("user_filter")
     email_filter = access_router.current_event.query_string_parameters.get(
         "email_filter"
     )
     row_limit = 100
-    primary_key = access_router.current_event.query_string_parameters.get(
-        "primary_key"
-    )
-    key_value = access_router.current_event.query_string_parameters.get(
-        "key_value"
-    )
+    primary_key = access_router.current_event.query_string_parameters.get("primary_key")
+    key_value = access_router.current_event.query_string_parameters.get("key_value")
 
-    exclusive_start_key = {primary_key: key_value} if primary_key and key_value else None
+    exclusive_start_key = (
+        {primary_key: key_value} if primary_key and key_value else None
+    )
 
     users, lastEvaluatedKey = get_users_with_lab_lazy(
         shortname,

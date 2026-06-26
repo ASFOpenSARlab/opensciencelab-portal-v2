@@ -205,7 +205,7 @@ def dynamo_filter(
         return Attr(attr_name).eq(filter_value)
 
 
-def pull_all_pagination(table, limit:int=None, filterexpr=None):
+def pull_all_pagination(table, limit: int = None, filterexpr=None):
     table_scan_params = {}
 
     if filterexpr:
@@ -226,7 +226,13 @@ def pull_all_pagination(table, limit:int=None, filterexpr=None):
     return items
 
 
-def lazy_load(table, limit:int=100, filterexpr=None, exclusiveStartKey:dict=None, minimum_results:int=70):
+def lazy_load(
+    table,
+    limit: int = 100,
+    filterexpr=None,
+    exclusiveStartKey: dict = None,
+    minimum_results: int = 70,
+):
     table_scan_params = {}
 
     if filterexpr:
@@ -242,7 +248,11 @@ def lazy_load(table, limit:int=100, filterexpr=None, exclusiveStartKey:dict=None
     with measure_time(service="dynamo", action="lazy load user items"):
         response = table.scan(**table_scan_params)
         items: list = response.get("Items", [])
-        while "LastEvaluatedKey" in response and minimum_results and len(items) < minimum_results:
+        while (
+            "LastEvaluatedKey" in response
+            and minimum_results
+            and len(items) < minimum_results
+        ):
             table_scan_params["ExclusiveStartKey"] = response["LastEvaluatedKey"]
             response = table.scan(**table_scan_params)
             items.extend(response.get("Items", []))
@@ -286,7 +296,13 @@ def get_all_items(table_id: str, limit=None, filters=None) -> list:
     return items
 
 
-def get_items_lazy(table_id: str, limit:int=None, filters=None, exclusiveStartKey:dict=None, minimum_results:int=None):
+def get_items_lazy(
+    table_id: str,
+    limit: int = None,
+    filters=None,
+    exclusiveStartKey: dict = None,
+    minimum_results: int = None,
+):
     """
     Gets as many items from the table as it can
 
@@ -300,7 +316,9 @@ def get_items_lazy(table_id: str, limit:int=None, filters=None, exclusiveStartKe
         list: A list of items matching the filter, up to limit
     """
     _client, _db, table = _get_dynamo(table_id)
-    items, lastEvaluatedKey = lazy_load(table, limit, filters, exclusiveStartKey, minimum_results)
+    items, lastEvaluatedKey = lazy_load(
+        table, limit, filters, exclusiveStartKey, minimum_results
+    )
     logger.info(f"Lazy load fetch {len(items)} rows from {table} w/ filters={filters}")
 
     return items, lastEvaluatedKey

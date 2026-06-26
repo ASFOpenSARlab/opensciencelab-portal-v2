@@ -184,26 +184,17 @@
             }
             // Render tools
             let tools = `
-                <button form="remove-user-form"
-                        type="submit"
-                        class="warning-background"
-                        onclick="fillRemoveUserForm('{{ lab.short_lab_name }}', '${ user["username"] }');">
+                <button form="remove-user-form" type="submit" class="warning-background" onclick="fillRemoveUserForm('{{ lab.short_lab_name }}', '${ user["username"] }');">
                     Remove
                 </button>`
             if({{ managers }}.includes(user["username"])){
                 tools += `
-                <button form="manager-form"
-                        type="submit"
-                        class="warning-background"
-                        onclick="fillManagerForm('revoke', '${ user["username"] }', '{{ lab.short_lab_name }}');">
+                <button form="manager-form" type="submit" class="warning-background" onclick="fillManagerForm('revoke', '${ user["username"] }', '{{ lab.short_lab_name }}');">
                     Revoke Manager
                 </button>`
             }else{
                 tools += `
-                <button form="manager-form"
-                        type="submit"
-                        class="success-background"
-                        onclick="fillManagerForm('grant', '${ user["username"] }', '{{ lab.short_lab_name }}');">
+                <button form="manager-form" type="submit" class="success-background" onclick="fillManagerForm('grant', '${ user["username"] }', '{{ lab.short_lab_name }}');">
                     Grant Manager
                 </button>`
             }

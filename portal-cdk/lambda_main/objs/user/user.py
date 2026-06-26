@@ -262,6 +262,7 @@ def get_users_with_lab(
 
     return items
 
+
 def get_users_with_lab_lazy(
     lab_short_name: str,
     limit: int | None = None,
@@ -269,7 +270,7 @@ def get_users_with_lab_lazy(
     email_filter: str | None = None,
     exclusive_start_key: dict | None = None,
     minimum_results: int | None = None,
-    ):
+):
     # Check if lab exists
     if lab_short_name not in LAB_CONFIGS:
         raise LabDoesNotExist(message=f'"{lab_short_name}" lab does not exist')
@@ -288,6 +289,6 @@ def get_users_with_lab_lazy(
         filters=filter_expr,
         exclusiveStartKey=exclusive_start_key,
         minimum_results=minimum_results,
-        )
+    )
 
     return items, lastEvaluatedKey
