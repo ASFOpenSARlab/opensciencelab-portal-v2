@@ -369,10 +369,20 @@ def require_access(access: list = ["user"], human: bool = False):
                 else:
                     cookies = []
 
+                redirect_location = f"/?return={return_path}"
+
+                next_location = (
+                    current_session.app.current_event.query_string_parameters.get(
+                        "next_url"
+                    )
+                )
+                if next_location is not None:
+                    redirect_location = f"/?return={next_location}"
+
                 return wrap_response(
                     body="User is not logged in",
                     code=302,
-                    headers={"Location": f"/?return={return_path}"},
+                    headers={"Location": redirect_location},
                     cookies=cookies,
                 )
 
