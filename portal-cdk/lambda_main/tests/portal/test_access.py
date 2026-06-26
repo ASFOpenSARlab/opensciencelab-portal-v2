@@ -79,7 +79,7 @@ class TestAccessPages:
         )
         assert (
             ret["body"].find(
-                """onclick="fillRemoveUserForm('testlab', 'test_user');">"""
+                """onclick="fillRemoveUserForm('testlab', '${ user["username"] }');">"""
             )
             > -1
         )
@@ -93,7 +93,7 @@ class TestAccessPages:
             path="/portal/access/manage/protectedlab", cookies=fake_auth
         )
         ret2 = main.lambda_handler(event, lambda_context)
-        assert ret2["body"].find("Token") == -1
+        assert ret2["body"].find("Tokens not enabled") != -1
 
     def test_lab_manager_accessing_allowed_manage_page(
         self, monkeypatch, lambda_context, helpers, fake_auth
@@ -150,7 +150,7 @@ class TestAccessPages:
         )
         assert (
             ret["body"].find(
-                """onclick="fillRemoveUserForm('testlab', 'test_user');">"""
+                """onclick="fillRemoveUserForm('testlab', '${ user["username"] }');">"""
             )
             > -1
         )
@@ -163,7 +163,7 @@ class TestAccessPages:
             path="/portal/access/manage/protectedlab", cookies=fake_auth
         )
         ret2 = main.lambda_handler(event, lambda_context)
-        assert ret2["body"].find("Token") == -1
+        assert ret2["body"].find("Tokens not enabled") != -1
         assert ret["body"].find("test@user.com")
 
     def test_lab_manager_accessing_restricted_manage_page(

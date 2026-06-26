@@ -304,13 +304,15 @@ def get_items_lazy(
     minimum_results: int = None,
 ):
     """
-    Gets as many items from the table as it can
+    Gets items from db with an arbitrary starting key
+    Optionally can set a minimum number of items to return (does not conflict with End of List)
 
     Args:
         table_id (str): Id of the table you want to search
         limit (int, optional): Maximum entries the scan will search
         filters (Any, optional): Table filters
         exclusiveStartKey (dict, optional): Start key to search from, defaults to the first item
+        minimum_results (int, optional): minimum results to return if not at end of list
 
     Returns:
         list: A list of items matching the filter, up to limit
