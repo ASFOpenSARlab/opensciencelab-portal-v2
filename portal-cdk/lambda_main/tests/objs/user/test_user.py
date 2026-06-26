@@ -264,9 +264,7 @@ class TestUserClass:
         users, lastEvaluatedKey = get_users_with_lab_lazy(
             "testlab", username_filter="test_user2"
         )
-        assert len(users) == 1, (
-            "Filtered results should be limited to 1"
-        )
+        assert len(users) == 1, "Filtered results should be limited to 1"
         users, lastEvaluatedKey = get_users_with_lab_lazy(
             "testlab", username_filter="test_user", limit=3, minimum_results=2
         )
