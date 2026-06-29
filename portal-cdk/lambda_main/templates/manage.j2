@@ -125,7 +125,12 @@
     {% endif %}
 </div>
 <div class="margin-left-30">
-    <h3>Users</h3>
+    <div style="display:flex; flex-direction: row; gap: 16px;">
+        <h3>Users</h3>
+        <div style="display:flex; justify-content:center; align-items: center; ">
+            <button style="height: 40%; transform: translateY(25%);" onclick="exportUsers()">Export</button>
+        </div>
+    </div>
     <div class="margin-left-30">
         <div class="note">
             Notes on Management Interface
@@ -284,4 +289,20 @@
         await fetchUsers();
         window.addEventListener('scroll', handleScroll);
     });
+    async function exportUsers(){
+        const res = await fetch('/portal/access/manage/{{ lab.short_lab_name }}/export-users', { method: 'GET' });
+        if(!res.ok) throw new Error("Failed to export users");
+        const cd = res.headers.get('Content-Disposition');
+
+        const blob = await res.blob();
+        const url = URL.createObjectURL(blob);
+
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = "users.csv";
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        URL.revokeObjectURL(url);
+    };
 </script>
