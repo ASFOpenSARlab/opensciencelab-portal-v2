@@ -125,12 +125,7 @@
     {% endif %}
 </div>
 <div class="margin-left-30">
-    <div style="display:flex; flex-direction: row; gap: 16px;">
-        <h3>Users</h3>
-        <div style="display:flex; justify-content:center; align-items: center; ">
-            <button style="height: 40%; transform: translateY(25%);" onclick="exportUsers()">Export</button>
-        </div>
-    </div>
+    <h3>Users</h3>
     <div class="margin-left-30">
         <div class="note">
             Notes on Management Interface
@@ -165,6 +160,7 @@
                 {% if lab.allows_tokens %}<th></th>{% endif %}
                 <th>
                     <button type="submit" name="action" value="add_user">Add</button>
+                    <button onclick="exportUsers()">Export All Users</button>
                 </th>
             </form>
         </tr>
