@@ -205,7 +205,11 @@ def export_users(shortname):
     writer.writerow(columns)
 
     for user in users:
-        values = [user["username"], user["labs"][shortname]["lab_profiles"], user["email"]]
+        values = [
+            user["username"],
+            user["labs"][shortname]["lab_profiles"],
+            user["email"]
+        ]
         if lab.allows_tokens:
             values.append([token["token"] for token in user["token_usage"]])
         writer.writerow(values)
