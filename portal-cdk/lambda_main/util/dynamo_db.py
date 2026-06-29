@@ -205,7 +205,7 @@ def dynamo_filter(
         return Attr(attr_name).eq(filter_value)
 
 
-def pull_all_pagination(table, limit, filterexpr=None):
+def pull_all_pagination(table, limit: int = None, filterexpr=None):
     table_scan_params = {}
 
     if filterexpr:
@@ -224,6 +224,42 @@ def pull_all_pagination(table, limit, filterexpr=None):
                 break
 
     return items
+
+
+def lazy_load(
+    table,
+    limit: int = 100,
+    filterexpr=None,
+    exclusiveStartKey: dict = None,
+    minimum_results: int = 70,
+):
+    table_scan_params = {}
+
+    if filterexpr:
+        table_scan_params["FilterExpression"] = filterexpr
+
+    if exclusiveStartKey:
+        table_scan_params["ExclusiveStartKey"] = exclusiveStartKey
+
+    if limit:
+        table_scan_params["Limit"] = limit
+
+    # Search list `limit` at a time until `minimum_results` are found
+    with measure_time(service="dynamo", action="lazy load user items"):
+        response = table.scan(**table_scan_params)
+        items: list = response.get("Items", [])
+        while (
+            "LastEvaluatedKey" in response
+            and minimum_results
+            and len(items) < minimum_results
+        ):
+            table_scan_params["ExclusiveStartKey"] = response["LastEvaluatedKey"]
+            response = table.scan(**table_scan_params)
+            items.extend(response.get("Items", []))
+
+        lastEvaluatedKey: dict | None = response.get("LastEvaluatedKey", None)
+
+    return items, lastEvaluatedKey
 
 
 def combine_all_dynamo_filters(filters):
@@ -258,6 +294,36 @@ def get_all_items(table_id: str, limit=None, filters=None) -> list:
         return items[:limit]
 
     return items
+
+
+def get_items_lazy(
+    table_id: str,
+    limit: int = None,
+    filters=None,
+    exclusiveStartKey: dict = None,
+    minimum_results: int = None,
+):
+    """
+    Gets items from db with an arbitrary starting key
+    Optionally can set a minimum number of items to return (does not conflict with End of List)
+
+    Args:
+        table_id (str): Id of the table you want to search
+        limit (int, optional): Maximum entries the scan will search
+        filters (Any, optional): Table filters
+        exclusiveStartKey (dict, optional): Start key to search from, defaults to the first item
+        minimum_results (int, optional): minimum results to return if not at end of list
+
+    Returns:
+        list: A list of items matching the filter, up to limit
+    """
+    _client, _db, table = _get_dynamo(table_id)
+    items, lastEvaluatedKey = lazy_load(
+        table, limit, filters, exclusiveStartKey, minimum_results
+    )
+    logger.info(f"Lazy load fetch {len(items)} rows from {table} w/ filters={filters}")
+
+    return items, lastEvaluatedKey
 
 
 def update_item(key: dict, updates: dict, table_id: str) -> bool:
