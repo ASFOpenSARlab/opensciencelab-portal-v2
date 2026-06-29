@@ -208,7 +208,7 @@ def export_users(shortname):
         values = [
             user["username"],
             user["labs"][shortname]["lab_profiles"],
-            user["email"]
+            user["email"],
         ]
         if lab.allows_tokens:
             values.append([token["token"] for token in user["token_usage"]])
