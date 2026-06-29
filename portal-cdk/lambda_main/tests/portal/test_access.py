@@ -1289,11 +1289,10 @@ class TestAccessPages:
         assert "></textarea>" in ret["body"]
         assert ret["body"].count("selected>") == 0
 
-    def test_lab_user_export(
-        self, monkeypatch, lambda_context, helpers, fake_auth
-    ):
+    def test_lab_user_export(self, monkeypatch, lambda_context, helpers, fake_auth):
         import csv
         import io
+
         # Checks permission required to access page
         user = helpers.FakeUser(access=["user", "lab_manager"])
         monkeypatch.setattr("portal.access.User", lambda *args, **kwargs: user)
@@ -1335,7 +1334,6 @@ class TestAccessPages:
         )
         ret = main.lambda_handler(event, lambda_context)
 
-
         assert ret["statusCode"] == 200
         assert ret["headers"].get("Content-Type") == "text/csv; charset=utf-8"
 
@@ -1343,7 +1341,12 @@ class TestAccessPages:
         f = io.StringIO(ret["body"])
         reader = csv.reader(f)
         columns = next(reader, None)
-        assert columns == ['username', 'profiles', 'email', 'token']
+        assert columns == ["username", "profiles", "email", "token"]
 
         data_row = next(reader, None)
-        assert data_row == ['test_user', "['m6a.large']", 'test@user.com', "['token-dne']"]
+        assert data_row == [
+            "test_user",
+            "['m6a.large']",
+            "test@user.com",
+            "['token-dne']",
+        ]
