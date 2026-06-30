@@ -166,6 +166,32 @@ PROD_LAB_CONFIGS = {
         default_profiles=["SSBW Workspace 1"],
         allows_tokens=True,
     ),
+    "isce26": BaseLabConfig(
+        short_lab_name="isce26",
+        friendly_name="2026 Technical Course: InSAR Processing and Analysis (ISCE+)",
+        description="""
+            <p>
+                This 5-day course covers basic and advanced InSAR theory and hands-on processing of Sentinel-1 and NISAR data using the JPL/Caltech InSAR Scientific Computing Environment (ISCE/ISCE3). Topics include noise mitigation, accessing ARIA and OPERA standard InSAR products and preparing them for time-series analysis, InSAR time-series analysis with MintPy, pixel offset tracking, and basic interpretation and modeling.
+            </p>
+            <p>
+                <b>Primary Audience</b>:  Graduate students, postdocs, and early career scientists interested in using InSAR in their research.
+            </p>
+            <p>
+                <b>Secondary Audience</b>:  Instructors who plan to teach InSAR processing and analysis.
+            </p>
+        """,
+        deployment_url="http://isce2026-1553330142.us-west-2.elb.amazonaws.com/",
+        accessibility="protected",
+        allowed_profiles=[
+            "Debug Server Profile",
+            "m6a.xlarge",
+            "m6a.large",
+            "sudo",
+            "r6i.4xlarge",
+            "m6a.large - Test",
+        ],
+        default_profiles=["m6a.large", "m6a.xlarge"],
+    ),
 }
 
 NON_PROD_LAB_CONFIGS = {
@@ -184,6 +210,32 @@ NON_PROD_LAB_CONFIGS = {
             "m6a.xlarge",
             "m6a.large",
             "sudo",
+        ],
+        default_profiles=["m6a.large", "m6a.xlarge"],
+    ),
+    "isce26": BaseLabConfig(
+        short_lab_name="isce26",
+        friendly_name="2026 Technical Course: InSAR Processing and Analysis (ISCE+)",
+        description="""
+            <p>
+                This 5-day course covers basic and advanced InSAR theory and hands-on processing of Sentinel-1 and NISAR data using the JPL/Caltech InSAR Scientific Computing Environment (ISCE/ISCE3). Topics include noise mitigation, accessing ARIA and OPERA standard InSAR products and preparing them for time-series analysis, InSAR time-series analysis with MintPy, pixel offset tracking, and basic interpretation and modeling.
+            </p>
+            <p>
+                <b>Primary Audience</b>:  Graduate students, postdocs, and early career scientists interested in using InSAR in their research.
+            </p>
+            <p>
+                <b>Secondary Audience</b>:  Instructors who plan to teach InSAR processing and analysis.
+            </p>
+        """,
+        deployment_url="http://isce2026-1553330142.us-west-2.elb.amazonaws.com/",
+        accessibility="protected",
+        allowed_profiles=[
+            "Debug Server Profile",
+            "m6a.xlarge",
+            "m6a.large",
+            "sudo",
+            "r6i.4xlarge",
+            "m6a.large - Test",
         ],
         default_profiles=["m6a.large", "m6a.xlarge"],
     ),
