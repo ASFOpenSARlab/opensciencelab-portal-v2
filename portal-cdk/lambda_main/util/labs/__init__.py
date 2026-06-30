@@ -224,7 +224,7 @@ NON_PROD_LAB_CONFIGS = {
                 <b>Primary Audience</b>:  Graduate students, postdocs, and early career scientists interested in using InSAR in their research.
             </p>
             <p>
-                <b>Secondary Audience</b>:  Instructors who plan to teach InSAR processing and analysis.
+                <b>Secondary Audience</b>:  Instructors who plan to teach InSAR processing and analysis. TEMP
             </p>
         """,
         deployment_url="http://isce2026-1553330142.us-west-2.elb.amazonaws.com/",
