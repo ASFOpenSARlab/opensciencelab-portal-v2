@@ -1,4 +1,6 @@
 import json
+import csv
+import io
 from dataclasses import asdict
 from datetime import datetime
 
@@ -183,6 +185,43 @@ def update_user_access_request(shortname, username):
         body={f"Redirect to {next_url}"},
         code=302,
         headers={"Location": next_url},
+    )
+
+
+@access_router.get("/manage/<shortname>/export-users", include_in_schema=False)
+@require_access(["admin", "lab_manager"], human=True)
+def export_users(shortname):
+    # Get lab info
+    lab = LAB_CONFIGS[shortname]
+
+    users = get_users_with_lab(shortname)
+    buf = io.StringIO()
+    writer = csv.writer(buf)
+
+    # Write columns
+    columns = ["username", "profiles", "email"]
+    if lab.allows_tokens:
+        columns.append("token")
+    writer.writerow(columns)
+
+    for user in users:
+        values = [
+            user["username"],
+            user["labs"][shortname]["lab_profiles"],
+            user["email"],
+        ]
+        if lab.allows_tokens:
+            values.append([token["token"] for token in user["token_usage"]])
+        writer.writerow(values)
+
+    return wrap_response(
+        body=buf.getvalue(),
+        code=200,
+        headers={
+            "Content-Type": "text/csv; charset=utf-8",
+            "Content-Disposition": 'attachment; filename="users.csv"',
+            "Cache-Control": "no-store",
+        },
     )
 
 
