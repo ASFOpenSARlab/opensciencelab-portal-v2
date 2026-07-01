@@ -166,8 +166,8 @@ PROD_LAB_CONFIGS = {
         default_profiles=["SSBW Workspace 1"],
         allows_tokens=True,
     ),
-    "isce26": BaseLabConfig(
-        short_lab_name="isce26",
+    "isce2026": BaseLabConfig(
+        short_lab_name="isce2026",
         friendly_name="2026 Technical Course: InSAR Processing and Analysis (ISCE+)",
         description="""
             <p>
@@ -213,8 +213,8 @@ NON_PROD_LAB_CONFIGS = {
         ],
         default_profiles=["m6a.large", "m6a.xlarge"],
     ),
-    "isce26": BaseLabConfig(
-        short_lab_name="isce26",
+    "isce2026": BaseLabConfig(
+        short_lab_name="isce2026",
         friendly_name="2026 Technical Course: InSAR Processing and Analysis (ISCE+)",
         description="""
             <p>
