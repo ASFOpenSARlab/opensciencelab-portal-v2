@@ -245,7 +245,6 @@
         isLoading = true;
         try{
             // Build Url
-            console.log(user_filter, email_filter)
             const url = new URL('/portal/access/manage/{{ lab.short_lab_name }}/get-users', window.location.origin);
             if (lastEvaluatedKey){
                 url.searchParams.append('primary_key', Object.keys(lastEvaluatedKey)[0]);
@@ -264,7 +263,6 @@
             if (!data.lastEvaluatedKey){
                 foundAllUsers = true;
             }
-            console.log(data)
             lastEvaluatedKey = data.lastEvaluatedKey
             renderMoreUsers(data.users)
 
