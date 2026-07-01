@@ -1303,7 +1303,8 @@ class TestAccessPages:
         monkeypatch.setattr("util.auth.Lab", lambda *args, **kwargs: lab)
 
         def lab_users_static(*args, **kwargs):
-            return ( [
+            return (
+                [
                     {
                         "username": "test_user",
                         "email": "test@user.com",
@@ -1330,7 +1331,7 @@ class TestAccessPages:
                         },
                     },
                 ],
-                "test_user3"
+                "test_user3",
             )
 
         monkeypatch.setattr("portal.access.get_users_with_lab_lazy", lab_users_static)
@@ -1344,34 +1345,25 @@ class TestAccessPages:
         decoded_body = json.loads(ret["body"])
         assert decoded_body.get("users")
         assert decoded_body["users"][0] == {
-            "labs": {
-                "testlab": {
-                "lab_profiles": ["m6a.large"]
-                }
-            },
+            "labs": {"testlab": {"lab_profiles": ["m6a.large"]}},
             "username": "test_user",
             "email": "test@user.com",
             "token_usage": [
                 {
                     "labname": "testlab",
                     "token": "token-dne",
-                    "apply_date": "2026-07-01 00:56:59"
+                    "apply_date": "2026-07-01 00:56:59",
                 }
-            ]
+            ],
         }
         assert decoded_body["users"][1] == {
-            "labs": {
-                "testlab": {
-                    "lab_profiles": ["m6a.large"]
-                }
-            },
+            "labs": {"testlab": {"lab_profiles": ["m6a.large"]}},
             "username": "test_user2",
             "email": "test@user.com",
-            "token_usage": None
+            "token_usage": None,
         }
         assert decoded_body.get("lastEvaluatedKey")
         assert decoded_body["lastEvaluatedKey"] == "test_user3"
-        
 
     def test_lab_user_export(self, monkeypatch, lambda_context, helpers, fake_auth):
         import csv
