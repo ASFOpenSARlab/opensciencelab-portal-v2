@@ -1317,7 +1317,7 @@ class TestAccessPages:
                             {
                                 "labname": "testlab",
                                 "token": "token-dne",
-                                "apply_date": '2026-07-01 00:56:59',
+                                "apply_date": "2026-07-01 00:56:59",
                             }
                         ],
                     },
