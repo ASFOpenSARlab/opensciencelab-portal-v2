@@ -251,7 +251,7 @@ def get_users(shortname):
 
     # Whitelist specific keys
     keys = ["labs", "username", "email", "token_usage"]
-    users = [{k: user[k] for k in keys} for user in users]
+    users = [{k: user.get(k) for k in keys} for user in users]
 
     return {"users": users, "lastEvaluatedKey": lastEvaluatedKey}
 

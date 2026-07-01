@@ -1289,6 +1289,90 @@ class TestAccessPages:
         assert "></textarea>" in ret["body"]
         assert ret["body"].count("selected>") == 0
 
+    def test_lab_get_users(self, monkeypatch, lambda_context, helpers, fake_auth):
+        # Checks permission required to access page
+        user = helpers.FakeUser(access=["user", "lab_manager"])
+        monkeypatch.setattr("portal.access.User", lambda *args, **kwargs: user)
+        monkeypatch.setattr("util.auth.User", lambda *args, **kwargs: user)
+
+        lab = helpers.FakeLab(managers=[user.username])
+        monkeypatch.setattr(
+            "portal.access.Lab",
+            lambda *args, **kwargs: lab,
+        )
+        monkeypatch.setattr("util.auth.Lab", lambda *args, **kwargs: lab)
+
+        def lab_users_static(*args, **kwargs):
+            return ( [
+                    {
+                        "username": "test_user",
+                        "email": "test@user.com",
+                        "labs": {
+                            "testlab": {
+                                "lab_profiles": ["m6a.large"],
+                            },
+                        },
+                        "token_usage": [
+                            {
+                                "labname": "testlab",
+                                "token": "token-dne",
+                                "apply_date": '2026-07-01 00:56:59',
+                            }
+                        ],
+                    },
+                    {
+                        "username": "test_user2",
+                        "email": "test@user.com",
+                        "labs": {
+                            "testlab": {
+                                "lab_profiles": ["m6a.large"],
+                            },
+                        },
+                    },
+                ],
+                "test_user3"
+            )
+
+        monkeypatch.setattr("portal.access.get_users_with_lab_lazy", lab_users_static)
+
+        event = helpers.get_event(
+            path="/portal/access/manage/testlab/get-users", cookies=fake_auth
+        )
+        ret = main.lambda_handler(event, lambda_context)
+
+        assert ret["statusCode"] == 200
+        decoded_body = json.loads(ret["body"])
+        assert decoded_body.get("users")
+        assert decoded_body["users"][0] == {
+            "labs": {
+                "testlab": {
+                "lab_profiles": ["m6a.large"]
+                }
+            },
+            "username": "test_user",
+            "email": "test@user.com",
+            "token_usage": [
+                {
+                    "labname": "testlab",
+                    "token": "token-dne",
+                    "apply_date": "2026-07-01 00:56:59"
+                }
+            ]
+        }
+        assert decoded_body["users"][1] == {
+            "labs": {
+                "testlab": {
+                    "lab_profiles": ["m6a.large"]
+                }
+            },
+            "username": "test_user2",
+            "email": "test@user.com",
+            "token_usage": None
+        }
+        assert decoded_body.get("lastEvaluatedKey")
+        assert decoded_body["lastEvaluatedKey"] == "test_user3"
+        
+
     def test_lab_user_export(self, monkeypatch, lambda_context, helpers, fake_auth):
         import csv
         import io
