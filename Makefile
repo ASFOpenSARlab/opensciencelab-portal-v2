@@ -39,7 +39,7 @@ export PWD=$(dir $(realpath $(firstword $(MAKEFILE_LIST))))
 PROJECT_DIR := $(if $(CI_PROJECT_DIR),$(CI_PROJECT_DIR:/=),$(PWD:/=/))
 BUILD_DEPS ?= /tmp/.build/lambda/python
 
-IMAGE_NAME ?= ghcr.io/asfopensarlab/osl-utils:main
+IMAGE_NAME ?= ghcr.io/asfopensarlab/osl-utils:v1.2.1
 CALENDAR_URL ?= https://calendar.google.com/calendar/ical/c_eeadd37d8fef6b7675a1f213f1eb9d233c1ae28dc7d3a8752bc5928d2b46e2d3%40group.calendar.google.com/public/basic.ics
 AWS_DEFAULT_PROFILE := $(AWS_DEFAULT_PROFILE)
 AWS_REGION ?= us-west-2

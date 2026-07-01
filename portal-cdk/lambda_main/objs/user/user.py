@@ -13,6 +13,7 @@ from util.dynamo_db import (
     dynamo_filter,
     get_all_items,
     combine_all_dynamo_filters,
+    get_items_lazy,
 )
 from data import DATE_F
 from objs.base_db_table import Table
@@ -260,3 +261,34 @@ def get_users_with_lab(
         return items[:limit]
 
     return items
+
+
+def get_users_with_lab_lazy(
+    lab_short_name: str,
+    limit: int | None = None,
+    username_filter: str | None = None,
+    email_filter: str | None = None,
+    exclusive_start_key: dict | None = None,
+    minimum_results: int | None = None,
+):
+    # Check if lab exists
+    if lab_short_name not in LAB_CONFIGS:
+        raise LabDoesNotExist(message=f'"{lab_short_name}" lab does not exist')
+
+    # combine filters
+    exist_filter = dynamo_filter(
+        attr_name=f"labs.{lab_short_name}", filter_action="exists"
+    )
+    user_email_filter = user_email_filters(username_filter, email_filter)
+    filter_expr = combine_all_dynamo_filters([exist_filter, user_email_filter])
+
+    # Get filtered results
+    items, lastEvaluatedKey = get_items_lazy(
+        USER_TABLE_ID,
+        limit,
+        filters=filter_expr,
+        exclusiveStartKey=exclusive_start_key,
+        minimum_results=minimum_results,
+    )
+
+    return items, lastEvaluatedKey
