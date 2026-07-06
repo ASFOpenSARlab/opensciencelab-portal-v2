@@ -263,6 +263,22 @@ class TestPortalAuth:
         assert ret["headers"].get("Location").endswith("?return=/portal/hub")
         assert ret["headers"].get("Content-Type") == "text/html"
 
+    def test_next_url_overrides_return(self, lambda_context, helpers):
+        event = helpers.get_event(
+            path="/portal/hub/auth",
+            qparams={"next_url": "/lab/smce-prod-opensarlab/hub/home"},
+            cookies={"foo": "bar"},
+        )
+        ret = main.lambda_handler(event, lambda_context)
+        assert ret["statusCode"] == 302
+        assert ret["body"] == "User is not logged in"
+        assert (
+            ret["headers"]
+            .get("Location")
+            .endswith("?return=/lab/smce-prod-opensarlab/hub/home")
+        )
+        assert ret["headers"].get("Content-Type") == "text/html"
+
     def test_logged_in(self, lambda_context, fake_auth, helpers, monkeypatch):
         user = helpers.FakeUser()
         monkeypatch.setattr("portal.User", lambda *args, **kwargs: user)
