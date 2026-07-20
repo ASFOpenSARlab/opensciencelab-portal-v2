@@ -202,7 +202,7 @@ NON_PROD_LAB_CONFIGS = {
         description="""
             <p>Cluster v2 access to test auth.</p>
         """,
-        deployment_url="http://eks-cluster-test-d715f4addfe3c64c.elb.us-west-2.amazonaws.com",
+        deployment_url="http://eks-cluster-test-5b36ecbe4143a38e.elb.us-west-2.amazonaws.com",
         accessibility="protected",
         allowed_profiles=[
             "SAR 1",
