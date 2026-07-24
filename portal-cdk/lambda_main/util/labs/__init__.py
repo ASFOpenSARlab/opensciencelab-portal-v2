@@ -171,13 +171,10 @@ PROD_LAB_CONFIGS = {
         friendly_name="2026 Technical Course: InSAR Processing and Analysis (ISCE+)",
         description="""
             <p>
-                This 5-day course covers basic and advanced InSAR theory and hands-on processing of Sentinel-1 and NISAR data using the JPL/Caltech InSAR Scientific Computing Environment (ISCE/ISCE3). Topics include noise mitigation, accessing ARIA and OPERA standard InSAR products and preparing them for time-series analysis, InSAR time-series analysis with MintPy, pixel offset tracking, and basic interpretation and modeling.
+                ISCE+ is an intensive, hands-on course introducing you to the processing and geophysical analysis of InSAR data. In this iteration, we will add an emphasis on NISAR to the typical focus on data from the Sentinel-1 sensor. Expect to compute, troubleshoot, and build confidence with advanced tools. 
             </p>
             <p>
-                <b>Primary Audience</b>:  Graduate students, postdocs, and early career scientists interested in using InSAR in their research.
-            </p>
-            <p>
-                <b>Secondary Audience</b>:  Instructors who plan to teach InSAR processing and analysis.
+                This course is designed to provide you with the background knowledge and skills to process, interpret and model Interferometric SAR (InSAR) data from sensors such as Sentinel-1 and NISAR. The course also introduces you to InSAR time series analysis, using the open source ISCE3 and MintPy software tools, and a host of codes and workflows our instructors have developed to complement them.
             </p>
         """,
         deployment_url="http://isce2026-1553330142.us-west-2.elb.amazonaws.com",
