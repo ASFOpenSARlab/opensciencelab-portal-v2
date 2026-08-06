@@ -92,12 +92,16 @@ PROD_LAB_CONFIGS = {
             },
         ],
         application_description=(
+            "Please write 1-3 sentences per question to describe your need for access to OpenSARLab.<br><br>"
             'Access to "OpenSARLab (ASF DAAC)" is month-to-month as budget allows. If your access is set to be revoked, '
             "we will get in touch to ensure that you are able to download any workflows and results "
             "before you lose access.<br><br>"
             "Applications are approved on a weekly basis. If timeliness is a significant factor for your application, "
             'please email <a href="mailto:uaf-jupyterhub-asf@alaska.edu">uaf-jupyterhub-asf@alaska.edu</a> '
-            "to advise us of your circumstances."
+            "to advise us of your circumstances.<br><br>"
+            "IMPORTANT: If you are attempting to gain access to a lab for your <b>class</b> or <b>workshop</b>, "
+            "this is not the lab you're looking for. Please review your lab instructions "
+            "to gain access to the correct lab."
         ),
     ),
     "azdwr-prod-opensarlab": BaseLabConfig(
@@ -294,12 +298,16 @@ NON_PROD_LAB_CONFIGS = {
             },
         ],
         application_description=(
+            "Please write 1-3 sentences per question to describe your need for access to OpenSARLab.<br><br>"
             'Access to "OpenSARLab (ASF DAAC)" is month-to-month as budget allows. If your access is set to be revoked, '
             "we will get in touch to ensure that you are able to download any workflows and results "
             "before you lose access.<br><br>"
             "Applications are approved on a weekly basis. If timeliness is a significant factor for your application, "
             'please email <a href="mailto:uaf-jupyterhub-asf@alaska.edu">uaf-jupyterhub-asf@alaska.edu</a> '
-            "to advise us of your circumstances."
+            "to advise us of your circumstances.<br><br>"
+            "IMPORTANT: If you are attempting to gain access to a lab for your <b>class</b> or <b>workshop</b>, "
+            "this is not the lab you're looking for. Please review your lab instructions "
+            "to gain access to the correct lab."
         ),
     ),
     "test_protected": BaseLabConfig(
