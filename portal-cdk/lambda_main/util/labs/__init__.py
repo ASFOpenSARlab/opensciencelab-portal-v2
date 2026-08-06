@@ -56,6 +56,13 @@ PROD_LAB_CONFIGS = {
                 "placeholder": "Your Answer",
             },
             {
+                "name": "sar_projects",
+                "question": "Tell us about your research. Please be as specific as possible, including links to websites, GitHub repositories, or papers you have directly contributed to.",
+                "type": "text",
+                "rendering_options": "multi-line",
+                "placeholder": "Your Answer",
+            },
+            {
                 "name": "osl_experience",
                 "question": "Have you used OpenSARLab before? If so, tell us what you used it for and what you produced / developed / delivered with it.",
                 "type": "text",
@@ -77,18 +84,16 @@ PROD_LAB_CONFIGS = {
                 "placeholder": "Your Answer",
             },
             {
-                "name": "community_impacts",
-                "question": "What would be the impact for your community?",
-                "type": "text",
-                "rendering_options": "multi-line",
-                "placeholder": "Your Answer",
-            },
-            {
                 "name": "research_impacts",
                 "question": "What would be the impact for the field of research you are contributing to?",
                 "type": "text",
                 "rendering_options": "multi-line",
                 "placeholder": "Your Answer",
+            },
+            {
+                "name": "ai_use",
+                "question": 'Did you use Artificial Intelligence (AI) to generate or assist with writing your answers? Please check the box if "Yes".',
+                "type": "checkbox",
             },
         ],
         application_description=(
@@ -262,6 +267,13 @@ NON_PROD_LAB_CONFIGS = {
                 "placeholder": "Your Answer",
             },
             {
+                "name": "sar_projects",
+                "question": "Tell us about your research. Please be as specific as possible, including links to websites, GitHub repositories, or papers you have directly contributed to.",
+                "type": "text",
+                "rendering_options": "multi-line",
+                "placeholder": "Your Answer",
+            },
+            {
                 "name": "osl_experience",
                 "question": "Have you used OpenSARLab before? If so, tell us what you used it for and what you produced / developed / delivered with it.",
                 "type": "text",
@@ -283,18 +295,16 @@ NON_PROD_LAB_CONFIGS = {
                 "placeholder": "Your Answer",
             },
             {
-                "name": "community_impacts",
-                "question": "What would be the impact for your community?",
-                "type": "text",
-                "rendering_options": "multi-line",
-                "placeholder": "Your Answer",
-            },
-            {
                 "name": "research_impacts",
                 "question": "What would be the impact for the field of research you are contributing to?",
                 "type": "text",
                 "rendering_options": "multi-line",
                 "placeholder": "Your Answer",
+            },
+            {
+                "name": "ai_use",
+                "question": 'Did you use Artificial Intelligence (AI) to generate or assist with writing your answers? Please check the box if "Yes":',
+                "type": "checkbox",
             },
         ],
         application_description=(
