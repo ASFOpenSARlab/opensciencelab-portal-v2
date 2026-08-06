@@ -12,7 +12,9 @@
         </h2>
         <div class="center-horizontal">
             {% if lab_application_description is not none %}
-                <p style="width: 850px;">{{ lab_application_description }}</p>
+                <p style="width: 850px;">{{ lab_application_description }}<br><br>
+                Please note that all application questions are required.
+                </p>
                 <br>
                 <br>
             {% endif %}
@@ -26,13 +28,10 @@
                     </label>
                     {% if question["type"] == "text" %}
                         {% if question["rendering_options"] == "multi-line" %}
-                            <textarea id="{{ question["name"] }}"
-                                      name="{{ question["name"] }}"
-                                      rows="4"
-                                      cols="50"
-                                      {% if question.get("placeholder") %}placeholder="{{ question["placeholder"] }}"{% endif %}>{% if active_request is defined %}{{ active_request[question["name"]] }}{% endif %}</textarea>
+                            <textarea id="{{ question["name"] }}" required name="{{ question["name"] }}" rows="4" cols="50" {% if question.get("placeholder") %}placeholder="{{ question["placeholder"] }}"{% endif %}>{% if active_request is defined %}{{ active_request[question["name"]] }}{% endif %}</textarea>
                         {% else %}
                             <input type="text"
+                                   required
                                    id="{{ question["name"] }}"
                                    name="{{ question["name"] }}"
                                    {% if question.get("placeholder") %}placeholder={{ question["placeholder"] }}{% if active_request is defined %}value="{{ active_request[question["name"]] }}"{% endif %}
@@ -40,11 +39,13 @@
                         {% endif %}
                     {% elif question["type"] == "checkbox" %}
                         <input type="checkbox"
+                               required
                                id="{{ question["name"] }}"
                                name="{{ question["name"] }}"
                                {% if active_request is defined %}value="{{ active_request[question["name"]] }}"{% endif %}>
                     {% elif question["type"] == "dropdown" %}
                         <select id="{{ question["name"] }}"
+                                required
                                 name="{{ question["name"] }}"
                                 onchange="removeDropdownDefault(this)">
                             {% if active_request is not defined %}<option value="default">Choose One</option>{% endif %}
