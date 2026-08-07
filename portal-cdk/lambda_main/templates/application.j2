@@ -12,8 +12,11 @@
         </h2>
         <div class="center-horizontal">
             {% if lab_application_description is not none %}
-                <p style="width: 850px;">{{ lab_application_description }}<br><br>
-                Please note that all application questions are required.
+                <p style="width: 850px;">
+                    {{ lab_application_description }}
+                    <br>
+                    <br>
+                    Please note that all application questions are required.
                 </p>
                 <br>
                 <br>
@@ -28,49 +31,63 @@
                     </label>
                     {% if question["type"] == "text" %}
                         {% if question["rendering_options"] == "multi-line" %}
+<<<<<<< Updated upstream
                             <textarea id="{{ question["name"] }}" required name="{{ question["name"] }}" rows="4" cols="50" {% if question.get("placeholder") %}placeholder="{{ question["placeholder"] }}"{% endif %}>{% if active_request is defined %}{{ active_request[question["name"]] }}{% endif %}</textarea>
+||||||| Stash base
+                            <textarea id="{{ question["name"] }}" required name="{{
+                            question["name"] }}" rows="4" cols="100" {% if question.get("placeholder") %}placeholder="{{ question["placeholder"] }}"{% endif %}>{% if active_request is defined %}{{ active_request[question["name"]] }}{% endif %}</textarea>
+=======
+                            <textarea id="{{ question["name"] }}" required name="{{
+                            question["name"] }}" rows="4" cols="100" {% if
+                            question.get("placeholder") %}placeholder="{{
+                            question["placeholder"] }}"{% endif %}>{% if active_request
+                            is defined %}{{ active_request.get(question["name"], "") }}{% endif %}</textarea>
+>>>>>>> Stashed changes
                         {% else %}
                             <input type="text"
+                                required
+                                id="{{ question["name"] }}"
+                                name="{{ question["name"] }}"
+                                {% if question.get("placeholder") %}placeholder={{
+                                    question["placeholder"] }}{% if active_request is
+                                    defined %}value="{{ active_request.get(question["name"], "") }}"{% endif %}
+                                {% endif %}>
+                            {% endif %}
+                        {% elif question["type"] == "checkbox" %}
+                            <input type="checkbox"
                                    required
                                    id="{{ question["name"] }}"
                                    name="{{ question["name"] }}"
-                                   {% if question.get("placeholder") %}placeholder={{ question["placeholder"] }}{% if active_request is defined %}value="{{ active_request[question["name"]] }}"{% endif %}
-                                   {% endif %}>
-                        {% endif %}
-                    {% elif question["type"] == "checkbox" %}
-                        <input type="checkbox"
-                               required
-                               id="{{ question["name"] }}"
-                               name="{{ question["name"] }}"
-                               {% if active_request is defined %}value="{{ active_request[question["name"]] }}"{% endif %}>
-                    {% elif question["type"] == "dropdown" %}
-                        <select id="{{ question["name"] }}"
-                                required
-                                name="{{ question["name"] }}"
-                                onchange="removeDropdownDefault(this)">
-                            {% if active_request is not defined %}<option value="default">Choose One</option>{% endif %}
-                            {% for option in question["rendering_options"] %}
-                                <option value="{{ option|lower }}"
-                                        {% if active_request is defined and active_request[question["name"]].lower() == option.lower() %}selected{% endif %}>
-                                    {{ option }}
-                                </option>
-                            {% endfor %}
-                        </select>
-                    {% endif %}
-                    <br>
-                    <br>
-                {% endfor %}
-                <!-- Sumbit button -->
-                <div>
-                    <button type="submit">
-                        {% if active_request is defined %}
-                            Update Application
-                        {% else %}
-                            Submit Application
-                        {% endif %}
-                    </button>
+                                   {% if active_request is defined %}value="{{ active_request.get(question["name"], "") }}"{% endif %}>
+                        {% elif question["type"] == "dropdown" %}
+                            <select id="{{ question["name"] }}"
+                                    required
+                                    name="{{ question["name"] }}"
+                                    onchange="removeDropdownDefault(this)">
+                                {% if active_request is not defined %}<option value="default">Choose One</option>{% endif %}
+                                {% for option in question["rendering_options"] %}
+                                    <option value="{{ option|lower }}"
+                                        {% if active_request is defined and
+                                            active_request.get(question["name"], "").lower() == option.lower() %}selected{% endif %}>
+                                            {{ option }}
+                                        </option>
+                                    {% endfor %}
+                                </select>
+                            {% endif %}
+                            <br>
+                            <br>
+                        {% endfor %}
+                        <!-- Submit button -->
+                        <div>
+                            <button type="submit">
+                                {% if active_request is defined %}
+                                    Update Application
+                                {% else %}
+                                    Submit Application
+                                {% endif %}
+                            </button>
+                        </div>
+                    </form>
                 </div>
-            </form>
+            </div>
         </div>
-    </div>
-</div>
