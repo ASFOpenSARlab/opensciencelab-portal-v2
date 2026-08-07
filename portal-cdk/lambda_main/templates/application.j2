@@ -31,6 +31,12 @@
                     </label>
                     {% if question["type"] == "text" %}
                         {% if question["rendering_options"] == "multi-line" %}
+                            <textarea id="{{ question["name"] }}"
+                                      required
+                                      name="{{ question["name"] }}"
+                                      rows="4"
+                                      cols="50"
+                                      {% if question.get("placeholder") %}placeholder="{{ question["placeholder"] }}"{% endif %}>{% if active_request is defined %}{{ active_request.get(question["name"], "") }}{% endif %}</textarea>
                         {% else %}
                             <input type="text"
                                 required
