@@ -31,18 +31,6 @@
                     </label>
                     {% if question["type"] == "text" %}
                         {% if question["rendering_options"] == "multi-line" %}
-<<<<<<< Updated upstream
-                            <textarea id="{{ question["name"] }}" required name="{{ question["name"] }}" rows="4" cols="50" {% if question.get("placeholder") %}placeholder="{{ question["placeholder"] }}"{% endif %}>{% if active_request is defined %}{{ active_request[question["name"]] }}{% endif %}</textarea>
-||||||| Stash base
-                            <textarea id="{{ question["name"] }}" required name="{{
-                            question["name"] }}" rows="4" cols="100" {% if question.get("placeholder") %}placeholder="{{ question["placeholder"] }}"{% endif %}>{% if active_request is defined %}{{ active_request[question["name"]] }}{% endif %}</textarea>
-=======
-                            <textarea id="{{ question["name"] }}" required name="{{
-                            question["name"] }}" rows="4" cols="100" {% if
-                            question.get("placeholder") %}placeholder="{{
-                            question["placeholder"] }}"{% endif %}>{% if active_request
-                            is defined %}{{ active_request.get(question["name"], "") }}{% endif %}</textarea>
->>>>>>> Stashed changes
                         {% else %}
                             <input type="text"
                                 required
