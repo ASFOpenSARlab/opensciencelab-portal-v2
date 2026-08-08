@@ -92,7 +92,7 @@ PROD_LAB_CONFIGS = {
             },
             {
                 "name": "ai_use",
-                "question": 'Did you use Artificial Intelligence (AI) to generate or assist with writing your answers? Please check the box if "Yes".',
+                "question": 'Did you use Artificial Intelligence (AI) to generate or assist with writing your answers? Use of AI will <b>not</b> disqualify your application. Please check the box if "Yes":',
                 "type": "checkbox",
             },
         ],
@@ -303,7 +303,7 @@ NON_PROD_LAB_CONFIGS = {
             },
             {
                 "name": "ai_use",
-                "question": 'Did you use Artificial Intelligence (AI) to generate or assist with writing your answers? Please check the box if "Yes":',
+                "question": 'Did you use Artificial Intelligence (AI) to generate or assist with writing your answers? Use of AI will <b>not</b> disqualify your application. Please check the box if "Yes":',
                 "type": "checkbox",
             },
         ],
