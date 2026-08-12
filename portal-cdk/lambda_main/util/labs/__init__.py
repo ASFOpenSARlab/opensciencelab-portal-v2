@@ -56,6 +56,13 @@ PROD_LAB_CONFIGS = {
                 "placeholder": "Your Answer",
             },
             {
+                "name": "sar_projects",
+                "question": "Tell us about your research. Please be as specific as possible, including links to websites, GitHub repositories, or papers you have directly contributed to.",
+                "type": "text",
+                "rendering_options": "multi-line",
+                "placeholder": "Your Answer",
+            },
+            {
                 "name": "osl_experience",
                 "question": "Have you used OpenSARLab before? If so, tell us what you used it for and what you produced / developed / delivered with it.",
                 "type": "text",
@@ -77,27 +84,29 @@ PROD_LAB_CONFIGS = {
                 "placeholder": "Your Answer",
             },
             {
-                "name": "community_impacts",
-                "question": "What would be the impact for your community?",
-                "type": "text",
-                "rendering_options": "multi-line",
-                "placeholder": "Your Answer",
-            },
-            {
                 "name": "research_impacts",
                 "question": "What would be the impact for the field of research you are contributing to?",
                 "type": "text",
                 "rendering_options": "multi-line",
                 "placeholder": "Your Answer",
             },
+            {
+                "name": "ai_use",
+                "question": 'Did you use Artificial Intelligence (AI) to generate or assist with writing your answers? Use of AI will <b>not</b> disqualify your application. Please check the box if "Yes":',
+                "type": "checkbox",
+            },
         ],
         application_description=(
+            "Please write 1-3 sentences per question to describe your need for access to OpenSARLab.<br><br>"
             'Access to "OpenSARLab (ASF DAAC)" is month-to-month as budget allows. If your access is set to be revoked, '
             "we will get in touch to ensure that you are able to download any workflows and results "
             "before you lose access.<br><br>"
             "Applications are approved on a weekly basis. If timeliness is a significant factor for your application, "
             'please email <a href="mailto:uaf-jupyterhub-asf@alaska.edu">uaf-jupyterhub-asf@alaska.edu</a> '
-            "to advise us of your circumstances."
+            "to advise us of your circumstances.<br><br>"
+            "IMPORTANT: If you are attempting to gain access to a lab for your <b>class</b> or <b>workshop</b>, "
+            "this is not the lab you're looking for. Please review your lab instructions "
+            "to gain access to the correct lab."
         ),
     ),
     "azdwr-prod-opensarlab": BaseLabConfig(
@@ -199,7 +208,7 @@ NON_PROD_LAB_CONFIGS = {
         description="""
             <p>Cluster v2 access to test auth.</p>
         """,
-        deployment_url="http://eks-cluster-test-5b36ecbe4143a38e.elb.us-west-2.amazonaws.com",
+        deployment_url="http://eks-cluster-test-d62f194f0cd93f23.elb.us-west-2.amazonaws.com",
         accessibility="protected",
         allowed_profiles=[
             "SAR 1",
@@ -258,6 +267,13 @@ NON_PROD_LAB_CONFIGS = {
                 "placeholder": "Your Answer",
             },
             {
+                "name": "sar_projects",
+                "question": "Tell us about your research. Please be as specific as possible, including links to websites, GitHub repositories, or papers you have directly contributed to.",
+                "type": "text",
+                "rendering_options": "multi-line",
+                "placeholder": "Your Answer",
+            },
+            {
                 "name": "osl_experience",
                 "question": "Have you used OpenSARLab before? If so, tell us what you used it for and what you produced / developed / delivered with it.",
                 "type": "text",
@@ -279,27 +295,29 @@ NON_PROD_LAB_CONFIGS = {
                 "placeholder": "Your Answer",
             },
             {
-                "name": "community_impacts",
-                "question": "What would be the impact for your community?",
-                "type": "text",
-                "rendering_options": "multi-line",
-                "placeholder": "Your Answer",
-            },
-            {
                 "name": "research_impacts",
                 "question": "What would be the impact for the field of research you are contributing to?",
                 "type": "text",
                 "rendering_options": "multi-line",
                 "placeholder": "Your Answer",
             },
+            {
+                "name": "ai_use",
+                "question": 'Did you use Artificial Intelligence (AI) to generate or assist with writing your answers? Use of AI will <b>not</b> disqualify your application. Please check the box if "Yes":',
+                "type": "checkbox",
+            },
         ],
         application_description=(
+            "Please write 1-3 sentences per question to describe your need for access to OpenSARLab.<br><br>"
             'Access to "OpenSARLab (ASF DAAC)" is month-to-month as budget allows. If your access is set to be revoked, '
             "we will get in touch to ensure that you are able to download any workflows and results "
             "before you lose access.<br><br>"
             "Applications are approved on a weekly basis. If timeliness is a significant factor for your application, "
             'please email <a href="mailto:uaf-jupyterhub-asf@alaska.edu">uaf-jupyterhub-asf@alaska.edu</a> '
-            "to advise us of your circumstances."
+            "to advise us of your circumstances.<br><br>"
+            "IMPORTANT: If you are attempting to gain access to a lab for your <b>class</b> or <b>workshop</b>, "
+            "this is not the lab you're looking for. Please review your lab instructions "
+            "to gain access to the correct lab."
         ),
     ),
     "test_protected": BaseLabConfig(
