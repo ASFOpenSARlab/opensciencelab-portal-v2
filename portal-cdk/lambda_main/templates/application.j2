@@ -49,7 +49,6 @@
                             {% endif %}
                         {% elif question["type"] == "checkbox" %}
                             <input type="checkbox"
-                                   required
                                    id="{{ question["name"] }}"
                                    name="{{ question["name"] }}"
                                    {% if active_request is defined %}value="{{ active_request.get(question["name"], "") }}"{% endif %}>
