@@ -253,7 +253,7 @@ ALL_COUNTRIES = {
     "ZW": "Zimbabwe",
 }
 
-# https://www.nasa.gov/wp-content/uploads/2026/03/designated-country-list-3-18-2026.pdf
+# https://www.nasa.gov/wp-content/uploads/2026/08/designated-country-list-8-4-2026.pdf
 RESTRICTED_COUNTRIES = {
     "BT": {"name": "Bhutan", "restrictions": [1]},
     "TW": {"name": "Taiwan*", "restrictions": [1]},
@@ -292,10 +292,11 @@ RESTRICTED_COUNTRIES = {
     "SS": {"name": "South Sudan (Republic of)", "restrictions": [3]},
     "SU": {"name": "Sudan", "restrictions": [3]},
     "SY": {"name": "Syria", "restrictions": [1, 2, 3, 4]},
-    "AE": {"name": "United Arab Emirates", "restrictions": [4]},
-    "VE": {"name": "Venezuela", "restrictions": [1, 3, 4]},
+    "VE": {"name": "Venezuela", "restrictions": [3, 4]},
     "YE": {"name": "Yemen", "restrictions": [4]},
     "ZW": {"name": "Zimbabwe", "restrictions": [3]},
+    # Note: Although listed in ITAR 126.1 and EAR Country Groups D:4 and D:5, Russia is excluded from the NASA Designated Country List to avoid disruptions to operational cooperative activities
+    # However, to play it safe with other Agency Designated Country lists, Russia is still prohibited.
     "RU": {"name": "Russia", "restrictions": [1, 2, 3, 4, 9]},
 }
 
