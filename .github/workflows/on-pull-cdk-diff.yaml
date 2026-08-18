@@ -50,6 +50,7 @@ jobs:
 
       - name: Run Diff
         run: |-
+          make synth-portal
           cd portal-cdk
           cdk diff 2>&1 | tee cdk-diff-output.log
 
