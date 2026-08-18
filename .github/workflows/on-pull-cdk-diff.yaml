@@ -7,6 +7,9 @@ on: # yamllint disable-line rule:truthy
     branches:
       - main
 
+permissions:
+   contents: read
+
 jobs:
   setup:
     uses: ASFOpenSARlab/osl-utils/.github/workflows/reusable-setup-env.yaml@v1.2.1
@@ -60,6 +63,9 @@ jobs:
   # Run as a separate job so token permissions don't propagate
   comment-diff:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
     needs:
       - setup
       - cdk-diff
