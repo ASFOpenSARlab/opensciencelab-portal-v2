@@ -57,7 +57,7 @@ jobs:
         uses: actions/upload-artifact@v7
         with:
           name: cdk-diff-artifact
-          path: cdk-diff-output.txt
+          path: cdk-diff-output.log
           retention-days: 10
 
   # Run as a separate job so token permissions don't propagate
@@ -79,4 +79,4 @@ jobs:
       - name: Comment CDK Diff Output on PR
         uses: towardsthecloud/aws-cdk-diff-pr-commenter@v1
         with:
-          diff-file: cdk-diff-output.txt
+          diff-file: cdk-diff-output.log
