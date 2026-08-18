@@ -21,7 +21,7 @@ jobs:
       id-token: write
       contents: read
     env:
-      DEPLOY_PREFIX: main # We only evaluate PR's to main
+      DEPLOY_PREFIX: test # We only evaluate PR's to main
       SES_EMAIL: ${{ secrets.SES_EMAIL }}
       SES_DOMAIN: ${{ vars.SES_DOMAIN }}
       SSL_CERT_ARN: ${{ vars.SSL_CERT_ARN }}
