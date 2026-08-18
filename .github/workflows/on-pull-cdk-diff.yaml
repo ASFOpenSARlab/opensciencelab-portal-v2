@@ -52,7 +52,7 @@ jobs:
         run: |-
           make synth-portal
           cd portal-cdk
-          cdk diff 2>&1 | tee cdk-diff-output.log
+          cdk diff 2>&1 | tee ../cdk-diff-output.log
 
       - name: Upload Diff Artifact
         uses: actions/upload-artifact@v7
