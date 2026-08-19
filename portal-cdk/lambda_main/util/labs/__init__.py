@@ -206,7 +206,7 @@ PROD_LAB_CONFIGS = {
         <p>Placeholder for GEOS 631/636</p>
         """,
         deployment_url="http://eks-cluster-geos-368fe5a0d3301df1.elb.us-west-2.amazonaws.com",
-        accessibility="protected",
+        accessibility="private",
         allowed_profiles=[
             "GEOS 631",
             "GEOS 631 - Debug",
@@ -224,7 +224,7 @@ NON_PROD_LAB_CONFIGS = {
         <p>Placeholder for GEOS 631/636</p>
         """,
         deployment_url="http://eks-cluster-geos-368fe5a0d3301df1.elb.us-west-2.amazonaws.com",
-        accessibility="protected",
+        accessibility="private",
         allowed_profiles=[
             "GEOS 631",
             "GEOS 631 - Debug",
