@@ -4,6 +4,7 @@ import time
 import datetime
 
 import boto3
+from botocore.exceptions import ClientError
 
 from objs.user import User
 from util.log_timer import measure_time
@@ -164,8 +165,8 @@ def get_user_ip_logs(
         )
 
     if not start_date:
-        # Default start time is 30 days in the past from now
-        start_date = end_date - datetime.timedelta(days=30)
+        # Default start time is 14 days in the past from now
+        start_date = end_date - datetime.timedelta(days=14)
 
     end_date_int = int(end_date.timestamp())
     start_date_int = int(start_date.timestamp())
@@ -193,6 +194,9 @@ def get_user_ip_logs(
 
         response = {}
 
+        # Make sure we don't sleep too long and run out the lambda timeout
+        sleep_count = 0
+
         while response.get("status", None) not in [
             "Cancelled",
             "Complete",
@@ -200,6 +204,22 @@ def get_user_ip_logs(
             "Timeout",
             "Unknown",
         ]:
+            # If we're risking timeout, give up.
+            if sleep_count >= 8:
+                try:
+                    logger.warning("Stopping long-running CW Query")
+                    logs_client.stop_query(queryId=query_id)
+                except ClientError as e:
+                    error_code = e.response['Error']['Code']
+                    logger.warning(
+                        "Could not stop long-running CW Query: %s", error_code
+                    )
+                finally:
+                    # Grab Partial results and Break out of while loop
+                    response = logs_client.get_query_results(queryId=query_id)
+                    break
+
+            sleep_count += 1
             time.sleep(1)
             # https://boto3.amazonaws.com/v1/documentation/api/1.26.82/reference/services/logs/client/get_query_results.html
             response = logs_client.get_query_results(queryId=query_id)
