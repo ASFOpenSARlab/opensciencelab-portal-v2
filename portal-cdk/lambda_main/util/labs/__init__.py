@@ -199,9 +199,39 @@ PROD_LAB_CONFIGS = {
         default_profiles=["m6a.large", "m6a.xlarge"],
         allows_tokens=True,
     ),
+    "geos": BaseLabConfig(
+        short_lab_name="geos",
+        friendly_name="GEOS 631/636",
+        description="""
+        <p>Placeholder for GEOS 631/636</p>
+        """,
+        deployment_url="http://eks-cluster-geos-368fe5a0d3301df1.elb.us-west-2.amazonaws.com",
+        accessibility="private",
+        allowed_profiles=[
+            "GEOS 631",
+            "GEOS 631 - Debug",
+            "sudo",
+        ],
+        default_profiles=["GEOS 631"],
+    ),
 }
 
 NON_PROD_LAB_CONFIGS = {
+    "geos": BaseLabConfig(
+        short_lab_name="geos",
+        friendly_name="GEOS 631/636",
+        description="""
+        <p>Placeholder for GEOS 631/636</p>
+        """,
+        deployment_url="http://eks-cluster-geos-368fe5a0d3301df1.elb.us-west-2.amazonaws.com",
+        accessibility="private",
+        allowed_profiles=[
+            "GEOS 631",
+            "GEOS 631 - Debug",
+            "sudo",
+        ],
+        default_profiles=["GEOS 631"],
+    ),
     "test": BaseLabConfig(
         short_lab_name="test",
         friendly_name="Cluster v2 - test",
