@@ -276,6 +276,9 @@ def delete_cookies():
 
 @lambda_handler_decorator
 def process_auth(handler, event, context):
+    # Before we know who the user is, reset the username key
+    logger.remove_keys(["username"])
+
     # Skip auth for /static/
     request_uri = event.get("rawPath", "/")[0:1000]
     if request_uri.startswith("/static"):
