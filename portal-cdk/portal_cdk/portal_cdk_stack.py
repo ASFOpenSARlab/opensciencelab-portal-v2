@@ -291,6 +291,12 @@ class PortalCdkStack(Stack):
             else portal_cloudfront.distribution_domain_name
         )
 
+        primary_domain_or_api_gateway = (
+            custom_domain_args["domain_names"][0]
+            if "domain_names" in custom_domain_args
+            else f"{http_api.http_api_id}.execute-api.{self.region}.amazonaws.com"
+        )
+
         crypto_remediation_arns = []
         # Loop over Labs and add proxy behaviors
         for lab in LAB_CONFIGS.values():
@@ -300,8 +306,8 @@ class PortalCdkStack(Stack):
                 parsed_url.netloc + parsed_url.path,
                 protocol_policy=cloudfront.OriginProtocolPolicy.HTTP_ONLY,
                 custom_headers={
-                    # This *SHOULD* link to the CF Endpoint, but that creates a circular dependency
-                    "return-path": f"{http_api.http_api_id}.execute-api.{self.region}.amazonaws.com"
+                    # This is the external value we want the cluster to talk back to us at
+                    "return-path": primary_domain_or_api_gateway,
                 },
             )
             if lab.crypto_remediation_role_arn:
