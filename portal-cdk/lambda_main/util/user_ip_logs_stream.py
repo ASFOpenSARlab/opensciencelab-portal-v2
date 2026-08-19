@@ -210,7 +210,7 @@ def get_user_ip_logs(
                     logger.warning("Stopping long-running CW Query")
                     logs_client.stop_query(queryId=query_id)
                 except ClientError as e:
-                    error_code = e.response['Error']['Code']
+                    error_code = e.response["Error"]["Code"]
                     logger.warning(
                         "Could not stop long-running CW Query: %s", error_code
                     )
