@@ -214,7 +214,7 @@ PROD_LAB_CONFIGS = {
             "GEOS 636 - Debug",
             "sudo",
         ],
-        default_profiles=["GEOS 631","GEOS 636"],
+        default_profiles=["GEOS 631", "GEOS 636"],
     ),
 }
 
