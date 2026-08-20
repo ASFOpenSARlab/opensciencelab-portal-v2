@@ -210,9 +210,11 @@ PROD_LAB_CONFIGS = {
         allowed_profiles=[
             "GEOS 631",
             "GEOS 631 - Debug",
+            "GEOS 636",
+            "GEOS 636 - Debug",
             "sudo",
         ],
-        default_profiles=["GEOS 631"],
+        default_profiles=["GEOS 631", "GEOS 636"],
     ),
 }
 
@@ -228,9 +230,11 @@ NON_PROD_LAB_CONFIGS = {
         allowed_profiles=[
             "GEOS 631",
             "GEOS 631 - Debug",
+            "GEOS 636",
+            "GEOS 636 - Debug",
             "sudo",
         ],
-        default_profiles=["GEOS 631"],
+        default_profiles=["GEOS 631", "GEOS 636"],
     ),
     "test": BaseLabConfig(
         short_lab_name="test",
