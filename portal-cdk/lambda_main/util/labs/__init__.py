@@ -215,6 +215,7 @@ PROD_LAB_CONFIGS = {
             "sudo",
         ],
         default_profiles=["GEOS 631", "GEOS 636"],
+        allows_tokens=True,
     ),
 }
 
@@ -235,6 +236,7 @@ NON_PROD_LAB_CONFIGS = {
             "sudo",
         ],
         default_profiles=["GEOS 631", "GEOS 636"],
+        allows_tokens=True,
     ),
     "test": BaseLabConfig(
         short_lab_name="test",
