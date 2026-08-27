@@ -203,7 +203,18 @@ PROD_LAB_CONFIGS = {
         short_lab_name="geos",
         friendly_name="GEOS 631/636",
         description="""
-        <p>Placeholder for GEOS 631/636</p>
+        <p>
+            <ul>
+                <li><b>GEOS 631</b> - Foundations of Geophysics</li>
+                <li><b>GEOS 636</b> - Programming and Automation for Geosciences</li>
+            </ul>
+        <hr>
+        <p>
+            Basic concepts of computer programming and effective task automation for computers,
+            with an emphasis on tools and problems common to the geosciences and other physical sciences.
+            Use of Python, Jupyter Notebooks, shell scripting and command line tools,
+            making scientific figures, maps and visualizations. Provided asynchronously remotely.
+        </p>
         """,
         deployment_url="http://eks-cluster-geos-368fe5a0d3301df1.elb.us-west-2.amazonaws.com",
         accessibility="private",
@@ -224,7 +235,18 @@ NON_PROD_LAB_CONFIGS = {
         short_lab_name="geos",
         friendly_name="GEOS 631/636",
         description="""
-        <p>Placeholder for GEOS 631/636</p>
+        <p>
+            <ul>
+                <li><b>GEOS 631</b> - Foundations of Geophysics</li>
+                <li><b>GEOS 636</b> - Programming and Automation for Geosciences</li>
+            </ul>
+        <hr>
+        <p>
+            Basic concepts of computer programming and effective task automation for computers,
+            with an emphasis on tools and problems common to the geosciences and other physical sciences.
+            Use of Python, Jupyter Notebooks, shell scripting and command line tools,
+            making scientific figures, maps and visualizations. Provided asynchronously remotely.
+        </p>
         """,
         deployment_url="http://eks-cluster-geos-368fe5a0d3301df1.elb.us-west-2.amazonaws.com",
         accessibility="private",
