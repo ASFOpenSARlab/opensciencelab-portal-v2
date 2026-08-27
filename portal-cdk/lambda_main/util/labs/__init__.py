@@ -175,30 +175,6 @@ PROD_LAB_CONFIGS = {
         default_profiles=["SSBW Workspace 1"],
         allows_tokens=True,
     ),
-    "isce2026": BaseLabConfig(
-        short_lab_name="isce2026",
-        friendly_name="2026 Technical Course: InSAR Processing and Analysis (ISCE+)",
-        description="""
-            <p>
-                ISCE+ is an intensive, hands-on course introducing you to the processing and geophysical analysis of InSAR data. In this iteration, we will add an emphasis on NISAR to the typical focus on data from the Sentinel-1 sensor. Expect to compute, troubleshoot, and build confidence with advanced tools. 
-            </p>
-            <p>
-                This course is designed to provide you with the background knowledge and skills to process, interpret and model Interferometric SAR (InSAR) data from sensors such as Sentinel-1 and NISAR. The course also introduces you to InSAR time series analysis, using the open source ISCE3 and MintPy software tools, and a host of codes and workflows our instructors have developed to complement them.
-            </p>
-        """,
-        deployment_url="http://isce2026-1553330142.us-west-2.elb.amazonaws.com",
-        accessibility="protected",
-        allowed_profiles=[
-            "Debug Server Profile",
-            "m6a.xlarge",
-            "m6a.large",
-            "sudo",
-            "r6i.4xlarge",
-            "m6a.large - Test",
-        ],
-        default_profiles=["m6a.large", "m6a.xlarge"],
-        allows_tokens=True,
-    ),
     "geos": BaseLabConfig(
         short_lab_name="geos",
         friendly_name="GEOS 631/636",
