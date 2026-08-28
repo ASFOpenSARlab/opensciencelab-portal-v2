@@ -178,11 +178,14 @@
             let profiles = ""
             for(const profile of allowed_profiles){
                 if (user["labs"]["{{ lab.short_lab_name }}"]["lab_profiles"].includes(profile)){
-                    profiles += `<span style="border: 1px solid black; padding: 1px 4px; color: green;">${ profile }</span>`
-                }else{
-                    profiles += `<span style="border: 1px solid black; padding: 1px 4px; color: red;">${ profile }</span>`
+                    profiles += `<span style="border: 1px solid black; padding: 1px 4px; color: green;">${ profile }</span>,`
+                } else {
+                    profiles += `<span style="border: 1px solid black; padding: 1px 4px; color: red;">${ profile }</span>,`
                 }
             }
+            // Remove trailing comma from profile list
+            if ( profiles.endsWith(',') ) { profiles = profiles.slice(0, -1); }
+            
             // Render tools
             let tools = `
                 <button form="remove-user-form" type="submit" class="warning-background" onclick="fillRemoveUserForm('{{ lab.short_lab_name }}', '${ user["username"] }');">
