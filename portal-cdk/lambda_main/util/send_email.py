@@ -168,7 +168,7 @@ def send_user_email(request_data):
                     },
                 },
             )
-
+        raise Exception("I am a test exception that was thrown.")
         logger.info(f"Send email response: {response}")
 
         result = "Success"
