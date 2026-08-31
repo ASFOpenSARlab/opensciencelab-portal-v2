@@ -17,7 +17,12 @@
         </section>
         <section>
             <p>
-                <b>Username</b>: {{ request_data["to"]["username"] }}<br>
+                {% if "username" in request_data["to"] %}
+                    <b>Username</b>: {{ request_data["to"]["username"] }}<br>
+                {% endif %}
+                {% if "email" in request_data["to"] %}
+                    <b>Email</b>: {{ request_data["to"]["email"] }}<br>
+                {% endif %}
                 <b>Email Subject</b>: {{ request_data["subject"] }}
             </p>
         </section>
