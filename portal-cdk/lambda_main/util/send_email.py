@@ -180,7 +180,8 @@ def send_user_email(request_data):
             logger.info("Sending admin error email...")
 
             html_body = jinja_template(
-                {"error": type(e).__name__}, "error_email.html.j2"
+                {"error": traceback.format_exc(), "request_data": request_data},
+                "error_email.html.j2",
             )
 
             with measure_time(service="ses", action="send error email"):

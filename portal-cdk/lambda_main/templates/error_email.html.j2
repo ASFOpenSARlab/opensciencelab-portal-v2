@@ -13,7 +13,18 @@
             <p>There was an error while sending an email...</p>
         </section>
         <section>
-            {{ error }}
+            <pre>{{ error }}</pre>
+        </section>
+        <section>
+            <p>
+                {% if "username" in request_data["to"] %}
+                    <b>Username</b>: {{ request_data["to"]["username"] }}<br>
+                {% endif %}
+                {% if "email" in request_data["to"] %}
+                    <b>Email</b>: {{ request_data["to"]["email"] }}<br>
+                {% endif %}
+                <b>Email Subject</b>: {{ request_data["subject"] }}
+            </p>
         </section>
         <section>
             <p>Consult AWS logs for more info.</p>
