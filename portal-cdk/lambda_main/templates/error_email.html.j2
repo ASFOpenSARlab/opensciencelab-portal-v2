@@ -13,10 +13,13 @@
             <p>There was an error while sending an email...</p>
         </section>
         <section>
-            {{ error }}
+            <p>{{ error }}</p>
         </section>
         <section>
-            {{ request_data }}
+            <p>
+                <b>Username</b>: {{ request_data["to"]["username"] }}<br>
+                <b>Email Subject</b>: {{ request_data["subject"] }}
+            </p>
         </section>
         <section>
             <p>Consult AWS logs for more info.</p>
