@@ -21,7 +21,7 @@ PROD_LAB_CONFIGS = {
             result in suspension or loss of access privileges, disciplinary action, and civil and/or criminal penalties. </p>
         </div>
         """,
-        deployment_url="http://smce-prod-1240379463.us-west-2.elb.amazonaws.com",
+        deployment_url="http://eks-cluster-smce-prod-opensarlab-04ce879c406af2ee.elb.us-west-2.amazonaws.com",
         logo="ASF_and_NASA.svg",
         about_page_url="https://opensarlab-docs.asf.alaska.edu/",
         about_page_button_label="Info",
