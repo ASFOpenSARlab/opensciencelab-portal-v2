@@ -21,7 +21,7 @@ PROD_LAB_CONFIGS = {
             result in suspension or loss of access privileges, disciplinary action, and civil and/or criminal penalties. </p>
         </div>
         """,
-        deployment_url="http://eks-cluster-smce-prod-opensarlab-04ce879c406af2ee.elb.us-west-2.amazonaws.com",
+        deployment_url="http://eks-cluster-smce-prod-opensarlab-a87b92e42fa2fdb5.elb.us-west-2.amazonaws.com",
         logo="ASF_and_NASA.svg",
         about_page_url="https://opensarlab-docs.asf.alaska.edu/",
         about_page_button_label="Info",
@@ -233,7 +233,7 @@ NON_PROD_LAB_CONFIGS = {
         description="""
             <p>Cluster v2 access to test auth.</p>
         """,
-        deployment_url="http://eks-cluster-test-d62f194f0cd93f23.elb.us-west-2.amazonaws.com",
+        deployment_url="http://eks-cluster-test-2c5986426c33253f.elb.us-west-2.amazonaws.com",
         accessibility="protected",
         allowed_profiles=[
             "SAR 1",
