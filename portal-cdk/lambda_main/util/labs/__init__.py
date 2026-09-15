@@ -183,7 +183,7 @@ PROD_LAB_CONFIGS = {
             making scientific figures, maps and visualizations. Provided asynchronously remotely.
         </p>
         """,
-        deployment_url="http://eks-cluster-geos-368fe5a0d3301df1.elb.us-west-2.amazonaws.com",
+        deployment_url="http://eks-cluster-geos-4543fa7969d125e0.elb.us-west-2.amazonaws.com",
         accessibility="private",
         allowed_profiles=[
             "GEOS 631",
