@@ -144,12 +144,13 @@ PROD_LAB_CONFIGS = {
     ),
     "geos": BaseLabConfig(
         short_lab_name="geos",
-        friendly_name="GEOS 631/636",
+        friendly_name="GEOS 631/636/657",
         description="""
         <p>
             <ul>
                 <li><b>GEOS 631</b> - Foundations of Geophysics</li>
                 <li><b>GEOS 636</b> - Programming and Automation for Geosciences</li>
+                <li><b>GEOS 657</b> - Microwave Remote Sensing</li>
             </ul>
         <hr>
         <p>
@@ -166,6 +167,8 @@ PROD_LAB_CONFIGS = {
             "GEOS 631 - Debug",
             "GEOS 636",
             "GEOS 636 - Debug",
+            "GEOS 657",
+            "GEOS 657 - Debug",
             "sudo",
         ],
         default_profiles=["GEOS 631", "GEOS 636"],
@@ -176,12 +179,13 @@ PROD_LAB_CONFIGS = {
 NON_PROD_LAB_CONFIGS = {
     "geos": BaseLabConfig(
         short_lab_name="geos",
-        friendly_name="GEOS 631/636",
+        friendly_name="GEOS 631/636/657",
         description="""
         <p>
             <ul>
                 <li><b>GEOS 631</b> - Foundations of Geophysics</li>
                 <li><b>GEOS 636</b> - Programming and Automation for Geosciences</li>
+                <li><b>GEOS 657</b> - Microwave Remote Sensing</li>
             </ul>
         <hr>
         <p>
@@ -191,13 +195,15 @@ NON_PROD_LAB_CONFIGS = {
             making scientific figures, maps and visualizations. Provided asynchronously remotely.
         </p>
         """,
-        deployment_url="http://eks-cluster-geos-368fe5a0d3301df1.elb.us-west-2.amazonaws.com",
+        deployment_url="http://eks-cluster-geos-4543fa7969d125e0.elb.us-west-2.amazonaws.com",
         accessibility="private",
         allowed_profiles=[
             "GEOS 631",
             "GEOS 631 - Debug",
             "GEOS 636",
             "GEOS 636 - Debug",
+            "GEOS 657",
+            "GEOS 657 - Debug",
             "sudo",
         ],
         default_profiles=["GEOS 631", "GEOS 636"],
