@@ -62,11 +62,12 @@ class BaseLabConfig:
         except requests.exceptions.ReadTimeout:
             return "Timeout"
         except requests.exceptions.ConnectionError:
-            return "Error"
+            return "Version Not Supported"
 
-        cluster_version = ret.json().get("cluster_version", "Not Supported")
+        cluster_version = ret.json().get("cluster_version", "Unknown version")
         deploy_date = ret.json().get("deploy_date", "Unknown deploy date")
-        if ret.json().get("cluster_version", "").startswith("v"):
+
+        if cluster_version.startswith("v"):
             return cluster_version
         else:
             return f"{cluster_version} ({deploy_date})"
