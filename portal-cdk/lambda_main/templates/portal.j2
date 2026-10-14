@@ -35,7 +35,11 @@
                             {% else %}
                                 <fieldset class="fieldset-border-red">
                                 {% endif %}
-                                <legend class="legend-border-text font-30">{{ lab_config.friendly_name }}</legend>
+                                {% if labname in managed_labs %}
+                                    <legend class="legend-border-text font-30">{{ lab_config.friendly_name }} | {{ lab_config.get_version() }}</legend>
+                                {% else %}
+                                    <legend class="legend-border-text font-30">{{ lab_config.friendly_name }}</legend>
+                                {% endif %}
                                 {% if not lab_config.is_healthy() -%}
                                     <p class="alert alert-danger show">
                                         The lab url is either unhealthy or no longer exists. Please contact the <a href="mailto:uaf-jupyterhub-asf+help@alaska.edu">OpenScienceLab Team</a>.
