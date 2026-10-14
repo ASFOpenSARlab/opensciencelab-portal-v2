@@ -64,10 +64,12 @@ class BaseLabConfig:
         except requests.exceptions.ConnectionError:
             return "Error"
 
-        if ret.json().get("cluster_version", "") == "main":
-            return f"main ({ret.json().get('deploy_date', 'Unknown deploy date')})"
+        cluster_version = ret.json().get("cluster_version", "Not Supported")
+        deploy_date = ret.json().get("deploy_date", "Unknown deploy date")
+        if ret.json().get("cluster_version", "").startswith("v"):
+            return cluster_version
         else:
-            return ret.json().get("cluster_version", "Not Supported")
+            return f"{cluster_version} ({deploy_date})"
 
 
 def get_daac_country_status() -> dict:
