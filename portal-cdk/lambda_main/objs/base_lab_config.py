@@ -1,8 +1,12 @@
 from dataclasses import dataclass, field
 import requests
+from aws_lambda_powertools import Logger
+from json import JSONDecodeError
 
 from util.log_timer import measure_time
 from data import RESTRICTED_COUNTRIES
+
+logger = Logger(child=True)
 
 
 @dataclass
@@ -64,8 +68,15 @@ class BaseLabConfig:
         except requests.exceptions.ConnectionError:
             return "Version Not Supported"
 
-        cluster_version = ret.json().get("cluster_version", "Unknown version")
-        deploy_date = ret.json().get("deploy_date", "Unknown deploy date")
+        if ret.status_code < 200 or ret.status_code > 299:
+            return f"Endpoint Error: {ret.status_code}"
+
+        try:
+            cluster_version = ret.json().get("cluster_version", "Unknown version")
+            deploy_date = ret.json().get("deploy_date", "Unknown deploy date")
+        except JSONDecodeError as e:
+            logger.error(f"Error decoding cluster version JSON: {e}")
+            return "Broken JSON"
 
         if cluster_version.startswith("v"):
             return cluster_version
