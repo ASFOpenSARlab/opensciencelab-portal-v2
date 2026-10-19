@@ -49,6 +49,29 @@ class BaseLabConfig:
             return False
         return ret.status_code == 200
 
+    def get_version(self) -> str:
+        try:
+            with measure_time(
+                service="get_version", action=f"get {self.short_lab_name} version"
+            ):
+                ret = requests.get(
+                    url=f"{self.deployment_url}/lab/{self.short_lab_name}/hub/static/version.json",
+                    timeout=0.1,
+                    verify=False,
+                )
+        except requests.exceptions.ReadTimeout:
+            return "Timeout"
+        except requests.exceptions.ConnectionError:
+            return "Version Not Supported"
+
+        cluster_version = ret.json().get("cluster_version", "Unknown version")
+        deploy_date = ret.json().get("deploy_date", "Unknown deploy date")
+
+        if cluster_version.startswith("v"):
+            return cluster_version
+        else:
+            return f"{cluster_version} ({deploy_date})"
+
 
 def get_daac_country_status() -> dict:
     """
