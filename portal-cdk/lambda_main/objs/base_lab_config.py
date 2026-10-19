@@ -8,6 +8,7 @@ from data import RESTRICTED_COUNTRIES
 
 logger = Logger(child=True)
 
+
 @dataclass
 class BaseLabConfig:
     friendly_name: str
