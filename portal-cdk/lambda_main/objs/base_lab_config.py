@@ -64,6 +64,9 @@ class BaseLabConfig:
         except requests.exceptions.ConnectionError:
             return "Version Not Supported"
 
+        if ret.status_code < 200 or ret.status_code > 299:
+            return f"Endpoint Error: {ret.status_code}"
+
         cluster_version = ret.json().get("cluster_version", "Unknown version")
         deploy_date = ret.json().get("deploy_date", "Unknown deploy date")
 
