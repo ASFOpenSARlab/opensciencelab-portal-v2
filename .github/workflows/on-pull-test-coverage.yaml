@@ -13,6 +13,7 @@ env:
   SSL_CERT_ARN: ${{ vars.SSL_CERT_ARN }}
   DEPLOY_DOMAINS: ${{ vars.DEPLOY_DOMAINS }}
   AWS_DEFAULT_REGION: ${{ vars.AWS_DEFAULT_REGION }}
+  JSII_RUNTIME_PACKAGE_CACHE: disabled
 
 jobs:
   generate-coverage:
