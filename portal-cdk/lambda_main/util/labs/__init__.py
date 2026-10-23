@@ -9,7 +9,7 @@ PROD_LAB_CONFIGS = {
         description="""
             <p>NASA JupyterHub operated by the Alaska Satellite Facility</p>
             <p>Users with a valid science need can apply for access by clicking the "Apply for Access" button below (if present).</p>
-            <p style="color: orangered;">User storage is permanently deleted after 30 days of inactivity. Users can request a temporary extension by contacting the OSL Admins.</p> <hr style="border-top: 1px solid grey;"> <div style="font-size: 12px;margin: 10px 0 0 0;text-align: justify;">
+            <p style="color: orangered;">User storage is permanently deleted after 14 days of inactivity. Users can request a temporary extension by contacting the OSL Admins.</p> <hr style="border-top: 1px solid grey;"> <div style="font-size: 12px;margin: 10px 0 0 0;text-align: justify;">
             <p>By accessing and using this information system, you acknowledge and consent to the following:</p>
             <p>You are accessing a U.S. Government information system, which includes: (1) this computer; (2) this computer network; (3) all computers connected to
             this network including end user systems; (4) all devices and storage media attached to this network or to any computer on this network; and
