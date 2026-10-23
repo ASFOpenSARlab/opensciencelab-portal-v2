@@ -18,7 +18,7 @@ env:
 jobs:
   generate-coverage:
     runs-on: ubuntu-latest
-    container: ghcr.io/asfopensarlab/osl-utils:v1.2.1
+    container: ghcr.io/asfopensarlab/osl-utils:v1.2.2
     steps:
       - name: Checkout Repo
         uses: actions/checkout@v4

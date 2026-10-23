@@ -15,7 +15,7 @@ jobs:
   cdk-diff:
     runs-on: ubuntu-latest
     environment: test
-    container: ghcr.io/asfopensarlab/osl-utils:v1.2.1
+    container: ghcr.io/asfopensarlab/osl-utils:v1.2.2
     # These permissions are needed to interact with GitHub's OIDC Token endpoint.
     permissions:
       id-token: write
