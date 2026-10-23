@@ -47,6 +47,7 @@ jobs:
           needs.setup.outputs.environment == 'prod' ||
           needs.setup.outputs.environment == 'stage'
         }}
+      JSII_RUNTIME_PACKAGE_CACHE: disabled
     steps:
       - name: Checkout Repo
         uses: actions/checkout@v4

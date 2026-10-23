@@ -31,6 +31,7 @@ jobs:
       RECAPTCHA_SECRET_KEY: ${{ secrets.RECAPTCHA_SECRET_KEY }}
       RECAPTCHA_SITE_KEY: ${{ secrets.RECAPTCHA_SITE_KEY }}
       RECAPTCHA_THRESHOLD: ${{ vars.RECAPTCHA_THRESHOLD }}
+      JSII_RUNTIME_PACKAGE_CACHE: disabled
     steps:
 
       - name: Checkout Repo
