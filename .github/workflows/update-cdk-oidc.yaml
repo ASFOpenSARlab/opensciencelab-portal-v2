@@ -21,6 +21,7 @@ on: # yamllint disable-line rule:truthy
       - "v*.*.*"
 env:
   cdk_image: ghcr.io/asfopensarlab/cdk-env
+  JSII_RUNTIME_PACKAGE_CACHE: disabled
 jobs:
   setup:
     uses: ASFOpenSARlab/osl-utils/.github/workflows/reusable-setup-env.yaml@v1.2.2
