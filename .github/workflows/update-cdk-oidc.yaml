@@ -26,17 +26,6 @@ jobs:
     uses: ASFOpenSARlab/osl-utils/.github/workflows/reusable-setup-env.yaml@v1.2.2
     with:
       tagname: ${{ inputs.tagname || github.ref_name }}
-  wait-for-cdk-image:
-    # Because the image may not ready yet, lets wait for it
-    needs:
-      - setup
-    uses: ./.github/workflows/reusable-image-readiness-wait.yaml
-    with:
-      image_name: "asfopensarlab/cdk-env"
-      image_tag: ${{ needs.setup.outputs.branchtag }}
-      repo_username: ${{ github.repository_owner }}
-    secrets:
-      repo_password: ${{ secrets.GITHUB_TOKEN }}
   use-cdk-image:
     # Skip this step if env=dev and input.cdk_deploy_env=default
     if: |
@@ -54,14 +43,9 @@ jobs:
           needs.setup.outputs.deploy_prefix
         }}
     runs-on: ubuntu-latest
-    container:
-      image: ${{ needs.wait-for-cdk-image.outputs.image_uri }}
-      credentials:
-        username: ${{ github.repository_owner }}
-        password: ${{ secrets.GITHUB_TOKEN }}
+    container: ghcr.io/ASFOpenSARlab/osl-utils@v1.2.2
     needs:
       - setup
-      - wait-for-cdk-image
     # Allow cdk_deploy_env to override environment for deploy
     environment: >-
       ${{ inputs.cdk_deploy_env == 'test' && 'test' ||
