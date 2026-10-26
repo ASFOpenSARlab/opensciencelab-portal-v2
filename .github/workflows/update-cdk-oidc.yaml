@@ -68,7 +68,6 @@ jobs:
       - name: Update OIDC
         id: update-oidc
         run: |-
-          echo "container.image was ${{ needs.wait-for-cdk-image.outputs.image_uri }}"
           echo "Hello from inside CDK (${{ env.image-tag }})"
           pwd && ls
           make deploy-oidc
