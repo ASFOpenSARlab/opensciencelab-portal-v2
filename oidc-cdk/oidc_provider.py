@@ -91,6 +91,11 @@ class OidcProviderStack(Stack):
                             f"arn:aws:ecr:{self.region}:{self.account}:repository/lab_images"
                         ],
                     },
+                    {
+                        "effect": "allow",
+                        "actions": ["ecr:GetAuthorizationToken"],
+                        "resources": ["*"],
+                    },
                 ],
             },
         }
