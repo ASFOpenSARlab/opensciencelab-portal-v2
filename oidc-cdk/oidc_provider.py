@@ -87,7 +87,9 @@ class OidcProviderStack(Stack):
                     {
                         "effect": "allow",
                         "actions": ["ecr:*"],
-                        "resources": [f"arn:aws:ecr:{self.region}:{self.account}:repository/lab_images"],
+                        "resources": [
+                            f"arn:aws:ecr:{self.region}:{self.account}:repository/lab_images"
+                        ],
                     },
                 ],
             },
