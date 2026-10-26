@@ -80,7 +80,7 @@ class OidcProviderStack(Stack):
                     },
                 ],
             },
-            "deploy_ecr_stack_role": {
+            "ecr_image_role": {
                 "description": "IAM Role for ECR Deployments",
                 "name": "AllowECRGitPush",
                 "statements": [
