@@ -43,6 +43,7 @@ jobs:
           inputs.cdk_deploy_env == 'prod' && 'prod' ||
           needs.setup.outputs.deploy_prefix
         }}
+      PROJECT_NAME: "${{ vars.OIDC_PROJECT_NAME }}"
     runs-on: ubuntu-latest
     container: ghcr.io/asfopensarlab/osl-utils:v1.2.2
     needs:
