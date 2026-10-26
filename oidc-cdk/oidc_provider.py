@@ -80,6 +80,17 @@ class OidcProviderStack(Stack):
                     },
                 ],
             },
+            "deploy_ecr_stack_role": {
+                "description": "IAM Role for ECR Deployments",
+                "name": "AllowECRGitPush",
+                "statements": [
+                    {
+                        "effect": "allow",
+                        "actions": ["ecr:*"],
+                        "resources": [f"arn:aws:ecr:{self.region}:{self.account}:repository/lab_images"],
+                    },
+                ],
+            },
         }
 
         # GitHub OIDC Provider
