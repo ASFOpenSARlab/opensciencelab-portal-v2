@@ -43,7 +43,7 @@ jobs:
           needs.setup.outputs.deploy_prefix
         }}
     runs-on: ubuntu-latest
-    container: ghcr.io/ASFOpenSARlab/osl-utils@v1.2.2
+    container: ghcr.io/asfopensarlab/osl-utils@v1.2.2
     needs:
       - setup
     # Allow cdk_deploy_env to override environment for deploy
