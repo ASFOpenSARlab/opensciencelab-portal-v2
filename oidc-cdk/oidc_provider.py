@@ -35,7 +35,7 @@ class OidcProviderStack(Stack):
         )
 
         # I hate having this here, but need to find a better way to pass self.account/self.account
-        LAB_IMAGE_NAMES = os.getenv("LAB_IMAGE_NAMES")
+        LAB_IMAGE_NAMES = os.getenv("LAB_IMAGE_NAMES").split()
         cdk_deploy_roles = {
             "deploy_oidc_provider_stack_role": {
                 "description": "IAM Role for OIDC Provider Access",
