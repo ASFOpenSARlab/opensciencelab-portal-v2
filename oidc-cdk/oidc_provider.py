@@ -2,6 +2,7 @@
 
 from pathlib import Path
 import configparser
+import os
 
 from constructs import Construct
 
@@ -34,6 +35,7 @@ class OidcProviderStack(Stack):
         )
 
         # I hate having this here, but need to find a better way to pass self.account/self.account
+        LAB_IMAGE_NAMES = os.getenv("LAB_IMAGE_NAMES")
         cdk_deploy_roles = {
             "deploy_oidc_provider_stack_role": {
                 "description": "IAM Role for OIDC Provider Access",
@@ -88,7 +90,8 @@ class OidcProviderStack(Stack):
                         "effect": "allow",
                         "actions": ["ecr:*"],
                         "resources": [
-                            f"arn:aws:ecr:{self.region}:{self.account}:repository/lab_images"
+                            f"arn:aws:ecr:{self.region}:{self.account}:repository/{image_name}"
+                            for image_name in LAB_IMAGE_NAMES
                         ],
                     },
                     {
