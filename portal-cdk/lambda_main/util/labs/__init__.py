@@ -183,7 +183,7 @@ NON_PROD_LAB_CONFIGS = {
         description="""
         The SEG dev cluster
         """,
-        deployment_url="http://eks-cluster-seg-727bcc207bb1bbc7.elb.us-west-2.amazonaws.com",
+        deployment_url="http://eks-cluster-seg-fcf333f37f070295.elb.us-west-2.amazonaws.com",
         accessibility="private",
         allowed_profiles=[
             "m6a.large",
