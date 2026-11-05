@@ -187,6 +187,8 @@ NON_PROD_LAB_CONFIGS = {
         accessibility="private",
         allowed_profiles=[
             "m6a.large",
+            "m6a.large-ecr",
+            "m6a.large-ghcr",
             "sudo",
         ],
         default_profiles=["m6a.large"],
