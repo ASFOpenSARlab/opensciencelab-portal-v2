@@ -712,9 +712,10 @@ class PortalCdkStack(Stack):
             description="The return-path value that needs to be added to Lab whitelists (for non-prod)",
         )
 
-        CfnOutput(
-            self,
-            "Cross-Account-Crypto-Remediation-Role",
-            value=lambda_role.role_arn,
-            description="IAM Role for cross account crypto remediation lambda access to cognito",
-        )
+        if crypto_remediation_arns:
+            CfnOutput(
+                self,
+                "Cross-Account-Crypto-Remediation-Role",
+                value=lambda_role.role_arn,
+                description="IAM Role for cross account crypto remediation lambda access to cognito",
+            )
