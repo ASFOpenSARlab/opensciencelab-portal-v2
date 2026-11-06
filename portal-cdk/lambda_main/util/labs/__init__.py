@@ -211,25 +211,7 @@ NON_PROD_LAB_CONFIGS = {
     ),
     "test": BaseLabConfig(
         short_lab_name="test",
-        friendly_name="Cluster v2 - test",
-        description="""
-            <p>Cluster v2 access to test auth.</p>
-        """,
-        deployment_url="http://eks-cluster-test-2c5986426c33253f.elb.us-west-2.amazonaws.com",
-        accessibility="protected",
-        allowed_profiles=[
-            "SAR 1",
-            "SAR 1 - Max",
-            "Debug Server Profile",
-            "m6a.xlarge",
-            "m6a.large",
-            "sudo",
-        ],
-        default_profiles=["m6a.large", "m6a.xlarge"],
-    ),
-    "smce-test-opensarlab": BaseLabConfig(
-        short_lab_name="smce-test-opensarlab",
-        friendly_name="SMCE Test (US Unrestricted, Lab Protected)",
+        friendly_name="OpenSARLab Test (US Unrestricted, Lab Protected)",
         description="""
             <p>NASA JupyterHub operated by the Alaska Satellite Facility</p> <hr style="border-top: 1px solid grey;"> <div style="font-size: 12px;margin: 10px 0 0 0;text-align: justify;">
             <p>By accessing and using this information system, you acknowledge and consent to the following:</p>
@@ -243,7 +225,7 @@ NON_PROD_LAB_CONFIGS = {
             result in suspension or loss of access privileges, disciplinary action, and civil and/or criminal penalties. </p>
         </div>
         """,
-        deployment_url="http://smce-test-1433554573.us-west-2.elb.amazonaws.com",
+        deployment_url="http://eks-cluster-test-2c5986426c33253f.elb.us-west-2.amazonaws.com",
         logo="ASF_and_NASA.svg",
         about_page_url="https://opensarlab-docs.asf.alaska.edu/",
         about_page_button_label="Info",
@@ -251,19 +233,12 @@ NON_PROD_LAB_CONFIGS = {
         accessibility="protected",
         allowed_profiles=[
             "SAR 1",
-            "t3a.medium - Dask User",
             "SAR 1 - Max",
             "Debug Server Profile",
-            "SAR 2",
-            "SAR 2 - Max",
-            "SERVIR 1",
             "m6a.xlarge",
             "m6a.large",
-            "m6a.large - Desktop",
             "sudo",
-            "r6i.4xlarge",
         ],
-        crypto_remediation_role_arn="arn:aws:iam::381492216607:role/service-role/cryptomining-remediation-role-b4sw3o86",
         default_profiles=["m6a.large", "m6a.xlarge"],
         application_questions=[
             {
