@@ -44,6 +44,7 @@ jobs:
           needs.setup.outputs.deploy_prefix
         }}
       PROJECT_NAME: "${{ vars.OIDC_PROJECT_NAME }}"
+      LAB_IMAGE_NAMES: "${{ vars.LAB_IMAGE_NAMES }}"
     runs-on: ubuntu-latest
     container: ghcr.io/asfopensarlab/osl-utils:v1.2.2
     needs:

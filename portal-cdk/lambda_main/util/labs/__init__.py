@@ -177,6 +177,23 @@ PROD_LAB_CONFIGS = {
 }
 
 NON_PROD_LAB_CONFIGS = {
+    "seg": BaseLabConfig(
+        short_lab_name="seg",
+        friendly_name="seg-dev-cluster",
+        description="""
+        The SEG dev cluster
+        """,
+        deployment_url="http://eks-cluster-seg-319535a0c9a90a79.elb.us-west-2.amazonaws.com",
+        accessibility="private",
+        allowed_profiles=[
+            "m6a.large",
+            "m6a.large-ecr",
+            "m6a.large-ghcr",
+            "sudo",
+        ],
+        default_profiles=["m6a.large"],
+        allows_tokens=True,
+    ),
     "geos": BaseLabConfig(
         short_lab_name="geos",
         friendly_name="GEOS 631/636/657",
