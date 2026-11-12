@@ -225,7 +225,7 @@ NON_PROD_LAB_CONFIGS = {
             result in suspension or loss of access privileges, disciplinary action, and civil and/or criminal penalties. </p>
         </div>
         """,
-        deployment_url="http://eks-cluster-test-8ac0a70e7c228ec3.elb.us-west-2.amazonaws.com/",
+        deployment_url="http://eks-cluster-test-8ac0a70e7c228ec3.elb.us-west-2.amazonaws.com",
         logo="ASF_and_NASA.svg",
         about_page_url="https://opensarlab-docs.asf.alaska.edu/",
         about_page_button_label="Info",
