@@ -23,7 +23,7 @@ from util.auth_helpers import get_ip_and_country
 import requests
 import jwt
 from jwt.algorithms import RSAAlgorithm
-from opensarlab.auth import encryptedjwt
+from opensarlab_backend.auth import encryptedjwt
 from aws_lambda_powertools.utilities import parameters
 from aws_lambda_powertools import Logger
 from aws_lambda_powertools.middleware_factory import lambda_handler_decorator
