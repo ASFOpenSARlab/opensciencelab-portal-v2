@@ -185,7 +185,7 @@ def _can_user_see_lab(user: User, lab) -> bool:
 
 
 def _can_user_access_lab(user: User, lab) -> bool:
-    if user.country_code in lab.ip_country_status["prohibited"]:
+    if user.country_code in lab.ip_country_status.get("prohibited", []):
         return False
     # user not georestricted
     if lab.short_lab_name not in user.labs:
