@@ -72,6 +72,6 @@ jobs:
           name: cdk-diff-artifact
 
       - name: Comment CDK Diff Output on PR
-        uses: towardsthecloud/aws-cdk-diff-pr-commenter@v1
+        uses: towardsthecloud/aws-cdk-diff-pr-commenter@v1.10.0
         with:
           diff-file: cdk-diff-output.log
